@@ -1,4 +1,4 @@
-# API Reference (v0.1.10)
+# API Reference (v0.1.11)
 
 ## Core Classes
 
@@ -29,7 +29,7 @@ Key methods:
 - Distinct counts: `nunique(dropna?)`
 - Grouping: `groupby`
 - Joins: `merge`
-- Serialization: `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
+- Serialization: `to_records`, `to_dict`, `to_json` (`lines` supported with `orient="records"`), `to_csv`, `to_string`
 
 ### `Series`
 
@@ -76,9 +76,15 @@ From `bun_panda`:
 - `read_csv(path, options?)`
 - `read_csv_sync(path, options?)`
 - `parse_csv(text, options?)`
+- `read_table(path, options?)` (tab-separated default, pandas-style alias)
+- `read_table_sync(path, options?)`
+- `parse_table(text, options?)`
+- `read_tsv(path, options?)` (alias of `read_table`)
+- `read_tsv_sync(path, options?)`
+- `parse_tsv(text, options?)`
 - `read_json(path, options?)`
 - `read_json_sync(path, options?)`
-- `parse_json(text, options?)`
+- `parse_json(text, options?)` (`lines: true` supported)
 - `to_csv(dataframe, options?)`
 - `concat(frames, options?)`
 - `merge(left, right, options)`
@@ -87,7 +93,7 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.10`.
+2. Not all pandas features are implemented in `v0.1.11`.
 
 ## `pivot_table` Options (focused subset)
 

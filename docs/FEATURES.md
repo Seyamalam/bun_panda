@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.10)
+## Implemented (v0.1.11)
 
 ### Data Structures
 
@@ -56,9 +56,15 @@
 - `read_csv` (async)
 - `read_csv_sync`
 - `parse_csv`
+- `read_table` (async, tab-separated default)
+- `read_table_sync`
+- `parse_table`
+- `read_tsv` (alias)
+- `read_tsv_sync` (alias)
+- `parse_tsv` (alias)
 - `read_json` (async)
 - `read_json_sync`
-- `parse_json`
+- `parse_json` (`lines: true` JSON-lines support)
 - `to_csv`
 - `concat`
 - `merge`

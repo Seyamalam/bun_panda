@@ -27,6 +27,7 @@
 23. Further split large dataframe operation logic into dedicated modules (`valueCounts`, `pivotTable`, `merge`).
 24. Added pandas-style `groupby(as_index)`, `GroupBy.size()`, and `DataFrame.nunique()`.
 25. Added JSON IO support (`read_json`, `read_json_sync`, `parse_json`) and `to_json({ path })`.
+26. Added pandas-style table/TSV IO wrappers (`read_table`, `read_tsv`, and sync/parse variants) plus JSON-lines compatibility (`lines=true`) for `read_json`, `parse_json`, and `to_json`.
 
 ## Next Milestone (v0.2.x)
 

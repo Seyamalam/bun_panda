@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.11] - 2026-02-22
+
+### Added
+
+- pandas-style tabular IO helpers:
+  - `read_table(path, options?)`
+  - `read_table_sync(path, options?)`
+  - `parse_table(text, options?)`
+  - `read_tsv/read_tsv_sync/parse_tsv` aliases
+- JSON-lines compatibility:
+  - `read_json(..., { lines: true })`
+  - `parse_json(..., { lines: true })`
+  - `DataFrame.to_json({ lines: true, orient: "records" })`
+
+### Changed
+
+- Refactored IO parsing into smaller modules:
+  - `src/internal/io/csv.ts`
+  - `src/internal/io/json.ts`
+  - `src/internal/io/shared.ts`
+- Added focused IO compatibility tests for table/TSV and JSON-lines behavior.
+
 ## [0.1.10] - 2026-02-22
 
 ### Added

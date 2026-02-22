@@ -59,6 +59,7 @@ export interface ToJSONOptions {
   path?: string;
   orient?: "records" | "list";
   space?: number;
+  lines?: boolean;
 }
 
 export interface MergeOptions {
@@ -233,17 +234,10 @@ export class DataFrame {
     orientOrOptions: "records" | "list" | ToJSONOptions = "records",
     space = 2
   ): string {
-    const orient =
-      typeof orientOrOptions === "string"
-        ? orientOrOptions
-        : (orientOrOptions.orient ?? "records");
-    const jsonSpace =
-      typeof orientOrOptions === "string"
-        ? space
-        : (orientOrOptions.space ?? 2);
-    const json = JSON.stringify(this.to_dict(orient), null, jsonSpace);
-    if (typeof orientOrOptions !== "string" && orientOrOptions.path) {
-      writeFileSync(orientOrOptions.path, `${json}\n`, "utf8");
+    const options = normalizeToJsonOptions(orientOrOptions, space);
+    const json = buildJsonOutput(this, options);
+    if (options.path) {
+      writeFileSync(options.path, `${json}\n`, "utf8");
     }
     return json;
   }
@@ -775,4 +769,39 @@ export class DataFrame {
   private withIndex(index: IndexLabel[]): DataFrame {
     return this.withRows(this.to_records(), index, this._columns, true);
   }
+}
+
+type ResolvedToJsonOptions = Required<Pick<ToJSONOptions, "orient" | "space" | "lines">> &
+  Pick<ToJSONOptions, "path">;
+
+function normalizeToJsonOptions(
+  orientOrOptions: "records" | "list" | ToJSONOptions,
+  space: number
+): ResolvedToJsonOptions {
+  if (typeof orientOrOptions === "string") {
+    return {
+      orient: orientOrOptions,
+      space,
+      lines: false,
+    };
+  }
+  return {
+    orient: orientOrOptions.orient ?? "records",
+    space: orientOrOptions.space ?? 2,
+    lines: orientOrOptions.lines ?? false,
+    path: orientOrOptions.path,
+  };
+}
+
+function buildJsonOutput(frame: DataFrame, options: ResolvedToJsonOptions): string {
+  if (!options.lines) {
+    return JSON.stringify(frame.to_dict(options.orient), null, options.space);
+  }
+  if (options.orient !== "records") {
+    throw new Error("to_json with lines=true only supports orient='records'.");
+  }
+  return frame
+    .to_records()
+    .map((record) => JSON.stringify(record))
+    .join("\n");
 }

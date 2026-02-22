@@ -5,7 +5,9 @@ import {
   type PivotTableOptions,
   type ToCSVOptions,
 } from "./dataframe";
-import type { CellValue, IndexLabel, Row } from "./types";
+import { parseCsvText } from "./internal/io/csv";
+import { parseJsonText } from "./internal/io/json";
+import type { IndexLabel, Row } from "./types";
 
 export interface ReadCSVOptions {
   sep?: string;
@@ -15,6 +17,8 @@ export interface ReadCSVOptions {
   na_values?: string[];
 }
 
+export type ReadTableOptions = ReadCSVOptions;
+
 export interface ConcatOptions {
   axis?: 0 | 1;
   ignore_index?: boolean;
@@ -23,6 +27,7 @@ export interface ConcatOptions {
 export interface ReadJSONOptions {
   orient?: "records" | "list";
   index_col?: string | number;
+  lines?: boolean;
 }
 
 export async function read_csv(path: string, options: ReadCSVOptions = {}): Promise<DataFrame> {
@@ -35,6 +40,37 @@ export function read_csv_sync(path: string, options: ReadCSVOptions = {}): DataF
   return parse_csv(text, options);
 }
 
+export function parse_csv(text: string, options: ReadCSVOptions = {}): DataFrame {
+  return parseCsvText(text, options);
+}
+
+export async function read_table(
+  path: string,
+  options: ReadTableOptions = {}
+): Promise<DataFrame> {
+  return read_csv(path, withTableSep(options));
+}
+
+export function read_table_sync(path: string, options: ReadTableOptions = {}): DataFrame {
+  return read_csv_sync(path, withTableSep(options));
+}
+
+export function parse_table(text: string, options: ReadTableOptions = {}): DataFrame {
+  return parse_csv(text, withTableSep(options));
+}
+
+export async function read_tsv(path: string, options: ReadTableOptions = {}): Promise<DataFrame> {
+  return read_table(path, options);
+}
+
+export function read_tsv_sync(path: string, options: ReadTableOptions = {}): DataFrame {
+  return read_table_sync(path, options);
+}
+
+export function parse_tsv(text: string, options: ReadTableOptions = {}): DataFrame {
+  return parse_table(text, options);
+}
+
 export async function read_json(path: string, options: ReadJSONOptions = {}): Promise<DataFrame> {
   const text = await Bun.file(path).text();
   return parse_json(text, options);
@@ -45,128 +81,8 @@ export function read_json_sync(path: string, options: ReadJSONOptions = {}): Dat
   return parse_json(text, options);
 }
 
-export function parse_csv(text: string, options: ReadCSVOptions = {}): DataFrame {
-  const sep = options.sep ?? ",";
-  const rows = parseCsvRows(stripBom(text), sep);
-  const header = options.header ?? true;
-  const naValues = new Set(
-    (options.na_values ?? ["", "NaN", "NA", "null", "None"]).map((value) =>
-      value.trim().toLowerCase()
-    )
-  );
-
-  if (rows.length === 0) {
-    return new DataFrame([]);
-  }
-
-  let columns: string[];
-  let startRow = 0;
-
-  if (options.names && options.names.length > 0) {
-    columns = [...options.names];
-    startRow = header ? 1 : 0;
-  } else if (header) {
-    columns = rows[0]!.map((value) => value.trim());
-    startRow = 1;
-  } else {
-    columns = rows[0]!.map((_, position) => `col_${position}`);
-    startRow = 0;
-  }
-
-  const records: Row[] = [];
-  for (let i = startRow; i < rows.length; i += 1) {
-    const rawRow = rows[i]!;
-
-    while (rawRow.length > columns.length) {
-      columns.push(`col_${columns.length}`);
-      for (const existing of records) {
-        existing[columns.at(-1)!] = null;
-      }
-    }
-
-    const record: Row = {};
-    for (let columnIndex = 0; columnIndex < columns.length; columnIndex += 1) {
-      const raw = rawRow[columnIndex] ?? "";
-      record[columns[columnIndex]!] = inferValue(raw, naValues);
-    }
-    records.push(record);
-  }
-
-  let index: IndexLabel[] | undefined;
-
-  if (options.index_col !== undefined) {
-    const indexColumn =
-      typeof options.index_col === "number"
-        ? columns[options.index_col]
-        : options.index_col;
-
-    if (!indexColumn || !columns.includes(indexColumn)) {
-      throw new Error("index_col does not match any column.");
-    }
-
-    index = records.map((record, position) => {
-      const value = record[indexColumn];
-      if (typeof value === "string" || typeof value === "number") {
-        return value;
-      }
-      return String(value ?? position);
-    });
-
-    columns = columns.filter((column) => column !== indexColumn);
-    for (const record of records) {
-      delete record[indexColumn];
-    }
-  }
-
-  return new DataFrame(records, { columns, index });
-}
-
 export function parse_json(text: string, options: ReadJSONOptions = {}): DataFrame {
-  const parsed = JSON.parse(stripBom(text)) as unknown;
-  const orient = options.orient ?? inferJsonOrient(parsed);
-  let frame: DataFrame;
-
-  if (orient === "records") {
-    if (!Array.isArray(parsed)) {
-      throw new Error("JSON orient 'records' expects an array of objects.");
-    }
-    const records: Row[] = parsed.map((entry, position) => {
-      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-        throw new Error(`JSON records entry at position ${position} is not an object.`);
-      }
-      const row: Row = {};
-      for (const [column, value] of Object.entries(entry)) {
-        row[column] = coerceJsonCell(value);
-      }
-      return row;
-    });
-    frame = new DataFrame(records);
-  } else {
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("JSON orient 'list' expects a column-object with array values.");
-    }
-    const columnar: Record<string, CellValue[]> = {};
-    for (const [column, values] of Object.entries(parsed as Record<string, unknown>)) {
-      if (!Array.isArray(values)) {
-        throw new Error(`JSON column '${column}' is not an array.`);
-      }
-      columnar[column] = values.map((value) => coerceJsonCell(value));
-    }
-    frame = new DataFrame(columnar);
-  }
-
-  if (options.index_col !== undefined) {
-    const indexColumn =
-      typeof options.index_col === "number"
-        ? frame.columns[options.index_col]
-        : options.index_col;
-    if (!indexColumn || !frame.columns.includes(indexColumn)) {
-      throw new Error("index_col does not match any column.");
-    }
-    return frame.set_index(indexColumn);
-  }
-
-  return frame;
+  return parseJsonText(text, options);
 }
 
 export function to_csv(dataframe: DataFrame, options: ToCSVOptions = {}): string {
@@ -182,33 +98,55 @@ export function concat(frames: DataFrame[], options: ConcatOptions = {}): DataFr
   }
 
   if (axis === 0) {
-    const columns: string[] = [];
-    const records: Row[] = [];
-    const index: IndexLabel[] = [];
+    return concatRows(frames, ignoreIndex);
+  }
+  return concatColumns(frames, ignoreIndex);
+}
 
-    for (const frame of frames) {
-      for (const column of frame.columns) {
-        if (!columns.includes(column)) {
-          columns.push(column);
-        }
+export function merge(left: DataFrame, right: DataFrame, options: MergeOptions): DataFrame {
+  return left.merge(right, options);
+}
+
+export function pivot_table(dataframe: DataFrame, options: PivotTableOptions): DataFrame {
+  return dataframe.pivot_table(options);
+}
+
+function withTableSep(options: ReadTableOptions): ReadCSVOptions {
+  return {
+    ...options,
+    sep: options.sep ?? "\t",
+  };
+}
+
+function concatRows(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
+  const columns: string[] = [];
+  const records: Row[] = [];
+  const index: IndexLabel[] = [];
+
+  for (const frame of frames) {
+    for (const column of frame.columns) {
+      if (!columns.includes(column)) {
+        columns.push(column);
       }
     }
-
-    for (const frame of frames) {
-      const frameRows = frame.to_records();
-      const frameIndex = frame.index;
-      for (let i = 0; i < frameRows.length; i += 1) {
-        records.push(frameRows[i]!);
-        index.push(frameIndex[i]!);
-      }
-    }
-
-    return new DataFrame(records, {
-      columns,
-      index: ignoreIndex ? undefined : index,
-    });
   }
 
+  for (const frame of frames) {
+    const frameRows = frame.to_records();
+    const frameIndex = frame.index;
+    for (let i = 0; i < frameRows.length; i += 1) {
+      records.push(frameRows[i]!);
+      index.push(frameIndex[i]!);
+    }
+  }
+
+  return new DataFrame(records, {
+    columns,
+    index: ignoreIndex ? undefined : index,
+  });
+}
+
+function concatColumns(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
   const outputColumns: string[] = [];
   const perFrameMappings: Array<Array<{ source: string; target: string }>> = [];
   const seenColumns = new Map<string, number>();
@@ -264,115 +202,4 @@ export function concat(frames: DataFrame[], options: ConcatOptions = {}): DataFr
     columns: outputColumns,
     index: ignoreIndex ? undefined : outputIndex,
   });
-}
-
-export function merge(left: DataFrame, right: DataFrame, options: MergeOptions): DataFrame {
-  return left.merge(right, options);
-}
-
-export function pivot_table(dataframe: DataFrame, options: PivotTableOptions): DataFrame {
-  return dataframe.pivot_table(options);
-}
-
-function inferValue(value: string, naValues: Set<string>): CellValue {
-  const trimmed = value.trim();
-  if (naValues.has(trimmed.toLowerCase())) {
-    return null;
-  }
-
-  const lowered = trimmed.toLowerCase();
-  if (lowered === "true") {
-    return true;
-  }
-  if (lowered === "false") {
-    return false;
-  }
-
-  if (/^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(trimmed)) {
-    const parsed = Number(trimmed);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return trimmed;
-}
-
-function parseCsvRows(text: string, sep: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i += 1) {
-    const char = text[i]!;
-    const next = text[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        cell += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (!inQuotes && char === sep) {
-      row.push(cell);
-      cell = "";
-      continue;
-    }
-
-    if (!inQuotes && (char === "\n" || char === "\r")) {
-      if (char === "\r" && next === "\n") {
-        i += 1;
-      }
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-      continue;
-    }
-
-    cell += char;
-  }
-
-  const hasTrailingData = cell.length > 0 || row.length > 0;
-  if (hasTrailingData) {
-    row.push(cell);
-    rows.push(row);
-  }
-
-  return rows.filter((entry) => entry.length > 1 || entry[0]?.trim().length);
-}
-
-function stripBom(text: string): string {
-  if (text.charCodeAt(0) === 0xfeff) {
-    return text.slice(1);
-  }
-  return text;
-}
-
-function inferJsonOrient(input: unknown): "records" | "list" {
-  if (Array.isArray(input)) {
-    return "records";
-  }
-  if (input && typeof input === "object") {
-    return "list";
-  }
-  throw new Error("Unable to infer JSON orient; expected array or object root.");
-}
-
-function coerceJsonCell(value: unknown): CellValue {
-  if (
-    value === null ||
-    value === undefined ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  ) {
-    return value;
-  }
-  return JSON.stringify(value);
 }

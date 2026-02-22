@@ -9,7 +9,7 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - Familiar naming:
 - `DataFrame`
 - `Series`
-- `read_csv`, `read_json`, `concat`, `merge`, `pivot_table`
+- `read_csv`, `read_table`, `read_tsv`, `read_json`, `concat`, `merge`, `pivot_table`
 - `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`
 - `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`
 - pandas-like options where practical (`groupby(..., { dropna, sort })`, `value_counts({ sort, ascending })`)
@@ -91,7 +91,7 @@ python -m pip install -r bench/requirements.txt
 python bench/pandas_compare.py
 ```
 
-Current suite: `60` tests for dataframe ops, merge modes, pivoting, dtypes, CSV edge cases, and core utility behavior.
+Current suite: `76` tests for dataframe ops, merge modes, pivoting, dtypes, CSV/TSV/JSON IO edge cases, and core utility behavior.
 Benchmark suite: `73` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
@@ -147,7 +147,7 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.1.10`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.11`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 
