@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.5] - 2026-02-22
+
+### Added
+
+- Performance regression CI gate (`bench/assert-regression.js`) with configurable ratio threshold.
+- Python benchmark companion (`bench/pandas_compare.py`) with pandas workloads aligned to core library cases.
+- Cross-runtime comparison builder (`bench/compare-pandas.js`) producing `bun_panda` vs pandas benchmark tables/JSON.
+- README benchmark snapshot generator (`bench/update-readme.js`) with CI integration.
+- Python benchmark dependency file (`bench/requirements.txt`).
+
+### Changed
+
+- `bench/compare.js` now supports structured JSON output via `BUN_PANDA_BENCH_JSON`.
+- CI workflow now runs:
+  - typecheck + tests
+  - bun_panda vs Arquero benchmark
+  - pandas benchmark and merged comparison output
+  - performance regression gate
+  - README benchmark snapshot refresh (with optional auto-commit on `workflow_dispatch`).
+- `package.json` scripts expanded for benchmark automation (`bench:arquero`, `bench:pandas`, `bench:compare:pandas`, `bench:gate`, `bench:refresh-readme`, `bench:ci`).
+
 ## [0.1.4] - 2026-02-22
 
 ### Added

@@ -1,8 +1,11 @@
 import * as aq from "arquero";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { DataFrame } from "../index";
 
 const ROWS = Number(process.env.BUN_PANDA_BENCH_ROWS ?? 25000);
 const ITERS = Number(process.env.BUN_PANDA_BENCH_ITERS ?? 8);
+const JSON_OUT = process.env.BUN_PANDA_BENCH_JSON ?? "bench/results/arquero.json";
 
 function lcg(seed) {
   let state = seed >>> 0;
@@ -385,6 +388,7 @@ lines.push(`cases=${cases.length}`);
 lines.push("");
 lines.push("| case | dataset | bun_panda avg | arquero avg | delta | ratio (bun/aq) |");
 lines.push("| --- | --- | ---: | ---: | ---: | ---: |");
+const results = [];
 
 for (const bench of cases) {
   const records = datasets[bench.dataset];
@@ -396,6 +400,14 @@ for (const bench of cases) {
   const delta = bunStats.avgMs - arqueroStats.avgMs;
   const deltaSign = delta > 0 ? "+" : "";
   const ratio = bunStats.avgMs / arqueroStats.avgMs;
+  results.push({
+    case: bench.name,
+    dataset: bench.dataset,
+    bunAvgMs: bunStats.avgMs,
+    arqueroAvgMs: arqueroStats.avgMs,
+    deltaMs: delta,
+    ratio,
+  });
 
   lines.push(
     `| ${bench.name} | ${bench.dataset} | ${formatMs(bunStats.avgMs)} | ${formatMs(
@@ -405,3 +417,15 @@ for (const bench of cases) {
 }
 
 console.log(lines.join("\n"));
+
+if (JSON_OUT) {
+  const payload = {
+    generatedAt: new Date().toISOString(),
+    rows: ROWS,
+    iterations: ITERS,
+    cases: results.length,
+    results,
+  };
+  mkdirSync(dirname(JSON_OUT), { recursive: true });
+  writeFileSync(JSON_OUT, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}

@@ -14,6 +14,14 @@ Optional tuning:
 BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 ```
 
+Pandas companion benchmark:
+
+```bash
+python -m pip install -r bench/requirements.txt
+python bench/pandas_compare.py
+bun run bench:compare:pandas
+```
+
 ## Current Cases
 
 The current harness runs `73` cases across five datasets:
@@ -52,6 +60,8 @@ rows=25000, iterations=8
 3. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
 4. Top-N count cases use `value_counts({ ..., limit })` in `bun_panda`.
 5. Normalize/dropna variants are included to exercise counting semantics, not just raw speed.
+6. CI regression gate enforces `ratio (bun/aq) <= 1.05` for benchmark cases.
+7. CI can refresh the README benchmark snapshot from generated JSON outputs.
 
 ## Notes
 

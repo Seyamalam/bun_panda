@@ -61,6 +61,8 @@
 
 - Benchmark harness in `bench/compare.js` comparing against Arquero.
 - Expanded benchmark coverage (`73` cases) including skewed, wide, high-cardinality, and missing-value datasets.
+- Python benchmark companion (`bench/pandas_compare.py`) for pandas comparison.
+- Performance regression gate script (`bench/assert-regression.js`) for CI.
 - GitHub Actions CI in `.github/workflows/ci.yml` for typecheck/tests.
 - Extended test suite with utility-level unit tests in `test/unit-utils.test.ts`.
 

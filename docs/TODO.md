@@ -21,6 +21,8 @@
 17. Expanded benchmark suite to 73 cases across varied dataset shapes.
 18. Added utility-focused unit test suite (`test/unit-utils.test.ts`).
 19. Added adaptive two-column `value_counts` strategy for better low/high-cardinality performance.
+20. Added CI performance regression gate and automated benchmark snapshot pipeline.
+21. Added pandas benchmark companion and cross-runtime comparison reporting.
 
 ## Next Milestone (v0.2.x)
 

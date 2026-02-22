@@ -8,6 +8,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -27,8 +30,16 @@ jobs:
         run: bun run check
 
   benchmark:
-    if: github.event_name == 'workflow_dispatch'
+    needs: validate
     runs-on: ubuntu-latest
+    env:
+      BUN_PANDA_BENCH_ROWS: "15000"
+      BUN_PANDA_BENCH_ITERS: "6"
+      BUN_PANDA_BENCH_JSON: bench/results/arquero.json
+      BUN_PANDA_PANDAS_JSON: bench/results/pandas.json
+      BUN_PANDA_PANDAS_COMPARE_JSON: bench/results/pandas-compare.json
+      BUN_PANDA_BENCH_MAX_RATIO: "1.05"
+      BUN_PANDA_BENCH_INPUT: bench/results/arquero.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,17 +49,53 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Bun dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run benchmark
-        env:
-          BUN_PANDA_BENCH_ROWS: "15000"
-          BUN_PANDA_BENCH_ITERS: "8"
-        run: bun run bench | tee benchmark.txt
+      - name: Install Python benchmark dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r bench/requirements.txt
 
-      - name: Upload benchmark artifact
+      - name: Prepare benchmark output directory
+        run: mkdir -p bench/results
+
+      - name: Run bun_panda vs Arquero benchmark
+        run: bun run bench:arquero | tee bench/results/arquero.txt
+
+      - name: Run pandas benchmark
+        run: python bench/pandas_compare.py | tee bench/results/pandas.txt
+
+      - name: Build bun_panda vs pandas comparison
+        run: bun run bench:compare:pandas | tee bench/results/pandas-compare.txt
+
+      - name: Performance regression gate
+        run: bun run bench:gate
+
+      - name: Update README benchmark snapshot
+        run: bun run bench:refresh-readme
+
+      - name: Commit README benchmark refresh (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if git diff --quiet README.md; then
+            echo "README benchmark snapshot already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: refresh benchmark snapshot [skip ci]"
+          git push
+
+      - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: benchmark.txt
+          path: |
+            bench/results/*.txt
+            bench/results/*.json
+            README.md
