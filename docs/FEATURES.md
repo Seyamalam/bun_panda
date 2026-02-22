@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.0)
+## Implemented (v0.2.0-preview)
 
 ### Data Structures
 
@@ -18,9 +18,14 @@
 - `assign`, `drop`, `rename`
 - `filter`, `query`
 - `sort_values`
+- `sort_index`
+- `drop_duplicates`
+- `value_counts`
 - `dropna`, `fillna`
 - `set_index`, `reset_index`
+- `dtypes`, `astype`
 - `sum`, `mean`, `describe`
+- `pivot_table`
 - `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
 - `merge`
 
@@ -50,6 +55,7 @@
 - `to_csv`
 - `concat`
 - `merge`
+- `pivot_table`
 
 ## Compatibility Goal
 
@@ -58,7 +64,7 @@ API naming follows pandas as closely as practical for a JS/TS runtime.
 ## Known Differences vs pandas
 
 1. No MultiIndex yet.
-2. No full dtype system.
+2. Dtype support is focused (`number`/`string`/`boolean`/`date`) rather than pandas-complete.
 3. No lazy execution.
 4. No Parquet/Excel/SQL connectors.
 5. No full statistical or time-series API yet.

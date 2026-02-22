@@ -9,8 +9,9 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - Familiar naming:
 - `DataFrame`
 - `Series`
-- `read_csv`, `concat`, `merge`
+- `read_csv`, `concat`, `merge`, `pivot_table`
 - `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`
+- `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`
 - Lightweight, in-memory transforms for Bun + TypeScript.
 - Fast local iteration and strong type checks.
 
@@ -51,6 +52,8 @@ bun test
 bun run typecheck
 bun run check
 ```
+
+Current suite: `26` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
 
 ## Documentation
 

@@ -1,7 +1,13 @@
-import type { CellValue, IndexLabel } from "./types";
-import { compareCellValues, isMissing, numericValues, range } from "./utils";
+import type { CellValue, DType, IndexLabel } from "./types";
+import {
+  coerceValueToDType,
+  compareCellValues,
+  isMissing,
+  numericValues,
+  range,
+} from "./utils";
 
-export type SeriesDType = "number" | "string" | "boolean";
+export type SeriesDType = DType;
 
 export interface SeriesOptions {
   name?: string;
@@ -196,7 +202,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   astype(dtype: SeriesDType): Series<CellValue> {
-    return this.map((value) => convertType(value, dtype), this.name);
+    return this.map((value) => coerceValueToDType(value, dtype), this.name);
   }
 
   private resolvePosition(position: number): number | undefined {
@@ -219,40 +225,4 @@ export class Series<T extends CellValue = CellValue> {
     }
     return `${typeof value}:${String(value)}`;
   }
-}
-
-function convertType(value: CellValue, dtype: SeriesDType): CellValue {
-  if (isMissing(value)) {
-    return null;
-  }
-
-  if (dtype === "number") {
-    if (typeof value === "number") {
-      return value;
-    }
-    if (typeof value === "boolean") {
-      return value ? 1 : 0;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  if (dtype === "boolean") {
-    if (typeof value === "boolean") {
-      return value;
-    }
-    if (typeof value === "number") {
-      return value !== 0;
-    }
-    const normalized = String(value).trim().toLowerCase();
-    if (["true", "1", "yes", "y"].includes(normalized)) {
-      return true;
-    }
-    if (["false", "0", "no", "n", ""].includes(normalized)) {
-      return false;
-    }
-    return Boolean(value);
-  }
-
-  return String(value);
 }

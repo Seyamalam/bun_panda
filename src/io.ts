@@ -1,5 +1,10 @@
 import { readFileSync } from "node:fs";
-import { DataFrame, type MergeOptions, type ToCSVOptions } from "./dataframe";
+import {
+  DataFrame,
+  type MergeOptions,
+  type PivotTableOptions,
+  type ToCSVOptions,
+} from "./dataframe";
 import type { CellValue, IndexLabel, Row } from "./types";
 
 export interface ReadCSVOptions {
@@ -27,9 +32,13 @@ export function read_csv_sync(path: string, options: ReadCSVOptions = {}): DataF
 
 export function parse_csv(text: string, options: ReadCSVOptions = {}): DataFrame {
   const sep = options.sep ?? ",";
-  const rows = parseCsvRows(text, sep);
+  const rows = parseCsvRows(stripBom(text), sep);
   const header = options.header ?? true;
-  const naValues = new Set((options.na_values ?? ["", "NaN", "NA", "null", "None"]).map((value) => value.trim()));
+  const naValues = new Set(
+    (options.na_values ?? ["", "NaN", "NA", "null", "None"]).map((value) =>
+      value.trim().toLowerCase()
+    )
+  );
 
   if (rows.length === 0) {
     return new DataFrame([]);
@@ -198,9 +207,13 @@ export function merge(left: DataFrame, right: DataFrame, options: MergeOptions):
   return left.merge(right, options);
 }
 
+export function pivot_table(dataframe: DataFrame, options: PivotTableOptions): DataFrame {
+  return dataframe.pivot_table(options);
+}
+
 function inferValue(value: string, naValues: Set<string>): CellValue {
   const trimmed = value.trim();
-  if (naValues.has(trimmed)) {
+  if (naValues.has(trimmed.toLowerCase())) {
     return null;
   }
 
@@ -269,4 +282,11 @@ function parseCsvRows(text: string, sep: string): string[][] {
   }
 
   return rows.filter((entry) => entry.length > 1 || entry[0]?.trim().length);
+}
+
+function stripBom(text: string): string {
+  if (text.charCodeAt(0) === 0xfeff) {
+    return text.slice(1);
+  }
+  return text;
 }

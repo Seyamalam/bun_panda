@@ -9,3 +9,7 @@ export type AggName = "sum" | "mean" | "min" | "max" | "count";
 export type AggFn = (values: CellValue[], rows: Row[]) => CellValue;
 
 export type AggSpec = Record<string, AggName | AggFn>;
+
+export type DType = "number" | "string" | "boolean" | "date";
+
+export type InferredDType = DType | "mixed" | "unknown";

@@ -1,15 +1,22 @@
 # TODO
 
+## Completed in v0.2.0-preview
+
+1. Added `DataFrame.value_counts`.
+2. Added focused `pivot_table`.
+3. Improved dtype consistency with shared coercion (`Series.astype` + `DataFrame.astype` + `DataFrame.dtypes`).
+4. Added `sort_index`.
+5. Added `drop_duplicates`.
+6. Expanded merge options with `right` and `outer` joins.
+7. Improved `read_csv` parser edge handling (BOM stripping, case-insensitive `na_values`).
+
 ## Next Milestone (v0.2.x)
 
-1. Add `DataFrame.value_counts`.
-2. Add `pivot_table` (focused subset).
-3. Improve `astype` and dtype inference consistency.
-4. Add `sort_index`.
-5. Add `drop_duplicates`.
-6. Expand merge options (`right`, `outer` joins).
-7. Improve `read_csv` parser edge cases and performance.
-8. Add benchmarks against common JS dataframe libraries.
+1. Add benchmarks against common JS dataframe libraries.
+2. Expand `pivot_table` options (`columns` with richer MultiIndex-like output modes, margins).
+3. Add `sort_values` multi-column sorting.
+4. Add `drop_duplicates` `ignore_index` option.
+5. Improve `read_csv` performance for large files.
 
 ## Mid-Term (v0.3.x+)
 

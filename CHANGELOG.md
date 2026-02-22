@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- `DataFrame` additions:
+  - `value_counts`
+  - `sort_index`
+  - `drop_duplicates`
+  - `dtypes`
+  - `astype`
+  - focused `pivot_table`
+- Merge mode expansion:
+  - `how: "right" | "outer"`
+- Top-level helper:
+  - `pivot_table(dataframe, options)`
+- Expanded test suite from 6 to 22 tests.
+
+### Changed
+
+- Unified dtype coercion logic across `Series.astype` and `DataFrame.astype`.
+- CSV parsing improvements:
+  - UTF-8 BOM stripping
+  - case-insensitive `na_values` matching
+
 ## [0.1.0] - 2026-02-22
 
 ### Added

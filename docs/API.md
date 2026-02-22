@@ -21,9 +21,11 @@ Key methods:
 
 - Access/select: `get`, `select`, `iloc`, `loc`, `at`
 - Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values`
+- Index-aware transforms: `sort_index`, `drop_duplicates`, `value_counts`
 - Missing values: `dropna`, `fillna`
 - Indexing: `set_index`, `reset_index`
-- Summary: `sum`, `mean`, `describe`
+- Typing: `dtypes`, `astype`
+- Summary: `sum`, `mean`, `describe`, `pivot_table`
 - Grouping: `groupby`
 - Joins: `merge`
 - Serialization: `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
@@ -69,6 +71,7 @@ From `bun_panda`:
 - `to_csv(dataframe, options?)`
 - `concat(frames, options?)`
 - `merge(left, right, options)`
+- `pivot_table(dataframe, options)`
 
 ## Notes
 
