@@ -87,7 +87,8 @@ bun run check
 bun run bench
 ```
 
-Current suite: `38` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
+Current suite: `60` tests for dataframe ops, merge modes, pivoting, dtypes, CSV edge cases, and core utility behavior.
+Benchmark suite: `73` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
 
@@ -104,7 +105,7 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck + tests
 
 ## Status
 
-This is an early library release (`0.1.3`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.4`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

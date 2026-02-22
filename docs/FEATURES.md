@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.2.0-preview)
+## Implemented (v0.1.4)
 
 ### Data Structures
 
@@ -60,7 +60,9 @@
 ### Tooling and Quality
 
 - Benchmark harness in `bench/compare.js` comparing against Arquero.
+- Expanded benchmark coverage (`73` cases) including skewed, wide, high-cardinality, and missing-value datasets.
 - GitHub Actions CI in `.github/workflows/ci.yml` for typecheck/tests.
+- Extended test suite with utility-level unit tests in `test/unit-utils.test.ts`.
 
 ## Compatibility Goal
 

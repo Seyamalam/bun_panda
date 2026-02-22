@@ -62,6 +62,8 @@ export interface PivotTableOptions {
 }
 
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
+type CountEntry = { values: CellValue[]; count: number };
+type NormalizedCountKey = string | number | boolean | null;
 
 export class DataFrame {
   private readonly _rows: Row[];
@@ -99,6 +101,14 @@ export class DataFrame {
 
   static from_dict(data: Record<string, CellValue[]>, options: DataFrameOptions = {}): DataFrame {
     return new DataFrame(data, options);
+  }
+
+  static from_normalized(
+    rows: Row[],
+    columns: string[],
+    index?: IndexLabel[]
+  ): DataFrame {
+    return DataFrame.createInternal(rows, [...columns], index ? [...index] : range(rows.length));
   }
 
   get columns(): string[] {
@@ -475,7 +485,7 @@ export class DataFrame {
       if (!include[i]) {
         continue;
       }
-      rows.push(cloneRow(this._rows[i]!, this._columns));
+      rows.push(this._rows[i]!);
       index.push(this._index[i]!);
     }
 
@@ -494,18 +504,19 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
 
-    const counts = new Map<string, { values: CellValue[]; count: number }>();
+    const entries: CountEntry[] = [];
     let consideredRows = 0;
 
     if (subset.length === 1) {
       const column = subset[0]!;
+      const counts = new Map<string | number | boolean | null, CountEntry>();
       for (const row of this._rows) {
         const value = row[column];
         if (dropna && isMissing(value)) {
           continue;
         }
         consideredRows += 1;
-        const key = keyFragment(value);
+        const key = normalizeCountKey(value);
         const entry = counts.get(key);
         if (!entry) {
           counts.set(key, { values: [value], count: 1 });
@@ -513,7 +524,76 @@ export class DataFrame {
           entry.count += 1;
         }
       }
+      entries.push(...counts.values());
+    } else if (subset.length === 2) {
+      const firstColumn = subset[0]!;
+      const secondColumn = subset[1]!;
+      const sampleCount = Math.min(this._rows.length, 512);
+      const sampleUniqueFirstKeys = new Set<NormalizedCountKey>();
+      let sampledRows = 0;
+      for (let i = 0; i < sampleCount; i += 1) {
+        const sampleRow = this._rows[i]!;
+        const firstValue = sampleRow[firstColumn];
+        const secondValue = sampleRow[secondColumn];
+        if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
+          continue;
+        }
+        sampledRows += 1;
+        sampleUniqueFirstKeys.add(normalizeCountKey(firstValue));
+      }
+
+      const useFlatMap =
+        sampledRows > 0 && sampleUniqueFirstKeys.size / sampledRows > 0.35;
+
+      if (useFlatMap) {
+        const counts = new Map<string, CountEntry>();
+        for (const row of this._rows) {
+          const firstValue = row[firstColumn];
+          const secondValue = row[secondColumn];
+          if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
+            continue;
+          }
+
+          consideredRows += 1;
+          const key = keyForPair(firstValue, secondValue);
+          const entry = counts.get(key);
+          if (!entry) {
+            counts.set(key, { values: [firstValue, secondValue], count: 1 });
+          } else {
+            entry.count += 1;
+          }
+        }
+        entries.push(...counts.values());
+      } else {
+        const counts = new Map<NormalizedCountKey, Map<NormalizedCountKey, CountEntry>>();
+        for (const row of this._rows) {
+          const firstValue = row[firstColumn];
+          const secondValue = row[secondColumn];
+          if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
+            continue;
+          }
+
+          consideredRows += 1;
+          const firstKey = normalizeCountKey(firstValue);
+          const secondKey = normalizeCountKey(secondValue);
+          let inner = counts.get(firstKey);
+          if (!inner) {
+            inner = new Map();
+            counts.set(firstKey, inner);
+          }
+          const entry = inner.get(secondKey);
+          if (!entry) {
+            inner.set(secondKey, { values: [firstValue, secondValue], count: 1 });
+          } else {
+            entry.count += 1;
+          }
+        }
+        for (const inner of counts.values()) {
+          entries.push(...inner.values());
+        }
+      }
     } else {
+      const counts = new Map<string, CountEntry>();
       for (const row of this._rows) {
         const values: CellValue[] = [];
         let hasMissing = false;
@@ -538,10 +618,11 @@ export class DataFrame {
           entry.count += 1;
         }
       }
+      entries.push(...counts.values());
     }
 
     const valueColumnName = normalize ? "proportion" : "count";
-    const sortedCounts = selectTopKCountEntries(counts, limit);
+    const sortedCounts = selectTopKCountEntries(entries, limit);
     const countRows = sortedCounts
       .map((entry) => {
         const row: Row = {};
@@ -553,9 +634,7 @@ export class DataFrame {
         return row;
       });
 
-    return new DataFrame(countRows, {
-      columns: [...subset, valueColumnName],
-    });
+    return this.withRows(countRows, undefined, [...subset, valueColumnName], true);
   }
 
   dropna(subset?: string[]): DataFrame {
@@ -1108,6 +1187,10 @@ function keyForColumns(row: Row, keys: string[]): string {
   return keyForValues(keys.map((key) => row[key]));
 }
 
+function keyForPair(first: CellValue, second: CellValue): string {
+  return keyFragment(first) + keyFragment(second);
+}
+
 function keyForValues(values: CellValue[]): string {
   let key = "";
   for (const value of values) {
@@ -1129,6 +1212,10 @@ function keyFragment(value: CellValue): string {
   }
   const text = String(normalized);
   return `s${text.length}:${text};`;
+}
+
+function normalizeCountKey(value: CellValue): string | number | boolean | null {
+  return normalizeKeyCell(value);
 }
 
 function normalizeKeyCell(value: CellValue): string | number | boolean | null {
@@ -1387,11 +1474,7 @@ function compareRowsByComparers(
   return 0;
 }
 
-function selectTopKCountEntries(
-  entriesMap: Map<string, { values: CellValue[]; count: number }>,
-  limit?: number
-): Array<{ values: CellValue[]; count: number }> {
-  const entries = entriesMap.values();
+function selectTopKCountEntries(entries: CountEntry[], limit?: number): CountEntry[] {
   if (limit === 0) {
     return [];
   }
@@ -1400,11 +1483,11 @@ function selectTopKCountEntries(
     return [...entries].sort(compareCountEntries);
   }
 
-  if (entriesMap.size <= limit * 4) {
+  if (entries.length <= limit * 4) {
     return [...entries].sort(compareCountEntries).slice(0, limit);
   }
 
-  const selected: Array<{ values: CellValue[]; count: number }> = [];
+  const selected: CountEntry[] = [];
   for (const entry of entries) {
     let lo = 0;
     let hi = selected.length;
@@ -1430,20 +1513,42 @@ function selectTopKCountEntries(
   return selected;
 }
 
-function compareCountEntries(
-  left: { values: CellValue[]; count: number },
-  right: { values: CellValue[]; count: number }
-): number {
+function compareCountEntries(left: CountEntry, right: CountEntry): number {
   if (left.count !== right.count) {
     return right.count - left.count;
   }
   for (let i = 0; i < left.values.length; i += 1) {
-    const compared = compareCellValues(left.values[i], right.values[i]);
+    const compared = compareCountTieValue(left.values[i], right.values[i]);
     if (compared !== 0) {
       return compared;
     }
   }
   return 0;
+}
+
+function compareCountTieValue(left: CellValue, right: CellValue): number {
+  if (left === right) {
+    return 0;
+  }
+  if (isMissing(left)) {
+    return 1;
+  }
+  if (isMissing(right)) {
+    return -1;
+  }
+  if (typeof left === "number" && typeof right === "number") {
+    return left - right;
+  }
+  if (typeof left === "string" && typeof right === "string") {
+    return left < right ? -1 : 1;
+  }
+  if (typeof left === "boolean" && typeof right === "boolean") {
+    return (left ? 1 : 0) - (right ? 1 : 0);
+  }
+  if (left instanceof Date && right instanceof Date) {
+    return left.getTime() - right.getTime();
+  }
+  return compareCellValues(left, right);
 }
 
 function buildMergedRow(

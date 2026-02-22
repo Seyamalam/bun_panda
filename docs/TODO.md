@@ -1,6 +1,6 @@
 # TODO
 
-## Completed in v0.2.0-preview
+## Completed in v0.1.x
 
 1. Added `DataFrame.value_counts`.
 2. Added focused `pivot_table`.
@@ -18,6 +18,9 @@
 14. Added top-k partial sorting via `sort_values(..., ..., limit)`.
 15. Added top-k partial counting via `value_counts({ ..., limit })`.
 16. Optimized `groupby().agg()` named aggregations to reduce per-group allocations.
+17. Expanded benchmark suite to 73 cases across varied dataset shapes.
+18. Added utility-focused unit test suite (`test/unit-utils.test.ts`).
+19. Added adaptive two-column `value_counts` strategy for better low/high-cardinality performance.
 
 ## Next Milestone (v0.2.x)
 

@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.4] - 2026-02-22
+
+### Added
+
+- Expanded benchmark suite to `73` cases across `base`, `skewed`, `wide`, `high_card`, and `missing` datasets.
+- Added benchmark coverage for:
+  - additional top-k sort scenarios
+  - normalized and `dropna` variants of `value_counts`
+  - extra groupby aggregation mixes
+- Added `test/unit-utils.test.ts` with focused unit tests for utility helpers.
+- Added behavior tests for:
+  - `groupby().agg()` named-aggregation missing-value handling
+  - `value_counts` top-k + normalize semantics
+
+### Changed
+
+- Optimized `DataFrame.value_counts` internals:
+  - adaptive two-column counting strategy (flat map vs nested map by observed cardinality)
+  - lower-overhead tie comparison for top-k count ordering
+- Optimized `GroupBy` internals:
+  - lower-allocation multi-key grouping
+  - single-pass named aggregation state updates
+
 ## [0.1.3] - 2026-02-22
 
 ### Added

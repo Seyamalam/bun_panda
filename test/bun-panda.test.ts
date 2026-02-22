@@ -111,6 +111,26 @@ describe("groupby + merge + concat", () => {
     ]);
   });
 
+  test("groupby named aggregations handle count/sum with missing values", () => {
+    const df = new DataFrame([
+      { team: "A", points: 10, revenue: 100 },
+      { team: "A", points: null, revenue: 40 },
+      { team: "B", points: 20, revenue: null },
+      { team: "B", points: 30, revenue: 10 },
+    ]);
+
+    const grouped = df
+      .groupby("team")
+      .agg({ points: "count", revenue: "sum" })
+      .sort_values("team")
+      .to_records();
+
+    expect(grouped).toEqual([
+      { team: "A", points: 1, revenue: 140 },
+      { team: "B", points: 2, revenue: 10 },
+    ]);
+  });
+
   test("merge right join includes unmatched right rows", () => {
     const left = new DataFrame([
       { id: 1, name: "Ada" },
@@ -394,6 +414,39 @@ describe("indexing and dedup operations", () => {
     expect(() => df.value_counts({ subset: "code", limit: 1.2 })).toThrow(
       "limit must be a non-negative integer."
     );
+  });
+
+  test("value_counts limit on two columns matches full sort then head", () => {
+    const df = new DataFrame([
+      { team: "A", city: "Austin" },
+      { team: "A", city: "Austin" },
+      { team: "A", city: "Seattle" },
+      { team: "B", city: "Austin" },
+      { team: "B", city: "Austin" },
+      { team: "B", city: "Seattle" },
+      { team: "B", city: "Seattle" },
+      { team: "C", city: "Austin" },
+    ]);
+
+    const limited = df.value_counts({ subset: ["team", "city"], limit: 3 }).to_records();
+    const expected = df.value_counts({ subset: ["team", "city"] }).head(3).to_records();
+    expect(limited).toEqual(expected);
+  });
+
+  test("value_counts normalize + limit preserves top ordering semantics", () => {
+    const df = new DataFrame([
+      { code: "x" },
+      { code: "x" },
+      { code: "y" },
+      { code: "y" },
+      { code: "z" },
+      { code: "w" },
+    ]);
+
+    expect(df.value_counts({ subset: "code", normalize: true, limit: 2 }).to_records()).toEqual([
+      { code: "x", proportion: 2 / 6 },
+      { code: "y", proportion: 2 / 6 },
+    ]);
   });
 });
 

@@ -16,39 +16,42 @@ BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 
 ## Current Cases
 
-1. `groupby_mean`
-2. `construct_only`
-3. `groupby_mean_2keys`
-4. `filter_sort_top100`
-5. `filter_sort_multicol_top200`
-6. `value_counts_city`
-7. `value_counts_group_city`
-8. `value_counts_group_city_top10`
-9. `drop_duplicates_group_city`
-10. `skewed_groupby_mean`
-11. `wide_groupby_sum`
-12. `wide_filter_sort`
+The current harness runs `73` cases across five datasets:
+
+1. `base`
+2. `skewed`
+3. `wide`
+4. `high_card`
+5. `missing`
+
+Case families include:
+
+1. `groupby` mean/sum/count variants
+2. top-k `sort_values` (single and multi-column)
+3. filtered top-k sort workloads
+4. `value_counts` with subset/limit/normalize/dropna variants
+5. high-cardinality and missing-value stress cases
 
 ## Example Output
 
 ```text
 # bun_panda benchmark
-rows=25000, iterations=12
+rows=25000, iterations=8
 
 | case | dataset | bun_panda avg | arquero avg | delta | ratio (bun/aq) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| construct_only | base | 4.78ms | 1.55ms | +3.23ms | 3.08x |
-| groupby_mean | base | 6.27ms | 6.08ms | +0.19ms | 1.03x |
-| wide_filter_sort | wide | 12.52ms | 5.84ms | +6.68ms | 2.14x |
+| groupby_mean | base | 3.30ms | 5.02ms | -1.72ms | 0.66x |
+| sort_multicol_top800 | base | 3.50ms | 11.61ms | -8.11ms | 0.30x |
+| value_counts_high_card_user_city_top100 | high_card | 25.93ms | 46.51ms | -20.58ms | 0.56x |
 ```
 
 ## Methodology Notes
 
 1. For operation benchmarks, both libraries reuse a pre-built in-memory table/frame.
-2. `construct_only` isolates construction overhead.
-3. Cases measure operation result row counts (`shape[0]` / `numRows()`) to avoid adding object materialization costs.
-4. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
-5. Top-N counts use `value_counts({ ..., limit })` in `bun_panda`.
+2. Cases measure operation result row counts (`shape[0]` / `numRows()`) to avoid adding object materialization costs.
+3. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
+4. Top-N count cases use `value_counts({ ..., limit })` in `bun_panda`.
+5. Normalize/dropna variants are included to exercise counting semantics, not just raw speed.
 
 ## Notes
 
