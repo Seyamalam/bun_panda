@@ -12,14 +12,14 @@
 8. Added benchmark harness comparing `bun_panda` and Arquero.
 9. Added GitHub Actions CI for typecheck + tests, with manual benchmark job.
 10. Expanded `pivot_table` options (`margins`, `margins_name`, `dropna`, `sort`).
+11. Added multi-column `sort_values` with per-column ascending options.
 
 ## Next Milestone (v0.2.x)
 
-1. Add `sort_values` multi-column sorting.
-2. Add `drop_duplicates` `ignore_index` option.
-3. Improve `read_csv` performance for large files.
-4. Add more benchmark scenarios (joins, wider tables, skewed group distributions).
-5. Add a CI baseline/perf threshold report for benchmark drift.
+1. Add `drop_duplicates` `ignore_index` option.
+2. Improve `read_csv` performance for large files.
+3. Add more benchmark scenarios (joins, wider tables, skewed group distributions).
+4. Add a CI baseline/perf threshold report for benchmark drift.
 
 ## Mid-Term (v0.3.x+)
 

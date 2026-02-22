@@ -17,7 +17,7 @@
 - `iloc`, `loc`, `at`
 - `assign`, `drop`, `rename`
 - `filter`, `query`
-- `sort_values`
+- `sort_values` (single and multi-column with per-column ascending flags)
 - `sort_index`
 - `drop_duplicates`
 - `value_counts`

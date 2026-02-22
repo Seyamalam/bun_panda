@@ -8,6 +8,7 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ### Added
 
+- `sort_values` now supports multi-column sorting with per-column ascending flags.
 - `DataFrame` additions:
   - `value_counts`
   - `sort_index`

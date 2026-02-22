@@ -359,8 +359,13 @@ export class DataFrame {
     return this.filter(predicate);
   }
 
-  sort_values(by: string, ascending = true): DataFrame {
-    this.assertColumnExists(by);
+  sort_values(by: string | string[], ascending: boolean | boolean[] = true): DataFrame {
+    const columns = Array.isArray(by) ? by : [by];
+    for (const column of columns) {
+      this.assertColumnExists(column);
+    }
+
+    const ascendingPerColumn = normalizeSortAscending(columns.length, ascending);
 
     const pairs = this._rows.map((row, position) => ({
       row: cloneRow(row, this._columns),
@@ -368,8 +373,14 @@ export class DataFrame {
     }));
 
     pairs.sort((left, right) => {
-      const compared = compareCellValues(left.row[by], right.row[by]);
-      return ascending ? compared : -compared;
+      for (let i = 0; i < columns.length; i += 1) {
+        const column = columns[i]!;
+        const compared = compareCellValues(left.row[column], right.row[column]);
+        if (compared !== 0) {
+          return ascendingPerColumn[i] ? compared : -compared;
+        }
+      }
+      return 0;
     });
 
     return this.withRows(
@@ -1119,6 +1130,18 @@ function safeMarginsColumnName(baseName: string, existingColumns: string[]): str
     counter += 1;
   }
   return `${baseName}_${counter}`;
+}
+
+function normalizeSortAscending(columnCount: number, ascending: boolean | boolean[]): boolean[] {
+  if (!Array.isArray(ascending)) {
+    return Array.from({ length: columnCount }, () => ascending);
+  }
+  if (ascending.length !== columnCount) {
+    throw new Error(
+      `Length mismatch for ascending. Expected ${columnCount}, received ${ascending.length}.`
+    );
+  }
+  return [...ascending];
 }
 
 function buildMergedRow(

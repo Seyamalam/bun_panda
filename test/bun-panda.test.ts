@@ -172,6 +172,35 @@ describe("groupby + merge + concat", () => {
 });
 
 describe("indexing and dedup operations", () => {
+  test("sort_values supports multiple columns with per-column ascending", () => {
+    const df = new DataFrame([
+      { team: "A", points: 20, player: "z" },
+      { team: "A", points: 20, player: "a" },
+      { team: "A", points: 10, player: "m" },
+      { team: "B", points: 50, player: "n" },
+      { team: "B", points: 60, player: "b" },
+    ]);
+
+    const sorted = df.sort_values(["team", "points", "player"], [true, false, true]);
+    expect(sorted.to_records()).toEqual([
+      { team: "A", points: 20, player: "a" },
+      { team: "A", points: 20, player: "z" },
+      { team: "A", points: 10, player: "m" },
+      { team: "B", points: 60, player: "b" },
+      { team: "B", points: 50, player: "n" },
+    ]);
+  });
+
+  test("sort_values throws when ascending array length does not match columns", () => {
+    const df = new DataFrame([
+      { a: 1, b: 2 },
+      { a: 2, b: 1 },
+    ]);
+    expect(() => df.sort_values(["a", "b"], [true])).toThrow(
+      "Length mismatch for ascending. Expected 2, received 1."
+    );
+  });
+
   test("sort_index supports ascending and descending order", () => {
     const df = new DataFrame(
       [
