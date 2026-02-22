@@ -25,7 +25,7 @@
 - `set_index`, `reset_index`
 - `dtypes`, `astype`
 - `sum`, `mean`, `describe`
-- `pivot_table`
+- `pivot_table` (`margins`, `sort`, `dropna`, `fill_value`)
 - `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
 - `merge`
 
@@ -56,6 +56,11 @@
 - `concat`
 - `merge`
 - `pivot_table`
+
+### Tooling and Quality
+
+- Benchmark harness in `bench/compare.js` comparing against Arquero.
+- GitHub Actions CI in `.github/workflows/ci.yml` for typecheck/tests.
 
 ## Compatibility Goal
 

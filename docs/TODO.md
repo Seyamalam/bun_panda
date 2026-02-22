@@ -9,14 +9,17 @@
 5. Added `drop_duplicates`.
 6. Expanded merge options with `right` and `outer` joins.
 7. Improved `read_csv` parser edge handling (BOM stripping, case-insensitive `na_values`).
+8. Added benchmark harness comparing `bun_panda` and Arquero.
+9. Added GitHub Actions CI for typecheck + tests, with manual benchmark job.
+10. Expanded `pivot_table` options (`margins`, `margins_name`, `dropna`, `sort`).
 
 ## Next Milestone (v0.2.x)
 
-1. Add benchmarks against common JS dataframe libraries.
-2. Expand `pivot_table` options (`columns` with richer MultiIndex-like output modes, margins).
-3. Add `sort_values` multi-column sorting.
-4. Add `drop_duplicates` `ignore_index` option.
-5. Improve `read_csv` performance for large files.
+1. Add `sort_values` multi-column sorting.
+2. Add `drop_duplicates` `ignore_index` option.
+3. Improve `read_csv` performance for large files.
+4. Add more benchmark scenarios (joins, wider tables, skewed group distributions).
+5. Add a CI baseline/perf threshold report for benchmark drift.
 
 ## Mid-Term (v0.3.x+)
 
@@ -30,5 +33,4 @@
 
 1. Raise test coverage and add more edge-case suites.
 2. Add property-based tests for CSV parser behavior.
-3. Add CI workflow for lint/typecheck/test.
-4. Add performance regression checks.
+3. Add performance regression checks.

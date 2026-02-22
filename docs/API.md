@@ -1,4 +1,4 @@
-# API Reference (v0.1.0)
+# API Reference (v0.2.0-preview)
 
 ## Core Classes
 
@@ -76,4 +76,16 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.0`.
+2. Not all pandas features are implemented in `v0.2.0-preview`.
+
+## `pivot_table` Options (focused subset)
+
+- `index: string | string[]`
+- `values: string | string[]`
+- `columns?: string`
+- `aggfunc?: "sum" | "mean" | "min" | "max" | "count" | AggFn`
+- `fill_value?: CellValue`
+- `margins?: boolean`
+- `margins_name?: string` (default: `"All"`)
+- `dropna?: boolean` (default: `true`)
+- `sort?: boolean` (default: `true`)

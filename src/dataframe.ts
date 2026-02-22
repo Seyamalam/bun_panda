@@ -54,6 +54,10 @@ export interface PivotTableOptions {
   columns?: string;
   aggfunc?: AggName | AggFn;
   fill_value?: CellValue;
+  margins?: boolean;
+  margins_name?: string;
+  dropna?: boolean;
+  sort?: boolean;
 }
 
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
@@ -609,6 +613,10 @@ export class DataFrame {
     const columns = options.columns;
     const aggfunc = options.aggfunc ?? "mean";
     const fillValue = options.fill_value;
+    const margins = options.margins ?? false;
+    const marginsName = options.margins_name ?? "All";
+    const dropna = options.dropna ?? true;
+    const sort = options.sort ?? true;
 
     for (const indexColumn of index) {
       this.assertColumnExists(indexColumn);
@@ -620,21 +628,63 @@ export class DataFrame {
       this.assertColumnExists(columns);
     }
 
+    const sourceRows = this._rows.filter((row) => {
+      if (!dropna) {
+        return true;
+      }
+      const requiredColumns = [...index, ...values, ...(columns ? [columns] : [])];
+      return requiredColumns.every((column) => !isMissing(row[column]));
+    });
+
     if (!columns) {
-      const grouped = this.aggregateRows(index, values, aggfunc);
-      return new DataFrame(grouped, {
+      const grouped = this.aggregateRows(index, values, aggfunc, sourceRows);
+      const sortedGrouped = sort ? sortRowsByColumns(grouped, index) : grouped;
+
+      if (margins) {
+        const totalRow: Row = {};
+        for (let i = 0; i < index.length; i += 1) {
+          totalRow[index[i]!] = i === 0 ? marginsName : "";
+        }
+        for (const valueColumn of values) {
+          const valueSeries = sourceRows.map((row) => row[valueColumn]);
+          totalRow[valueColumn] = runAggregation(valueSeries, sourceRows, aggfunc);
+        }
+        sortedGrouped.push(totalRow);
+      }
+
+      if (fillValue !== undefined) {
+        for (const row of sortedGrouped) {
+          for (const valueColumn of values) {
+            if (row[valueColumn] === undefined) {
+              row[valueColumn] = fillValue;
+            }
+          }
+        }
+      }
+
+      return new DataFrame(sortedGrouped, {
         columns: [...index, ...values],
       });
     }
 
-    const grouped = this.aggregateRows([...index, columns], values, aggfunc);
-    const pivotColumnValues = uniqueColumnValues(this._rows.map((row) => row[columns]));
+    const grouped = this.aggregateRows([...index, columns], values, aggfunc, sourceRows);
+    const pivotColumnValues = uniqueColumnValues(sourceRows.map((row) => row[columns]), {
+      sort,
+      includeMissing: !dropna,
+    });
     const valueColumnsOut =
       values.length === 1
         ? pivotColumnValues.map((value) => String(value))
         : values.flatMap((valueColumn) =>
             pivotColumnValues.map((value) => `${valueColumn}_${String(value)}`)
           );
+    const marginsColumnsOut = margins
+      ? values.length === 1
+        ? [safeMarginsColumnName(marginsName, valueColumnsOut)]
+        : values.map((valueColumn) =>
+            safeMarginsColumnName(`${valueColumn}_${marginsName}`, valueColumnsOut)
+          )
+      : [];
 
     const tableRows = new Map<string, Row>();
     const orderedKeys: string[] = [];
@@ -663,16 +713,66 @@ export class DataFrame {
 
     const outputRows = orderedKeys.map((key) => {
       const row = tableRows.get(key)!;
+      if (margins) {
+        for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+          const valueColumn = values[valueIndex]!;
+          const matchingRows = sourceRows.filter((sourceRow) =>
+            index.every((indexColumn) => sourceRow[indexColumn] === row[indexColumn])
+          );
+          const sourceValues = matchingRows.map((sourceRow) => sourceRow[valueColumn]);
+          row[marginsColumnsOut[valueIndex]!] = runAggregation(sourceValues, matchingRows, aggfunc);
+        }
+      }
       for (const valueColumn of valueColumnsOut) {
         if (row[valueColumn] === undefined && fillValue !== undefined) {
           row[valueColumn] = fillValue;
         }
       }
+      for (const marginsColumn of marginsColumnsOut) {
+        if (row[marginsColumn] === undefined && fillValue !== undefined) {
+          row[marginsColumn] = fillValue;
+        }
+      }
       return row;
     });
 
-    return new DataFrame(outputRows, {
-      columns: [...index, ...valueColumnsOut],
+    if (margins) {
+      const totalRow: Row = {};
+      for (let i = 0; i < index.length; i += 1) {
+        totalRow[index[i]!] = i === 0 ? marginsName : "";
+      }
+
+      for (const pivotColumn of pivotColumnValues) {
+        const pivotKey = normalizeKeyCell(pivotColumn);
+        for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+          const valueColumn = values[valueIndex]!;
+          const outputColumn =
+            values.length === 1
+              ? String(pivotColumn)
+              : `${valueColumn}_${String(pivotColumn)}`;
+          const matchingRows = sourceRows.filter(
+            (sourceRow) => normalizeKeyCell(sourceRow[columns]) === pivotKey
+          );
+          const sourceValues = matchingRows.map((sourceRow) => sourceRow[valueColumn]);
+          totalRow[outputColumn] = runAggregation(sourceValues, matchingRows, aggfunc);
+        }
+      }
+
+      for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+        const valueColumn = values[valueIndex]!;
+        const sourceValues = sourceRows.map((row) => row[valueColumn]);
+        totalRow[marginsColumnsOut[valueIndex]!] = runAggregation(sourceValues, sourceRows, aggfunc);
+      }
+
+      outputRows.push(totalRow);
+    }
+
+    const sortedRows = sort
+      ? sortRowsByColumns(outputRows, index, margins ? marginsName : undefined)
+      : outputRows;
+
+    return new DataFrame(sortedRows, {
+      columns: [...index, ...valueColumnsOut, ...marginsColumnsOut],
     });
   }
 
@@ -782,10 +882,15 @@ export class DataFrame {
     return preview + suffix;
   }
 
-  private aggregateRows(groupColumns: string[], valueColumns: string[], aggfunc: AggName | AggFn): Row[] {
+  private aggregateRows(
+    groupColumns: string[],
+    valueColumns: string[],
+    aggfunc: AggName | AggFn,
+    sourceRows = this._rows
+  ): Row[] {
     const groups = new Map<string, { groupValues: CellValue[]; rows: Row[] }>();
 
-    for (const sourceRow of this._rows) {
+    for (const sourceRow of sourceRows) {
       const groupValues = groupColumns.map((column) => sourceRow[column]);
       const key = JSON.stringify(groupValues.map((value) => normalizeKeyCell(value)));
       const group = groups.get(key);
@@ -960,11 +1065,16 @@ function normalizeKeyCell(value: CellValue): string | number | boolean | null {
   return String(value);
 }
 
-function uniqueColumnValues(values: CellValue[]): CellValue[] {
+function uniqueColumnValues(
+  values: CellValue[],
+  options: { sort?: boolean; includeMissing?: boolean } = {}
+): CellValue[] {
+  const sort = options.sort ?? true;
+  const includeMissing = options.includeMissing ?? false;
   const out: CellValue[] = [];
   const seen = new Set<string>();
   for (const value of values) {
-    if (isMissing(value)) {
+    if (!includeMissing && isMissing(value)) {
       continue;
     }
     const key = JSON.stringify(normalizeKeyCell(value));
@@ -973,7 +1083,42 @@ function uniqueColumnValues(values: CellValue[]): CellValue[] {
       out.push(value);
     }
   }
+  if (sort) {
+    out.sort(compareCellValues);
+  }
   return out;
+}
+
+function sortRowsByColumns(rows: Row[], columns: string[], marginsName?: string): Row[] {
+  const sorted = [...rows];
+  sorted.sort((left, right) => {
+    if (marginsName && left[columns[0]!] === marginsName) {
+      return 1;
+    }
+    if (marginsName && right[columns[0]!] === marginsName) {
+      return -1;
+    }
+
+    for (const column of columns) {
+      const compared = compareCellValues(left[column], right[column]);
+      if (compared !== 0) {
+        return compared;
+      }
+    }
+    return 0;
+  });
+  return sorted;
+}
+
+function safeMarginsColumnName(baseName: string, existingColumns: string[]): string {
+  if (!existingColumns.includes(baseName)) {
+    return baseName;
+  }
+  let counter = 1;
+  while (existingColumns.includes(`${baseName}_${counter}`)) {
+    counter += 1;
+  }
+  return `${baseName}_${counter}`;
 }
 
 function buildMergedRow(

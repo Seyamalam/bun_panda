@@ -51,19 +51,23 @@ console.log(joined.head(5).to_records());
 bun test
 bun run typecheck
 bun run check
+bun run bench
 ```
 
-Current suite: `26` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
+Current suite: `29` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
 
 ## Documentation
 
 - `docs/API.md`: current API surface and examples.
 - `docs/FEATURES.md`: implemented features and parity notes.
 - `docs/TODO.md`: prioritized backlog.
+- `docs/BENCHMARKS.md`: benchmark harness and comparison notes.
 - `SCOPE.md`: v1 product scope.
 - `CONTRIBUTING.md`: contribution workflow.
 - `SECURITY.md`: reporting vulnerabilities.
 - `CHANGELOG.md`: release history.
+
+CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck + tests on push/PR, and supports manual benchmark runs.
 
 ## Status
 

@@ -14,12 +14,14 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
   - `drop_duplicates`
   - `dtypes`
   - `astype`
-  - focused `pivot_table`
+  - focused `pivot_table` with `margins`, `dropna`, and `sort`
 - Merge mode expansion:
   - `how: "right" | "outer"`
 - Top-level helper:
   - `pivot_table(dataframe, options)`
-- Expanded test suite from 6 to 22 tests.
+- Benchmark harness (`bench/compare.js`) comparing against Arquero.
+- GitHub Actions workflow for CI checks and manual benchmark runs.
+- Expanded test suite from 6 to 29 tests.
 
 ### Changed
 

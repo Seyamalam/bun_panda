@@ -34,10 +34,12 @@
   "scripts": {
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
-    "check": "bun run typecheck && bun run test"
+    "check": "bun run typecheck && bun run test",
+    "bench": "bun run bench/compare.js"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "arquero": "^8.0.3"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -312,6 +312,75 @@ describe("pivot table", () => {
     ]);
   });
 
+  test("pivot_table supports margins for row and grand totals", () => {
+    const df = new DataFrame([
+      { team: "A", quarter: "Q1", sales: 10 },
+      { team: "A", quarter: "Q2", sales: 20 },
+      { team: "B", quarter: "Q1", sales: 15 },
+    ]);
+
+    const table = df.pivot_table({
+      index: "team",
+      columns: "quarter",
+      values: "sales",
+      aggfunc: "sum",
+      fill_value: 0,
+      margins: true,
+    });
+
+    expect(table.to_records()).toEqual([
+      { team: "A", Q1: 10, Q2: 20, All: 30 },
+      { team: "B", Q1: 15, Q2: 0, All: 15 },
+      { team: "All", Q1: 25, Q2: 20, All: 45 },
+    ]);
+  });
+
+  test("pivot_table sort=false preserves first-seen order", () => {
+    const df = new DataFrame([
+      { team: "B", quarter: "Q2", sales: 5 },
+      { team: "A", quarter: "Q1", sales: 6 },
+      { team: "B", quarter: "Q1", sales: 7 },
+    ]);
+
+    const table = df.pivot_table({
+      index: "team",
+      columns: "quarter",
+      values: "sales",
+      aggfunc: "sum",
+      fill_value: 0,
+      sort: false,
+    });
+
+    expect(table.columns).toEqual(["team", "Q2", "Q1"]);
+    expect(table.to_records()).toEqual([
+      { team: "B", Q2: 5, Q1: 7 },
+      { team: "A", Q2: 0, Q1: 6 },
+    ]);
+  });
+
+  test("pivot_table dropna=false includes missing column values", () => {
+    const df = new DataFrame([
+      { team: "A", quarter: null, sales: 10 },
+      { team: "A", quarter: "Q1", sales: 5 },
+      { team: "B", quarter: null, sales: 2 },
+    ]);
+
+    const table = df.pivot_table({
+      index: "team",
+      columns: "quarter",
+      values: "sales",
+      aggfunc: "sum",
+      fill_value: 0,
+      dropna: false,
+    });
+
+    expect(table.columns).toEqual(["team", "Q1", "null"]);
+    expect(table.sort_values("team").to_records()).toEqual([
+      { team: "A", Q1: 5, null: 10 },
+      { team: "B", Q1: 0, null: 2 },
+    ]);
+  });
+
   test("pivot_table supports multiple value columns", () => {
     const df = new DataFrame([
       { team: "A", quarter: "Q1", sales: 10, units: 2 },
