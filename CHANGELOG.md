@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.6] - 2026-02-22
+
+### Changed
+
+- Benchmark stability improvements:
+  - `bench/compare.js` now reports median-of-rounds (configurable via `BUN_PANDA_BENCH_ROUNDS`, default `3`).
+  - JSON benchmark outputs now include round-level measurements.
+- Pandas comparison fairness improvements in `bench/pandas_compare.py`:
+  - uses median-of-rounds timing
+  - uses `groupby(..., sort=False)` for closer parity
+  - uses `nlargest` for single-column top-k sorting cases
+- Updated README benchmark snapshot with refreshed measurements from stabilized methodology.
+
 ## [0.1.5] - 2026-02-22
 
 ### Added

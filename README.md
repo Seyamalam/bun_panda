@@ -110,42 +110,42 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck/tests p
 
 Generated from benchmark scripts (rows=15000, iterations=6).
 bun_panda vs Arquero: faster or equal in 73/73 cases.
-bun_panda vs pandas: faster or equal in 5/10 tracked cases.
+bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 #### bun_panda vs Arquero (headline cases)
 
 | case | dataset | bun_panda avg | arquero avg | ratio (bun/aq) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 1.75ms | 3.76ms | 0.47x |
-| filter_sort_top100 | base | 0.32ms | 1.41ms | 0.23x |
-| sort_top1000 | base | 2.09ms | 4.21ms | 0.50x |
-| sort_multicol_top800 | base | 2.44ms | 6.74ms | 0.36x |
-| value_counts_city | base | 0.46ms | 3.26ms | 0.14x |
-| value_counts_group_city_top10 | base | 0.83ms | 5.14ms | 0.16x |
-| value_counts_missing_city_dropna_false | missing | 1.80ms | 4.70ms | 0.38x |
-| value_counts_high_card_city_top20 | high_card | 18.57ms | 36.27ms | 0.51x |
-| value_counts_high_card_user_top100 | high_card | 6.76ms | 19.46ms | 0.35x |
+| groupby_mean | base | 1.90ms | 3.29ms | 0.58x |
+| filter_sort_top100 | base | 0.30ms | 1.43ms | 0.21x |
+| sort_top1000 | base | 2.11ms | 4.23ms | 0.50x |
+| sort_multicol_top800 | base | 6.48ms | 18.92ms | 0.34x |
+| value_counts_city | base | 1.03ms | 7.05ms | 0.15x |
+| value_counts_group_city_top10 | base | 2.18ms | 11.86ms | 0.18x |
+| value_counts_missing_city_dropna_false | missing | 0.53ms | 4.05ms | 0.13x |
+| value_counts_high_card_city_top20 | high_card | 19.50ms | 30.42ms | 0.64x |
+| value_counts_high_card_user_top100 | high_card | 10.22ms | 17.77ms | 0.58x |
 
 #### bun_panda vs pandas
 
 | case | dataset | bun_panda avg | pandas avg | ratio (bun/pd) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 1.75ms | 0.84ms | 2.09x |
-| filter_sort_top100 | base | 0.32ms | 0.77ms | 0.41x |
-| sort_top1000 | base | 2.09ms | 1.74ms | 1.20x |
-| sort_multicol_top800 | base | 2.44ms | 2.52ms | 0.97x |
-| value_counts_city | base | 0.46ms | 0.57ms | 0.80x |
-| value_counts_group_city_top10 | base | 0.83ms | 1.10ms | 0.76x |
-| value_counts_missing_city_dropna_false | missing | 1.80ms | 0.92ms | 1.97x |
-| groupby_missing_city_mean | missing | 1.42ms | 1.07ms | 1.32x |
-| value_counts_high_card_city_top20 | high_card | 18.57ms | 7.61ms | 2.44x |
-| value_counts_high_card_user_top100 | high_card | 6.76ms | 12.40ms | 0.55x |
+| groupby_mean | base | 1.90ms | 0.76ms | 2.49x |
+| filter_sort_top100 | base | 0.30ms | 1.04ms | 0.29x |
+| sort_top1000 | base | 2.11ms | 1.14ms | 1.85x |
+| sort_multicol_top800 | base | 6.48ms | 2.14ms | 3.03x |
+| value_counts_city | base | 1.03ms | 0.56ms | 1.85x |
+| value_counts_group_city_top10 | base | 2.18ms | 0.99ms | 2.21x |
+| value_counts_missing_city_dropna_false | missing | 0.53ms | 0.90ms | 0.59x |
+| groupby_missing_city_mean | missing | 1.41ms | 1.00ms | 1.41x |
+| value_counts_high_card_city_top20 | high_card | 19.50ms | 7.55ms | 2.58x |
+| value_counts_high_card_user_top100 | high_card | 10.22ms | 12.38ms | 0.83x |
 
 <!-- BENCHMARKS:END -->
 
 ## Status
 
-This is an early library release (`0.1.5`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.6`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

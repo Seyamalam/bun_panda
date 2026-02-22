@@ -40,7 +40,9 @@ writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 
 const lines = [];
 lines.push("# bun_panda vs pandas benchmark");
-lines.push(`rows=${payload.rows}, iterations=${payload.iterations}, cases=${payload.cases}`);
+lines.push(
+  `rows=${payload.rows}, iterations=${payload.iterations}, rounds=${pandas.rounds ?? arquero.rounds ?? 1}, cases=${payload.cases}`
+);
 lines.push("");
 lines.push("| case | dataset | bun_panda avg | pandas avg | delta | ratio (bun/pd) |");
 lines.push("| --- | --- | ---: | ---: | ---: | ---: |");

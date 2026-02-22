@@ -35,6 +35,7 @@ jobs:
     env:
       BUN_PANDA_BENCH_ROWS: "15000"
       BUN_PANDA_BENCH_ITERS: "6"
+      BUN_PANDA_BENCH_ROUNDS: "3"
       BUN_PANDA_BENCH_JSON: bench/results/arquero.json
       BUN_PANDA_PANDAS_JSON: bench/results/pandas.json
       BUN_PANDA_PANDAS_COMPARE_JSON: bench/results/pandas-compare.json

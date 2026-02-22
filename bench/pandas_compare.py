@@ -64,10 +64,21 @@ def run_case(name: str, fn: Callable[[], int], iterations: int) -> float:
     return sum(times) / len(times)
 
 
+def median(values: List[float]) -> float:
+    if not values:
+        return 0.0
+    values = sorted(values)
+    mid = len(values) // 2
+    if len(values) % 2 == 1:
+        return values[mid]
+    return (values[mid - 1] + values[mid]) / 2.0
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="pandas benchmark companion for bun_panda")
     parser.add_argument("--rows", type=int, default=int(os.getenv("BUN_PANDA_BENCH_ROWS", "25000")))
     parser.add_argument("--iters", type=int, default=int(os.getenv("BUN_PANDA_BENCH_ITERS", "8")))
+    parser.add_argument("--rounds", type=int, default=int(os.getenv("BUN_PANDA_BENCH_ROUNDS", "3")))
     parser.add_argument("--json-out", default=os.getenv("BUN_PANDA_PANDAS_JSON", "bench/results/pandas.json"))
     args = parser.parse_args()
 
@@ -81,17 +92,19 @@ def main() -> None:
         {
             "name": "groupby_mean",
             "dataset": "base",
-            "fn": lambda df: len(df.groupby("group", dropna=True).agg({"value": "mean", "revenue": "sum"})),
+            "fn": lambda df: len(
+                df.groupby("group", dropna=True, sort=False).agg({"value": "mean", "revenue": "sum"})
+            ),
         },
         {
             "name": "filter_sort_top100",
             "dataset": "base",
-            "fn": lambda df: len(df[(df["active"] == True) & (df["value"] > 500)].sort_values("value", ascending=False).head(100)),
+            "fn": lambda df: len(df[(df["active"] == True) & (df["value"] > 500)].nlargest(100, columns="value")),
         },
         {
             "name": "sort_top1000",
             "dataset": "base",
-            "fn": lambda df: len(df.sort_values("value", ascending=False).head(1000)),
+            "fn": lambda df: len(df.nlargest(1000, columns="value")),
         },
         {
             "name": "sort_multicol_top800",
@@ -116,7 +129,7 @@ def main() -> None:
         {
             "name": "groupby_missing_city_mean",
             "dataset": "missing",
-            "fn": lambda df: len(df.groupby("city", dropna=False).agg({"value": "mean"})),
+            "fn": lambda df: len(df.groupby("city", dropna=False, sort=False).agg({"value": "mean"})),
         },
         {
             "name": "value_counts_high_card_city_top20",
@@ -133,13 +146,24 @@ def main() -> None:
     results = []
     for case in cases:
         df = datasets[case["dataset"]]
-        avg_ms = run_case(case["name"], lambda c=case, d=df: c["fn"](d), args.iters)
-        results.append({"case": case["name"], "dataset": case["dataset"], "pandasAvgMs": avg_ms})
+        round_averages = []
+        for _ in range(args.rounds):
+            round_averages.append(run_case(case["name"], lambda c=case, d=df: c["fn"](d), args.iters))
+        avg_ms = median(round_averages)
+        results.append(
+            {
+                "case": case["name"],
+                "dataset": case["dataset"],
+                "pandasAvgMs": avg_ms,
+                "pandasRoundAverages": round_averages,
+            }
+        )
 
     payload = {
         "generatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "rows": args.rows,
         "iterations": args.iters,
+        "rounds": args.rounds,
         "cases": len(results),
         "results": results,
     }
@@ -150,7 +174,7 @@ def main() -> None:
         f.write("\n")
 
     print("# bun_panda vs pandas benchmark")
-    print(f"rows={args.rows}, iterations={args.iters}, cases={len(results)}")
+    print(f"rows={args.rows}, iterations={args.iters}, rounds={args.rounds}, cases={len(results)}")
     print("")
     print("| case | dataset | pandas avg |")
     print("| --- | --- | ---: |")

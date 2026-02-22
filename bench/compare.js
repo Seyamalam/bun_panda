@@ -5,6 +5,7 @@ import { DataFrame } from "../index";
 
 const ROWS = Number(process.env.BUN_PANDA_BENCH_ROWS ?? 25000);
 const ITERS = Number(process.env.BUN_PANDA_BENCH_ITERS ?? 8);
+const ROUNDS = Number(process.env.BUN_PANDA_BENCH_ROUNDS ?? 3);
 const JSON_OUT = process.env.BUN_PANDA_BENCH_JSON ?? "bench/results/arquero.json";
 
 function lcg(seed) {
@@ -58,24 +59,31 @@ function buildDataset(rowCount, options = {}) {
   return rows;
 }
 
-function benchCase(name, fn, iterations = ITERS) {
+function benchCase(name, fn, iterations = ITERS, rounds = ROUNDS) {
   for (let i = 0; i < 3; i += 1) {
     fn();
   }
 
-  const times = [];
-  for (let i = 0; i < iterations; i += 1) {
-    const start = performance.now();
-    const out = fn();
-    if (out === undefined || out === null) {
-      throw new Error(`Benchmark case '${name}' returned no output.`);
+  const roundAverages = [];
+
+  for (let round = 0; round < rounds; round += 1) {
+    const times = [];
+    for (let i = 0; i < iterations; i += 1) {
+      const start = performance.now();
+      const out = fn();
+      if (out === undefined || out === null) {
+        throw new Error(`Benchmark case '${name}' returned no output.`);
+      }
+      times.push(performance.now() - start);
     }
-    times.push(performance.now() - start);
+    const total = times.reduce((sum, value) => sum + value, 0);
+    roundAverages.push(total / times.length);
   }
 
-  const total = times.reduce((sum, value) => sum + value, 0);
+  const avgMs = median(roundAverages);
   return {
-    avgMs: total / times.length,
+    avgMs,
+    roundAverages,
   };
 }
 
@@ -384,6 +392,7 @@ const cases = [...groupCases, ...sortCases, ...valueCountCases];
 const lines = [];
 lines.push(`# bun_panda benchmark`);
 lines.push(`rows=${ROWS}, iterations=${ITERS}`);
+lines.push(`rounds=${ROUNDS}`);
 lines.push(`cases=${cases.length}`);
 lines.push("");
 lines.push("| case | dataset | bun_panda avg | arquero avg | delta | ratio (bun/aq) |");
@@ -400,14 +409,16 @@ for (const bench of cases) {
   const delta = bunStats.avgMs - arqueroStats.avgMs;
   const deltaSign = delta > 0 ? "+" : "";
   const ratio = bunStats.avgMs / arqueroStats.avgMs;
-  results.push({
-    case: bench.name,
-    dataset: bench.dataset,
-    bunAvgMs: bunStats.avgMs,
-    arqueroAvgMs: arqueroStats.avgMs,
-    deltaMs: delta,
-    ratio,
-  });
+    results.push({
+      case: bench.name,
+      dataset: bench.dataset,
+      bunAvgMs: bunStats.avgMs,
+      arqueroAvgMs: arqueroStats.avgMs,
+      bunRoundAverages: bunStats.roundAverages,
+      arqueroRoundAverages: arqueroStats.roundAverages,
+      deltaMs: delta,
+      ratio,
+    });
 
   lines.push(
     `| ${bench.name} | ${bench.dataset} | ${formatMs(bunStats.avgMs)} | ${formatMs(
@@ -423,9 +434,22 @@ if (JSON_OUT) {
     generatedAt: new Date().toISOString(),
     rows: ROWS,
     iterations: ITERS,
+    rounds: ROUNDS,
     cases: results.length,
     results,
   };
   mkdirSync(dirname(JSON_OUT), { recursive: true });
   writeFileSync(JSON_OUT, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+function median(values) {
+  if (!values.length) {
+    return 0;
+  }
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 1) {
+    return sorted[mid];
+  }
+  return (sorted[mid - 1] + sorted[mid]) / 2;
 }

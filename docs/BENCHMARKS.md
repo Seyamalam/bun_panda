@@ -14,6 +14,12 @@ Optional tuning:
 BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 ```
 
+Stability tuning:
+
+```bash
+BUN_PANDA_BENCH_ROUNDS=5 bun run bench
+```
+
 Pandas companion benchmark:
 
 ```bash
@@ -62,6 +68,7 @@ rows=25000, iterations=8
 5. Normalize/dropna variants are included to exercise counting semantics, not just raw speed.
 6. CI regression gate enforces `ratio (bun/aq) <= 1.05` for benchmark cases.
 7. CI can refresh the README benchmark snapshot from generated JSON outputs.
+8. Reported benchmark time is median-of-rounds to reduce run-to-run noise.
 
 ## Notes
 
