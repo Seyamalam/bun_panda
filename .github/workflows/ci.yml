@@ -68,8 +68,16 @@ jobs:
       - name: Run bun_panda vs Arquero benchmark
         run: bun run bench:arquero | tee bench/results/arquero.txt
 
+      - name: Performance regression gate (Arquero)
+        run: bun run bench:gate
+
       - name: Run IO parser benchmark
         run: bun run bench:io | tee bench/results/io.txt
+
+      - name: Performance regression gate (IO)
+        env:
+          BUN_PANDA_IO_BENCH_INPUT: bench/results/io.json
+        run: bun run bench:gate:io
 
       - name: Run pandas benchmark
         run: python bench/pandas_compare.py | tee bench/results/pandas.txt
@@ -77,8 +85,10 @@ jobs:
       - name: Build bun_panda vs pandas comparison
         run: bun run bench:compare:pandas | tee bench/results/pandas-compare.txt
 
-      - name: Performance regression gate
-        run: bun run bench:gate
+      - name: Performance regression gate (pandas)
+        env:
+          BUN_PANDA_PANDAS_COMPARE_INPUT: bench/results/pandas-compare.json
+        run: bun run bench:gate:pandas
 
       - name: Update README benchmark snapshot
         run: bun run bench:refresh-readme

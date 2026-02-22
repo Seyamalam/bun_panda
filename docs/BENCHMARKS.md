@@ -75,8 +75,11 @@ rows=25000, iterations=8
 4. Top-N count cases use `value_counts({ ..., limit })` in `bun_panda`.
 5. Normalize/dropna variants are included to exercise counting semantics, not just raw speed.
 6. CI regression gate enforces `ratio (bun/aq) <= 1.05` for benchmark cases.
-7. CI can refresh the README benchmark snapshot from generated JSON outputs.
-8. Reported benchmark time is median-of-rounds to reduce run-to-run noise.
+7. CI also enforces:
+   - IO headline parser ceilings via `bench/assert-io-regression.js`
+   - tracked pandas ratio ceilings via `bench/assert-pandas-regression.js`
+8. CI can refresh the README benchmark snapshot from generated JSON outputs.
+9. Reported benchmark time is median-of-rounds to reduce run-to-run noise.
 
 ## Notes
 

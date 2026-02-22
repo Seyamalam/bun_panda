@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.14] - 2026-02-22
+
+### Added
+
+- New CI performance gates:
+  - `bench/assert-io-regression.js` for IO parser headline cases.
+  - `bench/assert-pandas-regression.js` for tracked `bun_panda` vs pandas ratio ceilings.
+- New scripts:
+  - `bench:gate:io`
+  - `bench:gate:pandas`
+
+### Changed
+
+- Benchmark workflow now runs three gates in CI:
+  - Arquero regression gate (`bench:gate`)
+  - IO regression gate (`bench:gate:io`)
+  - pandas ratio gate (`bench:gate:pandas`)
+
 ## [0.1.13] - 2026-02-22
 
 ### Changed
