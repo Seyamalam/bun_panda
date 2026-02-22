@@ -89,20 +89,30 @@ const tables = {
   skewed: aq.from(datasets.skewed),
   wide: aq.from(datasets.wide),
 };
+const frames = {
+  base: new DataFrame(datasets.base),
+  skewed: new DataFrame(datasets.skewed),
+  wide: new DataFrame(datasets.wide),
+};
 
 const op = aq.op;
 
 const cases = [
   {
+    name: "construct_only",
+    dataset: "base",
+    bunPanda: (records) => new DataFrame(records).shape[0],
+    arquero: (_table, records) => aq.from(records).numRows(),
+  },
+  {
     name: "groupby_mean",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records)
+    bunPanda: (_records, frame) =>
+      frame
         .groupby("group")
         .agg({ value: "mean", revenue: "sum" })
         .sort_values("group")
-        .to_records()
-        .length,
+        .shape[0],
     arquero: (table) =>
       table
         .groupby("group")
@@ -111,18 +121,17 @@ const cases = [
           revenue: (d) => op.sum(d.revenue),
         })
         .orderby("group")
-        .objects().length,
+        .numRows(),
   },
   {
     name: "groupby_mean_2keys",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records)
+    bunPanda: (_records, frame) =>
+      frame
         .groupby(["group", "city"])
         .agg({ value: "mean", revenue: "sum" })
         .sort_values(["group", "city"])
-        .to_records()
-        .length,
+        .shape[0],
     arquero: (table) =>
       table
         .groupby("group", "city")
@@ -131,69 +140,67 @@ const cases = [
           revenue: (d) => op.sum(d.revenue),
         })
         .orderby("group", "city")
-        .objects().length,
+        .numRows(),
   },
   {
     name: "filter_sort_top100",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records)
-        .query((row) => Boolean(row.active) && Number(row.value) > 500)
+    bunPanda: (_records, frame) =>
+      frame
+        .query((row) => Boolean(row.active) && (row.value ?? 0) > 500)
         .sort_values("value", false)
         .head(100)
-        .to_records().length,
+        .shape[0],
     arquero: (table) =>
       table
         .filter((d) => d.active && d.value > 500)
         .orderby(aq.desc("value"))
         .slice(0, 100)
-        .objects().length,
+        .numRows(),
   },
   {
     name: "filter_sort_multicol_top200",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records)
-        .query((row) => Number(row.value) > 300)
+    bunPanda: (_records, frame) =>
+      frame
+        .query((row) => (row.value ?? 0) > 300)
         .sort_values(["group", "value", "id"], [true, false, true])
         .head(200)
-        .to_records().length,
+        .shape[0],
     arquero: (table) =>
       table
         .filter((d) => d.value > 300)
         .orderby("group", aq.desc("value"), "id")
         .slice(0, 200)
-        .objects().length,
+        .numRows(),
   },
   {
     name: "value_counts_city",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records).value_counts({ subset: "city" }).to_records().length,
+    bunPanda: (_records, frame) => frame.value_counts({ subset: "city" }).shape[0],
     arquero: (table) =>
       table
         .groupby("city")
         .rollup({ count: () => op.count() })
         .orderby(aq.desc("count"))
-        .objects().length,
+        .numRows(),
   },
   {
     name: "value_counts_group_city",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records).value_counts({ subset: ["group", "city"] }).to_records().length,
+    bunPanda: (_records, frame) =>
+      frame.value_counts({ subset: ["group", "city"] }).shape[0],
     arquero: (table) =>
       table
         .groupby("group", "city")
         .rollup({ count: () => op.count() })
         .orderby(aq.desc("count"), "group", "city")
-        .objects().length,
+        .numRows(),
   },
   {
     name: "drop_duplicates_group_city",
     dataset: "base",
-    bunPanda: (records) =>
-      new DataFrame(records).drop_duplicates(["group", "city"], "first", true).shape[0],
+    bunPanda: (_records, frame) => frame.drop_duplicates(["group", "city"], "first", true).shape[0],
     arquero: (table) =>
       table
         .groupby("group", "city")
@@ -203,12 +210,12 @@ const cases = [
   {
     name: "skewed_groupby_mean",
     dataset: "skewed",
-    bunPanda: (records) =>
-      new DataFrame(records)
+    bunPanda: (_records, frame) =>
+      frame
         .groupby("group")
         .agg({ value: "mean", revenue: "sum" })
         .sort_values("group")
-        .to_records().length,
+        .shape[0],
     arquero: (table) =>
       table
         .groupby("group")
@@ -217,17 +224,17 @@ const cases = [
           revenue: (d) => op.sum(d.revenue),
         })
         .orderby("group")
-        .objects().length,
+        .numRows(),
   },
   {
     name: "wide_groupby_sum",
     dataset: "wide",
-    bunPanda: (records) =>
-      new DataFrame(records)
+    bunPanda: (_records, frame) =>
+      frame
         .groupby(["group", "segment"])
         .agg({ extra_1: "sum", extra_2: "mean", revenue: "sum" })
         .sort_values(["group", "segment"])
-        .to_records().length,
+        .shape[0],
     arquero: (table) =>
       table
         .groupby("group", "segment")
@@ -237,23 +244,23 @@ const cases = [
           revenue: (d) => op.sum(d.revenue),
         })
         .orderby("group", "segment")
-        .objects().length,
+        .numRows(),
   },
   {
     name: "wide_filter_sort",
     dataset: "wide",
-    bunPanda: (records) =>
-      new DataFrame(records)
-        .query((row) => Number(row.extra_4) > 10 && Number(row.revenue) > 900)
+    bunPanda: (_records, frame) =>
+      frame
+        .query((row) => (row.extra_4 ?? 0) > 10 && (row.revenue ?? 0) > 900)
         .sort_values(["extra_7", "revenue"], [false, false])
         .head(150)
-        .to_records().length,
+        .shape[0],
     arquero: (table) =>
       table
         .filter((d) => d.extra_4 > 10 && d.revenue > 900)
         .orderby(aq.desc("extra_7"), aq.desc("revenue"))
         .slice(0, 150)
-        .objects().length,
+        .numRows(),
   },
 ];
 
@@ -267,9 +274,10 @@ lines.push("| --- | --- | ---: | ---: | ---: | ---: |");
 for (const bench of cases) {
   const records = datasets[bench.dataset];
   const table = tables[bench.dataset];
+  const frame = frames[bench.dataset];
 
-  const bunStats = benchCase(`${bench.name}/bun_panda`, () => bench.bunPanda(records));
-  const arqueroStats = benchCase(`${bench.name}/arquero`, () => bench.arquero(table));
+  const bunStats = benchCase(`${bench.name}/bun_panda`, () => bench.bunPanda(records, frame));
+  const arqueroStats = benchCase(`${bench.name}/arquero`, () => bench.arquero(table, records));
   const delta = bunStats.avgMs - arqueroStats.avgMs;
   const deltaSign = delta > 0 ? "+" : "";
   const ratio = bunStats.avgMs / arqueroStats.avgMs;

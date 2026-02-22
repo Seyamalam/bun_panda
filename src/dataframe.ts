@@ -210,12 +210,22 @@ export class DataFrame {
 
   head(n = 5): DataFrame {
     const count = Math.max(0, n);
-    return this.withRows(this._rows.slice(0, count), this._index.slice(0, count), this._columns);
+    return this.withRows(
+      this._rows.slice(0, count),
+      this._index.slice(0, count),
+      this._columns,
+      true
+    );
   }
 
   tail(n = 5): DataFrame {
     const count = Math.max(0, n);
-    return this.withRows(this._rows.slice(-count), this._index.slice(-count), this._columns);
+    return this.withRows(
+      this._rows.slice(-count),
+      this._index.slice(-count),
+      this._columns,
+      true
+    );
   }
 
   get(column: string): Series<CellValue> {
@@ -348,7 +358,7 @@ export class DataFrame {
       }
       for (let i = 0; i < mask.length; i += 1) {
         if (mask[i]) {
-          rows.push(cloneRow(this._rows[i]!, this._columns));
+          rows.push(this._rows[i]!);
           index.push(this._index[i]!);
         }
       }
@@ -358,9 +368,8 @@ export class DataFrame {
     for (let i = 0; i < this._rows.length; i += 1) {
       const row = this._rows[i]!;
       const label = this._index[i]!;
-      const view = cloneRow(row, this._columns);
-      if (mask(view, label, i)) {
-        rows.push(view);
+      if (mask(row, label, i)) {
+        rows.push(row);
         index.push(label);
       }
     }
@@ -378,23 +387,25 @@ export class DataFrame {
     }
 
     const ascendingPerColumn = normalizeSortAscending(columns.length, ascending);
+    const comparers = columns.map((column, i) =>
+      buildColumnComparer(this._rows, column, ascendingPerColumn[i]!)
+    );
 
     const positions = range(this._rows.length);
     positions.sort((leftPosition, rightPosition) => {
       const left = this._rows[leftPosition]!;
       const right = this._rows[rightPosition]!;
-      for (let i = 0; i < columns.length; i += 1) {
-        const column = columns[i]!;
-        const compared = compareCellValues(left[column], right[column]);
+      for (let i = 0; i < comparers.length; i += 1) {
+        const compared = comparers[i]!(left, right);
         if (compared !== 0) {
-          return ascendingPerColumn[i] ? compared : -compared;
+          return compared;
         }
       }
       return 0;
     });
 
     return this.withRows(
-      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      positions.map((position) => this._rows[position]!),
       positions.map((position) => this._index[position]!),
       this._columns,
       true
@@ -409,7 +420,7 @@ export class DataFrame {
     });
 
     return this.withRows(
-      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      positions.map((position) => this._rows[position]!),
       positions.map((position) => this._index[position]!),
       this._columns,
       true
@@ -1196,6 +1207,110 @@ function safeMarginsColumnName(baseName: string, existingColumns: string[]): str
     counter += 1;
   }
   return `${baseName}_${counter}`;
+}
+
+function buildColumnComparer(
+  rows: Row[],
+  column: string,
+  ascending: boolean
+): (left: Row, right: Row) => number {
+  const direction = ascending ? 1 : -1;
+  const sample = firstNonMissingValue(rows, column);
+
+  if (typeof sample === "number") {
+    return (left, right) => {
+      const lv = left[column];
+      const rv = right[column];
+      if (isMissing(lv) && isMissing(rv)) {
+        return 0;
+      }
+      if (isMissing(lv)) {
+        return 1;
+      }
+      if (isMissing(rv)) {
+        return -1;
+      }
+      return ((lv as number) - (rv as number)) * direction;
+    };
+  }
+
+  if (typeof sample === "string") {
+    return (left, right) => {
+      const lv = left[column];
+      const rv = right[column];
+      if (isMissing(lv) && isMissing(rv)) {
+        return 0;
+      }
+      if (isMissing(lv)) {
+        return 1;
+      }
+      if (isMissing(rv)) {
+        return -1;
+      }
+      const leftStr = String(lv);
+      const rightStr = String(rv);
+      if (leftStr === rightStr) {
+        return 0;
+      }
+      return (leftStr < rightStr ? -1 : 1) * direction;
+    };
+  }
+
+  if (typeof sample === "boolean") {
+    return (left, right) => {
+      const lv = left[column];
+      const rv = right[column];
+      if (isMissing(lv) && isMissing(rv)) {
+        return 0;
+      }
+      if (isMissing(lv)) {
+        return 1;
+      }
+      if (isMissing(rv)) {
+        return -1;
+      }
+      const leftBool = lv ? 1 : 0;
+      const rightBool = rv ? 1 : 0;
+      return (leftBool - rightBool) * direction;
+    };
+  }
+
+  if (sample instanceof Date) {
+    return (left, right) => {
+      const lv = left[column];
+      const rv = right[column];
+      if (isMissing(lv) && isMissing(rv)) {
+        return 0;
+      }
+      if (isMissing(lv)) {
+        return 1;
+      }
+      if (isMissing(rv)) {
+        return -1;
+      }
+      const leftTime = lv instanceof Date ? lv.getTime() : Number.NaN;
+      const rightTime = rv instanceof Date ? rv.getTime() : Number.NaN;
+      if (leftTime === rightTime) {
+        return 0;
+      }
+      if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+        return compareCellValues(lv, rv) * direction;
+      }
+      return (leftTime - rightTime) * direction;
+    };
+  }
+
+  return (left, right) => compareCellValues(left[column], right[column]) * direction;
+}
+
+function firstNonMissingValue(rows: Row[], column: string): CellValue {
+  for (const row of rows) {
+    const value = row[column];
+    if (!isMissing(value)) {
+      return value;
+    }
+  }
+  return undefined;
 }
 
 function normalizeSortAscending(columnCount: number, ascending: boolean | boolean[]): boolean[] {

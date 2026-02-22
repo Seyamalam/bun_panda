@@ -104,7 +104,7 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck + tests
 
 ## Status
 
-This is an early library release (`0.1.0`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.1`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

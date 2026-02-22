@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
-## [Unreleased]
+## [0.1.1] - 2026-02-22
 
 ### Added
 
@@ -22,8 +22,13 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 - Top-level helper:
   - `pivot_table(dataframe, options)`
 - Benchmark harness (`bench/compare.js`) comparing against Arquero.
+- Expanded benchmark suite with multi-key groupby/sort, dedup, skewed, and wide-table cases.
+- Benchmark methodology update:
+  - operation benchmarks reuse pre-built frames/tables
+  - `construct_only` isolates creation overhead
+  - row-count measurement (`shape[0]` / `numRows()`) avoids materialization bias
 - GitHub Actions workflow for CI checks and manual benchmark runs.
-- Expanded test suite from 6 to 29 tests.
+- Expanded test suite from 6 to 32 tests.
 
 ### Changed
 
