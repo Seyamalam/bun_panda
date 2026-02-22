@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.4)
+## Implemented (v0.1.9)
 
 ### Data Structures
 
@@ -25,6 +25,7 @@
 - `set_index`, `reset_index`
 - `dtypes`, `astype`
 - `sum`, `mean`, `describe`
+- `nunique(dropna?)`
 - `pivot_table` (`margins`, `sort`, `dropna`, `fill_value`)
 - `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
 - `merge`
@@ -47,6 +48,8 @@
 - `sum`
 - `mean`
 - pandas-like options: `dropna`, `sort`
+- pandas-like options: `as_index` (single-key output supported)
+- `size`
 
 ### IO and Utilities
 

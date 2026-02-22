@@ -25,6 +25,7 @@
 21. Added pandas benchmark companion and cross-runtime comparison reporting.
 22. Refactored dataframe internals into smaller helper modules under `src/internal/dataframe/`.
 23. Further split large dataframe operation logic into dedicated modules (`valueCounts`, `pivotTable`, `merge`).
+24. Added pandas-style `groupby(as_index)`, `GroupBy.size()`, and `DataFrame.nunique()`.
 
 ## Next Milestone (v0.2.x)
 

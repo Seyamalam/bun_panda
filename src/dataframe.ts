@@ -12,6 +12,7 @@ import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
   keyForColumns,
+  normalizeKeyCell,
 } from "./internal/dataframe/keys";
 import {
   buildColumnComparer,
@@ -166,6 +167,22 @@ export class DataFrame {
     const out: Record<string, InferredDType> = {};
     for (const column of this._columns) {
       out[column] = inferColumnDType(this._rows.map((row) => row[column]));
+    }
+    return out;
+  }
+
+  nunique(dropna = true): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const column of this._columns) {
+      const seen = new Set<string>();
+      for (const row of this._rows) {
+        const value = row[column];
+        if (dropna && isMissing(value)) {
+          continue;
+        }
+        seen.add(JSON.stringify(normalizeKeyCell(value)));
+      }
+      out[column] = seen.size;
     }
     return out;
   }

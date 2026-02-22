@@ -13,6 +13,7 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`
 - `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`
 - pandas-like options where practical (`groupby(..., { dropna, sort })`, `value_counts({ sort, ascending })`)
+- more pandas-style helpers (`nunique`, `groupby(..., { as_index })`, `groupby().size()`)
 - Lightweight, in-memory transforms for Bun + TypeScript.
 - Fast local iteration and strong type checks.
 
@@ -146,7 +147,7 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.1.8`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.9`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

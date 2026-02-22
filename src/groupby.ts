@@ -1,6 +1,6 @@
 import { DataFrame } from "./dataframe";
 import { keyFragment } from "./internal/dataframe/keys";
-import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
+import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
 import { compareCellValues, isMissing, isNumber } from "./utils";
 
 interface GroupEntry {
@@ -29,6 +29,7 @@ interface NamedAggState {
 export interface GroupByOptions {
   dropna?: boolean;
   sort?: boolean;
+  as_index?: boolean;
 }
 
 export class GroupBy {
@@ -37,7 +38,11 @@ export class GroupBy {
   private readonly grouped: Map<string, GroupEntry>;
   private readonly sourceRows: Row[];
   private readonly sourceColumns: string[];
-  private readonly options: Required<GroupByOptions>;
+  private readonly options: {
+    dropna: boolean;
+    sort: boolean;
+    as_index: boolean;
+  };
 
   constructor(
     source: DataFrame,
@@ -62,6 +67,7 @@ export class GroupBy {
     this.options = {
       dropna: options.dropna ?? true,
       sort: options.sort ?? true,
+      as_index: options.as_index ?? false,
     };
     this.grouped = this.buildGroups();
   }
@@ -119,7 +125,7 @@ export class GroupBy {
       rows.push(row);
     }
 
-    return DataFrame.from_normalized(rows, [...this.by, ...aggColumns]);
+    return this.materializeGroupedRows(rows, aggColumns);
   }
 
   count(columns?: string[]): DataFrame {
@@ -147,6 +153,26 @@ export class GroupBy {
       spec[column] = "mean";
     }
     return this.agg(spec);
+  }
+
+  size(): DataFrame {
+    const rows: Row[] = [];
+    const groups = this.options.sort
+      ? [...this.grouped.values()].sort((left, right) =>
+          compareKeyValues(left.keyValues, right.keyValues)
+        )
+      : [...this.grouped.values()];
+
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) {
+        row[this.by[i]!] = group.keyValues[i];
+      }
+      row.size = group.rows.length;
+      rows.push(row);
+    }
+
+    return this.materializeGroupedRows(rows, ["size"]);
   }
 
   private buildGroups(): Map<string, GroupEntry> {
@@ -216,6 +242,27 @@ export class GroupBy {
       }
       return false;
     });
+  }
+
+  private materializeGroupedRows(rows: Row[], valueColumns: string[]): DataFrame {
+    if (!this.options.as_index) {
+      return DataFrame.from_normalized(rows, [...this.by, ...valueColumns]);
+    }
+    if (this.by.length !== 1) {
+      throw new Error("groupby(as_index=true) with multiple keys requires MultiIndex support.");
+    }
+
+    const keyColumn = this.by[0]!;
+    const outRows = rows.map((row) => {
+      const out: Row = {};
+      for (const column of valueColumns) {
+        out[column] = row[column];
+      }
+      return out;
+    });
+
+    const index = rows.map((row, position) => toIndexLabel(row[keyColumn], position));
+    return DataFrame.from_normalized(outRows, valueColumns, index);
   }
 }
 
@@ -299,4 +346,11 @@ function compareKeyValues(left: CellValue[], right: CellValue[]): number {
     }
   }
   return left.length - right.length;
+}
+
+function toIndexLabel(value: CellValue, fallback: number): IndexLabel {
+  if (typeof value === "number" || typeof value === "string") {
+    return value;
+  }
+  return String(value ?? fallback);
 }

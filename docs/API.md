@@ -1,4 +1,4 @@
-# API Reference (v0.1.8)
+# API Reference (v0.1.9)
 
 ## Core Classes
 
@@ -26,6 +26,7 @@ Key methods:
 - Indexing: `set_index`, `reset_index`
 - Typing: `dtypes`, `astype`
 - Summary: `sum`, `mean`, `describe`, `pivot_table`
+- Distinct counts: `nunique(dropna?)`
 - Grouping: `groupby`
 - Joins: `merge`
 - Serialization: `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
@@ -58,6 +59,7 @@ GroupBy options:
 
 - `dropna?: boolean` (default: `true`)
 - `sort?: boolean` (default: `true`)
+- `as_index?: boolean` (default: `false`)
 
 Methods:
 
@@ -65,6 +67,7 @@ Methods:
 - `count(columns?)`
 - `sum(columns?)`
 - `mean(columns?)`
+- `size()`
 
 ## Top-Level Functions
 
@@ -81,7 +84,7 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.8`.
+2. Not all pandas features are implemented in `v0.1.9`.
 
 ## `pivot_table` Options (focused subset)
 

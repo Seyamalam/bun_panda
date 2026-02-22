@@ -41,6 +41,25 @@ describe("DataFrame basics", () => {
     expect(df.get("b").sum()).toBe(30);
     expect(df.select(["a"]).columns).toEqual(["a"]);
   });
+
+  test("nunique supports dropna true/false", () => {
+    const df = new DataFrame([
+      { city: "Austin", score: 10 },
+      { city: "Austin", score: null },
+      { city: "Seattle", score: 10 },
+      { city: null, score: 20 },
+    ]);
+
+    expect(df.nunique()).toEqual({
+      city: 2,
+      score: 2,
+    });
+
+    expect(df.nunique(false)).toEqual({
+      city: 3,
+      score: 3,
+    });
+  });
 });
 
 describe("dtypes and astype", () => {
@@ -162,6 +181,43 @@ describe("groupby + merge + concat", () => {
       { city: "B", value: 2 },
       { city: "A", value: 3 },
     ]);
+  });
+
+  test("groupby supports as_index=true for single-key output", () => {
+    const df = new DataFrame([
+      { team: "A", value: 1 },
+      { team: "A", value: 3 },
+      { team: "B", value: 2 },
+    ]);
+
+    const grouped = df.groupby("team", { as_index: true }).agg({ value: "sum" });
+    expect(grouped.columns).toEqual(["value"]);
+    expect(grouped.index).toEqual(["A", "B"]);
+    expect(grouped.to_records()).toEqual([{ value: 4 }, { value: 2 }]);
+  });
+
+  test("groupby size returns per-group row counts", () => {
+    const df = new DataFrame([
+      { team: "A", city: "Austin" },
+      { team: "A", city: "Seattle" },
+      { team: "B", city: "Austin" },
+    ]);
+
+    expect(df.groupby("team").size().to_records()).toEqual([
+      { team: "A", size: 2 },
+      { team: "B", size: 1 },
+    ]);
+  });
+
+  test("groupby as_index=true with multi-key throws pending MultiIndex support", () => {
+    const df = new DataFrame([
+      { team: "A", city: "Austin", value: 1 },
+      { team: "A", city: "Seattle", value: 2 },
+    ]);
+
+    expect(() =>
+      df.groupby(["team", "city"], { as_index: true }).agg({ value: "sum" })
+    ).toThrow("groupby(as_index=true) with multiple keys requires MultiIndex support.");
   });
 
   test("merge right join includes unmatched right rows", () => {

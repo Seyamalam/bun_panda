@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.9] - 2026-02-22
+
+### Added
+
+- `DataFrame.nunique(dropna = true)` for per-column distinct counts.
+- `GroupBy.size()` for pandas-like group size output.
+- `groupby(..., { as_index })` option:
+  - supports `as_index: true` for single-key groupby outputs
+  - explicitly throws for multi-key `as_index: true` until MultiIndex support is added
+
+### Changed
+
+- Expanded tests for `nunique`, `GroupBy.size()`, and `groupby(as_index)` behavior.
+
 ## [0.1.8] - 2026-02-22
 
 ### Changed
