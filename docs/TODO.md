@@ -30,6 +30,7 @@
 26. Added pandas-style table/TSV IO wrappers (`read_table`, `read_tsv`, and sync/parse variants) plus JSON-lines compatibility (`lines=true`) for `read_json`, `parse_json`, and `to_json`.
 27. Added Parquet and Excel filetype support (`read_parquet`, `read_excel`, `read_excel_sync`, `to_parquet`, `to_excel`) and IO benchmark suite for parser performance.
 28. Added pandas-style compatibility helpers (`isin`, `clip`, `replace`, `sample`, `rank`) and `sort_values(..., na_position)` support.
+29. Optimized CSV ingestion for large unquoted inputs by adding a direct record-building parse path.
 
 ## Next Milestone (v0.2.x)
 

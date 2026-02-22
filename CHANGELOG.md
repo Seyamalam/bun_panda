@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.17] - 2026-02-22
+
+### Changed
+
+- Improved `read_csv` / `parse_csv` large-file behavior for common unquoted inputs:
+  - added direct unquoted parse path that materializes records without a full `rows[][]` intermediate
+  - reduced temporary allocation pressure in CSV ingestion hot path
+
 ## [0.1.16] - 2026-02-22
 
 ### Changed
