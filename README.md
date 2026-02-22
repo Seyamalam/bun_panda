@@ -10,8 +10,8 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - `DataFrame`
 - `Series`
 - `read_csv`, `read_table`, `read_tsv`, `read_json`, `read_parquet`, `read_excel`, `concat`, `merge`, `pivot_table`
-- `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`
-- `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`, `to_parquet`, `to_excel`
+- `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`, `sample`, `rank`
+- `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`, `isin`, `clip`, `replace`, `to_parquet`, `to_excel`
 - pandas-like options where practical (`groupby(..., { dropna, sort })`, `value_counts({ sort, ascending })`)
 - more pandas-style helpers (`nunique`, `groupby(..., { as_index })`, `groupby().size()`)
 - Lightweight, in-memory transforms for Bun + TypeScript.
@@ -97,7 +97,7 @@ python -m pip install -r bench/requirements.txt
 python bench/pandas_compare.py
 ```
 
-Current suite: `80` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV/TSV/JSON/Parquet/Excel IO edge cases.
+Current suite: `86` tests for dataframe ops, merge modes, pivoting, dtypes, compatibility helpers, and CSV/TSV/JSON/Parquet/Excel IO edge cases.
 Benchmark suite: `73` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
@@ -153,7 +153,7 @@ bun_panda vs pandas: faster or equal in 9/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.1.14`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.15`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

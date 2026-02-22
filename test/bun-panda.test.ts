@@ -710,6 +710,100 @@ describe("pivot table", () => {
   });
 });
 
+describe("pandas-style compatibility helpers", () => {
+  test("isin supports array and column-mapping inputs", () => {
+    const df = new DataFrame([
+      { city: "Austin", score: 10 },
+      { city: "Seattle", score: 20 },
+    ]);
+
+    expect(df.isin(["Austin", 20]).to_records()).toEqual([
+      { city: true, score: false },
+      { city: false, score: true },
+    ]);
+
+    expect(df.isin({ city: ["Seattle"], score: [10] }).to_records()).toEqual([
+      { city: false, score: true },
+      { city: true, score: false },
+    ]);
+  });
+
+  test("clip applies numeric bounds and optional column selection", () => {
+    const df = new DataFrame([
+      { a: -5, b: 10, c: "x" },
+      { a: 3, b: 99, c: "y" },
+    ]);
+
+    expect(df.clip(0, 20).to_records()).toEqual([
+      { a: 0, b: 10, c: "x" },
+      { a: 3, b: 20, c: "y" },
+    ]);
+
+    expect(df.clip(undefined, 50, "b").to_records()).toEqual([
+      { a: -5, b: 10, c: "x" },
+      { a: 3, b: 50, c: "y" },
+    ]);
+  });
+
+  test("replace supports scalar, array, and mapping inputs", () => {
+    const df = new DataFrame([
+      { city: "Austin", score: 10 },
+      { city: "Seattle", score: 20 },
+    ]);
+
+    expect(df.replace("Austin", "ATX").to_records()[0]?.city).toBe("ATX");
+    expect(df.replace([10, 20], 0).to_records()).toEqual([
+      { city: "Austin", score: 0 },
+      { city: "Seattle", score: 0 },
+    ]);
+    expect(df.replace({ Austin: "ATX", Seattle: "SEA" }).to_records()).toEqual([
+      { city: "ATX", score: 10 },
+      { city: "SEA", score: 20 },
+    ]);
+  });
+
+  test("sample supports deterministic random_state and frac", () => {
+    const df = new DataFrame([
+      { id: 1 },
+      { id: 2 },
+      { id: 3 },
+      { id: 4 },
+    ]);
+
+    const first = df.sample(2, { random_state: 123 }).to_records();
+    const second = df.sample(2, { random_state: 123 }).to_records();
+    expect(first).toEqual(second);
+
+    const fracSample = df.sample(1, { frac: 0.5, random_state: 123 });
+    expect(fracSample.shape[0]).toBe(2);
+  });
+
+  test("rank supports methods, na_option, and pct", () => {
+    const df = new DataFrame([
+      { a: 10, b: null },
+      { a: 20, b: 5 },
+      { a: 20, b: 5 },
+      { a: 40, b: 7 },
+    ]);
+
+    expect(df.rank().get("a").to_list()).toEqual([1, 2.5, 2.5, 4]);
+    expect(df.rank({ method: "dense" }).get("a").to_list()).toEqual([1, 2, 2, 3]);
+    expect(df.rank({ na_option: "top" }).get("b").to_list()[0]).toBe(1);
+    expect(df.rank({ pct: true }).get("a").to_list()[3]).toBe(1);
+  });
+
+  test("sort_values supports na_position", () => {
+    const df = new DataFrame([
+      { city: "Austin", value: 2 },
+      { city: null, value: 1 },
+      { city: "Seattle", value: 3 },
+    ]);
+
+    expect(df.sort_values("city", true, undefined, "first").to_records()[0]?.city).toBeNull();
+    expect(df.sort_values("city", true, undefined, "last").to_records()[2]?.city).toBeNull();
+  });
+});
+
 describe("CSV IO", () => {
   test("read_csv_sync infers primitive types and supports index_col", () => {
     const csvPath = join(tempDir, "sample.csv");

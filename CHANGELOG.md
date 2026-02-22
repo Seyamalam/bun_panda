@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.15] - 2026-02-22
+
+### Added
+
+- New pandas-style DataFrame helpers:
+  - `isin(values)`
+  - `clip(lower?, upper?, columns?)`
+  - `replace(toReplace, value?)`
+  - `sample(n?, options?)`
+  - `rank(options?)`
+- `sort_values(..., na_position)` compatibility option (`"first"` or `"last"`).
+- Compatibility test coverage for new APIs and null-order sorting behavior.
+
 ## [0.1.14] - 2026-02-22
 
 ### Added

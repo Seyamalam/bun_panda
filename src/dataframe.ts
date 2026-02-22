@@ -17,6 +17,15 @@ import {
   normalizeKeyCell,
 } from "./internal/dataframe/keys";
 import {
+  computeClipRows,
+  computeIsinRows,
+  computeRankRows,
+  computeReplaceRows,
+  samplePositions,
+  type RankOptions,
+  type ReplaceInput,
+} from "./internal/dataframe/compat";
+import {
   buildColumnComparer,
   fullSortPositions,
   normalizeSortAscending,
@@ -89,7 +98,15 @@ export interface ValueCountsOptions {
   limit?: number;
 }
 
+export interface SampleOptions {
+  frac?: number;
+  replace?: boolean;
+  random_state?: number;
+  ignore_index?: boolean;
+}
+
 export type DropDuplicatesKeep = "first" | "last" | false;
+export type { RankOptions, ReplaceInput };
 
 export interface PivotTableOptions {
   index: string | string[];
@@ -463,19 +480,95 @@ export class DataFrame {
     return this.filter(predicate);
   }
 
+  isin(values: CellValue[] | Record<string, CellValue[]>): DataFrame {
+    const rows = computeIsinRows(this._rows, this._columns, values);
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  clip(
+    lower?: number,
+    upper?: number,
+    columns?: string | string[]
+  ): DataFrame {
+    if (lower !== undefined && upper !== undefined && lower > upper) {
+      throw new Error("clip lower bound cannot exceed upper bound.");
+    }
+    const targetColumns = columns
+      ? (Array.isArray(columns) ? columns : [columns])
+      : this._columns;
+    for (const column of targetColumns) {
+      this.assertColumnExists(column);
+    }
+    const rows = computeClipRows(
+      this._rows,
+      this._columns,
+      lower,
+      upper,
+      new Set(targetColumns)
+    );
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  replace(toReplace: ReplaceInput, value?: CellValue): DataFrame {
+    const rows = computeReplaceRows(this._rows, this._columns, toReplace, value);
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  sample(n = 1, options: SampleOptions = {}): DataFrame {
+    const replace = options.replace ?? false;
+    const ignoreIndex = options.ignore_index ?? false;
+
+    let sampleSize = n;
+    if (options.frac !== undefined) {
+      if (options.frac < 0) {
+        throw new Error("sample frac must be non-negative.");
+      }
+      sampleSize = Math.round(options.frac * this._rows.length);
+    }
+
+    if (!replace && sampleSize > this._rows.length) {
+      throw new Error("sample size cannot exceed row count when replace=false.");
+    }
+    if (!Number.isInteger(sampleSize) || sampleSize < 0) {
+      throw new Error("sample size must be a non-negative integer.");
+    }
+
+    const positions = samplePositions(
+      this._rows.length,
+      sampleSize,
+      replace,
+      options.random_state
+    );
+    return this.withRows(
+      positions.map((position) => this._rows[position]!),
+      ignoreIndex ? undefined : positions.map((position) => this._index[position]!),
+      this._columns,
+      true
+    );
+  }
+
+  rank(options: RankOptions = {}): DataFrame {
+    const rows = computeRankRows(this._rows, this._columns, options);
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
   sort_values(
     by: string | string[],
     ascending: boolean | boolean[] = true,
-    limit?: number
+    limit?: number,
+    na_position: "first" | "last" = "last"
   ): DataFrame {
     const columns = Array.isArray(by) ? by : [by];
     for (const column of columns) {
       this.assertColumnExists(column);
     }
+    if (na_position !== "first" && na_position !== "last") {
+      throw new Error("na_position must be 'first' or 'last'.");
+    }
 
     const ascendingPerColumn = normalizeSortAscending(columns.length, ascending);
     const comparers = columns.map((column, i) =>
-      buildColumnComparer(this._rows, column, ascendingPerColumn[i]!)
+      buildColumnComparer(this._rows, column, ascendingPerColumn[i]!, na_position)
     );
     const normalizedLimit = normalizeSortLimit(limit, this._rows.length);
     if (normalizedLimit === 0) {

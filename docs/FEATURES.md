@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.12)
+## Implemented (v0.1.15)
 
 ### Data Structures
 
@@ -17,10 +17,11 @@
 - `iloc`, `loc`, `at`
 - `assign`, `drop`, `rename`
 - `filter`, `query`
-- `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`)
+- `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`)
 - `sort_index`
 - `drop_duplicates` (`ignore_index` supported)
 - `value_counts` (`limit`, `sort`, `ascending`)
+- `isin`, `clip`, `replace`, `sample`, `rank`
 - `dropna`, `fillna`
 - `set_index`, `reset_index`
 - `dtypes`, `astype`
@@ -93,5 +94,5 @@ API naming follows pandas as closely as practical for a JS/TS runtime.
 1. No MultiIndex yet.
 2. Dtype support is focused (`number`/`string`/`boolean`/`date`) rather than pandas-complete.
 3. No lazy execution.
-4. No Parquet/Excel/SQL connectors.
+4. No SQL/database connectors yet.
 5. No full statistical or time-series API yet.

@@ -1,4 +1,4 @@
-# API Reference (v0.1.12)
+# API Reference (v0.1.15)
 
 ## Core Classes
 
@@ -20,8 +20,9 @@ Key properties:
 Key methods:
 
 - Access/select: `get`, `select`, `iloc`, `loc`, `at`
-- Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single/multi-column, optional `limit` for top-k)
+- Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single/multi-column, optional `limit` for top-k, `na_position`)
 - Index-aware transforms: `sort_index`, `drop_duplicates` (`ignore_index` supported), `value_counts` (`limit`, `sort`, `ascending`)
+- Compatibility helpers: `isin`, `clip`, `replace`, `sample`, `rank`
 - Missing values: `dropna`, `fillna`
 - Indexing: `set_index`, `reset_index`
 - Typing: `dtypes`, `astype`
@@ -98,7 +99,7 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.12`.
+2. Not all pandas features are implemented in `v0.1.15`.
 
 ## `pivot_table` Options (focused subset)
 
