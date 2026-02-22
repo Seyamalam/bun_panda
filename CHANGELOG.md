@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.2] - 2026-02-22
+
+### Added
+
+- `sort_values(by, ascending, limit)` optional top-k `limit` parameter for partial-sort workflows.
+- New test coverage for `sort_values` top-k correctness and limit validation.
+
+### Changed
+
+- Top-N benchmark scenarios now use partial sort in `bun_panda` (`sort_values(..., ..., limit)`).
+- Additional hot-path optimizations in `sort_values`, `query/filter`, `head`, and `tail`.
+
 ## [0.1.1] - 2026-02-22
 
 ### Added

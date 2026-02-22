@@ -148,8 +148,7 @@ const cases = [
     bunPanda: (_records, frame) =>
       frame
         .query((row) => Boolean(row.active) && (row.value ?? 0) > 500)
-        .sort_values("value", false)
-        .head(100)
+        .sort_values("value", false, 100)
         .shape[0],
     arquero: (table) =>
       table
@@ -164,8 +163,7 @@ const cases = [
     bunPanda: (_records, frame) =>
       frame
         .query((row) => (row.value ?? 0) > 300)
-        .sort_values(["group", "value", "id"], [true, false, true])
-        .head(200)
+        .sort_values(["group", "value", "id"], [true, false, true], 200)
         .shape[0],
     arquero: (table) =>
       table
@@ -252,8 +250,7 @@ const cases = [
     bunPanda: (_records, frame) =>
       frame
         .query((row) => (row.extra_4 ?? 0) > 10 && (row.revenue ?? 0) > 900)
-        .sort_values(["extra_7", "revenue"], [false, false])
-        .head(150)
+        .sort_values(["extra_7", "revenue"], [false, false], 150)
         .shape[0],
     arquero: (table) =>
       table

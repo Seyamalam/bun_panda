@@ -15,6 +15,7 @@
 11. Added multi-column `sort_values` with per-column ascending options.
 12. Added `drop_duplicates(ignore_index=true)`.
 13. Optimized internals for better benchmark performance (`groupby`, `sort_values`, `filter`, `value_counts`, `withRows` path).
+14. Added top-k partial sorting via `sort_values(..., ..., limit)`.
 
 ## Next Milestone (v0.2.x)
 

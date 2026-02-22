@@ -46,6 +46,7 @@ rows=25000, iterations=12
 1. For operation benchmarks, both libraries reuse a pre-built in-memory table/frame.
 2. `construct_only` isolates construction overhead.
 3. Cases measure operation result row counts (`shape[0]` / `numRows()`) to avoid adding object materialization costs.
+4. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
 
 ## Notes
 

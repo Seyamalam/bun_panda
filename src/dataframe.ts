@@ -380,7 +380,11 @@ export class DataFrame {
     return this.filter(predicate);
   }
 
-  sort_values(by: string | string[], ascending: boolean | boolean[] = true): DataFrame {
+  sort_values(
+    by: string | string[],
+    ascending: boolean | boolean[] = true,
+    limit?: number
+  ): DataFrame {
     const columns = Array.isArray(by) ? by : [by];
     for (const column of columns) {
       this.assertColumnExists(column);
@@ -390,19 +394,15 @@ export class DataFrame {
     const comparers = columns.map((column, i) =>
       buildColumnComparer(this._rows, column, ascendingPerColumn[i]!)
     );
+    const normalizedLimit = normalizeSortLimit(limit, this._rows.length);
+    if (normalizedLimit === 0) {
+      return this.withRows([], [], this._columns, true);
+    }
 
-    const positions = range(this._rows.length);
-    positions.sort((leftPosition, rightPosition) => {
-      const left = this._rows[leftPosition]!;
-      const right = this._rows[rightPosition]!;
-      for (let i = 0; i < comparers.length; i += 1) {
-        const compared = comparers[i]!(left, right);
-        if (compared !== 0) {
-          return compared;
-        }
-      }
-      return 0;
-    });
+    const positions =
+      normalizedLimit !== undefined && normalizedLimit < this._rows.length
+        ? selectTopKPositions(this._rows, comparers, normalizedLimit)
+        : fullSortPositions(this._rows, comparers);
 
     return this.withRows(
       positions.map((position) => this._rows[position]!),
@@ -1323,6 +1323,77 @@ function normalizeSortAscending(columnCount: number, ascending: boolean | boolea
     );
   }
   return [...ascending];
+}
+
+function normalizeSortLimit(limit: number | undefined, rowCount: number): number | undefined {
+  if (limit === undefined) {
+    return undefined;
+  }
+  if (!Number.isInteger(limit) || limit < 0) {
+    throw new Error("limit must be a non-negative integer.");
+  }
+  return Math.min(limit, rowCount);
+}
+
+function fullSortPositions(
+  rows: Row[],
+  comparers: Array<(left: Row, right: Row) => number>
+): number[] {
+  const positions = range(rows.length);
+  positions.sort((leftPosition, rightPosition) =>
+    compareRowsByComparers(rows[leftPosition]!, rows[rightPosition]!, comparers)
+  );
+  return positions;
+}
+
+function selectTopKPositions(
+  rows: Row[],
+  comparers: Array<(left: Row, right: Row) => number>,
+  limit: number
+): number[] {
+  const selected: number[] = [];
+
+  for (let position = 0; position < rows.length; position += 1) {
+    const candidateRow = rows[position]!;
+    let lo = 0;
+    let hi = selected.length;
+
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      const compared = compareRowsByComparers(candidateRow, rows[selected[mid]!]!, comparers);
+      if (compared < 0) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+
+    if (selected.length < limit) {
+      selected.splice(lo, 0, position);
+      continue;
+    }
+
+    if (lo < limit) {
+      selected.splice(lo, 0, position);
+      selected.pop();
+    }
+  }
+
+  return selected;
+}
+
+function compareRowsByComparers(
+  left: Row,
+  right: Row,
+  comparers: Array<(left: Row, right: Row) => number>
+): number {
+  for (let i = 0; i < comparers.length; i += 1) {
+    const compared = comparers[i]!(left, right);
+    if (compared !== 0) {
+      return compared;
+    }
+  }
+  return 0;
 }
 
 function buildMergedRow(

@@ -20,7 +20,7 @@ Key properties:
 Key methods:
 
 - Access/select: `get`, `select`, `iloc`, `loc`, `at`
-- Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single or multi-column)
+- Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single/multi-column, optional `limit` for top-k)
 - Index-aware transforms: `sort_index`, `drop_duplicates` (`ignore_index` supported), `value_counts`
 - Missing values: `dropna`, `fillna`
 - Indexing: `set_index`, `reset_index`

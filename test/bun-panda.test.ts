@@ -201,6 +201,57 @@ describe("indexing and dedup operations", () => {
     );
   });
 
+  test("sort_values limit matches full sort + head for single column", () => {
+    const df = new DataFrame([
+      { id: 1, score: 30 },
+      { id: 2, score: 10 },
+      { id: 3, score: 50 },
+      { id: 4, score: 20 },
+      { id: 5, score: 40 },
+    ]);
+
+    const limited = df.sort_values("score", false, 3).to_records();
+    const fullThenHead = df.sort_values("score", false).head(3).to_records();
+    expect(limited).toEqual(fullThenHead);
+  });
+
+  test("sort_values limit matches full sort + head for multi-column sort", () => {
+    const df = new DataFrame([
+      { team: "A", points: 20, id: 2 },
+      { team: "A", points: 20, id: 1 },
+      { team: "B", points: 10, id: 3 },
+      { team: "B", points: 30, id: 4 },
+      { team: "C", points: 30, id: 5 },
+    ]);
+
+    const limited = df
+      .sort_values(["points", "team", "id"], [false, true, true], 4)
+      .to_records();
+    const fullThenHead = df
+      .sort_values(["points", "team", "id"], [false, true, true])
+      .head(4)
+      .to_records();
+    expect(limited).toEqual(fullThenHead);
+  });
+
+  test("sort_values limit validates non-negative integer", () => {
+    const df = new DataFrame([{ a: 1 }]);
+    expect(() => df.sort_values("a", true, -1)).toThrow(
+      "limit must be a non-negative integer."
+    );
+    expect(() => df.sort_values("a", true, 1.5)).toThrow(
+      "limit must be a non-negative integer."
+    );
+  });
+
+  test("sort_values limit 0 returns empty frame", () => {
+    const df = new DataFrame([
+      { a: 1 },
+      { a: 2 },
+    ]);
+    expect(df.sort_values("a", true, 0).shape).toEqual([0, 1]);
+  });
+
   test("sort_index supports ascending and descending order", () => {
     const df = new DataFrame(
       [
