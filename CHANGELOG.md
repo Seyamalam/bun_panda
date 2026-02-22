@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.7] - 2026-02-22
+
+### Added
+
+- pandas-compatibility options for `value_counts`:
+  - `sort?: boolean`
+  - `ascending?: boolean`
+- pandas-compatibility options for `groupby`:
+  - `dropna?: boolean`
+  - `sort?: boolean`
+- New tests for `groupby(..., options)` and `value_counts({ sort, ascending })`.
+
+### Changed
+
+- Refactored `DataFrame` internals into smaller helper modules:
+  - `src/internal/dataframe/core.ts`
+  - `src/internal/dataframe/keys.ts`
+  - `src/internal/dataframe/ordering.ts`
+  - `src/internal/dataframe/counts.ts`
+- `groupby` now reuses shared key helpers from dataframe internals.
+- Improved codebase structure to reduce monolithic helper blocks in `src/dataframe.ts`.
+
 ## [0.1.6] - 2026-02-22
 
 ### Changed

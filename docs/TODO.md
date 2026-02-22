@@ -23,6 +23,7 @@
 19. Added adaptive two-column `value_counts` strategy for better low/high-cardinality performance.
 20. Added CI performance regression gate and automated benchmark snapshot pipeline.
 21. Added pandas benchmark companion and cross-runtime comparison reporting.
+22. Refactored dataframe internals into smaller helper modules under `src/internal/dataframe/`.
 
 ## Next Milestone (v0.2.x)
 

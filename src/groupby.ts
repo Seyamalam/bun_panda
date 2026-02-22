@@ -1,4 +1,5 @@
 import { DataFrame } from "./dataframe";
+import { keyFragment } from "./internal/dataframe/keys";
 import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
 import { compareCellValues, isMissing, isNumber } from "./utils";
 
@@ -25,14 +26,26 @@ interface NamedAggState {
   best: CellValue;
 }
 
+export interface GroupByOptions {
+  dropna?: boolean;
+  sort?: boolean;
+}
+
 export class GroupBy {
   private readonly source: DataFrame;
   private readonly by: string[];
   private readonly grouped: Map<string, GroupEntry>;
   private readonly sourceRows: Row[];
   private readonly sourceColumns: string[];
+  private readonly options: Required<GroupByOptions>;
 
-  constructor(source: DataFrame, by: string[], sourceRows?: Row[], sourceColumns?: string[]) {
+  constructor(
+    source: DataFrame,
+    by: string[],
+    sourceRows?: Row[],
+    sourceColumns?: string[],
+    options: GroupByOptions = {}
+  ) {
     if (by.length === 0) {
       throw new Error("groupby requires at least one key column.");
     }
@@ -46,6 +59,10 @@ export class GroupBy {
     this.by = by;
     this.sourceRows = sourceRows ?? source.to_records();
     this.sourceColumns = sourceColumns ?? source.columns;
+    this.options = {
+      dropna: options.dropna ?? true,
+      sort: options.sort ?? true,
+    };
     this.grouped = this.buildGroups();
   }
 
@@ -63,7 +80,13 @@ export class GroupBy {
       }
     }
 
-    for (const group of this.grouped.values()) {
+    const groups = this.options.sort
+      ? [...this.grouped.values()].sort((left, right) =>
+          compareKeyValues(left.keyValues, right.keyValues)
+        )
+      : [...this.grouped.values()];
+
+    for (const group of groups) {
       const row: Row = {};
       for (let i = 0; i < this.by.length; i += 1) {
         row[this.by[i]!] = group.keyValues[i];
@@ -133,6 +156,9 @@ export class GroupBy {
       const keyColumn = this.by[0]!;
       for (const row of this.sourceRows) {
         const keyValue = row[keyColumn];
+        if (this.options.dropna && isMissing(keyValue)) {
+          continue;
+        }
         const key = keyForSingleValue(keyValue);
         const existing = groups.get(key);
         if (existing) {
@@ -148,6 +174,18 @@ export class GroupBy {
     }
 
     for (const row of this.sourceRows) {
+      if (this.options.dropna) {
+        let hasMissing = false;
+        for (const keyColumn of this.by) {
+          if (isMissing(row[keyColumn])) {
+            hasMissing = true;
+            break;
+          }
+        }
+        if (hasMissing) {
+          continue;
+        }
+      }
       const key = keyForRow(row, this.by);
       const existing = groups.get(key);
       if (existing) {
@@ -240,46 +278,25 @@ function finalizeNamedAggState(state: NamedAggState, name: AggName): CellValue {
   return null;
 }
 
-function normalizeKeyCell(value: CellValue): string | number | boolean | null {
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-  if (value === undefined) {
-    return null;
-  }
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
-    return value;
-  }
-  return String(value);
-}
-
 function keyForRow(row: Row, columns: string[]): string {
   let key = "";
   for (const column of columns) {
-    const normalized = normalizeKeyCell(row[column]);
-    if (normalized === null) {
-      key += "n:;";
-    } else if (typeof normalized === "number") {
-      key += `d:${normalized};`;
-    } else if (typeof normalized === "boolean") {
-      key += `b:${normalized ? 1 : 0};`;
-    } else {
-      key += `s${normalized.length}:${normalized};`;
-    }
+    key += keyFragment(row[column]);
   }
   return key;
 }
 
 function keyForSingleValue(value: CellValue): string {
-  const normalized = normalizeKeyCell(value);
-  if (normalized === null) {
-    return "n:;";
+  return keyFragment(value);
+}
+
+function compareKeyValues(left: CellValue[], right: CellValue[]): number {
+  const size = Math.min(left.length, right.length);
+  for (let i = 0; i < size; i += 1) {
+    const compared = compareCellValues(left[i], right[i]);
+    if (compared !== 0) {
+      return compared;
+    }
   }
-  if (typeof normalized === "number") {
-    return `d:${normalized};`;
-  }
-  if (typeof normalized === "boolean") {
-    return `b:${normalized ? 1 : 0};`;
-  }
-  return `s${normalized.length}:${normalized};`;
+  return left.length - right.length;
 }

@@ -1,5 +1,34 @@
 import { writeFileSync } from "node:fs";
 import { GroupBy } from "./groupby";
+import type { GroupByOptions } from "./groupby";
+import {
+  buildMergedRow,
+  escapeCsvValue,
+  normalizeColumnar,
+  normalizeRecords,
+  resolvePosition,
+  runAggregation,
+  safeMarginsColumnName,
+  sortRowsByColumns,
+  uniqueColumnValues,
+} from "./internal/dataframe/core";
+import { orderCountEntries } from "./internal/dataframe/counts";
+import type { CountEntry } from "./internal/dataframe/counts";
+import {
+  keyForColumns,
+  keyForPair,
+  keyForValues,
+  normalizeCountKey,
+  normalizeKeyCell,
+  type NormalizedKey,
+} from "./internal/dataframe/keys";
+import {
+  buildColumnComparer,
+  fullSortPositions,
+  normalizeSortAscending,
+  normalizeSortLimit,
+  selectTopKPositions,
+} from "./internal/dataframe/ordering";
 import { Series } from "./series";
 import type {
   AggFn,
@@ -44,6 +73,8 @@ export interface ValueCountsOptions {
   subset?: string | string[];
   normalize?: boolean;
   dropna?: boolean;
+  sort?: boolean;
+  ascending?: boolean;
   limit?: number;
 }
 
@@ -62,8 +93,6 @@ export interface PivotTableOptions {
 }
 
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
-type CountEntry = { values: CellValue[]; count: number };
-type NormalizedCountKey = string | number | boolean | null;
 
 export class DataFrame {
   private readonly _rows: Row[];
@@ -498,6 +527,8 @@ export class DataFrame {
       : this._columns;
     const normalize = options.normalize ?? false;
     const dropna = options.dropna ?? true;
+    const sort = options.sort ?? true;
+    const ascending = options.ascending ?? false;
     const limit = normalizeSortLimit(options.limit, Number.MAX_SAFE_INTEGER);
 
     for (const column of subset) {
@@ -529,7 +560,7 @@ export class DataFrame {
       const firstColumn = subset[0]!;
       const secondColumn = subset[1]!;
       const sampleCount = Math.min(this._rows.length, 512);
-      const sampleUniqueFirstKeys = new Set<NormalizedCountKey>();
+      const sampleUniqueFirstKeys = new Set<NormalizedKey>();
       let sampledRows = 0;
       for (let i = 0; i < sampleCount; i += 1) {
         const sampleRow = this._rows[i]!;
@@ -565,7 +596,7 @@ export class DataFrame {
         }
         entries.push(...counts.values());
       } else {
-        const counts = new Map<NormalizedCountKey, Map<NormalizedCountKey, CountEntry>>();
+        const counts = new Map<NormalizedKey, Map<NormalizedKey, CountEntry>>();
         for (const row of this._rows) {
           const firstValue = row[firstColumn];
           const secondValue = row[secondColumn];
@@ -622,8 +653,8 @@ export class DataFrame {
     }
 
     const valueColumnName = normalize ? "proportion" : "count";
-    const sortedCounts = selectTopKCountEntries(entries, limit);
-    const countRows = sortedCounts
+    const orderedCounts = orderCountEntries(entries, { sort, ascending, limit });
+    const countRows = orderedCounts
       .map((entry) => {
         const row: Row = {};
         for (let i = 0; i < subset.length; i += 1) {
@@ -734,8 +765,8 @@ export class DataFrame {
     });
   }
 
-  groupby(by: string | string[]): GroupBy {
-    return new GroupBy(this, Array.isArray(by) ? by : [by], this._rows, this._columns);
+  groupby(by: string | string[], options: GroupByOptions = {}): GroupBy {
+    return new GroupBy(this, Array.isArray(by) ? by : [by], this._rows, this._columns, options);
   }
 
   pivot_table(options: PivotTableOptions): DataFrame {
@@ -1086,494 +1117,4 @@ export class DataFrame {
   private withIndex(index: IndexLabel[]): DataFrame {
     return this.withRows(this.to_records(), index, this._columns, true);
   }
-}
-
-function runAggregation(values: CellValue[], rows: Row[], aggfunc: AggName | AggFn): CellValue {
-  if (typeof aggfunc === "function") {
-    return aggfunc(values, rows);
-  }
-
-  if (aggfunc === "count") {
-    return values.filter((value) => !isMissing(value)).length;
-  }
-
-  if (aggfunc === "min") {
-    const nonMissing = values.filter((value) => !isMissing(value));
-    if (nonMissing.length === 0) {
-      return null;
-    }
-    return [...nonMissing].sort(compareCellValues)[0] ?? null;
-  }
-
-  if (aggfunc === "max") {
-    const nonMissing = values.filter((value) => !isMissing(value));
-    if (nonMissing.length === 0) {
-      return null;
-    }
-    return [...nonMissing].sort(compareCellValues).at(-1) ?? null;
-  }
-
-  const numbers = numericValues(values);
-  if (aggfunc === "sum") {
-    return numbers.length > 0 ? numbers.reduce((acc, value) => acc + value, 0) : null;
-  }
-  if (aggfunc === "mean") {
-    return numbers.length > 0 ? numbers.reduce((acc, value) => acc + value, 0) / numbers.length : null;
-  }
-
-  return null;
-}
-
-function normalizeRecords(records: Row[], forcedColumns?: string[]): { rows: Row[]; columns: string[] } {
-  const columns = forcedColumns ? [...forcedColumns] : [];
-  const seen = new Set(columns);
-
-  for (const record of records) {
-    for (const column of Object.keys(record)) {
-      if (!seen.has(column)) {
-        seen.add(column);
-        columns.push(column);
-      }
-    }
-  }
-
-  const rows = records.map((record) => cloneRow(record, columns));
-  return { rows, columns };
-}
-
-function normalizeColumnar(data: Record<string, CellValue[]>): { rows: Row[]; columns: string[] } {
-  const columns = Object.keys(data);
-  const rowCount = columns.reduce((max, column) => Math.max(max, data[column]?.length ?? 0), 0);
-
-  const rows: Row[] = [];
-  for (let i = 0; i < rowCount; i += 1) {
-    const row: Row = {};
-    for (const column of columns) {
-      row[column] = data[column]?.[i];
-    }
-    rows.push(row);
-  }
-
-  return { rows, columns };
-}
-
-function resolvePosition(position: number, length: number): number | undefined {
-  if (!Number.isInteger(position)) {
-    return undefined;
-  }
-  if (position >= 0 && position < length) {
-    return position;
-  }
-  const resolved = length + position;
-  if (resolved < 0 || resolved >= length) {
-    return undefined;
-  }
-  return resolved;
-}
-
-function escapeCsvValue(value: CellValue, sep: string): string {
-  if (isMissing(value)) {
-    return "";
-  }
-  const text = value instanceof Date ? value.toISOString() : String(value);
-  const needsQuoting = text.includes(sep) || text.includes("\n") || text.includes('"');
-  if (!needsQuoting) {
-    return text;
-  }
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function keyForColumns(row: Row, keys: string[]): string {
-  return keyForValues(keys.map((key) => row[key]));
-}
-
-function keyForPair(first: CellValue, second: CellValue): string {
-  return keyFragment(first) + keyFragment(second);
-}
-
-function keyForValues(values: CellValue[]): string {
-  let key = "";
-  for (const value of values) {
-    key += keyFragment(value);
-  }
-  return key;
-}
-
-function keyFragment(value: CellValue): string {
-  const normalized = normalizeKeyCell(value);
-  if (normalized === null) {
-    return "n:;";
-  }
-  if (typeof normalized === "number") {
-    return `d:${normalized};`;
-  }
-  if (typeof normalized === "boolean") {
-    return `b:${normalized ? 1 : 0};`;
-  }
-  const text = String(normalized);
-  return `s${text.length}:${text};`;
-}
-
-function normalizeCountKey(value: CellValue): string | number | boolean | null {
-  return normalizeKeyCell(value);
-}
-
-function normalizeKeyCell(value: CellValue): string | number | boolean | null {
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-  if (value === undefined) {
-    return null;
-  }
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
-    return value;
-  }
-  return String(value);
-}
-
-function uniqueColumnValues(
-  values: CellValue[],
-  options: { sort?: boolean; includeMissing?: boolean } = {}
-): CellValue[] {
-  const sort = options.sort ?? true;
-  const includeMissing = options.includeMissing ?? false;
-  const out: CellValue[] = [];
-  const seen = new Set<string>();
-  for (const value of values) {
-    if (!includeMissing && isMissing(value)) {
-      continue;
-    }
-    const key = JSON.stringify(normalizeKeyCell(value));
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push(value);
-    }
-  }
-  if (sort) {
-    out.sort(compareCellValues);
-  }
-  return out;
-}
-
-function sortRowsByColumns(rows: Row[], columns: string[], marginsName?: string): Row[] {
-  const sorted = [...rows];
-  sorted.sort((left, right) => {
-    if (marginsName && left[columns[0]!] === marginsName) {
-      return 1;
-    }
-    if (marginsName && right[columns[0]!] === marginsName) {
-      return -1;
-    }
-
-    for (const column of columns) {
-      const compared = compareCellValues(left[column], right[column]);
-      if (compared !== 0) {
-        return compared;
-      }
-    }
-    return 0;
-  });
-  return sorted;
-}
-
-function safeMarginsColumnName(baseName: string, existingColumns: string[]): string {
-  if (!existingColumns.includes(baseName)) {
-    return baseName;
-  }
-  let counter = 1;
-  while (existingColumns.includes(`${baseName}_${counter}`)) {
-    counter += 1;
-  }
-  return `${baseName}_${counter}`;
-}
-
-function buildColumnComparer(
-  rows: Row[],
-  column: string,
-  ascending: boolean
-): (left: Row, right: Row) => number {
-  const direction = ascending ? 1 : -1;
-  const sample = firstNonMissingValue(rows, column);
-
-  if (typeof sample === "number") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      return ((lv as number) - (rv as number)) * direction;
-    };
-  }
-
-  if (typeof sample === "string") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftStr = String(lv);
-      const rightStr = String(rv);
-      if (leftStr === rightStr) {
-        return 0;
-      }
-      return (leftStr < rightStr ? -1 : 1) * direction;
-    };
-  }
-
-  if (typeof sample === "boolean") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftBool = lv ? 1 : 0;
-      const rightBool = rv ? 1 : 0;
-      return (leftBool - rightBool) * direction;
-    };
-  }
-
-  if (sample instanceof Date) {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftTime = lv instanceof Date ? lv.getTime() : Number.NaN;
-      const rightTime = rv instanceof Date ? rv.getTime() : Number.NaN;
-      if (leftTime === rightTime) {
-        return 0;
-      }
-      if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-        return compareCellValues(lv, rv) * direction;
-      }
-      return (leftTime - rightTime) * direction;
-    };
-  }
-
-  return (left, right) => compareCellValues(left[column], right[column]) * direction;
-}
-
-function firstNonMissingValue(rows: Row[], column: string): CellValue {
-  for (const row of rows) {
-    const value = row[column];
-    if (!isMissing(value)) {
-      return value;
-    }
-  }
-  return undefined;
-}
-
-function normalizeSortAscending(columnCount: number, ascending: boolean | boolean[]): boolean[] {
-  if (!Array.isArray(ascending)) {
-    return Array.from({ length: columnCount }, () => ascending);
-  }
-  if (ascending.length !== columnCount) {
-    throw new Error(
-      `Length mismatch for ascending. Expected ${columnCount}, received ${ascending.length}.`
-    );
-  }
-  return [...ascending];
-}
-
-function normalizeSortLimit(limit: number | undefined, rowCount: number): number | undefined {
-  if (limit === undefined) {
-    return undefined;
-  }
-  if (!Number.isInteger(limit) || limit < 0) {
-    throw new Error("limit must be a non-negative integer.");
-  }
-  return Math.min(limit, rowCount);
-}
-
-function fullSortPositions(
-  rows: Row[],
-  comparers: Array<(left: Row, right: Row) => number>
-): number[] {
-  const positions = range(rows.length);
-  positions.sort((leftPosition, rightPosition) =>
-    compareRowsByComparers(rows[leftPosition]!, rows[rightPosition]!, comparers)
-  );
-  return positions;
-}
-
-function selectTopKPositions(
-  rows: Row[],
-  comparers: Array<(left: Row, right: Row) => number>,
-  limit: number
-): number[] {
-  const selected: number[] = [];
-
-  for (let position = 0; position < rows.length; position += 1) {
-    const candidateRow = rows[position]!;
-    let lo = 0;
-    let hi = selected.length;
-
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      const compared = compareRowsByComparers(candidateRow, rows[selected[mid]!]!, comparers);
-      if (compared < 0) {
-        hi = mid;
-      } else {
-        lo = mid + 1;
-      }
-    }
-
-    if (selected.length < limit) {
-      selected.splice(lo, 0, position);
-      continue;
-    }
-
-    if (lo < limit) {
-      selected.splice(lo, 0, position);
-      selected.pop();
-    }
-  }
-
-  return selected;
-}
-
-function compareRowsByComparers(
-  left: Row,
-  right: Row,
-  comparers: Array<(left: Row, right: Row) => number>
-): number {
-  for (let i = 0; i < comparers.length; i += 1) {
-    const compared = comparers[i]!(left, right);
-    if (compared !== 0) {
-      return compared;
-    }
-  }
-  return 0;
-}
-
-function selectTopKCountEntries(entries: CountEntry[], limit?: number): CountEntry[] {
-  if (limit === 0) {
-    return [];
-  }
-
-  if (limit === undefined) {
-    return [...entries].sort(compareCountEntries);
-  }
-
-  if (entries.length <= limit * 4) {
-    return [...entries].sort(compareCountEntries).slice(0, limit);
-  }
-
-  const selected: CountEntry[] = [];
-  for (const entry of entries) {
-    let lo = 0;
-    let hi = selected.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      const compared = compareCountEntries(entry, selected[mid]!);
-      if (compared < 0) {
-        hi = mid;
-      } else {
-        lo = mid + 1;
-      }
-    }
-
-    if (selected.length < limit) {
-      selected.splice(lo, 0, entry);
-      continue;
-    }
-    if (lo < limit) {
-      selected.splice(lo, 0, entry);
-      selected.pop();
-    }
-  }
-  return selected;
-}
-
-function compareCountEntries(left: CountEntry, right: CountEntry): number {
-  if (left.count !== right.count) {
-    return right.count - left.count;
-  }
-  for (let i = 0; i < left.values.length; i += 1) {
-    const compared = compareCountTieValue(left.values[i], right.values[i]);
-    if (compared !== 0) {
-      return compared;
-    }
-  }
-  return 0;
-}
-
-function compareCountTieValue(left: CellValue, right: CellValue): number {
-  if (left === right) {
-    return 0;
-  }
-  if (isMissing(left)) {
-    return 1;
-  }
-  if (isMissing(right)) {
-    return -1;
-  }
-  if (typeof left === "number" && typeof right === "number") {
-    return left - right;
-  }
-  if (typeof left === "string" && typeof right === "string") {
-    return left < right ? -1 : 1;
-  }
-  if (typeof left === "boolean" && typeof right === "boolean") {
-    return (left ? 1 : 0) - (right ? 1 : 0);
-  }
-  if (left instanceof Date && right instanceof Date) {
-    return left.getTime() - right.getTime();
-  }
-  return compareCellValues(left, right);
-}
-
-function buildMergedRow(
-  leftRow: Row | undefined,
-  rightRow: Row | undefined,
-  leftColumnsSource: string[],
-  leftColumnsOut: string[],
-  rightColumnsSource: string[],
-  rightColumnsOut: string[],
-  joinKeys: string[]
-): Row {
-  const row: Row = {};
-
-  for (let i = 0; i < leftColumnsSource.length; i += 1) {
-    const sourceColumn = leftColumnsSource[i]!;
-    const outputColumn = leftColumnsOut[i]!;
-    if (leftRow) {
-      row[outputColumn] = leftRow[sourceColumn];
-      continue;
-    }
-    row[outputColumn] = joinKeys.includes(sourceColumn) ? rightRow?.[sourceColumn] : undefined;
-  }
-
-  for (let i = 0; i < rightColumnsSource.length; i += 1) {
-    row[rightColumnsOut[i]!] = rightRow?.[rightColumnsSource[i]!];
-  }
-  return row;
 }

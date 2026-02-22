@@ -131,6 +131,39 @@ describe("groupby + merge + concat", () => {
     ]);
   });
 
+  test("groupby supports pandas-like dropna and sort options", () => {
+    const df = new DataFrame([
+      { city: "B", value: 2 },
+      { city: null, value: 5 },
+      { city: "A", value: 3 },
+    ]);
+
+    const defaultDropna = df.groupby("city").agg({ value: "sum" }).to_records();
+    expect(defaultDropna).toEqual([
+      { city: "A", value: 3 },
+      { city: "B", value: 2 },
+    ]);
+
+    const includeMissing = df
+      .groupby("city", { dropna: false, sort: true })
+      .agg({ value: "sum" })
+      .to_records();
+    expect(includeMissing).toEqual([
+      { city: "A", value: 3 },
+      { city: "B", value: 2 },
+      { city: null, value: 5 },
+    ]);
+
+    const preserveOrder = df
+      .groupby("city", { dropna: true, sort: false })
+      .agg({ value: "sum" })
+      .to_records();
+    expect(preserveOrder).toEqual([
+      { city: "B", value: 2 },
+      { city: "A", value: 3 },
+    ]);
+  });
+
   test("merge right join includes unmatched right rows", () => {
     const left = new DataFrame([
       { id: 1, name: "Ada" },
@@ -446,6 +479,29 @@ describe("indexing and dedup operations", () => {
     expect(df.value_counts({ subset: "code", normalize: true, limit: 2 }).to_records()).toEqual([
       { code: "x", proportion: 2 / 6 },
       { code: "y", proportion: 2 / 6 },
+    ]);
+  });
+
+  test("value_counts supports pandas-like ascending and sort options", () => {
+    const df = new DataFrame([
+      { code: "b" },
+      { code: "b" },
+      { code: "a" },
+      { code: "c" },
+      { code: "c" },
+      { code: "c" },
+    ]);
+
+    expect(df.value_counts({ subset: "code", ascending: true }).to_records()).toEqual([
+      { code: "a", count: 1 },
+      { code: "b", count: 2 },
+      { code: "c", count: 3 },
+    ]);
+
+    expect(df.value_counts({ subset: "code", sort: false }).to_records()).toEqual([
+      { code: "b", count: 2 },
+      { code: "a", count: 1 },
+      { code: "c", count: 3 },
     ]);
   });
 });
