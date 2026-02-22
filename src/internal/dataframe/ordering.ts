@@ -1,7 +1,7 @@
 import type { CellValue, Row } from "../../types";
 import { compareCellValues, isMissing, range } from "../../utils";
 
-export type RowComparer = (left: Row, right: Row) => number;
+export type RowComparer = (leftPosition: number, rightPosition: number) => number;
 
 export function normalizeSortAscending(
   columnCount: number,
@@ -30,113 +30,58 @@ export function normalizeSortLimit(limit: number | undefined, rowCount: number):
 
 export function buildColumnComparer(rows: Row[], column: string, ascending: boolean): RowComparer {
   const direction = ascending ? 1 : -1;
-  const sample = firstNonMissingValue(rows, column);
+  const values = rows.map((row) => row[column]);
+  const sample = firstNonMissingValue(values);
 
   if (typeof sample === "number") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      return ((lv as number) - (rv as number)) * direction;
-    };
+    return (leftPosition, rightPosition) =>
+      compareKnownNumbers(values[leftPosition], values[rightPosition], direction);
   }
 
   if (typeof sample === "string") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftStr = String(lv);
-      const rightStr = String(rv);
-      if (leftStr === rightStr) {
-        return 0;
-      }
-      return (leftStr < rightStr ? -1 : 1) * direction;
-    };
+    return (leftPosition, rightPosition) =>
+      compareKnownStrings(values[leftPosition], values[rightPosition], direction);
   }
 
   if (typeof sample === "boolean") {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftBool = lv ? 1 : 0;
-      const rightBool = rv ? 1 : 0;
-      return (leftBool - rightBool) * direction;
-    };
+    return (leftPosition, rightPosition) =>
+      compareKnownBooleans(values[leftPosition], values[rightPosition], direction);
   }
 
   if (sample instanceof Date) {
-    return (left, right) => {
-      const lv = left[column];
-      const rv = right[column];
-      if (isMissing(lv) && isMissing(rv)) {
-        return 0;
-      }
-      if (isMissing(lv)) {
-        return 1;
-      }
-      if (isMissing(rv)) {
-        return -1;
-      }
-      const leftTime = lv instanceof Date ? lv.getTime() : Number.NaN;
-      const rightTime = rv instanceof Date ? rv.getTime() : Number.NaN;
-      if (leftTime === rightTime) {
-        return 0;
-      }
-      if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-        return compareCellValues(lv, rv) * direction;
-      }
-      return (leftTime - rightTime) * direction;
-    };
+    return (leftPosition, rightPosition) =>
+      compareKnownDates(values[leftPosition], values[rightPosition], direction);
   }
 
-  return (left, right) => compareCellValues(left[column], right[column]) * direction;
+  return (leftPosition, rightPosition) =>
+    compareCellValues(values[leftPosition], values[rightPosition]) * direction;
 }
 
 export function fullSortPositions(rows: Row[], comparers: RowComparer[]): number[] {
   const positions = range(rows.length);
   positions.sort((leftPosition, rightPosition) =>
-    compareRowsByComparers(rows[leftPosition]!, rows[rightPosition]!, comparers)
+    comparePositions(leftPosition, rightPosition, comparers)
   );
   return positions;
 }
 
 export function selectTopKPositions(rows: Row[], comparers: RowComparer[], limit: number): number[] {
-  const selected: number[] = [];
+  if (limit === 0) {
+    return [];
+  }
 
+  if (shouldUseFullSort(limit, rows.length)) {
+    return fullSortPositions(rows, comparers).slice(0, limit);
+  }
+
+  const selected: number[] = [];
   for (let position = 0; position < rows.length; position += 1) {
-    const candidateRow = rows[position]!;
     let lo = 0;
     let hi = selected.length;
 
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      const compared = compareRowsByComparers(candidateRow, rows[selected[mid]!]!, comparers);
+      const compared = comparePositions(position, selected[mid]!, comparers);
       if (compared < 0) {
         hi = mid;
       } else {
@@ -158,9 +103,20 @@ export function selectTopKPositions(rows: Row[], comparers: RowComparer[], limit
   return selected;
 }
 
-function compareRowsByComparers(left: Row, right: Row, comparers: RowComparer[]): number {
+function shouldUseFullSort(limit: number, rowCount: number): boolean {
+  if (limit >= rowCount) {
+    return true;
+  }
+  return limit * 3 > rowCount;
+}
+
+function comparePositions(
+  leftPosition: number,
+  rightPosition: number,
+  comparers: RowComparer[]
+): number {
   for (let i = 0; i < comparers.length; i += 1) {
-    const compared = comparers[i]!(left, right);
+    const compared = comparers[i]!(leftPosition, rightPosition);
     if (compared !== 0) {
       return compared;
     }
@@ -168,9 +124,74 @@ function compareRowsByComparers(left: Row, right: Row, comparers: RowComparer[])
   return 0;
 }
 
-function firstNonMissingValue(rows: Row[], column: string): CellValue {
-  for (const row of rows) {
-    const value = row[column];
+function compareKnownNumbers(left: CellValue, right: CellValue, direction: number): number {
+  if (isMissing(left) && isMissing(right)) {
+    return 0;
+  }
+  if (isMissing(left)) {
+    return 1;
+  }
+  if (isMissing(right)) {
+    return -1;
+  }
+  return ((left as number) - (right as number)) * direction;
+}
+
+function compareKnownStrings(left: CellValue, right: CellValue, direction: number): number {
+  if (isMissing(left) && isMissing(right)) {
+    return 0;
+  }
+  if (isMissing(left)) {
+    return 1;
+  }
+  if (isMissing(right)) {
+    return -1;
+  }
+  const leftStr = String(left);
+  const rightStr = String(right);
+  if (leftStr === rightStr) {
+    return 0;
+  }
+  return (leftStr < rightStr ? -1 : 1) * direction;
+}
+
+function compareKnownBooleans(left: CellValue, right: CellValue, direction: number): number {
+  if (isMissing(left) && isMissing(right)) {
+    return 0;
+  }
+  if (isMissing(left)) {
+    return 1;
+  }
+  if (isMissing(right)) {
+    return -1;
+  }
+  return ((left ? 1 : 0) - (right ? 1 : 0)) * direction;
+}
+
+function compareKnownDates(left: CellValue, right: CellValue, direction: number): number {
+  if (isMissing(left) && isMissing(right)) {
+    return 0;
+  }
+  if (isMissing(left)) {
+    return 1;
+  }
+  if (isMissing(right)) {
+    return -1;
+  }
+
+  const leftTime = left instanceof Date ? left.getTime() : Number.NaN;
+  const rightTime = right instanceof Date ? right.getTime() : Number.NaN;
+  if (leftTime === rightTime) {
+    return 0;
+  }
+  if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+    return compareCellValues(left, right) * direction;
+  }
+  return (leftTime - rightTime) * direction;
+}
+
+function firstNonMissingValue(values: CellValue[]): CellValue {
+  for (const value of values) {
     if (!isMissing(value)) {
       return value;
     }

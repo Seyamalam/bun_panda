@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.13] - 2026-02-22
+
+### Changed
+
+- Performance optimizations for core workloads:
+  - `GroupBy` now uses lazy grouping and a one-pass fast path for named aggregations (`count`, `sum`, `mean`, `min`, `max`) to reduce allocations.
+  - `sort_values` comparers now precompute column value arrays and compare by row positions to reduce property-access overhead.
+  - top-k sort selection strategy tuned to avoid full-sort overhead on common benchmark limits.
+
 ## [0.1.12] - 2026-02-22
 
 ### Added

@@ -26,6 +26,11 @@ interface NamedAggState {
   best: CellValue;
 }
 
+interface FastGroupState {
+  keyValues: CellValue[];
+  namedStates: NamedAggState[];
+}
+
 export interface GroupByOptions {
   dropna?: boolean;
   sort?: boolean;
@@ -35,7 +40,7 @@ export interface GroupByOptions {
 export class GroupBy {
   private readonly source: DataFrame;
   private readonly by: string[];
-  private readonly grouped: Map<string, GroupEntry>;
+  private grouped: Map<string, GroupEntry> | null;
   private readonly sourceRows: Row[];
   private readonly sourceColumns: string[];
   private readonly options: {
@@ -69,11 +74,10 @@ export class GroupBy {
       sort: options.sort ?? true,
       as_index: options.as_index ?? false,
     };
-    this.grouped = this.buildGroups();
+    this.grouped = null;
   }
 
   agg(spec: AggSpec): DataFrame {
-    const rows: Row[] = [];
     const aggColumns = Object.keys(spec);
     const namedPlans: NamedAggPlan[] = [];
     const customPlans: CustomAggPlan[] = [];
@@ -86,11 +90,12 @@ export class GroupBy {
       }
     }
 
-    const groups = this.options.sort
-      ? [...this.grouped.values()].sort((left, right) =>
-          compareKeyValues(left.keyValues, right.keyValues)
-        )
-      : [...this.grouped.values()];
+    if (customPlans.length === 0 && namedPlans.length > 0) {
+      return this.fastNamedAgg(namedPlans, aggColumns);
+    }
+
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
 
     for (const group of groups) {
       const row: Row = {};
@@ -128,6 +133,92 @@ export class GroupBy {
     return this.materializeGroupedRows(rows, aggColumns);
   }
 
+  private fastNamedAgg(namedPlans: NamedAggPlan[], aggColumns: string[]): DataFrame {
+    const states = new Map<string, FastGroupState>();
+    const byLength = this.by.length;
+
+    if (byLength === 1) {
+      const keyColumn = this.by[0]!;
+      for (const sourceRow of this.sourceRows) {
+        const keyValue = sourceRow[keyColumn];
+        if (this.options.dropna && isMissing(keyValue)) {
+          continue;
+        }
+        const key = keyForSingleValue(keyValue);
+        let state = states.get(key);
+        if (!state) {
+          state = {
+            keyValues: [keyValue],
+            namedStates: namedPlans.map(() => createNamedAggState()),
+          };
+          states.set(key, state);
+        }
+        updateNamedPlans(state.namedStates, namedPlans, sourceRow);
+      }
+    } else {
+      for (const sourceRow of this.sourceRows) {
+        if (this.options.dropna && hasMissingByValue(sourceRow, this.by)) {
+          continue;
+        }
+        const key = keyForRow(sourceRow, this.by);
+        let state = states.get(key);
+        if (!state) {
+          const keyValues = new Array<CellValue>(byLength);
+          for (let i = 0; i < byLength; i += 1) {
+            keyValues[i] = sourceRow[this.by[i]!];
+          }
+          state = {
+            keyValues,
+            namedStates: namedPlans.map(() => createNamedAggState()),
+          };
+          states.set(key, state);
+        }
+        updateNamedPlans(state.namedStates, namedPlans, sourceRow);
+      }
+    }
+
+    const groups = this.sortFastStates([...states.values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < byLength; i += 1) {
+        row[this.by[i]!] = group.keyValues[i];
+      }
+      for (let i = 0; i < namedPlans.length; i += 1) {
+        const plan = namedPlans[i]!;
+        row[plan.column] = finalizeNamedAggState(group.namedStates[i]!, plan.name);
+      }
+      rows.push(row);
+    }
+
+    return this.materializeGroupedRows(rows, aggColumns);
+  }
+
+  private getGroups(): Map<string, GroupEntry> {
+    if (!this.grouped) {
+      this.grouped = this.buildGroups();
+    }
+    return this.grouped;
+  }
+
+  private sortGroups(groups: GroupEntry[]): GroupEntry[] {
+    if (!this.options.sort) {
+      return groups;
+    }
+    return groups.sort((left, right) =>
+      compareKeyValues(left.keyValues, right.keyValues)
+    );
+  }
+
+  private sortFastStates(states: FastGroupState[]): FastGroupState[] {
+    if (!this.options.sort) {
+      return states;
+    }
+    return states.sort((left, right) =>
+      compareKeyValues(left.keyValues, right.keyValues)
+    );
+  }
+
   count(columns?: string[]): DataFrame {
     const candidates = columns ?? this.source.columns.filter((column) => !this.by.includes(column));
     const spec: AggSpec = {};
@@ -157,11 +248,7 @@ export class GroupBy {
 
   size(): DataFrame {
     const rows: Row[] = [];
-    const groups = this.options.sort
-      ? [...this.grouped.values()].sort((left, right) =>
-          compareKeyValues(left.keyValues, right.keyValues)
-        )
-      : [...this.grouped.values()];
+    const groups = this.sortGroups([...this.getGroups().values()]);
 
     for (const group of groups) {
       const row: Row = {};
@@ -200,17 +287,8 @@ export class GroupBy {
     }
 
     for (const row of this.sourceRows) {
-      if (this.options.dropna) {
-        let hasMissing = false;
-        for (const keyColumn of this.by) {
-          if (isMissing(row[keyColumn])) {
-            hasMissing = true;
-            break;
-          }
-        }
-        if (hasMissing) {
-          continue;
-        }
+      if (this.options.dropna && hasMissingByValue(row, this.by)) {
+        continue;
       }
       const key = keyForRow(row, this.by);
       const existing = groups.get(key);
@@ -335,6 +413,26 @@ function keyForRow(row: Row, columns: string[]): string {
 
 function keyForSingleValue(value: CellValue): string {
   return keyFragment(value);
+}
+
+function hasMissingByValue(row: Row, columns: string[]): boolean {
+  for (const column of columns) {
+    if (isMissing(row[column])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function updateNamedPlans(
+  states: NamedAggState[],
+  plans: NamedAggPlan[],
+  row: Row
+): void {
+  for (let i = 0; i < plans.length; i += 1) {
+    const plan = plans[i]!;
+    updateNamedAggState(states[i]!, plan.name, row[plan.column]);
+  }
 }
 
 function compareKeyValues(left: CellValue[], right: CellValue[]): number {
