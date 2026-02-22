@@ -19,7 +19,7 @@
 - `filter`, `query`
 - `sort_values` (single and multi-column with per-column ascending flags)
 - `sort_index`
-- `drop_duplicates`
+- `drop_duplicates` (`ignore_index` supported)
 - `value_counts`
 - `dropna`, `fillna`
 - `set_index`, `reset_index`

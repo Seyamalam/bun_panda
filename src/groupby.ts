@@ -1,6 +1,6 @@
 import { DataFrame } from "./dataframe";
 import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
-import { compareCellValues, isMissing, numericValues } from "./utils";
+import { compareCellValues, isMissing, isNumber, numericValues } from "./utils";
 
 interface GroupEntry {
   keyValues: CellValue[];
@@ -11,8 +11,10 @@ export class GroupBy {
   private readonly source: DataFrame;
   private readonly by: string[];
   private readonly grouped: Map<string, GroupEntry>;
+  private readonly sourceRows: Row[];
+  private readonly sourceColumns: string[];
 
-  constructor(source: DataFrame, by: string[]) {
+  constructor(source: DataFrame, by: string[], sourceRows?: Row[], sourceColumns?: string[]) {
     if (by.length === 0) {
       throw new Error("groupby requires at least one key column.");
     }
@@ -24,6 +26,8 @@ export class GroupBy {
 
     this.source = source;
     this.by = by;
+    this.sourceRows = sourceRows ?? source.to_records();
+    this.sourceColumns = sourceColumns ?? source.columns;
     this.grouped = this.buildGroups();
   }
 
@@ -81,9 +85,9 @@ export class GroupBy {
 
   private buildGroups(): Map<string, GroupEntry> {
     const groups = new Map<string, GroupEntry>();
-    for (const row of this.source.to_records()) {
+    for (const row of this.sourceRows) {
       const keyValues = this.by.map((column) => row[column]);
-      const key = JSON.stringify(keyValues.map((value) => normalizeKeyCell(value)));
+      const key = keyForValues(keyValues);
       const existing = groups.get(key);
       if (existing) {
         existing.rows.push(row);
@@ -98,12 +102,16 @@ export class GroupBy {
   }
 
   private numericColumns(): string[] {
-    return this.source.columns.filter((column) => {
+    return this.sourceColumns.filter((column) => {
       if (this.by.includes(column)) {
         return false;
       }
-      const values = this.source.get(column).values;
-      return numericValues(values).length > 0;
+      for (const row of this.sourceRows) {
+        if (isNumber(row[column])) {
+          return true;
+        }
+      }
+      return false;
     });
   }
 }
@@ -149,4 +157,21 @@ function normalizeKeyCell(value: CellValue): string | number | boolean | null {
     return value;
   }
   return String(value);
+}
+
+function keyForValues(values: CellValue[]): string {
+  let key = "";
+  for (const value of values) {
+    const normalized = normalizeKeyCell(value);
+    if (normalized === null) {
+      key += "n:;";
+    } else if (typeof normalized === "number") {
+      key += `d:${normalized};`;
+    } else if (typeof normalized === "boolean") {
+      key += `b:${normalized ? 1 : 0};`;
+    } else {
+      key += `s${normalized.length}:${normalized};`;
+    }
+  }
+  return key;
 }

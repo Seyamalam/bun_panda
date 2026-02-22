@@ -251,6 +251,24 @@ describe("indexing and dedup operations", () => {
     ]);
   });
 
+  test("drop_duplicates can reset index with ignore_index", () => {
+    const df = new DataFrame(
+      [
+        { id: 1, city: "Austin" },
+        { id: 1, city: "Dallas" },
+        { id: 2, city: "Seattle" },
+      ],
+      { index: [10, 11, 20] }
+    );
+
+    const deduped = df.drop_duplicates("id", "first", true);
+    expect(deduped.index).toEqual([0, 1]);
+    expect(deduped.to_records()).toEqual([
+      { id: 1, city: "Austin" },
+      { id: 2, city: "Seattle" },
+    ]);
+  });
+
   test("value_counts supports subset and normalization", () => {
     const df = new DataFrame([
       { team: "A", city: "Austin" },

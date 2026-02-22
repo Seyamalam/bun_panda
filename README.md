@@ -54,7 +54,7 @@ bun run check
 bun run bench
 ```
 
-Current suite: `29` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
+Current suite: `32` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
 
 ## Documentation
 

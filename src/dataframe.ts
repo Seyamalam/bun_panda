@@ -81,6 +81,17 @@ export class DataFrame {
     }
   }
 
+  private static createInternal(rows: Row[], columns: string[], index: IndexLabel[]): DataFrame {
+    if (index.length !== rows.length) {
+      throw new Error("DataFrame index length must match row count.");
+    }
+    const frame = Object.create(DataFrame.prototype) as DataFrame;
+    (frame as unknown as { _rows: Row[] })._rows = rows;
+    (frame as unknown as { _columns: string[] })._columns = columns;
+    (frame as unknown as { _index: IndexLabel[] })._index = index;
+    return frame;
+  }
+
   static from_records(records: Row[], options: DataFrameOptions = {}): DataFrame {
     return new DataFrame(records, options);
   }
@@ -150,7 +161,7 @@ export class DataFrame {
       return next;
     });
 
-    return this.withRows(rows, this._index, this._columns);
+    return this.withRows(rows, this._index, this._columns, true);
   }
 
   to_dict(orient: "records" | "list" = "records"): Row[] | Record<string, CellValue[]> {
@@ -247,7 +258,7 @@ export class DataFrame {
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
     }
-    return this.withRows(rows, index, this._columns);
+    return this.withRows(rows, index, this._columns, true);
   }
 
   loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame | undefined {
@@ -269,7 +280,7 @@ export class DataFrame {
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
     }
-    return this.withRows(rows, index, this._columns);
+    return this.withRows(rows, index, this._columns, true);
   }
 
   assign(assignments: Record<string, AssignmentValue>): DataFrame {
@@ -287,7 +298,7 @@ export class DataFrame {
       }
     }
 
-    return this.withRows(rows, this._index, columns);
+    return this.withRows(rows, this._index, columns, true);
   }
 
   select(columns: string[]): DataFrame {
@@ -295,7 +306,7 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
     const rows = this._rows.map((row) => cloneRow(row, columns));
-    return this.withRows(rows, this._index, columns);
+    return this.withRows(rows, this._index, columns, true);
   }
 
   drop(columns: string | string[]): DataFrame {
@@ -306,7 +317,7 @@ export class DataFrame {
 
     const nextColumns = this._columns.filter((column) => !removed.has(column));
     const nextRows = this._rows.map((row) => cloneRow(row, nextColumns));
-    return this.withRows(nextRows, this._index, nextColumns);
+    return this.withRows(nextRows, this._index, nextColumns, true);
   }
 
   rename(columns: Record<string, string>): DataFrame {
@@ -324,7 +335,7 @@ export class DataFrame {
       return next;
     });
 
-    return this.withRows(nextRows, this._index, renamedColumns);
+    return this.withRows(nextRows, this._index, renamedColumns, true);
   }
 
   filter(mask: boolean[] | ((row: Row, index: IndexLabel, position: number) => boolean)): DataFrame {
@@ -341,18 +352,19 @@ export class DataFrame {
           index.push(this._index[i]!);
         }
       }
-      return this.withRows(rows, index, this._columns);
+      return this.withRows(rows, index, this._columns, true);
     }
 
     for (let i = 0; i < this._rows.length; i += 1) {
       const row = this._rows[i]!;
       const label = this._index[i]!;
-      if (mask(cloneRow(row, this._columns), label, i)) {
-        rows.push(cloneRow(row, this._columns));
+      const view = cloneRow(row, this._columns);
+      if (mask(view, label, i)) {
+        rows.push(view);
         index.push(label);
       }
     }
-    return this.withRows(rows, index, this._columns);
+    return this.withRows(rows, index, this._columns, true);
   }
 
   query(predicate: (row: Row, index: IndexLabel, position: number) => boolean): DataFrame {
@@ -367,15 +379,13 @@ export class DataFrame {
 
     const ascendingPerColumn = normalizeSortAscending(columns.length, ascending);
 
-    const pairs = this._rows.map((row, position) => ({
-      row: cloneRow(row, this._columns),
-      index: this._index[position]!,
-    }));
-
-    pairs.sort((left, right) => {
+    const positions = range(this._rows.length);
+    positions.sort((leftPosition, rightPosition) => {
+      const left = this._rows[leftPosition]!;
+      const right = this._rows[rightPosition]!;
       for (let i = 0; i < columns.length; i += 1) {
         const column = columns[i]!;
-        const compared = compareCellValues(left.row[column], right.row[column]);
+        const compared = compareCellValues(left[column], right[column]);
         if (compared !== 0) {
           return ascendingPerColumn[i] ? compared : -compared;
         }
@@ -384,31 +394,33 @@ export class DataFrame {
     });
 
     return this.withRows(
-      pairs.map((pair) => pair.row),
-      pairs.map((pair) => pair.index),
-      this._columns
+      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      positions.map((position) => this._index[position]!),
+      this._columns,
+      true
     );
   }
 
   sort_index(ascending = true): DataFrame {
-    const pairs = this._rows.map((row, position) => ({
-      row: cloneRow(row, this._columns),
-      index: this._index[position]!,
-    }));
-
-    pairs.sort((left, right) => {
-      const compared = compareCellValues(left.index, right.index);
+    const positions = range(this._rows.length);
+    positions.sort((leftPosition, rightPosition) => {
+      const compared = compareCellValues(this._index[leftPosition], this._index[rightPosition]);
       return ascending ? compared : -compared;
     });
 
     return this.withRows(
-      pairs.map((pair) => pair.row),
-      pairs.map((pair) => pair.index),
-      this._columns
+      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      positions.map((position) => this._index[position]!),
+      this._columns,
+      true
     );
   }
 
-  drop_duplicates(subset?: string | string[], keep: DropDuplicatesKeep = "first"): DataFrame {
+  drop_duplicates(
+    subset?: string | string[],
+    keep: DropDuplicatesKeep = "first",
+    ignore_index = false
+  ): DataFrame {
     const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
     for (const column of columns) {
       this.assertColumnExists(column);
@@ -455,7 +467,7 @@ export class DataFrame {
       index.push(this._index[i]!);
     }
 
-    return this.withRows(rows, index, this._columns);
+    return this.withRows(rows, ignore_index ? undefined : index, this._columns, true);
   }
 
   value_counts(options: ValueCountsOptions = {}): DataFrame {
@@ -472,19 +484,46 @@ export class DataFrame {
     const counts = new Map<string, { values: CellValue[]; count: number }>();
     let consideredRows = 0;
 
-    for (const row of this._rows) {
-      const values = subset.map((column) => row[column]);
-      if (dropna && values.some((value) => isMissing(value))) {
-        continue;
+    if (subset.length === 1) {
+      const column = subset[0]!;
+      for (const row of this._rows) {
+        const value = row[column];
+        if (dropna && isMissing(value)) {
+          continue;
+        }
+        consideredRows += 1;
+        const key = keyFragment(value);
+        const entry = counts.get(key);
+        if (!entry) {
+          counts.set(key, { values: [value], count: 1 });
+        } else {
+          entry.count += 1;
+        }
       }
+    } else {
+      for (const row of this._rows) {
+        const values: CellValue[] = [];
+        let hasMissing = false;
+        for (const column of subset) {
+          const value = row[column];
+          if (dropna && isMissing(value)) {
+            hasMissing = true;
+            break;
+          }
+          values.push(value);
+        }
+        if (hasMissing) {
+          continue;
+        }
 
-      consideredRows += 1;
-      const key = JSON.stringify(values.map((value) => normalizeKeyCell(value)));
-      const entry = counts.get(key);
-      if (!entry) {
-        counts.set(key, { values, count: 1 });
-      } else {
-        entry.count += 1;
+        consideredRows += 1;
+        const key = keyForValues(values);
+        const entry = counts.get(key);
+        if (!entry) {
+          counts.set(key, { values, count: 1 });
+        } else {
+          entry.count += 1;
+        }
       }
     }
 
@@ -541,7 +580,7 @@ export class DataFrame {
       }
       return next;
     });
-    return this.withRows(rows, this._index, this._columns);
+    return this.withRows(rows, this._index, this._columns, true);
   }
 
   set_index(column: string, drop = true): DataFrame {
@@ -555,7 +594,7 @@ export class DataFrame {
     });
 
     if (!drop) {
-      return this.withRows(this.to_records(), index, this._columns);
+      return this.withRows(this.to_records(), index, this._columns, true);
     }
     return this.drop(column).withIndex(index);
   }
@@ -615,7 +654,7 @@ export class DataFrame {
   }
 
   groupby(by: string | string[]): GroupBy {
-    return new GroupBy(this, Array.isArray(by) ? by : [by]);
+    return new GroupBy(this, Array.isArray(by) ? by : [by], this._rows, this._columns);
   }
 
   pivot_table(options: PivotTableOptions): DataFrame {
@@ -949,18 +988,22 @@ export class DataFrame {
     }
   }
 
-  private withRows(rows: Row[], index?: IndexLabel[], columns?: string[]): DataFrame {
-    return new DataFrame(rows, {
-      columns: columns ?? this._columns,
-      index,
-    });
+  private withRows(
+    rows: Row[],
+    index?: IndexLabel[],
+    columns?: string[],
+    rowsAreNormalized = false
+  ): DataFrame {
+    const nextColumns = columns ? [...columns] : [...this._columns];
+    const nextRows = rowsAreNormalized
+      ? rows
+      : rows.map((row) => cloneRow(row, nextColumns));
+    const nextIndex = index ? [...index] : range(nextRows.length);
+    return DataFrame.createInternal(nextRows, nextColumns, nextIndex);
   }
 
   private withIndex(index: IndexLabel[]): DataFrame {
-    return new DataFrame(this.to_records(), {
-      columns: this._columns,
-      index,
-    });
+    return this.withRows(this.to_records(), index, this._columns, true);
   }
 }
 
@@ -1060,7 +1103,30 @@ function escapeCsvValue(value: CellValue, sep: string): string {
 }
 
 function keyForColumns(row: Row, keys: string[]): string {
-  return JSON.stringify(keys.map((key) => normalizeKeyCell(row[key])));
+  return keyForValues(keys.map((key) => row[key]));
+}
+
+function keyForValues(values: CellValue[]): string {
+  let key = "";
+  for (const value of values) {
+    key += keyFragment(value);
+  }
+  return key;
+}
+
+function keyFragment(value: CellValue): string {
+  const normalized = normalizeKeyCell(value);
+  if (normalized === null) {
+    return "n:;";
+  }
+  if (typeof normalized === "number") {
+    return `d:${normalized};`;
+  }
+  if (typeof normalized === "boolean") {
+    return `b:${normalized ? 1 : 0};`;
+  }
+  const text = String(normalized);
+  return `s${text.length}:${text};`;
 }
 
 function normalizeKeyCell(value: CellValue): string | number | boolean | null {

@@ -9,6 +9,7 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 ### Added
 
 - `sort_values` now supports multi-column sorting with per-column ascending flags.
+- `drop_duplicates` now supports `ignore_index`.
 - `DataFrame` additions:
   - `value_counts`
   - `sort_index`
@@ -27,6 +28,12 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 ### Changed
 
 - Unified dtype coercion logic across `Series.astype` and `DataFrame.astype`.
+- Performance improvements in hot paths:
+  - `groupby` avoids full record cloning
+  - `sort_values` and `sort_index` sort by row positions before cloning
+  - `filter` avoids duplicate row clones for predicate paths
+  - faster key generation in `value_counts` and duplicate detection
+  - internal `withRows` path avoids redundant DataFrame re-normalization
 - CSV parsing improvements:
   - UTF-8 BOM stripping
   - case-insensitive `na_values` matching
