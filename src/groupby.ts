@@ -1,6 +1,6 @@
 import { DataFrame } from "./dataframe";
 import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
-import { compareCellValues, isMissing, isNumber, numericValues } from "./utils";
+import { compareCellValues, isMissing, isNumber } from "./utils";
 
 interface GroupEntry {
   keyValues: CellValue[];
@@ -42,10 +42,15 @@ export class GroupBy {
       }
 
       for (const [column, aggregator] of Object.entries(spec)) {
-        const values = group.rows.map((entry) => entry[column]);
-        row[column] = typeof aggregator === "function"
-          ? (aggregator as AggFn)(values, group.rows)
-          : runNamedAggregation(values, aggregator as AggName);
+        if (typeof aggregator === "function") {
+          const values: CellValue[] = [];
+          for (const entry of group.rows) {
+            values.push(entry[column]);
+          }
+          row[column] = (aggregator as AggFn)(values, group.rows);
+        } else {
+          row[column] = runNamedAggregationOnRows(group.rows, column, aggregator as AggName);
+        }
       }
 
       rows.push(row);
@@ -116,31 +121,73 @@ export class GroupBy {
   }
 }
 
-function runNamedAggregation(values: CellValue[], name: AggName): CellValue {
+function runNamedAggregationOnRows(rows: Row[], column: string, name: AggName): CellValue {
   if (name === "count") {
-    return values.filter((value) => !isMissing(value)).length;
+    let count = 0;
+    for (const row of rows) {
+      if (!isMissing(row[column])) {
+        count += 1;
+      }
+    }
+    return count;
   }
 
-  const numbers = numericValues(values);
   if (name === "sum") {
-    return numbers.length > 0 ? numbers.reduce((acc, value) => acc + value, 0) : null;
+    let hasAny = false;
+    let sum = 0;
+    for (const row of rows) {
+      const value = row[column];
+      if (isNumber(value)) {
+        hasAny = true;
+        sum += value;
+      }
+    }
+    return hasAny ? sum : null;
   }
 
   if (name === "mean") {
-    return numbers.length > 0 ? numbers.reduce((acc, value) => acc + value, 0) / numbers.length : null;
-  }
-
-  const nonMissing = values.filter((value) => !isMissing(value));
-  if (nonMissing.length === 0) {
-    return null;
+    let count = 0;
+    let sum = 0;
+    for (const row of rows) {
+      const value = row[column];
+      if (isNumber(value)) {
+        count += 1;
+        sum += value;
+      }
+    }
+    return count > 0 ? sum / count : null;
   }
 
   if (name === "min") {
-    return [...nonMissing].sort(compareCellValues)[0];
+    let best: CellValue = null;
+    let seen = false;
+    for (const row of rows) {
+      const value = row[column];
+      if (isMissing(value)) {
+        continue;
+      }
+      if (!seen || compareCellValues(value, best) < 0) {
+        best = value;
+        seen = true;
+      }
+    }
+    return seen ? best : null;
   }
 
   if (name === "max") {
-    return [...nonMissing].sort(compareCellValues).at(-1) ?? null;
+    let best: CellValue = null;
+    let seen = false;
+    for (const row of rows) {
+      const value = row[column];
+      if (isMissing(value)) {
+        continue;
+      }
+      if (!seen || compareCellValues(value, best) > 0) {
+        best = value;
+        seen = true;
+      }
+    }
+    return seen ? best : null;
   }
 
   return null;

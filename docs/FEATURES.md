@@ -20,7 +20,7 @@
 - `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`)
 - `sort_index`
 - `drop_duplicates` (`ignore_index` supported)
-- `value_counts`
+- `value_counts` (optional top-k `limit`)
 - `dropna`, `fillna`
 - `set_index`, `reset_index`
 - `dtypes`, `astype`

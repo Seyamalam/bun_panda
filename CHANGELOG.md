@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.3] - 2026-02-22
+
+### Added
+
+- `value_counts({ ..., limit })` for top-k counting without sorting all groups.
+- New tests for `value_counts` limit behavior and validation.
+- Benchmark case `value_counts_group_city_top10`.
+
+### Changed
+
+- `groupby().agg()` named aggregations now use lower-allocation single-pass reducers.
+- Additional benchmark-oriented optimization work for count/sort heavy workflows.
+
 ## [0.1.2] - 2026-02-22
 
 ### Added

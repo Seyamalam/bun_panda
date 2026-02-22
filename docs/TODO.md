@@ -16,6 +16,8 @@
 12. Added `drop_duplicates(ignore_index=true)`.
 13. Optimized internals for better benchmark performance (`groupby`, `sort_values`, `filter`, `value_counts`, `withRows` path).
 14. Added top-k partial sorting via `sort_values(..., ..., limit)`.
+15. Added top-k partial counting via `value_counts({ ..., limit })`.
+16. Optimized `groupby().agg()` named aggregations to reduce per-group allocations.
 
 ## Next Milestone (v0.2.x)
 

@@ -196,6 +196,19 @@ const cases = [
         .numRows(),
   },
   {
+    name: "value_counts_group_city_top10",
+    dataset: "base",
+    bunPanda: (_records, frame) =>
+      frame.value_counts({ subset: ["group", "city"], limit: 10 }).shape[0],
+    arquero: (table) =>
+      table
+        .groupby("group", "city")
+        .rollup({ count: () => op.count() })
+        .orderby(aq.desc("count"), "group", "city")
+        .slice(0, 10)
+        .numRows(),
+  },
+  {
     name: "drop_duplicates_group_city",
     dataset: "base",
     bunPanda: (_records, frame) => frame.drop_duplicates(["group", "city"], "first", true).shape[0],
@@ -203,7 +216,7 @@ const cases = [
       table
         .groupby("group", "city")
         .rollup({ count: () => op.count() })
-        .objects().length,
+        .numRows(),
   },
   {
     name: "skewed_groupby_mean",

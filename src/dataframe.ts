@@ -44,6 +44,7 @@ export interface ValueCountsOptions {
   subset?: string | string[];
   normalize?: boolean;
   dropna?: boolean;
+  limit?: number;
 }
 
 export type DropDuplicatesKeep = "first" | "last" | false;
@@ -487,6 +488,7 @@ export class DataFrame {
       : this._columns;
     const normalize = options.normalize ?? false;
     const dropna = options.dropna ?? true;
+    const limit = normalizeSortLimit(options.limit, Number.MAX_SAFE_INTEGER);
 
     for (const column of subset) {
       this.assertColumnExists(column);
@@ -539,19 +541,8 @@ export class DataFrame {
     }
 
     const valueColumnName = normalize ? "proportion" : "count";
-    const countRows = [...counts.values()]
-      .sort((left, right) => {
-        if (left.count !== right.count) {
-          return right.count - left.count;
-        }
-        for (let i = 0; i < left.values.length; i += 1) {
-          const compared = compareCellValues(left.values[i], right.values[i]);
-          if (compared !== 0) {
-            return compared;
-          }
-        }
-        return 0;
-      })
+    const sortedCounts = selectTopKCountEntries(counts, limit);
+    const countRows = sortedCounts
       .map((entry) => {
         const row: Row = {};
         for (let i = 0; i < subset.length; i += 1) {
@@ -1389,6 +1380,65 @@ function compareRowsByComparers(
 ): number {
   for (let i = 0; i < comparers.length; i += 1) {
     const compared = comparers[i]!(left, right);
+    if (compared !== 0) {
+      return compared;
+    }
+  }
+  return 0;
+}
+
+function selectTopKCountEntries(
+  entriesMap: Map<string, { values: CellValue[]; count: number }>,
+  limit?: number
+): Array<{ values: CellValue[]; count: number }> {
+  const entries = entriesMap.values();
+  if (limit === 0) {
+    return [];
+  }
+
+  if (limit === undefined) {
+    return [...entries].sort(compareCountEntries);
+  }
+
+  if (entriesMap.size <= limit * 4) {
+    return [...entries].sort(compareCountEntries).slice(0, limit);
+  }
+
+  const selected: Array<{ values: CellValue[]; count: number }> = [];
+  for (const entry of entries) {
+    let lo = 0;
+    let hi = selected.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      const compared = compareCountEntries(entry, selected[mid]!);
+      if (compared < 0) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+
+    if (selected.length < limit) {
+      selected.splice(lo, 0, entry);
+      continue;
+    }
+    if (lo < limit) {
+      selected.splice(lo, 0, entry);
+      selected.pop();
+    }
+  }
+  return selected;
+}
+
+function compareCountEntries(
+  left: { values: CellValue[]; count: number },
+  right: { values: CellValue[]; count: number }
+): number {
+  if (left.count !== right.count) {
+    return right.count - left.count;
+  }
+  for (let i = 0; i < left.values.length; i += 1) {
+    const compared = compareCellValues(left.values[i], right.values[i]);
     if (compared !== 0) {
       return compared;
     }

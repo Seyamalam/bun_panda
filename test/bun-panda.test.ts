@@ -368,6 +368,33 @@ describe("indexing and dedup operations", () => {
       { code: "b", count: 2 },
     ]);
   });
+
+  test("value_counts limit returns top-k rows and preserves ordering", () => {
+    const df = new DataFrame([
+      { code: "c" },
+      { code: "b" },
+      { code: "a" },
+      { code: "a" },
+      { code: "b" },
+      { code: "b" },
+      { code: "c" },
+    ]);
+
+    expect(df.value_counts({ subset: "code", limit: 2 }).to_records()).toEqual([
+      { code: "b", count: 3 },
+      { code: "a", count: 2 },
+    ]);
+  });
+
+  test("value_counts limit validates non-negative integer", () => {
+    const df = new DataFrame([{ code: "x" }]);
+    expect(() => df.value_counts({ subset: "code", limit: -1 })).toThrow(
+      "limit must be a non-negative integer."
+    );
+    expect(() => df.value_counts({ subset: "code", limit: 1.2 })).toThrow(
+      "limit must be a non-negative integer."
+    );
+  });
 });
 
 describe("pivot table", () => {

@@ -23,10 +23,11 @@ BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 5. `filter_sort_multicol_top200`
 6. `value_counts_city`
 7. `value_counts_group_city`
-8. `drop_duplicates_group_city`
-9. `skewed_groupby_mean`
-10. `wide_groupby_sum`
-11. `wide_filter_sort`
+8. `value_counts_group_city_top10`
+9. `drop_duplicates_group_city`
+10. `skewed_groupby_mean`
+11. `wide_groupby_sum`
+12. `wide_filter_sort`
 
 ## Example Output
 
@@ -47,6 +48,7 @@ rows=25000, iterations=12
 2. `construct_only` isolates construction overhead.
 3. Cases measure operation result row counts (`shape[0]` / `numRows()`) to avoid adding object materialization costs.
 4. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
+5. Top-N counts use `value_counts({ ..., limit })` in `bun_panda`.
 
 ## Notes
 

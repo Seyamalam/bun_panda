@@ -87,7 +87,7 @@ bun run check
 bun run bench
 ```
 
-Current suite: `32` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
+Current suite: `38` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV edge cases.
 
 ## Documentation
 
@@ -104,7 +104,7 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck + tests
 
 ## Status
 
-This is an early library release (`0.1.2`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.3`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 
