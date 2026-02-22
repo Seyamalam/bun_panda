@@ -1,4 +1,4 @@
-# API Reference (v0.1.9)
+# API Reference (v0.1.10)
 
 ## Core Classes
 
@@ -76,6 +76,9 @@ From `bun_panda`:
 - `read_csv(path, options?)`
 - `read_csv_sync(path, options?)`
 - `parse_csv(text, options?)`
+- `read_json(path, options?)`
+- `read_json_sync(path, options?)`
+- `parse_json(text, options?)`
 - `to_csv(dataframe, options?)`
 - `concat(frames, options?)`
 - `merge(left, right, options)`
@@ -84,7 +87,7 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.9`.
+2. Not all pandas features are implemented in `v0.1.10`.
 
 ## `pivot_table` Options (focused subset)
 

@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.10] - 2026-02-22
+
+### Added
+
+- JSON IO support:
+  - `read_json(path, options?)`
+  - `read_json_sync(path, options?)`
+  - `parse_json(text, options?)`
+- `DataFrame.to_json({ path, orient, space })` options form for writing JSON files directly.
+
+### Changed
+
+- Expanded IO test coverage with JSON read/parse/write scenarios.
+
 ## [0.1.9] - 2026-02-22
 
 ### Added

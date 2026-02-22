@@ -26,6 +26,7 @@
 22. Refactored dataframe internals into smaller helper modules under `src/internal/dataframe/`.
 23. Further split large dataframe operation logic into dedicated modules (`valueCounts`, `pivotTable`, `merge`).
 24. Added pandas-style `groupby(as_index)`, `GroupBy.size()`, and `DataFrame.nunique()`.
+25. Added JSON IO support (`read_json`, `read_json_sync`, `parse_json`) and `to_json({ path })`.
 
 ## Next Milestone (v0.2.x)
 

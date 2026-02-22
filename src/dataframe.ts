@@ -55,6 +55,12 @@ export interface ToCSVOptions {
   index?: boolean;
 }
 
+export interface ToJSONOptions {
+  path?: string;
+  orient?: "records" | "list";
+  space?: number;
+}
+
 export interface MergeOptions {
   on: string | string[];
   how?: "inner" | "left" | "right" | "outer";
@@ -223,8 +229,23 @@ export class DataFrame {
     return out;
   }
 
-  to_json(orient: "records" | "list" = "records", space = 2): string {
-    return JSON.stringify(this.to_dict(orient), null, space);
+  to_json(
+    orientOrOptions: "records" | "list" | ToJSONOptions = "records",
+    space = 2
+  ): string {
+    const orient =
+      typeof orientOrOptions === "string"
+        ? orientOrOptions
+        : (orientOrOptions.orient ?? "records");
+    const jsonSpace =
+      typeof orientOrOptions === "string"
+        ? space
+        : (orientOrOptions.space ?? 2);
+    const json = JSON.stringify(this.to_dict(orient), null, jsonSpace);
+    if (typeof orientOrOptions !== "string" && orientOrOptions.path) {
+      writeFileSync(orientOrOptions.path, `${json}\n`, "utf8");
+    }
+    return json;
   }
 
   to_csv(options: ToCSVOptions = {}): string {

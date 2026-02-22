@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -7,8 +7,10 @@ import {
   concat,
   merge,
   parse_csv,
+  parse_json,
   pivot_table,
   read_csv_sync,
+  read_json_sync,
 } from "../index";
 
 const tempDir = mkdtempSync(join(tmpdir(), "bun-panda-"));
@@ -759,5 +761,44 @@ describe("CSV IO", () => {
     const csv = df.to_csv();
     expect(csv).toContain('"hello, world"');
     expect(csv).toContain('"quoted ""value"""');
+  });
+});
+
+describe("JSON IO", () => {
+  test("parse_json supports records and list orientations", () => {
+    const recordsJson =
+      '[{"id":1,"city":"Austin"},{"id":2,"city":"Seattle"}]';
+    const listJson = '{"id":[1,2],"city":["Austin","Seattle"]}';
+
+    expect(parse_json(recordsJson).to_records()).toEqual([
+      { id: 1, city: "Austin" },
+      { id: 2, city: "Seattle" },
+    ]);
+    expect(parse_json(listJson).to_records()).toEqual([
+      { id: 1, city: "Austin" },
+      { id: 2, city: "Seattle" },
+    ]);
+  });
+
+  test("read_json_sync supports index_col", () => {
+    const jsonPath = join(tempDir, "sample.json");
+    writeFileSync(jsonPath, '[{"id":101,"city":"Austin"},{"id":102,"city":"Seattle"}]', "utf8");
+
+    const df = read_json_sync(jsonPath, { index_col: "id" });
+    expect(df.index).toEqual([101, 102]);
+    expect(df.columns).toEqual(["city"]);
+    expect(df.loc(101)).toEqual({ city: "Austin" });
+  });
+
+  test("to_json can write to file path", () => {
+    const outPath = join(tempDir, "out.json");
+    const df = new DataFrame([
+      { id: 1, city: "Austin" },
+      { id: 2, city: "Seattle" },
+    ]);
+
+    const json = df.to_json({ orient: "records", path: outPath, space: 0 });
+    const fileJson = readFileSync(outPath, "utf8").trim();
+    expect(JSON.parse(json)).toEqual(JSON.parse(fileJson));
   });
 });

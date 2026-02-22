@@ -20,6 +20,11 @@ export interface ConcatOptions {
   ignore_index?: boolean;
 }
 
+export interface ReadJSONOptions {
+  orient?: "records" | "list";
+  index_col?: string | number;
+}
+
 export async function read_csv(path: string, options: ReadCSVOptions = {}): Promise<DataFrame> {
   const text = await Bun.file(path).text();
   return parse_csv(text, options);
@@ -28,6 +33,16 @@ export async function read_csv(path: string, options: ReadCSVOptions = {}): Prom
 export function read_csv_sync(path: string, options: ReadCSVOptions = {}): DataFrame {
   const text = readFileSync(path, "utf8");
   return parse_csv(text, options);
+}
+
+export async function read_json(path: string, options: ReadJSONOptions = {}): Promise<DataFrame> {
+  const text = await Bun.file(path).text();
+  return parse_json(text, options);
+}
+
+export function read_json_sync(path: string, options: ReadJSONOptions = {}): DataFrame {
+  const text = readFileSync(path, "utf8");
+  return parse_json(text, options);
 }
 
 export function parse_csv(text: string, options: ReadCSVOptions = {}): DataFrame {
@@ -104,6 +119,54 @@ export function parse_csv(text: string, options: ReadCSVOptions = {}): DataFrame
   }
 
   return new DataFrame(records, { columns, index });
+}
+
+export function parse_json(text: string, options: ReadJSONOptions = {}): DataFrame {
+  const parsed = JSON.parse(stripBom(text)) as unknown;
+  const orient = options.orient ?? inferJsonOrient(parsed);
+  let frame: DataFrame;
+
+  if (orient === "records") {
+    if (!Array.isArray(parsed)) {
+      throw new Error("JSON orient 'records' expects an array of objects.");
+    }
+    const records: Row[] = parsed.map((entry, position) => {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+        throw new Error(`JSON records entry at position ${position} is not an object.`);
+      }
+      const row: Row = {};
+      for (const [column, value] of Object.entries(entry)) {
+        row[column] = coerceJsonCell(value);
+      }
+      return row;
+    });
+    frame = new DataFrame(records);
+  } else {
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("JSON orient 'list' expects a column-object with array values.");
+    }
+    const columnar: Record<string, CellValue[]> = {};
+    for (const [column, values] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!Array.isArray(values)) {
+        throw new Error(`JSON column '${column}' is not an array.`);
+      }
+      columnar[column] = values.map((value) => coerceJsonCell(value));
+    }
+    frame = new DataFrame(columnar);
+  }
+
+  if (options.index_col !== undefined) {
+    const indexColumn =
+      typeof options.index_col === "number"
+        ? frame.columns[options.index_col]
+        : options.index_col;
+    if (!indexColumn || !frame.columns.includes(indexColumn)) {
+      throw new Error("index_col does not match any column.");
+    }
+    return frame.set_index(indexColumn);
+  }
+
+  return frame;
 }
 
 export function to_csv(dataframe: DataFrame, options: ToCSVOptions = {}): string {
@@ -289,4 +352,27 @@ function stripBom(text: string): string {
     return text.slice(1);
   }
   return text;
+}
+
+function inferJsonOrient(input: unknown): "records" | "list" {
+  if (Array.isArray(input)) {
+    return "records";
+  }
+  if (input && typeof input === "object") {
+    return "list";
+  }
+  throw new Error("Unable to infer JSON orient; expected array or object root.");
+}
+
+function coerceJsonCell(value: unknown): CellValue {
+  if (
+    value === null ||
+    value === undefined ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+  return JSON.stringify(value);
 }
