@@ -37,6 +37,7 @@ jobs:
       BUN_PANDA_BENCH_ITERS: "6"
       BUN_PANDA_BENCH_ROUNDS: "3"
       BUN_PANDA_BENCH_JSON: bench/results/arquero.json
+      BUN_PANDA_IO_BENCH_JSON: bench/results/io.json
       BUN_PANDA_PANDAS_JSON: bench/results/pandas.json
       BUN_PANDA_PANDAS_COMPARE_JSON: bench/results/pandas-compare.json
       BUN_PANDA_BENCH_MAX_RATIO: "1.05"
@@ -66,6 +67,9 @@ jobs:
 
       - name: Run bun_panda vs Arquero benchmark
         run: bun run bench:arquero | tee bench/results/arquero.txt
+
+      - name: Run IO parser benchmark
+        run: bun run bench:io | tee bench/results/io.txt
 
       - name: Run pandas benchmark
         run: python bench/pandas_compare.py | tee bench/results/pandas.txt

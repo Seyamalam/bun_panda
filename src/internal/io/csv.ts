@@ -1,6 +1,7 @@
 import { DataFrame } from "../../dataframe";
-import type { CellValue, IndexLabel, Row } from "../../types";
+import type { CellValue, Row } from "../../types";
 import type { ReadCSVOptions } from "../../io";
+import { applyIndexColumn } from "./frame";
 import { stripBom } from "./shared";
 
 export function parseCsvText(text: string, options: ReadCSVOptions = {}): DataFrame {
@@ -50,33 +51,8 @@ export function parseCsvText(text: string, options: ReadCSVOptions = {}): DataFr
     records.push(record);
   }
 
-  let index: IndexLabel[] | undefined;
-
-  if (options.index_col !== undefined) {
-    const indexColumn =
-      typeof options.index_col === "number"
-        ? columns[options.index_col]
-        : options.index_col;
-
-    if (!indexColumn || !columns.includes(indexColumn)) {
-      throw new Error("index_col does not match any column.");
-    }
-
-    index = records.map((record, position) => {
-      const value = record[indexColumn];
-      if (typeof value === "string" || typeof value === "number") {
-        return value;
-      }
-      return String(value ?? position);
-    });
-
-    columns = columns.filter((column) => column !== indexColumn);
-    for (const record of records) {
-      delete record[indexColumn];
-    }
-  }
-
-  return new DataFrame(records, { columns, index });
+  const frame = new DataFrame(records, { columns });
+  return applyIndexColumn(frame, options.index_col);
 }
 
 function inferValue(value: string, naValues: Set<string>): CellValue {
@@ -93,7 +69,7 @@ function inferValue(value: string, naValues: Set<string>): CellValue {
     return false;
   }
 
-  if (/^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(trimmed)) {
+  if (NUMERIC_PATTERN.test(trimmed)) {
     const parsed = Number(trimmed);
     if (Number.isFinite(parsed)) {
       return parsed;
@@ -104,6 +80,10 @@ function inferValue(value: string, naValues: Set<string>): CellValue {
 }
 
 function parseCsvRows(text: string, sep: string): string[][] {
+  if (!text.includes('"')) {
+    return parseCsvRowsFast(text, sep);
+  }
+
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = "";
@@ -151,3 +131,19 @@ function parseCsvRows(text: string, sep: string): string[][] {
 
   return rows.filter((entry) => entry.length > 1 || entry[0]?.trim().length);
 }
+
+function parseCsvRowsFast(text: string, sep: string): string[][] {
+  const lines = text.split(/\r?\n/u);
+  const rows: string[][] = [];
+
+  for (const line of lines) {
+    if (line.trim().length === 0) {
+      continue;
+    }
+    rows.push(line.split(sep));
+  }
+
+  return rows;
+}
+
+const NUMERIC_PATTERN = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;

@@ -4,9 +4,15 @@ import {
   type MergeOptions,
   type PivotTableOptions,
   type ToCSVOptions,
+  type ToExcelOptions,
+  type ToParquetOptions,
 } from "./dataframe";
 import { parseCsvText } from "./internal/io/csv";
+import { readExcelFile, readExcelFileSync } from "./internal/io/excelRead";
+import { writeExcelFrame } from "./internal/io/excelWrite";
 import { parseJsonText } from "./internal/io/json";
+import { readParquetFile } from "./internal/io/parquetRead";
+import { writeParquetFrame } from "./internal/io/parquetWrite";
 import type { IndexLabel, Row } from "./types";
 
 export interface ReadCSVOptions {
@@ -28,6 +34,18 @@ export interface ReadJSONOptions {
   orient?: "records" | "list";
   index_col?: string | number;
   lines?: boolean;
+}
+
+export interface ReadParquetOptions {
+  columns?: string[];
+  index_col?: string | number;
+}
+
+export interface ReadExcelOptions {
+  sheet_name?: string | number;
+  header?: boolean;
+  names?: string[];
+  index_col?: string | number;
 }
 
 export async function read_csv(path: string, options: ReadCSVOptions = {}): Promise<DataFrame> {
@@ -87,6 +105,41 @@ export function parse_json(text: string, options: ReadJSONOptions = {}): DataFra
 
 export function to_csv(dataframe: DataFrame, options: ToCSVOptions = {}): string {
   return dataframe.to_csv(options);
+}
+
+export async function read_parquet(
+  path: string,
+  options: ReadParquetOptions = {}
+): Promise<DataFrame> {
+  return readParquetFile(path, options);
+}
+
+export async function read_excel(
+  path: string,
+  options: ReadExcelOptions = {}
+): Promise<DataFrame> {
+  return readExcelFile(path, options);
+}
+
+export function read_excel_sync(
+  path: string,
+  options: ReadExcelOptions = {}
+): DataFrame {
+  return readExcelFileSync(path, options);
+}
+
+export async function to_parquet(
+  dataframe: DataFrame,
+  options: ToParquetOptions
+): Promise<void> {
+  await writeParquetFrame(dataframe, options);
+}
+
+export function to_excel(
+  dataframe: DataFrame,
+  options: ToExcelOptions
+): void {
+  writeExcelFrame(dataframe, options);
 }
 
 export function concat(frames: DataFrame[], options: ConcatOptions = {}): DataFrame {

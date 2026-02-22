@@ -1,6 +1,6 @@
 {
   "name": "bun_panda",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Pandas-inspired DataFrame and Series utilities for Bun/TypeScript.",
   "license": "MIT",
   "homepage": "https://github.com/your-org/bun_panda#readme",
@@ -37,11 +37,12 @@
     "check": "bun run typecheck && bun run test",
     "bench": "bun run bench:arquero",
     "bench:arquero": "bun run bench/compare.js",
+    "bench:io": "bun run bench/io.js",
     "bench:pandas": "python bench/pandas_compare.py",
     "bench:compare:pandas": "bun run bench/compare-pandas.js",
     "bench:gate": "bun run bench/assert-regression.js",
     "bench:refresh-readme": "bun run bench/update-readme.js",
-    "bench:ci": "bun run bench:arquero && bun run bench:pandas && bun run bench:compare:pandas && bun run bench:gate && bun run bench:refresh-readme"
+    "bench:ci": "bun run bench:arquero && bun run bench:io && bun run bench:pandas && bun run bench:compare:pandas && bun run bench:gate && bun run bench:refresh-readme"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -49,5 +50,9 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "parquetjs-lite": "^0.8.7",
+    "xlsx": "^0.18.5"
   }
 }

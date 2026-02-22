@@ -19,3 +19,23 @@ export function coerceJsonCell(value: unknown): CellValue {
   }
   return JSON.stringify(value);
 }
+
+export function normalizeExternalCell(value: unknown): CellValue {
+  if (
+    value === null ||
+    value === undefined ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    value instanceof Date
+  ) {
+    return value;
+  }
+
+  if (typeof value === "bigint") {
+    const asNumber = Number(value);
+    return Number.isSafeInteger(asNumber) ? asNumber : value.toString();
+  }
+
+  return JSON.stringify(value);
+}

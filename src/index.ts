@@ -5,7 +5,9 @@ export {
   type MergeOptions,
   type PivotTableOptions,
   type ToCSVOptions,
+  type ToExcelOptions,
   type ToJSONOptions,
+  type ToParquetOptions,
   type ValueCountsOptions,
 } from "./dataframe";
 export { GroupBy } from "./groupby";
@@ -19,16 +21,23 @@ export {
   pivot_table,
   read_csv,
   read_csv_sync,
+  read_excel,
+  read_excel_sync,
   read_json,
   read_json_sync,
+  read_parquet,
   read_table,
   read_table_sync,
   read_tsv,
   read_tsv_sync,
+  to_excel,
+  to_parquet,
   to_csv,
   type ConcatOptions,
   type ReadCSVOptions,
+  type ReadExcelOptions,
   type ReadJSONOptions,
+  type ReadParquetOptions,
   type ReadTableOptions,
 } from "./io";
 export { Series, type SeriesDType, type SeriesOptions } from "./series";

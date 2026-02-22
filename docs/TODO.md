@@ -28,6 +28,7 @@
 24. Added pandas-style `groupby(as_index)`, `GroupBy.size()`, and `DataFrame.nunique()`.
 25. Added JSON IO support (`read_json`, `read_json_sync`, `parse_json`) and `to_json({ path })`.
 26. Added pandas-style table/TSV IO wrappers (`read_table`, `read_tsv`, and sync/parse variants) plus JSON-lines compatibility (`lines=true`) for `read_json`, `parse_json`, and `to_json`.
+27. Added Parquet and Excel filetype support (`read_parquet`, `read_excel`, `read_excel_sync`, `to_parquet`, `to_excel`) and IO benchmark suite for parser performance.
 
 ## Next Milestone (v0.2.x)
 

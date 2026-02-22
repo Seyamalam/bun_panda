@@ -14,6 +14,12 @@ Optional tuning:
 BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 ```
 
+IO parser benchmark:
+
+```bash
+bun run bench:io
+```
+
 Stability tuning:
 
 ```bash
@@ -37,6 +43,8 @@ The current harness runs `73` cases across five datasets:
 3. `wide`
 4. `high_card`
 5. `missing`
+
+Separate IO harness runs `20` parser-focused cases across CSV, TSV, and JSON payload shapes.
 
 Case families include:
 

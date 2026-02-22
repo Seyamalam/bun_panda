@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.12] - 2026-02-22
+
+### Added
+
+- Filetype support:
+  - `read_parquet(path, options?)`
+  - `read_excel(path, options?)`
+  - `read_excel_sync(path, options?)`
+  - `to_parquet(dataframe, options)`
+  - `to_excel(dataframe, options)`
+- DataFrame methods:
+  - `DataFrame.to_parquet({ path })`
+  - `DataFrame.to_excel({ path, sheet_name?, index? })`
+- New filetype integration tests for Parquet and Excel round-trips.
+- IO benchmark suite (`bench/io.js`) with 20 parser-focused cases.
+
+### Changed
+
+- Improved CSV parse performance for common unquoted input via a fast row-splitting path.
+- Refactored shared IO index handling into `src/internal/io/frame.ts`.
+
 ## [0.1.11] - 2026-02-22
 
 ### Added

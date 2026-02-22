@@ -9,9 +9,9 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - Familiar naming:
 - `DataFrame`
 - `Series`
-- `read_csv`, `read_table`, `read_tsv`, `read_json`, `concat`, `merge`, `pivot_table`
+- `read_csv`, `read_table`, `read_tsv`, `read_json`, `read_parquet`, `read_excel`, `concat`, `merge`, `pivot_table`
 - `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`
-- `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`
+- `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`, `to_parquet`, `to_excel`
 - pandas-like options where practical (`groupby(..., { dropna, sort })`, `value_counts({ sort, ascending })`)
 - more pandas-style helpers (`nunique`, `groupby(..., { as_index })`, `groupby().size()`)
 - Lightweight, in-memory transforms for Bun + TypeScript.
@@ -87,11 +87,12 @@ bun test
 bun run typecheck
 bun run check
 bun run bench
+bun run bench:io
 python -m pip install -r bench/requirements.txt
 python bench/pandas_compare.py
 ```
 
-Current suite: `76` tests for dataframe ops, merge modes, pivoting, dtypes, CSV/TSV/JSON IO edge cases, and core utility behavior.
+Current suite: `80` tests for dataframe ops, merge modes, pivoting, dtypes, and CSV/TSV/JSON/Parquet/Excel IO edge cases.
 Benchmark suite: `73` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
@@ -110,7 +111,7 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck/tests p
 <!-- BENCHMARKS:START -->
 ### Automated Benchmark Snapshot
 
-Generated from benchmark scripts (rows=15000, iterations=6).
+Generated from benchmark scripts (rows=25000, iterations=8).
 bun_panda vs Arquero: faster or equal in 73/73 cases.
 bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
@@ -118,36 +119,36 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 | case | dataset | bun_panda avg | arquero avg | ratio (bun/aq) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 1.90ms | 3.29ms | 0.58x |
-| filter_sort_top100 | base | 0.30ms | 1.43ms | 0.21x |
-| sort_top1000 | base | 2.11ms | 4.23ms | 0.50x |
-| sort_multicol_top800 | base | 6.48ms | 18.92ms | 0.34x |
-| value_counts_city | base | 1.03ms | 7.05ms | 0.15x |
-| value_counts_group_city_top10 | base | 2.18ms | 11.86ms | 0.18x |
-| value_counts_missing_city_dropna_false | missing | 0.53ms | 4.05ms | 0.13x |
-| value_counts_high_card_city_top20 | high_card | 19.50ms | 30.42ms | 0.64x |
-| value_counts_high_card_user_top100 | high_card | 10.22ms | 17.77ms | 0.58x |
+| groupby_mean | base | 3.70ms | 5.16ms | 0.72x |
+| filter_sort_top100 | base | 0.53ms | 2.26ms | 0.23x |
+| sort_top1000 | base | 10.13ms | 19.69ms | 0.51x |
+| sort_multicol_top800 | base | 11.53ms | 34.97ms | 0.33x |
+| value_counts_city | base | 1.00ms | 12.37ms | 0.08x |
+| value_counts_group_city_top10 | base | 5.01ms | 22.24ms | 0.23x |
+| value_counts_missing_city_dropna_false | missing | 0.81ms | 6.28ms | 0.13x |
+| value_counts_high_card_city_top20 | high_card | 30.48ms | 49.36ms | 0.62x |
+| value_counts_high_card_user_top100 | high_card | 19.06ms | 33.66ms | 0.57x |
 
 #### bun_panda vs pandas
 
 | case | dataset | bun_panda avg | pandas avg | ratio (bun/pd) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 1.90ms | 0.76ms | 2.49x |
-| filter_sort_top100 | base | 0.30ms | 1.04ms | 0.29x |
-| sort_top1000 | base | 2.11ms | 1.14ms | 1.85x |
-| sort_multicol_top800 | base | 6.48ms | 2.14ms | 3.03x |
-| value_counts_city | base | 1.03ms | 0.56ms | 1.85x |
-| value_counts_group_city_top10 | base | 2.18ms | 0.99ms | 2.21x |
-| value_counts_missing_city_dropna_false | missing | 0.53ms | 0.90ms | 0.59x |
-| groupby_missing_city_mean | missing | 1.41ms | 1.00ms | 1.41x |
-| value_counts_high_card_city_top20 | high_card | 19.50ms | 7.55ms | 2.58x |
-| value_counts_high_card_user_top100 | high_card | 10.22ms | 12.38ms | 0.83x |
+| groupby_mean | base | 3.70ms | 1.09ms | 3.39x |
+| filter_sort_top100 | base | 0.53ms | 1.39ms | 0.38x |
+| sort_top1000 | base | 10.13ms | 2.29ms | 4.42x |
+| sort_multicol_top800 | base | 11.53ms | 4.39ms | 2.62x |
+| value_counts_city | base | 1.00ms | 0.81ms | 1.23x |
+| value_counts_group_city_top10 | base | 5.01ms | 1.48ms | 3.39x |
+| value_counts_missing_city_dropna_false | missing | 0.81ms | 1.32ms | 0.61x |
+| groupby_missing_city_mean | missing | 2.74ms | 1.48ms | 1.86x |
+| value_counts_high_card_city_top20 | high_card | 30.48ms | 13.00ms | 2.34x |
+| value_counts_high_card_user_top100 | high_card | 19.06ms | 23.32ms | 0.82x |
 
 <!-- BENCHMARKS:END -->
 
 ## Status
 
-This is an early library release (`0.1.11`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.12`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 

@@ -7,6 +7,8 @@ import {
   normalizeRecords,
   resolvePosition,
 } from "./internal/dataframe/core";
+import { writeExcelFrame } from "./internal/io/excelWrite";
+import { writeParquetFrame } from "./internal/io/parquetWrite";
 import { computeMergeRows } from "./internal/dataframe/merge";
 import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
@@ -60,6 +62,16 @@ export interface ToJSONOptions {
   orient?: "records" | "list";
   space?: number;
   lines?: boolean;
+}
+
+export interface ToParquetOptions {
+  path: string;
+}
+
+export interface ToExcelOptions {
+  path: string;
+  sheet_name?: string;
+  index?: boolean;
 }
 
 export interface MergeOptions {
@@ -269,6 +281,14 @@ export class DataFrame {
       writeFileSync(options.path, csv, "utf8");
     }
     return csv;
+  }
+
+  async to_parquet(options: ToParquetOptions): Promise<void> {
+    await writeParquetFrame(this, options);
+  }
+
+  to_excel(options: ToExcelOptions): void {
+    writeExcelFrame(this, options);
   }
 
   head(n = 5): DataFrame {

@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.11)
+## Implemented (v0.1.12)
 
 ### Data Structures
 
@@ -27,7 +27,7 @@
 - `sum`, `mean`, `describe`
 - `nunique(dropna?)`
 - `pivot_table` (`margins`, `sort`, `dropna`, `fill_value`)
-- `to_records`, `to_dict`, `to_json`, `to_csv`, `to_string`
+- `to_records`, `to_dict`, `to_json`, `to_csv`, `to_parquet`, `to_excel`, `to_string`
 - `merge`
 
 ### Series Operations
@@ -65,6 +65,11 @@
 - `read_json` (async)
 - `read_json_sync`
 - `parse_json` (`lines: true` JSON-lines support)
+- `read_parquet` (async)
+- `read_excel` (async)
+- `read_excel_sync`
+- `to_parquet`
+- `to_excel`
 - `to_csv`
 - `concat`
 - `merge`

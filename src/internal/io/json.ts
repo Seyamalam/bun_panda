@@ -1,6 +1,7 @@
 import { DataFrame } from "../../dataframe";
 import type { CellValue, Row } from "../../types";
 import type { ReadJSONOptions } from "../../io";
+import { applyIndexColumn } from "./frame";
 import { coerceJsonCell, stripBom } from "./shared";
 
 export function parseJsonText(text: string, options: ReadJSONOptions = {}): DataFrame {
@@ -21,18 +22,7 @@ export function parseJsonText(text: string, options: ReadJSONOptions = {}): Data
     frame = dataframeFromColumnar(parsed);
   }
 
-  if (options.index_col !== undefined) {
-    const indexColumn =
-      typeof options.index_col === "number"
-        ? frame.columns[options.index_col]
-        : options.index_col;
-    if (!indexColumn || !frame.columns.includes(indexColumn)) {
-      throw new Error("index_col does not match any column.");
-    }
-    return frame.set_index(indexColumn);
-  }
-
-  return frame;
+  return applyIndexColumn(frame, options.index_col);
 }
 
 function parseJsonLines(text: string, options: ReadJSONOptions): DataFrame {
@@ -57,17 +47,7 @@ function parseJsonLines(text: string, options: ReadJSONOptions): DataFrame {
     });
 
   const frame = new DataFrame(records);
-  if (options.index_col !== undefined) {
-    const indexColumn =
-      typeof options.index_col === "number"
-        ? frame.columns[options.index_col]
-        : options.index_col;
-    if (!indexColumn || !frame.columns.includes(indexColumn)) {
-      throw new Error("index_col does not match any column.");
-    }
-    return frame.set_index(indexColumn);
-  }
-  return frame;
+  return applyIndexColumn(frame, options.index_col);
 }
 
 function dataframeFromRecords(parsed: unknown): DataFrame {
