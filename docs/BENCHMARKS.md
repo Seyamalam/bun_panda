@@ -17,8 +17,15 @@ BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 ## Current Cases
 
 1. `groupby_mean`
-2. `filter_sort`
-3. `value_counts_city`
+2. `groupby_mean_2keys`
+3. `filter_sort_top100`
+4. `filter_sort_multicol_top200`
+5. `value_counts_city`
+6. `value_counts_group_city`
+7. `drop_duplicates_group_city`
+8. `skewed_groupby_mean`
+9. `wide_groupby_sum`
+10. `wide_filter_sort`
 
 ## Example Output
 
@@ -26,11 +33,11 @@ BUN_PANDA_BENCH_ROWS=50000 BUN_PANDA_BENCH_ITERS=20 bun run bench
 # bun_panda benchmark
 rows=25000, iterations=12
 
-| case | bun_panda avg | arquero avg | delta |
-| --- | ---: | ---: | ---: |
-| groupby_mean | 11.73ms | 6.27ms | +5.46ms |
-| filter_sort | 8.36ms | 2.75ms | +5.61ms |
-| value_counts_city | 7.62ms | 3.93ms | +3.69ms |
+| case | dataset | bun_panda avg | arquero avg | delta | ratio (bun/aq) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| groupby_mean | base | 7.67ms | 5.05ms | +2.62ms | 1.52x |
+| filter_sort_top100 | base | 6.25ms | 2.10ms | +4.15ms | 2.98x |
+| value_counts_city | base | 4.70ms | 2.65ms | +2.05ms | 1.77x |
 ```
 
 ## Notes

@@ -45,6 +45,39 @@ const joined = merge(users.reset_index("id"), sales, { on: "id", how: "left" });
 console.log(joined.head(5).to_records());
 ```
 
+## bun_panda vs Arquero Example
+
+Same analysis task in both libraries:
+
+```ts
+// bun_panda
+import { DataFrame } from "bun_panda";
+
+const out = new DataFrame(data)
+  .query((row) => Boolean(row.active) && Number(row.value) > 300)
+  .groupby(["group", "city"])
+  .agg({ value: "mean", revenue: "sum" })
+  .sort_values(["group", "city"])
+  .to_records();
+```
+
+```ts
+// Arquero
+import * as aq from "arquero";
+
+const op = aq.op;
+const out = aq
+  .from(data)
+  .filter((d) => d.active && d.value > 300)
+  .groupby("group", "city")
+  .rollup({
+    value: (d) => op.mean(d.value),
+    revenue: (d) => op.sum(d.revenue),
+  })
+  .orderby("group", "city")
+  .objects();
+```
+
 ## Development
 
 ```bash
