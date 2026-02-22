@@ -1,5 +1,9 @@
 export {
   DataFrame,
+  type DataFrameApplyAxis,
+  type DataFrameApplyColumnFn,
+  type DataFrameApplyRowFn,
+  type DataFrameMapFn,
   type DataFrameOptions,
   type DropDuplicatesKeep,
   type MergeOptions,
@@ -43,7 +47,12 @@ export {
   type ReadParquetOptions,
   type ReadTableOptions,
 } from "./io";
-export { Series, type SeriesDType, type SeriesOptions } from "./series";
+export {
+  Series,
+  type SeriesDType,
+  type SeriesOptions,
+  type SeriesReplaceInput,
+} from "./series";
 export type {
   AggFn,
   AggName,

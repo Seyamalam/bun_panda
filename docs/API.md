@@ -1,4 +1,4 @@
-# API Reference (v0.1.15)
+# API Reference (v0.1.x)
 
 ## Core Classes
 
@@ -21,6 +21,7 @@ Key methods:
 
 - Access/select: `get`, `select`, `iloc`, `loc`, `at`
 - Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single/multi-column, optional `limit` for top-k, `na_position`)
+- Apply/map: `apply` (`axis=0|1` and aliases), `applymap`, `map`
 - Index-aware transforms: `sort_index`, `drop_duplicates` (`ignore_index` supported), `value_counts` (`limit`, `sort`, `ascending`)
 - Compatibility helpers: `isin`, `clip`, `replace`, `sample`, `rank`
 - Missing values: `dropna`, `fillna`
@@ -48,6 +49,7 @@ Key methods:
 
 - Access: `iloc`, `loc`, `head`, `tail`
 - Transform: `map`, `apply`, `filter`, `astype`
+- Compatibility helpers: `isin`, `clip`, `replace`
 - Missing values: `fillna`, `dropna`
 - Summary: `sum`, `mean`, `min`, `max`, `unique`, `value_counts`
 - Serialization: `to_list`, `to_dict`

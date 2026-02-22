@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.19] - 2026-02-22
+
+### Added
+
+- DataFrame apply/map compatibility APIs:
+  - `DataFrame.apply(fn, axis?)` with pandas axis semantics (`0/"index"` for columns, `1/"columns"` for rows).
+  - `DataFrame.applymap(fn)` and alias `DataFrame.map(fn)`.
+- Series compatibility helpers:
+  - `Series.isin(values)`
+  - `Series.clip(lower?, upper?)`
+  - `Series.replace(toReplace, value?)`
+- New focused compatibility tests in `test/pandas-apply-series-compat.test.ts`.
+
+### Changed
+
+- Improved code structure with new internal modules:
+  - `src/internal/dataframe/apply.ts`
+  - `src/internal/series/compat.ts`
+
 ## [0.1.18] - 2026-02-22
 
 ### Added

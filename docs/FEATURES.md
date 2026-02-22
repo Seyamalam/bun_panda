@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.15)
+## Implemented (v0.1.x)
 
 ### Data Structures
 
@@ -18,6 +18,7 @@
 - `assign`, `drop`, `rename`
 - `filter`, `query`
 - `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`)
+- `apply` (`axis=0|1` and aliases), `applymap`, `map`
 - `sort_index`
 - `drop_duplicates` (`ignore_index` supported)
 - `value_counts` (`limit`, `sort`, `ascending`)
@@ -39,6 +40,7 @@
 - `fillna`, `dropna`
 - `sum`, `mean`, `min`, `max`
 - `unique`, `value_counts`
+- `isin`, `clip`, `replace`
 - `astype`
 - `to_list`, `to_dict`
 

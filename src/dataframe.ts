@@ -13,6 +13,16 @@ import { computeMergeRows } from "./internal/dataframe/merge";
 import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
+  normalizeApplyAxis,
+  runApplyMap,
+  runApplyOnColumns,
+  runApplyOnRows,
+  type DataFrameApplyAxis,
+  type DataFrameApplyColumnFn,
+  type DataFrameApplyRowFn,
+  type DataFrameMapFn,
+} from "./internal/dataframe/apply";
+import {
   keyForColumns,
   normalizeKeyCell,
 } from "./internal/dataframe/keys";
@@ -107,6 +117,12 @@ export interface SampleOptions {
 
 export type DropDuplicatesKeep = "first" | "last" | false;
 export type { RankOptions, ReplaceInput };
+export type {
+  DataFrameApplyAxis,
+  DataFrameApplyColumnFn,
+  DataFrameApplyRowFn,
+  DataFrameMapFn,
+};
 
 export interface PivotTableOptions {
   index: string | string[];
@@ -478,6 +494,49 @@ export class DataFrame {
 
   query(predicate: (row: Row, index: IndexLabel, position: number) => boolean): DataFrame {
     return this.filter(predicate);
+  }
+
+  apply(
+    fn: DataFrameApplyColumnFn,
+    axis?: 0 | "index"
+  ): Series<CellValue>;
+  apply(
+    fn: DataFrameApplyRowFn,
+    axis: 1 | "columns"
+  ): Series<CellValue>;
+  apply(
+    fn: DataFrameApplyColumnFn | DataFrameApplyRowFn,
+    axis: DataFrameApplyAxis = 0
+  ): Series<CellValue> {
+    const normalizedAxis = normalizeApplyAxis(axis);
+    if (normalizedAxis === 0) {
+      return runApplyOnColumns(
+        this._rows,
+        this._columns,
+        this._index,
+        fn as DataFrameApplyColumnFn
+      );
+    }
+    return runApplyOnRows(
+      this._rows,
+      this._columns,
+      this._index,
+      fn as DataFrameApplyRowFn
+    );
+  }
+
+  applymap(fn: DataFrameMapFn): DataFrame {
+    const rows = runApplyMap(
+      this._rows,
+      this._columns,
+      this._index,
+      fn
+    );
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  map(fn: DataFrameMapFn): DataFrame {
+    return this.applymap(fn);
   }
 
   isin(values: CellValue[] | Record<string, CellValue[]>): DataFrame {

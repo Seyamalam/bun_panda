@@ -32,12 +32,13 @@
 28. Added pandas-style compatibility helpers (`isin`, `clip`, `replace`, `sample`, `rank`) and `sort_values(..., na_position)` support.
 29. Optimized CSV ingestion for large unquoted inputs by adding a direct record-building parse path.
 30. Expanded comparative benchmark coverage with join/merge scenarios and added CI drift reporting artifacts.
+31. Added pandas-style apply APIs (`DataFrame.apply`, `DataFrame.applymap`, `DataFrame.map`) and Series helpers (`isin`, `clip`, `replace`).
 
 ## Next Milestone (v0.2.x)
 
-1. Improve `read_csv` performance for large files.
-2. Add more benchmark scenarios (joins, wider tables, skewed group distributions).
-3. Add a CI baseline/perf threshold report for benchmark drift.
+1. Add `DataFrame.where` and `DataFrame.mask` compatibility helpers.
+2. Add `Series.rank` and `DataFrame.transform` compatibility helpers.
+3. Expand pandas benchmark parity coverage beyond 10 tracked cases.
 
 ## Mid-Term (v0.3.x+)
 

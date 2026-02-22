@@ -6,6 +6,12 @@ import {
   numericValues,
   range,
 } from "./utils";
+import {
+  computeSeriesClip,
+  computeSeriesIsin,
+  computeSeriesReplace,
+  type SeriesReplaceInput,
+} from "./internal/series/compat";
 
 export type SeriesDType = DType;
 
@@ -13,6 +19,8 @@ export interface SeriesOptions {
   name?: string;
   index?: IndexLabel[];
 }
+
+export type { SeriesReplaceInput };
 
 export class Series<T extends CellValue = CellValue> {
   public readonly name: string | undefined;
@@ -203,6 +211,30 @@ export class Series<T extends CellValue = CellValue> {
 
   astype(dtype: SeriesDType): Series<CellValue> {
     return this.map((value) => coerceValueToDType(value, dtype), this.name);
+  }
+
+  isin(values: CellValue[]): Series<boolean> {
+    return new Series(computeSeriesIsin(this._values, values), {
+      index: this._index,
+      name: this.name,
+    });
+  }
+
+  clip(lower?: number, upper?: number): Series<CellValue> {
+    if (lower !== undefined && upper !== undefined && lower > upper) {
+      throw new Error("clip lower bound cannot exceed upper bound.");
+    }
+    return new Series(computeSeriesClip(this._values, lower, upper), {
+      index: this._index,
+      name: this.name,
+    });
+  }
+
+  replace(toReplace: SeriesReplaceInput, value?: CellValue): Series<CellValue> {
+    return new Series(computeSeriesReplace(this._values, toReplace, value), {
+      index: this._index,
+      name: this.name,
+    });
   }
 
   private resolvePosition(position: number): number | undefined {
