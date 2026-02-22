@@ -31,6 +31,7 @@
 27. Added Parquet and Excel filetype support (`read_parquet`, `read_excel`, `read_excel_sync`, `to_parquet`, `to_excel`) and IO benchmark suite for parser performance.
 28. Added pandas-style compatibility helpers (`isin`, `clip`, `replace`, `sample`, `rank`) and `sort_values(..., na_position)` support.
 29. Optimized CSV ingestion for large unquoted inputs by adding a direct record-building parse path.
+30. Expanded comparative benchmark coverage with join/merge scenarios and added CI drift reporting artifacts.
 
 ## Next Milestone (v0.2.x)
 

@@ -59,6 +59,40 @@ function buildDataset(rowCount, options = {}) {
   return rows;
 }
 
+function buildJoinRightRows(leftRows, key, options = {}) {
+  const matchEvery = options.matchEvery ?? 2;
+  const duplicateFactor = options.duplicateFactor ?? 1;
+  const maxRows = options.maxRows ?? leftRows.length;
+  const right = [];
+
+  for (let i = 0; i < leftRows.length; i += 1) {
+    if (i % matchEvery !== 0) {
+      continue;
+    }
+    const left = leftRows[i];
+    for (let copy = 0; copy < duplicateFactor; copy += 1) {
+      right.push({
+        [key]: left[key],
+        rhs_value: left.value + copy,
+        rhs_flag: (i + copy) % 3 === 0,
+      });
+      if (right.length >= maxRows) {
+        return right;
+      }
+    }
+  }
+
+  const extra = Math.max(1, Math.floor(right.length * 0.1));
+  for (let i = 0; i < extra; i += 1) {
+    right.push({
+      [key]: typeof leftRows[0]?.[key] === "number" ? ROWS + i : `__missing_${i}`,
+      rhs_value: i,
+      rhs_flag: i % 2 === 0,
+    });
+  }
+  return right;
+}
+
 function benchCase(name, fn, iterations = ITERS, rounds = ROUNDS) {
   for (let i = 0; i < 3; i += 1) {
     fn();
@@ -113,6 +147,31 @@ const frames = {
   wide: new DataFrame(datasets.wide),
   high_card: new DataFrame(datasets.high_card),
   missing: new DataFrame(datasets.missing),
+};
+
+const joinRights = {
+  base_id: buildJoinRightRows(datasets.base, "id", { matchEvery: 2, duplicateFactor: 2 }),
+  wide_id: buildJoinRightRows(datasets.wide, "id", { matchEvery: 3, duplicateFactor: 2 }),
+  skewed_id: buildJoinRightRows(datasets.skewed, "id", { matchEvery: 2, duplicateFactor: 3 }),
+  high_user: buildJoinRightRows(datasets.high_card, "user_key", {
+    matchEvery: 3,
+    duplicateFactor: 1,
+    maxRows: Math.floor(ROWS * 0.7),
+  }),
+};
+
+const joinTables = {
+  base_id: aq.from(joinRights.base_id),
+  wide_id: aq.from(joinRights.wide_id),
+  skewed_id: aq.from(joinRights.skewed_id),
+  high_user: aq.from(joinRights.high_user),
+};
+
+const joinFrames = {
+  base_id: new DataFrame(joinRights.base_id),
+  wide_id: new DataFrame(joinRights.wide_id),
+  skewed_id: new DataFrame(joinRights.skewed_id),
+  high_user: new DataFrame(joinRights.high_user),
 };
 
 const op = aq.op;
@@ -181,6 +240,26 @@ function makeGroupByCase(name, dataset, by, aggBun, aggAq) {
     dataset,
     bunPanda: (_records, frame) => frame.groupby(keys).agg(aggBun).shape[0],
     arquero: (table) => table.groupby(...keys).rollup(aggAq).numRows(),
+  };
+}
+
+function makeMergeCase(name, dataset, leftFrame, rightFrame, leftTable, rightTable, on, how) {
+  return {
+    name,
+    dataset,
+    bunPanda: () => leftFrame.merge(rightFrame, { on, how }).shape[0],
+    arquero: () => {
+      if (how === "inner") {
+        return leftTable.join(rightTable, on).numRows();
+      }
+      if (how === "left") {
+        return leftTable.join_left(rightTable, on).numRows();
+      }
+      if (how === "outer") {
+        return leftTable.join_full(rightTable, on).numRows();
+      }
+      throw new Error(`Unsupported merge mode: ${how}`);
+    },
   };
 }
 
@@ -387,7 +466,100 @@ const valueCountCases = [
   ),
 ];
 
-const cases = [...groupCases, ...sortCases, ...valueCountCases];
+const mergeCases = [
+  makeMergeCase(
+    "merge_inner_id_base",
+    "base",
+    frames.base,
+    joinFrames.base_id,
+    tables.base,
+    joinTables.base_id,
+    "id",
+    "inner"
+  ),
+  makeMergeCase(
+    "merge_left_id_base",
+    "base",
+    frames.base,
+    joinFrames.base_id,
+    tables.base,
+    joinTables.base_id,
+    "id",
+    "left"
+  ),
+  makeMergeCase(
+    "merge_outer_id_base",
+    "base",
+    frames.base,
+    joinFrames.base_id,
+    tables.base,
+    joinTables.base_id,
+    "id",
+    "outer"
+  ),
+  makeMergeCase(
+    "merge_inner_id_wide",
+    "wide",
+    frames.wide,
+    joinFrames.wide_id,
+    tables.wide,
+    joinTables.wide_id,
+    "id",
+    "inner"
+  ),
+  makeMergeCase(
+    "merge_left_id_wide",
+    "wide",
+    frames.wide,
+    joinFrames.wide_id,
+    tables.wide,
+    joinTables.wide_id,
+    "id",
+    "left"
+  ),
+  makeMergeCase(
+    "merge_inner_id_skewed",
+    "skewed",
+    frames.skewed,
+    joinFrames.skewed_id,
+    tables.skewed,
+    joinTables.skewed_id,
+    "id",
+    "inner"
+  ),
+  makeMergeCase(
+    "merge_left_id_skewed",
+    "skewed",
+    frames.skewed,
+    joinFrames.skewed_id,
+    tables.skewed,
+    joinTables.skewed_id,
+    "id",
+    "left"
+  ),
+  makeMergeCase(
+    "merge_inner_user_high_card",
+    "high_card",
+    frames.high_card,
+    joinFrames.high_user,
+    tables.high_card,
+    joinTables.high_user,
+    "user_key",
+    "inner"
+  ),
+  makeMergeCase(
+    "merge_left_user_high_card",
+    "high_card",
+    frames.high_card,
+    joinFrames.high_user,
+    tables.high_card,
+    joinTables.high_user,
+    "user_key",
+    "left"
+  ),
+];
+
+const cases = [...groupCases, ...sortCases, ...valueCountCases, ...mergeCases];
 
 const lines = [];
 lines.push(`# bun_panda benchmark`);

@@ -36,7 +36,7 @@ bun run bench:compare:pandas
 
 ## Current Cases
 
-The current harness runs `73` cases across five datasets:
+The current harness runs `82` cases across five datasets:
 
 1. `base`
 2. `skewed`
@@ -53,6 +53,7 @@ Case families include:
 3. filtered top-k sort workloads
 4. `value_counts` with subset/limit/normalize/dropna variants
 5. high-cardinality and missing-value stress cases
+6. join/merge workloads (`inner`, `left`, `outer`) across base, wide, skewed, and high-cardinality keys
 
 ## Example Output
 
@@ -74,12 +75,13 @@ rows=25000, iterations=8
 3. Top-N sort cases use `sort_values(..., ..., limit)` in `bun_panda` to benchmark partial-sort behavior.
 4. Top-N count cases use `value_counts({ ..., limit })` in `bun_panda`.
 5. Normalize/dropna variants are included to exercise counting semantics, not just raw speed.
-6. CI regression gate enforces `ratio (bun/aq) <= 1.05` for benchmark cases.
+6. CI regression gate enforces `ratio (bun/aq) <= 1.05` for most cases, with a dedicated merge-family threshold.
 7. CI also enforces:
    - IO headline parser ceilings via `bench/assert-io-regression.js`
    - tracked pandas ratio ceilings via `bench/assert-pandas-regression.js`
 8. CI can refresh the README benchmark snapshot from generated JSON outputs.
 9. Reported benchmark time is median-of-rounds to reduce run-to-run noise.
+10. CI publishes a drift report (`bench/report-drift.js`) with family-level p50/p90/max ratios and slowest cases.
 
 ## Notes
 

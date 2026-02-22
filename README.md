@@ -98,7 +98,7 @@ python bench/pandas_compare.py
 ```
 
 Current suite: `86` tests for dataframe ops, merge modes, pivoting, dtypes, compatibility helpers, and CSV/TSV/JSON/Parquet/Excel IO edge cases.
-Benchmark suite: `73` comparative cases against Arquero (`bun run bench`).
+Benchmark suite: `82` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
 
@@ -117,37 +117,37 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck/tests p
 ### Automated Benchmark Snapshot
 
 Generated from benchmark scripts (rows=25000, iterations=8).
-bun_panda vs Arquero: faster or equal in 73/73 cases.
-bun_panda vs pandas: faster or equal in 9/10 tracked cases.
+bun_panda vs Arquero: faster or equal in 73/82 cases.
+bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 #### bun_panda vs Arquero (headline cases)
 
 | case | dataset | bun_panda avg | arquero avg | ratio (bun/aq) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 2.69ms | 4.92ms | 0.55x |
-| filter_sort_top100 | base | 0.52ms | 2.02ms | 0.26x |
-| sort_top1000 | base | 2.39ms | 7.41ms | 0.32x |
-| sort_multicol_top800 | base | 3.63ms | 11.80ms | 0.31x |
-| value_counts_city | base | 0.37ms | 5.27ms | 0.07x |
-| value_counts_group_city_top10 | base | 1.62ms | 7.87ms | 0.21x |
-| value_counts_missing_city_dropna_false | missing | 0.29ms | 2.59ms | 0.11x |
-| value_counts_high_card_city_top20 | high_card | 13.83ms | 19.97ms | 0.69x |
-| value_counts_high_card_user_top100 | high_card | 21.87ms | 33.60ms | 0.65x |
+| groupby_mean | base | 2.46ms | 4.81ms | 0.51x |
+| filter_sort_top100 | base | 0.63ms | 2.01ms | 0.31x |
+| sort_top1000 | base | 10.36ms | 18.42ms | 0.56x |
+| sort_multicol_top800 | base | 14.47ms | 32.71ms | 0.44x |
+| value_counts_city | base | 0.86ms | 14.78ms | 0.06x |
+| value_counts_group_city_top10 | base | 4.03ms | 20.38ms | 0.20x |
+| value_counts_missing_city_dropna_false | missing | 0.79ms | 7.22ms | 0.11x |
+| value_counts_high_card_city_top20 | high_card | 28.74ms | 42.52ms | 0.68x |
+| value_counts_high_card_user_top100 | high_card | 18.80ms | 32.12ms | 0.59x |
 
 #### bun_panda vs pandas
 
 | case | dataset | bun_panda avg | pandas avg | ratio (bun/pd) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 2.69ms | 1.24ms | 2.17x |
-| filter_sort_top100 | base | 0.52ms | 1.25ms | 0.42x |
-| sort_top1000 | base | 2.39ms | 4.44ms | 0.54x |
-| sort_multicol_top800 | base | 3.63ms | 9.74ms | 0.37x |
-| value_counts_city | base | 0.37ms | 1.85ms | 0.20x |
-| value_counts_group_city_top10 | base | 1.62ms | 2.76ms | 0.59x |
-| value_counts_missing_city_dropna_false | missing | 0.29ms | 3.23ms | 0.09x |
-| groupby_missing_city_mean | missing | 2.18ms | 3.99ms | 0.55x |
-| value_counts_high_card_city_top20 | high_card | 13.83ms | 24.67ms | 0.56x |
-| value_counts_high_card_user_top100 | high_card | 21.87ms | 50.92ms | 0.43x |
+| groupby_mean | base | 2.46ms | 1.08ms | 2.28x |
+| filter_sort_top100 | base | 0.63ms | 1.22ms | 0.52x |
+| sort_top1000 | base | 10.36ms | 2.18ms | 4.75x |
+| sort_multicol_top800 | base | 14.47ms | 4.50ms | 3.21x |
+| value_counts_city | base | 0.86ms | 0.82ms | 1.06x |
+| value_counts_group_city_top10 | base | 4.03ms | 1.50ms | 2.68x |
+| value_counts_missing_city_dropna_false | missing | 0.79ms | 1.39ms | 0.57x |
+| groupby_missing_city_mean | missing | 2.71ms | 1.52ms | 1.79x |
+| value_counts_high_card_city_top20 | high_card | 28.74ms | 13.75ms | 2.09x |
+| value_counts_high_card_user_top100 | high_card | 18.80ms | 23.69ms | 0.79x |
 
 <!-- BENCHMARKS:END -->
 

@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.18] - 2026-02-22
+
+### Added
+
+- Benchmark coverage expansion:
+  - added join/merge benchmark cases (`inner`, `left`, `outer`) across base/wide/skewed/high-card datasets.
+- New drift reporting utility:
+  - `bench/report-drift.js` (family p50/p90/max ratios + slow-case table).
+  - `bench:drift` script and CI artifact output (`bench/results/drift.json`, `bench/results/drift.txt`).
+
+### Changed
+
+- Updated regression gating to support a dedicated merge-family ratio threshold (`BUN_PANDA_BENCH_MERGE_MAX_RATIO`).
+- Benchmark CI now runs Arquero gate, drift report, IO gate, and pandas gate in sequence.
+
 ## [0.1.17] - 2026-02-22
 
 ### Changed
