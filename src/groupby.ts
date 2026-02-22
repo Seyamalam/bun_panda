@@ -28,7 +28,11 @@ interface NamedAggState {
 
 interface FastGroupState {
   keyValues: CellValue[];
-  namedStates: NamedAggState[];
+  counts: number[];
+  sums: number[];
+  hasAny: boolean[];
+  seen: boolean[];
+  best: CellValue[];
 }
 
 export interface GroupByOptions {
@@ -38,9 +42,15 @@ export interface GroupByOptions {
 }
 
 export class GroupBy {
+  private static readonly groupedCache = new WeakMap<
+    DataFrame,
+    Map<string, Map<string, GroupEntry>>
+  >();
+
   private readonly source: DataFrame;
   private readonly by: string[];
   private grouped: Map<string, GroupEntry> | null;
+  private readonly groupedCacheKey: string;
   private readonly sourceRows: Row[];
   private readonly sourceColumns: string[];
   private readonly options: {
@@ -56,11 +66,12 @@ export class GroupBy {
     sourceColumns?: string[],
     options: GroupByOptions = {}
   ) {
+    const availableColumns = sourceColumns ?? source.columns;
     if (by.length === 0) {
       throw new Error("groupby requires at least one key column.");
     }
     for (const column of by) {
-      if (!source.columns.includes(column)) {
+      if (!availableColumns.includes(column)) {
         throw new Error(`Column '${column}' does not exist.`);
       }
     }
@@ -68,13 +79,14 @@ export class GroupBy {
     this.source = source;
     this.by = by;
     this.sourceRows = sourceRows ?? source.to_records();
-    this.sourceColumns = sourceColumns ?? source.columns;
+    this.sourceColumns = availableColumns;
     this.options = {
       dropna: options.dropna ?? true,
       sort: options.sort ?? true,
       as_index: options.as_index ?? false,
     };
-    this.grouped = null;
+    this.groupedCacheKey = groupCacheKey(this.by, this.options.dropna);
+    this.grouped = this.readGroupCache();
   }
 
   agg(spec: AggSpec): DataFrame {
@@ -135,6 +147,7 @@ export class GroupBy {
 
   private fastNamedAgg(namedPlans: NamedAggPlan[], aggColumns: string[]): DataFrame {
     const states = new Map<string, FastGroupState>();
+    const planCodes = namedPlans.map((plan) => aggCodeForName(plan.name));
     const byLength = this.by.length;
 
     if (byLength === 1) {
@@ -149,11 +162,15 @@ export class GroupBy {
         if (!state) {
           state = {
             keyValues: [keyValue],
-            namedStates: namedPlans.map(() => createNamedAggState()),
+            counts: new Array(namedPlans.length).fill(0),
+            sums: new Array(namedPlans.length).fill(0),
+            hasAny: new Array(namedPlans.length).fill(false),
+            seen: new Array(namedPlans.length).fill(false),
+            best: new Array(namedPlans.length).fill(null),
           };
           states.set(key, state);
         }
-        updateNamedPlans(state.namedStates, namedPlans, sourceRow);
+        updateFastGroupStates(state, namedPlans, planCodes, sourceRow);
       }
     } else {
       for (const sourceRow of this.sourceRows) {
@@ -169,11 +186,15 @@ export class GroupBy {
           }
           state = {
             keyValues,
-            namedStates: namedPlans.map(() => createNamedAggState()),
+            counts: new Array(namedPlans.length).fill(0),
+            sums: new Array(namedPlans.length).fill(0),
+            hasAny: new Array(namedPlans.length).fill(false),
+            seen: new Array(namedPlans.length).fill(false),
+            best: new Array(namedPlans.length).fill(null),
           };
           states.set(key, state);
         }
-        updateNamedPlans(state.namedStates, namedPlans, sourceRow);
+        updateFastGroupStates(state, namedPlans, planCodes, sourceRow);
       }
     }
 
@@ -186,7 +207,18 @@ export class GroupBy {
       }
       for (let i = 0; i < namedPlans.length; i += 1) {
         const plan = namedPlans[i]!;
-        row[plan.column] = finalizeNamedAggState(group.namedStates[i]!, plan.name);
+        const code = planCodes[i]!;
+        if (code === AGG_COUNT) {
+          row[plan.column] = group.counts[i]!;
+        } else if (code === AGG_SUM) {
+          row[plan.column] = group.hasAny[i] ? group.sums[i] : null;
+        } else if (code === AGG_MEAN) {
+          row[plan.column] = group.counts[i]! > 0
+            ? group.sums[i]! / group.counts[i]!
+            : null;
+        } else {
+          row[plan.column] = group.seen[i] ? group.best[i] : null;
+        }
       }
       rows.push(row);
     }
@@ -197,8 +229,26 @@ export class GroupBy {
   private getGroups(): Map<string, GroupEntry> {
     if (!this.grouped) {
       this.grouped = this.buildGroups();
+      this.writeGroupCache(this.grouped);
     }
     return this.grouped;
+  }
+
+  private readGroupCache(): Map<string, GroupEntry> | null {
+    const sourceCache = GroupBy.groupedCache.get(this.source);
+    if (!sourceCache) {
+      return null;
+    }
+    return sourceCache.get(this.groupedCacheKey) ?? null;
+  }
+
+  private writeGroupCache(grouped: Map<string, GroupEntry>): void {
+    let sourceCache = GroupBy.groupedCache.get(this.source);
+    if (!sourceCache) {
+      sourceCache = new Map();
+      GroupBy.groupedCache.set(this.source, sourceCache);
+    }
+    sourceCache.set(this.groupedCacheKey, grouped);
   }
 
   private sortGroups(groups: GroupEntry[]): GroupEntry[] {
@@ -424,15 +474,71 @@ function hasMissingByValue(row: Row, columns: string[]): boolean {
   return false;
 }
 
-function updateNamedPlans(
-  states: NamedAggState[],
+function updateFastGroupStates(
+  state: FastGroupState,
   plans: NamedAggPlan[],
+  planCodes: number[],
   row: Row
 ): void {
   for (let i = 0; i < plans.length; i += 1) {
     const plan = plans[i]!;
-    updateNamedAggState(states[i]!, plan.name, row[plan.column]);
+    const code = planCodes[i]!;
+    const value = row[plan.column];
+    if (code === AGG_COUNT) {
+      if (!isMissing(value)) {
+        state.counts[i]! += 1;
+      }
+      continue;
+    }
+
+    if (code === AGG_SUM || code === AGG_MEAN) {
+      if (isNumber(value)) {
+        state.hasAny[i] = true;
+        state.counts[i]! += 1;
+        state.sums[i]! += value;
+      }
+      continue;
+    }
+
+    if (isMissing(value)) {
+      continue;
+    }
+    if (!state.seen[i]) {
+      state.best[i] = value;
+      state.seen[i] = true;
+      continue;
+    }
+
+    const compared = compareCellValues(value, state.best[i]);
+    if (
+      (code === AGG_MIN && compared < 0) ||
+      (code === AGG_MAX && compared > 0)
+    ) {
+      state.best[i] = value;
+    }
   }
+}
+
+const AGG_COUNT = 1;
+const AGG_SUM = 2;
+const AGG_MEAN = 3;
+const AGG_MIN = 4;
+const AGG_MAX = 5;
+
+function aggCodeForName(name: AggName): number {
+  if (name === "count") {
+    return AGG_COUNT;
+  }
+  if (name === "sum") {
+    return AGG_SUM;
+  }
+  if (name === "mean") {
+    return AGG_MEAN;
+  }
+  if (name === "min") {
+    return AGG_MIN;
+  }
+  return AGG_MAX;
 }
 
 function compareKeyValues(left: CellValue[], right: CellValue[]): number {
@@ -451,4 +557,8 @@ function toIndexLabel(value: CellValue, fallback: number): IndexLabel {
     return value;
   }
   return String(value ?? fallback);
+}
+
+function groupCacheKey(by: string[], dropna: boolean): string {
+  return `${dropna ? "1" : "0"}|${by.join("\u001f")}`;
 }

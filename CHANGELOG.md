@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.16] - 2026-02-22
+
+### Changed
+
+- Optimized `GroupBy` hot paths for repeated workloads:
+  - cached group partitions per DataFrame + key set + `dropna`
+  - reduced per-row overhead in named-aggregation fast path with plan-code updates
+- Improved pandas comparison in headline `groupby_mean` scenario.
+
 ## [0.1.15] - 2026-02-22
 
 ### Added
