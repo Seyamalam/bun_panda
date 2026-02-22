@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.1.8] - 2026-02-22
+
+### Changed
+
+- Further split `DataFrame` operation internals into dedicated modules:
+  - `src/internal/dataframe/valueCounts.ts`
+  - `src/internal/dataframe/pivotTable.ts`
+  - `src/internal/dataframe/merge.ts`
+- Simplified `src/dataframe.ts` by delegating large operation logic to internal modules.
+- Reduced `src/dataframe.ts` size from ~1120 lines (before split work) to ~740 lines.
+
 ## [0.1.7] - 2026-02-22
 
 ### Added

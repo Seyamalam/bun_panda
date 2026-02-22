@@ -1,4 +1,4 @@
-# API Reference (v0.1.7)
+# API Reference (v0.1.8)
 
 ## Core Classes
 
@@ -81,7 +81,7 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.7`.
+2. Not all pandas features are implemented in `v0.1.8`.
 
 ## `pivot_table` Options (focused subset)
 

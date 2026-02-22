@@ -2,25 +2,16 @@ import { writeFileSync } from "node:fs";
 import { GroupBy } from "./groupby";
 import type { GroupByOptions } from "./groupby";
 import {
-  buildMergedRow,
   escapeCsvValue,
   normalizeColumnar,
   normalizeRecords,
   resolvePosition,
-  runAggregation,
-  safeMarginsColumnName,
-  sortRowsByColumns,
-  uniqueColumnValues,
 } from "./internal/dataframe/core";
-import { orderCountEntries } from "./internal/dataframe/counts";
-import type { CountEntry } from "./internal/dataframe/counts";
+import { computeMergeRows } from "./internal/dataframe/merge";
+import { computePivotTable } from "./internal/dataframe/pivotTable";
+import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
   keyForColumns,
-  keyForPair,
-  keyForValues,
-  normalizeCountKey,
-  normalizeKeyCell,
-  type NormalizedKey,
 } from "./internal/dataframe/keys";
 import {
   buildColumnComparer,
@@ -535,137 +526,16 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
 
-    const entries: CountEntry[] = [];
-    let consideredRows = 0;
+    const counts = computeValueCountsRows(this._rows, {
+      subset,
+      normalize,
+      dropna,
+      sort,
+      ascending,
+      limit,
+    });
 
-    if (subset.length === 1) {
-      const column = subset[0]!;
-      const counts = new Map<string | number | boolean | null, CountEntry>();
-      for (const row of this._rows) {
-        const value = row[column];
-        if (dropna && isMissing(value)) {
-          continue;
-        }
-        consideredRows += 1;
-        const key = normalizeCountKey(value);
-        const entry = counts.get(key);
-        if (!entry) {
-          counts.set(key, { values: [value], count: 1 });
-        } else {
-          entry.count += 1;
-        }
-      }
-      entries.push(...counts.values());
-    } else if (subset.length === 2) {
-      const firstColumn = subset[0]!;
-      const secondColumn = subset[1]!;
-      const sampleCount = Math.min(this._rows.length, 512);
-      const sampleUniqueFirstKeys = new Set<NormalizedKey>();
-      let sampledRows = 0;
-      for (let i = 0; i < sampleCount; i += 1) {
-        const sampleRow = this._rows[i]!;
-        const firstValue = sampleRow[firstColumn];
-        const secondValue = sampleRow[secondColumn];
-        if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
-          continue;
-        }
-        sampledRows += 1;
-        sampleUniqueFirstKeys.add(normalizeCountKey(firstValue));
-      }
-
-      const useFlatMap =
-        sampledRows > 0 && sampleUniqueFirstKeys.size / sampledRows > 0.35;
-
-      if (useFlatMap) {
-        const counts = new Map<string, CountEntry>();
-        for (const row of this._rows) {
-          const firstValue = row[firstColumn];
-          const secondValue = row[secondColumn];
-          if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
-            continue;
-          }
-
-          consideredRows += 1;
-          const key = keyForPair(firstValue, secondValue);
-          const entry = counts.get(key);
-          if (!entry) {
-            counts.set(key, { values: [firstValue, secondValue], count: 1 });
-          } else {
-            entry.count += 1;
-          }
-        }
-        entries.push(...counts.values());
-      } else {
-        const counts = new Map<NormalizedKey, Map<NormalizedKey, CountEntry>>();
-        for (const row of this._rows) {
-          const firstValue = row[firstColumn];
-          const secondValue = row[secondColumn];
-          if (dropna && (isMissing(firstValue) || isMissing(secondValue))) {
-            continue;
-          }
-
-          consideredRows += 1;
-          const firstKey = normalizeCountKey(firstValue);
-          const secondKey = normalizeCountKey(secondValue);
-          let inner = counts.get(firstKey);
-          if (!inner) {
-            inner = new Map();
-            counts.set(firstKey, inner);
-          }
-          const entry = inner.get(secondKey);
-          if (!entry) {
-            inner.set(secondKey, { values: [firstValue, secondValue], count: 1 });
-          } else {
-            entry.count += 1;
-          }
-        }
-        for (const inner of counts.values()) {
-          entries.push(...inner.values());
-        }
-      }
-    } else {
-      const counts = new Map<string, CountEntry>();
-      for (const row of this._rows) {
-        const values: CellValue[] = [];
-        let hasMissing = false;
-        for (const column of subset) {
-          const value = row[column];
-          if (dropna && isMissing(value)) {
-            hasMissing = true;
-            break;
-          }
-          values.push(value);
-        }
-        if (hasMissing) {
-          continue;
-        }
-
-        consideredRows += 1;
-        const key = keyForValues(values);
-        const entry = counts.get(key);
-        if (!entry) {
-          counts.set(key, { values, count: 1 });
-        } else {
-          entry.count += 1;
-        }
-      }
-      entries.push(...counts.values());
-    }
-
-    const valueColumnName = normalize ? "proportion" : "count";
-    const orderedCounts = orderCountEntries(entries, { sort, ascending, limit });
-    const countRows = orderedCounts
-      .map((entry) => {
-        const row: Row = {};
-        for (let i = 0; i < subset.length; i += 1) {
-          row[subset[i]!] = entry.values[i];
-        }
-        row[valueColumnName] =
-          normalize && consideredRows > 0 ? entry.count / consideredRows : entry.count;
-        return row;
-      });
-
-    return this.withRows(countRows, undefined, [...subset, valueColumnName], true);
+    return this.withRows(counts.rows, undefined, [...subset, counts.valueColumnName], true);
   }
 
   dropna(subset?: string[]): DataFrame {
@@ -773,12 +643,6 @@ export class DataFrame {
     const index = Array.isArray(options.index) ? options.index : [options.index];
     const values = Array.isArray(options.values) ? options.values : [options.values];
     const columns = options.columns;
-    const aggfunc = options.aggfunc ?? "mean";
-    const fillValue = options.fill_value;
-    const margins = options.margins ?? false;
-    const marginsName = options.margins_name ?? "All";
-    const dropna = options.dropna ?? true;
-    const sort = options.sort ?? true;
 
     for (const indexColumn of index) {
       this.assertColumnExists(indexColumn);
@@ -790,250 +654,41 @@ export class DataFrame {
       this.assertColumnExists(columns);
     }
 
-    const sourceRows = this._rows.filter((row) => {
-      if (!dropna) {
-        return true;
-      }
-      const requiredColumns = [...index, ...values, ...(columns ? [columns] : [])];
-      return requiredColumns.every((column) => !isMissing(row[column]));
+    const result = computePivotTable({
+      sourceRows: this._rows,
+      index,
+      values,
+      columns,
+      aggfunc: options.aggfunc ?? "mean",
+      fillValue: options.fill_value,
+      margins: options.margins ?? false,
+      marginsName: options.margins_name ?? "All",
+      dropna: options.dropna ?? true,
+      sort: options.sort ?? true,
     });
 
-    if (!columns) {
-      const grouped = this.aggregateRows(index, values, aggfunc, sourceRows);
-      const sortedGrouped = sort ? sortRowsByColumns(grouped, index) : grouped;
-
-      if (margins) {
-        const totalRow: Row = {};
-        for (let i = 0; i < index.length; i += 1) {
-          totalRow[index[i]!] = i === 0 ? marginsName : "";
-        }
-        for (const valueColumn of values) {
-          const valueSeries = sourceRows.map((row) => row[valueColumn]);
-          totalRow[valueColumn] = runAggregation(valueSeries, sourceRows, aggfunc);
-        }
-        sortedGrouped.push(totalRow);
-      }
-
-      if (fillValue !== undefined) {
-        for (const row of sortedGrouped) {
-          for (const valueColumn of values) {
-            if (row[valueColumn] === undefined) {
-              row[valueColumn] = fillValue;
-            }
-          }
-        }
-      }
-
-      return new DataFrame(sortedGrouped, {
-        columns: [...index, ...values],
-      });
-    }
-
-    const grouped = this.aggregateRows([...index, columns], values, aggfunc, sourceRows);
-    const pivotColumnValues = uniqueColumnValues(sourceRows.map((row) => row[columns]), {
-      sort,
-      includeMissing: !dropna,
-    });
-    const valueColumnsOut =
-      values.length === 1
-        ? pivotColumnValues.map((value) => String(value))
-        : values.flatMap((valueColumn) =>
-            pivotColumnValues.map((value) => `${valueColumn}_${String(value)}`)
-          );
-    const marginsColumnsOut = margins
-      ? values.length === 1
-        ? [safeMarginsColumnName(marginsName, valueColumnsOut)]
-        : values.map((valueColumn) =>
-            safeMarginsColumnName(`${valueColumn}_${marginsName}`, valueColumnsOut)
-          )
-      : [];
-
-    const tableRows = new Map<string, Row>();
-    const orderedKeys: string[] = [];
-
-    for (const row of grouped) {
-      const indexValues = index.map((column) => row[column]);
-      const tableKey = JSON.stringify(indexValues.map((value) => normalizeKeyCell(value)));
-      const columnValue = row[columns];
-
-      let tableRow = tableRows.get(tableKey);
-      if (!tableRow) {
-        tableRow = {};
-        for (let i = 0; i < index.length; i += 1) {
-          tableRow[index[i]!] = indexValues[i];
-        }
-        tableRows.set(tableKey, tableRow);
-        orderedKeys.push(tableKey);
-      }
-
-      for (const valueColumn of values) {
-        const outputColumn =
-          values.length === 1 ? String(columnValue) : `${valueColumn}_${String(columnValue)}`;
-        tableRow[outputColumn] = row[valueColumn];
-      }
-    }
-
-    const outputRows = orderedKeys.map((key) => {
-      const row = tableRows.get(key)!;
-      if (margins) {
-        for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
-          const valueColumn = values[valueIndex]!;
-          const matchingRows = sourceRows.filter((sourceRow) =>
-            index.every((indexColumn) => sourceRow[indexColumn] === row[indexColumn])
-          );
-          const sourceValues = matchingRows.map((sourceRow) => sourceRow[valueColumn]);
-          row[marginsColumnsOut[valueIndex]!] = runAggregation(sourceValues, matchingRows, aggfunc);
-        }
-      }
-      for (const valueColumn of valueColumnsOut) {
-        if (row[valueColumn] === undefined && fillValue !== undefined) {
-          row[valueColumn] = fillValue;
-        }
-      }
-      for (const marginsColumn of marginsColumnsOut) {
-        if (row[marginsColumn] === undefined && fillValue !== undefined) {
-          row[marginsColumn] = fillValue;
-        }
-      }
-      return row;
-    });
-
-    if (margins) {
-      const totalRow: Row = {};
-      for (let i = 0; i < index.length; i += 1) {
-        totalRow[index[i]!] = i === 0 ? marginsName : "";
-      }
-
-      for (const pivotColumn of pivotColumnValues) {
-        const pivotKey = normalizeKeyCell(pivotColumn);
-        for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
-          const valueColumn = values[valueIndex]!;
-          const outputColumn =
-            values.length === 1
-              ? String(pivotColumn)
-              : `${valueColumn}_${String(pivotColumn)}`;
-          const matchingRows = sourceRows.filter(
-            (sourceRow) => normalizeKeyCell(sourceRow[columns]) === pivotKey
-          );
-          const sourceValues = matchingRows.map((sourceRow) => sourceRow[valueColumn]);
-          totalRow[outputColumn] = runAggregation(sourceValues, matchingRows, aggfunc);
-        }
-      }
-
-      for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
-        const valueColumn = values[valueIndex]!;
-        const sourceValues = sourceRows.map((row) => row[valueColumn]);
-        totalRow[marginsColumnsOut[valueIndex]!] = runAggregation(sourceValues, sourceRows, aggfunc);
-      }
-
-      outputRows.push(totalRow);
-    }
-
-    const sortedRows = sort
-      ? sortRowsByColumns(outputRows, index, margins ? marginsName : undefined)
-      : outputRows;
-
-    return new DataFrame(sortedRows, {
-      columns: [...index, ...valueColumnsOut, ...marginsColumnsOut],
-    });
+    return new DataFrame(result.rows, { columns: result.columns });
   }
 
   merge(right: DataFrame, options: MergeOptions): DataFrame {
     const keys = Array.isArray(options.on) ? options.on : [options.on];
-    const how = options.how ?? "inner";
-    const suffixes = options.suffixes ?? ["_x", "_y"];
 
     for (const key of keys) {
       this.assertColumnExists(key);
       right.assertColumnExists(key);
     }
 
-    const duplicateNonKeys = new Set(
-      this._columns.filter((column) => !keys.includes(column) && right._columns.includes(column))
-    );
-
-    const leftColumnsOut = this._columns.map((column) =>
-      duplicateNonKeys.has(column) ? `${column}${suffixes[0]}` : column
-    );
-
-    const rightColumnsSource = right._columns.filter((column) => !keys.includes(column));
-    const rightColumnsOut = rightColumnsSource.map((column) =>
-      duplicateNonKeys.has(column) ? `${column}${suffixes[1]}` : column
-    );
-
-    const rightGroups = new Map<string, Array<{ row: Row; position: number }>>();
-    for (let i = 0; i < right._rows.length; i += 1) {
-      const row = right._rows[i]!;
-      const key = keyForColumns(row, keys);
-      const current = rightGroups.get(key);
-      if (current) {
-        current.push({ row, position: i });
-      } else {
-        rightGroups.set(key, [{ row, position: i }]);
-      }
-    }
-
-    const matchedRightRows = new Set<number>();
-    const rows: Row[] = [];
-    for (const leftRow of this._rows) {
-      const key = keyForColumns(leftRow, keys);
-      const matches = rightGroups.get(key);
-
-      if (!matches || matches.length === 0) {
-        if (how === "left" || how === "outer") {
-          rows.push(
-            buildMergedRow(
-              leftRow,
-              undefined,
-              this._columns,
-              leftColumnsOut,
-              rightColumnsSource,
-              rightColumnsOut,
-              keys
-            )
-          );
-        }
-        continue;
-      }
-
-      for (const match of matches) {
-        rows.push(
-          buildMergedRow(
-            leftRow,
-            match.row,
-            this._columns,
-            leftColumnsOut,
-            rightColumnsSource,
-            rightColumnsOut,
-            keys
-          )
-        );
-        matchedRightRows.add(match.position);
-      }
-    }
-
-    if (how === "right" || how === "outer") {
-      for (let i = 0; i < right._rows.length; i += 1) {
-        if (matchedRightRows.has(i)) {
-          continue;
-        }
-        rows.push(
-          buildMergedRow(
-            undefined,
-            right._rows[i]!,
-            this._columns,
-            leftColumnsOut,
-            rightColumnsSource,
-            rightColumnsOut,
-            keys
-          )
-        );
-      }
-    }
-
-    return new DataFrame(rows, {
-      columns: [...leftColumnsOut, ...rightColumnsOut],
+    const result = computeMergeRows({
+      leftRows: this._rows,
+      rightRows: right._rows,
+      leftColumns: this._columns,
+      rightColumns: right._columns,
+      keys,
+      how: options.how ?? "inner",
+      suffixes: options.suffixes ?? ["_x", "_y"],
     });
+
+    return new DataFrame(result.rows, { columns: result.columns });
   }
 
   to_string(maxRows = 10): string {
@@ -1042,41 +697,6 @@ export class DataFrame {
     const preview = rows.map((row) => JSON.stringify(row)).join("\n");
     const suffix = rowCount > maxRows ? `\n... (${rowCount - maxRows} more rows)` : "";
     return preview + suffix;
-  }
-
-  private aggregateRows(
-    groupColumns: string[],
-    valueColumns: string[],
-    aggfunc: AggName | AggFn,
-    sourceRows = this._rows
-  ): Row[] {
-    const groups = new Map<string, { groupValues: CellValue[]; rows: Row[] }>();
-
-    for (const sourceRow of sourceRows) {
-      const groupValues = groupColumns.map((column) => sourceRow[column]);
-      const key = JSON.stringify(groupValues.map((value) => normalizeKeyCell(value)));
-      const group = groups.get(key);
-      if (!group) {
-        groups.set(key, { groupValues, rows: [sourceRow] });
-      } else {
-        group.rows.push(sourceRow);
-      }
-    }
-
-    const rows: Row[] = [];
-    for (const group of groups.values()) {
-      const row: Row = {};
-      for (let i = 0; i < groupColumns.length; i += 1) {
-        row[groupColumns[i]!] = group.groupValues[i];
-      }
-
-      for (const valueColumn of valueColumns) {
-        const values = group.rows.map((entry) => entry[valueColumn]);
-        row[valueColumn] = runAggregation(values, group.rows, aggfunc);
-      }
-      rows.push(row);
-    }
-    return rows;
   }
 
   private resolveAssignment(column: string, value: AssignmentValue, rowCount: number): CellValue[] {

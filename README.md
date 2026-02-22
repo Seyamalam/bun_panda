@@ -146,7 +146,7 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.1.7`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.1.8`). The API is intentionally pandas-like but not pandas-complete yet.
 
 ## License
 
