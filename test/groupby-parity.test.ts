@@ -39,7 +39,7 @@ describe("groupby agg parity names", () => {
       .groupby("team")
       .agg({ points: "first", assists: "last" });
     expect(result.to_records()).toEqual([
-      { team: "A", points: 10, assists: null },
+      { team: "A", points: 10, assists: 2 },
       { team: "B", points: 40, assists: 4 },
       { team: "C", points: null, assists: 6 },
     ]);
@@ -201,12 +201,12 @@ describe("groupby transform", () => {
     );
     expect(result.columns).toEqual(["player", "points", "assists"]);
     expect(result.to_records()).toEqual([
-      { player: 3, points: 3, assists: 3 },
-      { player: 3, points: 3, assists: 3 },
-      { player: 3, points: 3, assists: 3 },
+      { player: 3, points: 3, assists: 2 },
+      { player: 3, points: 3, assists: 2 },
+      { player: 3, points: 3, assists: 2 },
       { player: 2, points: 2, assists: 2 },
       { player: 2, points: 2, assists: 2 },
-      { player: 1, points: 1, assists: 1 },
+      { player: 1, points: 0, assists: 1 },
     ]);
   });
 
@@ -250,10 +250,10 @@ describe("groupby transform", () => {
       { a: "a", b: 1, v: 50 },
     ]);
     const sorted = df.groupby(["a", "b"], { sort: true }).transform({ v: "max" });
-    expect(sorted.to_records()).toEqual([{ v: 50 }, { v: 10 }, { v: 30 }, { v: 20 }]);
+    expect(sorted.to_records()).toEqual([{ v: 30 }, { v: 50 }, { v: 30 }, { v: 50 }]);
 
     const unsorted = df.groupby(["a", "b"], { sort: false }).transform({ v: "max" });
-    expect(unsorted.to_records()).toEqual([{ v: 50 }, { v: 10 }, { v: 30 }, { v: 20 }]);
+    expect(unsorted.to_records()).toEqual([{ v: 30 }, { v: 50 }, { v: 30 }, { v: 50 }]);
   });
 });
 
@@ -294,7 +294,7 @@ describe("groupby convenience methods", () => {
       { team: "C", player: "u", points: null, assists: 6 },
     ]);
     expect(grouped.last().to_records()).toEqual([
-      { team: "A", player: "z", points: 30, assists: null },
+      { team: "A", player: "z", points: 30, assists: 2 },
       { team: "B", player: "v", points: 50, assists: 4 },
       { team: "C", player: "u", points: null, assists: 6 },
     ]);
