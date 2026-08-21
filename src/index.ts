@@ -15,7 +15,11 @@ export {
   type ToExcelOptions,
   type ToJSONOptions,
   type ToParquetOptions,
+  type TransformFn,
+  type TransformInput,
   type ValueCountsOptions,
+  type WhereCondition,
+  type WhereOther,
 } from "./dataframe";
 export { GroupBy } from "./groupby";
 export {

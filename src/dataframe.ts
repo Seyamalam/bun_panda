@@ -36,6 +36,14 @@ import {
   type ReplaceInput,
 } from "./internal/dataframe/compat";
 import {
+  computeTransformRows,
+  computeWhereRows,
+  type TransformFn,
+  type TransformInput,
+  type WhereCondition,
+  type WhereOther,
+} from "./internal/dataframe/where";
+import {
   buildColumnComparer,
   fullSortPositions,
   normalizeSortAscending,
@@ -59,9 +67,11 @@ import {
   inferColumnDType,
   isMissing,
   isNumber,
+  median,
   numericValues,
   range,
   std,
+  variance,
 } from "./utils";
 
 export interface DataFrameOptions {
@@ -122,6 +132,10 @@ export type {
   DataFrameApplyColumnFn,
   DataFrameApplyRowFn,
   DataFrameMapFn,
+  TransformFn,
+  TransformInput,
+  WhereCondition,
+  WhereOther,
 };
 
 export interface PivotTableOptions {
@@ -427,6 +441,45 @@ export class DataFrame {
     return this.withRows(rows, this._index, columns, true);
   }
 
+  insert(
+    loc: number,
+    column: string,
+    value: CellValue | CellValue[] | Series<CellValue>
+  ): DataFrame {
+    if (this._columns.includes(column)) {
+      throw new Error(`Column '${column}' already exists.`);
+    }
+    const position = Math.min(Math.max(loc, 0), this._columns.length);
+    const values = this.resolveAssignment(column, value, this._rows.length);
+
+    const nextColumns = [...this._columns];
+    nextColumns.splice(position, 0, column);
+
+    const rows = this._rows.map((row, i) => {
+      const next: Row = {};
+      for (const entry of nextColumns) {
+        next[entry] = entry === column ? values[i]! : row[entry];
+      }
+      return next;
+    });
+
+    return this.withRows(rows, this._index, nextColumns, true);
+  }
+
+  pop(column: string): Series<CellValue> {
+    this.assertColumnExists(column);
+    const values = this._rows.map((row) => row[column]);
+    const series = new Series(values, { name: column, index: this._index });
+
+    const nextColumns = this._columns.filter((entry) => entry !== column);
+    (this as unknown as { _rows: Row[] })._rows = this._rows.map((row) =>
+      cloneRow(row, nextColumns)
+    );
+    (this as unknown as { _columns: string[] })._columns = nextColumns;
+
+    return series;
+  }
+
   select(columns: string[]): DataFrame {
     for (const column of columns) {
       this.assertColumnExists(column);
@@ -537,6 +590,28 @@ export class DataFrame {
 
   map(fn: DataFrameMapFn): DataFrame {
     return this.applymap(fn);
+  }
+
+  where(cond: WhereCondition, other: WhereOther = null): DataFrame {
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other, false);
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  mask(cond: WhereCondition, other: WhereOther = null): DataFrame {
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other, true);
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  transform(input: TransformInput): DataFrame {
+    const rows = computeTransformRows(this._rows, this._columns, this._index, input);
+    const columns =
+      typeof input === "function" ? this._columns : Object.keys(input);
+    if (typeof input !== "function") {
+      for (const column of columns) {
+        this.assertColumnExists(column);
+      }
+    }
+    return this.withRows(rows, this._index, columns, true);
   }
 
   isin(values: CellValue[] | Record<string, CellValue[]>): DataFrame {
@@ -667,41 +742,7 @@ export class DataFrame {
     keep: DropDuplicatesKeep = "first",
     ignore_index = false
   ): DataFrame {
-    const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
-    for (const column of columns) {
-      this.assertColumnExists(column);
-    }
-
-    const include = new Array(this._rows.length).fill(false);
-
-    if (keep === false) {
-      const counts = new Map<string, number>();
-      for (const row of this._rows) {
-        const key = keyForColumns(row, columns);
-        counts.set(key, (counts.get(key) ?? 0) + 1);
-      }
-      for (let i = 0; i < this._rows.length; i += 1) {
-        include[i] = (counts.get(keyForColumns(this._rows[i]!, columns)) ?? 0) === 1;
-      }
-    } else if (keep === "last") {
-      const seen = new Set<string>();
-      for (let i = this._rows.length - 1; i >= 0; i -= 1) {
-        const key = keyForColumns(this._rows[i]!, columns);
-        if (!seen.has(key)) {
-          seen.add(key);
-          include[i] = true;
-        }
-      }
-    } else {
-      const seen = new Set<string>();
-      for (let i = 0; i < this._rows.length; i += 1) {
-        const key = keyForColumns(this._rows[i]!, columns);
-        if (!seen.has(key)) {
-          seen.add(key);
-          include[i] = true;
-        }
-      }
-    }
+    const include = this.duplicateKeepFlags(subset, keep);
 
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
@@ -714,6 +755,14 @@ export class DataFrame {
     }
 
     return this.withRows(rows, ignore_index ? undefined : index, this._columns, true);
+  }
+
+  duplicated(subset?: string | string[], keep: DropDuplicatesKeep = "first"): Series<boolean> {
+    const include = this.duplicateKeepFlags(subset, keep);
+    return new Series(
+      include.map((flag) => !flag),
+      { name: "duplicated", index: this._index }
+    );
   }
 
   value_counts(options: ValueCountsOptions = {}): DataFrame {
@@ -813,6 +862,111 @@ export class DataFrame {
         values.length > 0 ? values.reduce((acc, value) => acc + value, 0) / values.length : null;
     }
     return out;
+  }
+
+  median(): Record<string, number | null> {
+    return this.reduceNumericColumns(median);
+  }
+
+  std(): Record<string, number | null> {
+    return this.reduceNumericColumns(std);
+  }
+
+  var(): Record<string, number | null> {
+    return this.reduceNumericColumns(variance);
+  }
+
+  min(): Record<string, number | null> {
+    return this.reduceNumericColumns((values) =>
+      values.length > 0 ? Math.min(...values) : null
+    );
+  }
+
+  max(): Record<string, number | null> {
+    return this.reduceNumericColumns((values) =>
+      values.length > 0 ? Math.max(...values) : null
+    );
+  }
+
+  count(): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const column of this._columns) {
+      out[column] = this._rows.filter((row) => !isMissing(row[column])).length;
+    }
+    return out;
+  }
+
+  round(decimals = 0): DataFrame {
+    const factor = 10 ** decimals;
+    const rows = this._rows.map((row) => {
+      const next = cloneRow(row, this._columns);
+      for (const column of this._columns) {
+        const value = next[column];
+        if (isNumber(value)) {
+          next[column] = Math.round((value + Number.EPSILON) * factor) / factor;
+        }
+      }
+      return next;
+    });
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  abs(columns?: string | string[]): DataFrame {
+    const targets = new Set(this.resolveTargetColumns(columns));
+    const rows = this._rows.map((row) => {
+      const next = cloneRow(row, this._columns);
+      for (const column of targets) {
+        const value = row[column];
+        if (isNumber(value)) {
+          next[column] = Math.abs(value);
+        }
+      }
+      return next;
+    });
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  cumsum(columns?: string | string[]): DataFrame {
+    const targets = this.resolveTargetColumns(columns);
+    const running = new Map<string, number>();
+    const rows = this._rows.map((row) => {
+      const next = cloneRow(row, this._columns);
+      for (const column of targets) {
+        const value = row[column];
+        if (!isNumber(value)) {
+          next[column] = null;
+          continue;
+        }
+        const total = (running.get(column) ?? 0) + value;
+        running.set(column, total);
+        next[column] = total;
+      }
+      return next;
+    });
+    return this.withRows(rows, this._index, this._columns, true);
+  }
+
+  equals(other: DataFrame): boolean {
+    if (JSON.stringify(this._columns) !== JSON.stringify(other._columns)) {
+      return false;
+    }
+    if (this._rows.length !== other._rows.length) {
+      return false;
+    }
+    for (let i = 0; i < this._rows.length; i += 1) {
+      if (this._index[i] !== other._index[i]) {
+        return false;
+      }
+      for (const column of this._columns) {
+        if (
+          JSON.stringify(normalizeKeyCell(this._rows[i]![column])) !==
+          JSON.stringify(normalizeKeyCell(other._rows[i]![column]))
+        ) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   describe(): DataFrame {
@@ -916,6 +1070,67 @@ export class DataFrame {
       return [...value];
     }
     return Array.from({ length: rowCount }, () => value);
+  }
+
+  private duplicateKeepFlags(
+    subset?: string | string[],
+    keep: DropDuplicatesKeep = "first"
+  ): boolean[] {
+    const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
+    for (const column of columns) {
+      this.assertColumnExists(column);
+    }
+
+    const include = new Array(this._rows.length).fill(false);
+
+    if (keep === false) {
+      const counts = new Map<string, number>();
+      for (const row of this._rows) {
+        const key = keyForColumns(row, columns);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      for (let i = 0; i < this._rows.length; i += 1) {
+        include[i] = (counts.get(keyForColumns(this._rows[i]!, columns)) ?? 0) === 1;
+      }
+    } else if (keep === "last") {
+      const seen = new Set<string>();
+      for (let i = this._rows.length - 1; i >= 0; i -= 1) {
+        const key = keyForColumns(this._rows[i]!, columns);
+        if (!seen.has(key)) {
+          seen.add(key);
+          include[i] = true;
+        }
+      }
+    } else {
+      const seen = new Set<string>();
+      for (let i = 0; i < this._rows.length; i += 1) {
+        const key = keyForColumns(this._rows[i]!, columns);
+        if (!seen.has(key)) {
+          seen.add(key);
+          include[i] = true;
+        }
+      }
+    }
+
+    return include;
+  }
+
+  private resolveTargetColumns(columns?: string | string[]): string[] {
+    const targets = columns ? (Array.isArray(columns) ? columns : [columns]) : this._columns;
+    for (const column of targets) {
+      this.assertColumnExists(column);
+    }
+    return targets;
+  }
+
+  private reduceNumericColumns(
+    reduce: (values: number[]) => number | null
+  ): Record<string, number | null> {
+    const out: Record<string, number | null> = {};
+    for (const column of this._columns) {
+      out[column] = reduce(numericValues(this._rows.map((row) => row[column])));
+    }
+    return out;
   }
 
   private assertColumnExists(column: string): void {
