@@ -1,7 +1,15 @@
 import { DataFrame } from "./dataframe";
-import { keyFragment } from "./internal/dataframe/keys";
+import { keyFragment, normalizeKeyCell } from "./internal/dataframe/keys";
 import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
-import { compareCellValues, isMissing, isNumber } from "./utils";
+import {
+  compareCellValues,
+  isMissing,
+  isNumber,
+  median,
+  numericValues,
+  std,
+  variance,
+} from "./utils";
 
 interface GroupEntry {
   keyValues: CellValue[];
@@ -16,14 +24,6 @@ interface NamedAggPlan {
 interface CustomAggPlan {
   column: string;
   fn: AggFn;
-}
-
-interface NamedAggState {
-  count: number;
-  sum: number;
-  hasAny: boolean;
-  seen: boolean;
-  best: CellValue;
 }
 
 interface FastGroupState {
@@ -102,7 +102,11 @@ export class GroupBy {
       }
     }
 
-    if (customPlans.length === 0 && namedPlans.length > 0) {
+    if (
+      customPlans.length === 0 &&
+      namedPlans.length > 0 &&
+      namedPlans.every((plan) => FAST_AGG_NAMES.has(plan.name))
+    ) {
       return this.fastNamedAgg(namedPlans, aggColumns);
     }
 
@@ -115,14 +119,13 @@ export class GroupBy {
         row[this.by[i]!] = group.keyValues[i];
       }
 
-      const namedStates = namedPlans.map(() => createNamedAggState());
+      const namedValues = namedPlans.map(() => [] as CellValue[]);
       const customValues = customPlans.map(() => [] as CellValue[]);
 
       for (const sourceRow of group.rows) {
         for (let i = 0; i < namedPlans.length; i += 1) {
           const plan = namedPlans[i]!;
-          const state = namedStates[i]!;
-          updateNamedAggState(state, plan.name, sourceRow[plan.column]);
+          namedValues[i]!.push(sourceRow[plan.column]);
         }
         for (let i = 0; i < customPlans.length; i += 1) {
           const plan = customPlans[i]!;
@@ -132,7 +135,7 @@ export class GroupBy {
 
       for (let i = 0; i < namedPlans.length; i += 1) {
         const plan = namedPlans[i]!;
-        row[plan.column] = finalizeNamedAggState(namedStates[i]!, plan.name);
+        row[plan.column] = finalizeNamedAggValues(plan.name, namedValues[i]!);
       }
       for (let i = 0; i < customPlans.length; i += 1) {
         const plan = customPlans[i]!;
@@ -394,63 +397,85 @@ export class GroupBy {
   }
 }
 
-function createNamedAggState(): NamedAggState {
-  return {
-    count: 0,
-    sum: 0,
-    hasAny: false,
-    seen: false,
-    best: null,
-  };
-}
+const FAST_AGG_NAMES = new Set<AggName>(["count", "sum", "mean", "min", "max"]);
 
-function updateNamedAggState(state: NamedAggState, name: AggName, value: CellValue): void {
+function finalizeNamedAggValues(name: AggName, values: CellValue[]): CellValue {
   if (name === "count") {
-    if (!isMissing(value)) {
-      state.count += 1;
+    let count = 0;
+    for (const value of values) {
+      if (!isMissing(value)) {
+        count += 1;
+      }
     }
-    return;
+    return count;
   }
 
   if (name === "sum" || name === "mean") {
-    if (isNumber(value)) {
-      state.hasAny = true;
-      state.count += 1;
-      state.sum += value;
+    const numbers = numericValues(values);
+    if (numbers.length === 0) {
+      return null;
     }
-    return;
+    const total = numbers.reduce((sum, value) => sum + value, 0);
+    return name === "sum" ? total : total / numbers.length;
   }
 
-  if (name === "min") {
-    if (!isMissing(value) && (!state.seen || compareCellValues(value, state.best) < 0)) {
-      state.best = value;
-      state.seen = true;
-    }
-    return;
-  }
-
-  if (name === "max") {
-    if (!isMissing(value) && (!state.seen || compareCellValues(value, state.best) > 0)) {
-      state.best = value;
-      state.seen = true;
-    }
-  }
-}
-
-function finalizeNamedAggState(state: NamedAggState, name: AggName): CellValue {
-  if (name === "count") {
-    return state.count;
-  }
-  if (name === "sum") {
-    return state.hasAny ? state.sum : null;
-  }
-  if (name === "mean") {
-    return state.count > 0 ? state.sum / state.count : null;
-  }
   if (name === "min" || name === "max") {
-    return state.seen ? state.best : null;
+    let best: CellValue = null;
+    for (const value of values) {
+      if (isMissing(value)) {
+        continue;
+      }
+      if (best === null) {
+        best = value;
+        continue;
+      }
+      const compared = compareCellValues(value, best);
+      if ((name === "min" && compared < 0) || (name === "max" && compared > 0)) {
+        best = value;
+      }
+    }
+    return best;
   }
-  return null;
+
+  if (name === "median") {
+    return median(numericValues(values));
+  }
+
+  if (name === "std") {
+    return std(numericValues(values));
+  }
+
+  if (name === "var") {
+    return variance(numericValues(values));
+  }
+
+  if (name === "first") {
+    for (const value of values) {
+      if (!isMissing(value)) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  if (name === "last") {
+    for (let i = values.length - 1; i >= 0; i -= 1) {
+      const value = values[i]!;
+      if (!isMissing(value)) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (isMissing(value)) {
+      continue;
+    }
+    seen.add(JSON.stringify(normalizeKeyCell(value)));
+  }
+  return seen.size;
 }
 
 function keyForRow(row: Row, columns: string[]): string {
