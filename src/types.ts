@@ -4,7 +4,18 @@ export type CellValue = string | number | boolean | null | undefined | Date;
 
 export type Row = Record<string, CellValue>;
 
-export type AggName = "sum" | "mean" | "min" | "max" | "count";
+export type AggName =
+  | "sum"
+  | "mean"
+  | "min"
+  | "max"
+  | "count"
+  | "median"
+  | "std"
+  | "var"
+  | "first"
+  | "last"
+  | "nunique";
 
 export type AggFn = (values: CellValue[], rows: Row[]) => CellValue;
 

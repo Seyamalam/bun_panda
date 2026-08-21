@@ -51,15 +51,29 @@ export function compareCellValues(left: CellValue, right: CellValue): number {
   return leftString.localeCompare(rightString);
 }
 
-export function std(values: number[]): number | null {
+export function variance(values: number[]): number | null {
   const n = values.length;
   if (n <= 1) {
     return null;
   }
   const mean = values.reduce((sum, value) => sum + value, 0) / n;
-  const variance =
-    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (n - 1);
-  return Math.sqrt(variance);
+  return values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (n - 1);
+}
+
+export function std(values: number[]): number | null {
+  const sampleVariance = variance(values);
+  return sampleVariance === null ? null : Math.sqrt(sampleVariance);
+}
+
+export function median(values: number[]): number | null {
+  if (values.length === 0) {
+    return null;
+  }
+  const sorted = [...values].sort((left, right) => left - right);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1]! + sorted[mid]!) / 2
+    : sorted[mid]!;
 }
 
 export function coerceValueToDType(value: CellValue, dtype: DType): CellValue {
