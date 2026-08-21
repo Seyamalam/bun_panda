@@ -311,6 +311,50 @@ export class GroupBy {
     return this.agg(spec);
   }
 
+  min(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("min", columns ?? this.numericColumns());
+  }
+
+  max(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("max", columns ?? this.numericColumns());
+  }
+
+  median(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("median", columns ?? this.numericColumns());
+  }
+
+  std(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("std", columns ?? this.numericColumns());
+  }
+
+  var(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("var", columns ?? this.numericColumns());
+  }
+
+  nunique(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("nunique", columns ?? this.nonKeyColumns());
+  }
+
+  first(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("first", columns ?? this.nonKeyColumns());
+  }
+
+  last(columns?: string[]): DataFrame {
+    return this.namedColumnAgg("last", columns ?? this.nonKeyColumns());
+  }
+
+  private namedColumnAgg(name: AggName, candidates: string[]): DataFrame {
+    const spec: AggSpec = {};
+    for (const column of candidates) {
+      spec[column] = name;
+    }
+    return this.agg(spec);
+  }
+
+  private nonKeyColumns(): string[] {
+    return this.sourceColumns.filter((column) => !this.by.includes(column));
+  }
+
   size(): DataFrame {
     const rows: Row[] = [];
     const groups = this.sortGroups([...this.getGroups().values()]);
