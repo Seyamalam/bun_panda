@@ -1,5 +1,6 @@
 import { DataFrame } from "./dataframe";
 import { keyFragment, normalizeKeyCell } from "./internal/dataframe/keys";
+import { Series } from "./series";
 import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
 import {
   compareCellValues,
@@ -39,6 +40,17 @@ export interface GroupByOptions {
   dropna?: boolean;
   sort?: boolean;
   as_index?: boolean;
+}
+
+export type GroupTransformFn = (
+  column: Series<CellValue>,
+  name: string,
+  position: number
+) => CellValue | CellValue[];
+
+interface TransformGroupEntry {
+  keyValues: CellValue[];
+  positions: number[];
 }
 
 export class GroupBy {
@@ -313,6 +325,112 @@ export class GroupBy {
     }
 
     return this.materializeGroupedRows(rows, ["size"]);
+  }
+
+  transform(spec: AggSpec | GroupTransformFn): DataFrame {
+    const groups = this.sortTransformGroups([...this.buildGroupPositions().values()]);
+    const outColumns =
+      typeof spec === "function"
+        ? this.sourceColumns.filter((column) => !this.by.includes(column))
+        : Object.keys(spec);
+
+    const rows: Row[] = new Array(this.sourceRows.length);
+    for (let i = 0; i < rows.length; i += 1) {
+      const row: Row = {};
+      for (const column of outColumns) {
+        row[column] = null;
+      }
+      rows[i] = row;
+    }
+
+    for (const group of groups) {
+      const groupRows = group.positions.map((position) => this.sourceRows[position]!);
+      if (typeof spec === "function") {
+        for (let c = 0; c < outColumns.length; c += 1) {
+          const column = outColumns[c]!;
+          const subSeries = new Series(
+            groupRows.map((row) => row[column] ?? null),
+            { name: column }
+          );
+          const result = spec(subSeries, column, c);
+          if (Array.isArray(result)) {
+            if (result.length !== groupRows.length) {
+              throw new Error("transform function must return a value per group row.");
+            }
+            for (let i = 0; i < groupRows.length; i += 1) {
+              rows[group.positions[i]!]![column] = result[i] ?? null;
+            }
+          } else {
+            for (const position of group.positions) {
+              rows[position]![column] = result;
+            }
+          }
+        }
+      } else {
+        for (const [column, aggregator] of Object.entries(spec)) {
+          const values = groupRows.map((row) => row[column] ?? null);
+          const aggregated =
+            typeof aggregator === "function"
+              ? aggregator(values, groupRows)
+              : finalizeNamedAggValues(aggregator as AggName, values);
+          for (const position of group.positions) {
+            rows[position]![column] = aggregated;
+          }
+        }
+      }
+    }
+
+    return DataFrame.from_normalized(rows, outColumns, [...this.source.index]);
+  }
+
+  private buildGroupPositions(): Map<string, TransformGroupEntry> {
+    const groups = new Map<string, TransformGroupEntry>();
+
+    if (this.by.length === 1) {
+      const keyColumn = this.by[0]!;
+      for (let position = 0; position < this.sourceRows.length; position += 1) {
+        const keyValue = this.sourceRows[position]![keyColumn];
+        if (this.options.dropna && isMissing(keyValue)) {
+          continue;
+        }
+        const key = keyForSingleValue(keyValue);
+        const existing = groups.get(key);
+        if (existing) {
+          existing.positions.push(position);
+        } else {
+          groups.set(key, { keyValues: [keyValue], positions: [position] });
+        }
+      }
+      return groups;
+    }
+
+    for (let position = 0; position < this.sourceRows.length; position += 1) {
+      const row = this.sourceRows[position]!;
+      if (this.options.dropna && hasMissingByValue(row, this.by)) {
+        continue;
+      }
+      const key = keyForRow(row, this.by);
+      const existing = groups.get(key);
+      if (existing) {
+        existing.positions.push(position);
+      } else {
+        const keyValues = new Array<CellValue>(this.by.length);
+        for (let i = 0; i < this.by.length; i += 1) {
+          keyValues[i] = row[this.by[i]!];
+        }
+        groups.set(key, { keyValues, positions: [position] });
+      }
+    }
+    return groups;
+  }
+
+  private sortTransformGroups(groups: TransformGroupEntry[]): TransformGroupEntry[] {
+    if (!this.options.sort) {
+      return groups;
+    }
+    return groups.sort((left, right) =>
+      compareKeyValues(left.keyValues, right.keyValues)
+    );
   }
 
   private buildGroups(): Map<string, GroupEntry> {
