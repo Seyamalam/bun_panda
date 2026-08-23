@@ -1,14 +1,16 @@
-import { writeFileSync } from "node:fs";
 import { GroupBy } from "./groupby";
+import {
+  dataFrameToCsv,
+  dataFrameToJson,
+  dataFrameToParquet,
+  dataFrameToExcel,
+} from "./internal/dataframe/io";
 import type { GroupByOptions } from "./groupby";
 import {
-  escapeCsvValue,
   normalizeColumnar,
   normalizeRecords,
   resolvePosition,
 } from "./internal/dataframe/core";
-import { writeExcelFrame } from "./internal/io/excelWrite";
-import { writeParquetFrame } from "./internal/io/parquetWrite";
 import { computeMergeRows } from "./internal/dataframe/merge";
 import { computeMeltRows, computePivot } from "./internal/dataframe/reshape";
 import { computeRolling, computeExpanding } from "./internal/dataframe/rolling";
@@ -417,49 +419,19 @@ export class DataFrame {
     orientOrOptions: "records" | "list" | ToJSONOptions = "records",
     space = 2
   ): string {
-    const options = normalizeToJsonOptions(orientOrOptions, space);
-    const json = buildJsonOutput(this, options);
-    if (options.path) {
-      writeFileSync(options.path, `${json}\n`, "utf8");
-    }
-    return json;
+    return dataFrameToJson(this, orientOrOptions, space);
   }
 
   to_csv(options: ToCSVOptions = {}): string {
-    const sep = options.sep ?? ",";
-    const includeHeader = options.header ?? true;
-    const includeIndex = options.index ?? false;
-    const indexName = "index";
-
-    const lines: string[] = [];
-
-    if (includeHeader) {
-      const headerCells = includeIndex ? [indexName, ...this._columns] : [...this._columns];
-      lines.push(headerCells.map((cell) => escapeCsvValue(cell, sep)).join(sep));
-    }
-
-    for (let i = 0; i < this._rows.length; i += 1) {
-      const row = this._rows[i]!;
-      const rowCells = this._columns.map((column) => escapeCsvValue(row[column], sep));
-      if (includeIndex) {
-        rowCells.unshift(escapeCsvValue(this._index[i], sep));
-      }
-      lines.push(rowCells.join(sep));
-    }
-
-    const csv = `${lines.join("\n")}\n`;
-    if (options.path) {
-      writeFileSync(options.path, csv, "utf8");
-    }
-    return csv;
+    return dataFrameToCsv(this, options);
   }
 
   async to_parquet(options: ToParquetOptions): Promise<void> {
-    await writeParquetFrame(this, options);
+    await dataFrameToParquet(this, options);
   }
 
   to_excel(options: ToExcelOptions): void {
-    writeExcelFrame(this, options);
+    dataFrameToExcel(this, options);
   }
 
   head(n = 5): DataFrame {
@@ -1143,7 +1115,7 @@ export class DataFrame {
       aggregate: (aggregator) => {
         const rows: Row[] = this._rows.map(() => ({}));
         for (const column of numericCols) {
-          const rolling = computeRolling(
+          const _rolling = computeRolling(
             this._rows.map((row) => row[column]),
             window,
             minPeriods
@@ -2217,37 +2189,3 @@ export class DataFrame {
   }
 }
 
-type ResolvedToJsonOptions = Required<Pick<ToJSONOptions, "orient" | "space" | "lines">> &
-  Pick<ToJSONOptions, "path">;
-
-function normalizeToJsonOptions(
-  orientOrOptions: "records" | "list" | ToJSONOptions,
-  space: number
-): ResolvedToJsonOptions {
-  if (typeof orientOrOptions === "string") {
-    return {
-      orient: orientOrOptions,
-      space,
-      lines: false,
-    };
-  }
-  return {
-    orient: orientOrOptions.orient ?? "records",
-    space: orientOrOptions.space ?? 2,
-    lines: orientOrOptions.lines ?? false,
-    path: orientOrOptions.path,
-  };
-}
-
-function buildJsonOutput(frame: DataFrame, options: ResolvedToJsonOptions): string {
-  if (!options.lines) {
-    return JSON.stringify(frame.to_dict(options.orient), null, options.space);
-  }
-  if (options.orient !== "records") {
-    throw new Error("to_json with lines=true only supports orient='records'.");
-  }
-  return frame
-    .to_records()
-    .map((record) => JSON.stringify(record))
-    .join("\n");
-}
