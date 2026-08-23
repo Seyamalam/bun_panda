@@ -1,7 +1,6 @@
 import { DataFrame } from "./dataframe";
-import { keyFragment, normalizeKeyCell } from "./internal/dataframe/keys";
 import { Series } from "./series";
-import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
+import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
 import {
   wasmAggregateColumn,
   wasmAggMultiF64,
@@ -9,14 +8,22 @@ import {
 } from "./wasm/kernel";
 import { buildColumnStore } from "./wasm/columns";
 import {
-  compareCellValues,
+  compareKeyValues,
+  fastWasmCodeForName as wasmCodeForName,
+  finalizeNamedAggValues,
+  hasMissingByValue,
+  keyForRow,
+  keyForSingleValue,
+  shouldTryWasm as shouldTryWasmFast,
+  toIndexLabel,
+  updateFastGroupStates,
+} from "./internal/groupby/fastAgg";
+import {
   isMissing,
   isNumber,
-  median,
   numericValues,
   range,
   std,
-  variance,
 } from "./utils";
 
 interface GroupEntry {
@@ -263,11 +270,7 @@ export class GroupBy {
    * force the pure-TS path.
    */
   private shouldTryWasm(): boolean {
-    if (!this.options.dropna) {
-      return false;
-    }
-    const env = (process as unknown as { env?: Record<string, string> }).env;
-    return env?.BUN_PANDA_WASM !== "0";
+    return shouldTryWasmFast(this.options.dropna ?? true);
   }
 
   /**
@@ -711,7 +714,6 @@ export class GroupBy {
     if (!this.sourceColumns.includes(column)) {
       throw new Error(`Column '${column}' does not exist.`);
     }
-    const groups = this.sortGroups([...this.getGroups().entries()].map(([_, entry]) => entry));
     const outRows: Row[] = [];
     for (const group of this.sortGroups([...this.getGroups().values()])) {
       const counts = new Map<string, { value: CellValue; count: number }>();
@@ -1043,152 +1045,8 @@ export class GroupBy {
   }
 }
 
+
 const FAST_AGG_NAMES = new Set<AggName>(["count", "sum", "mean", "min", "max"]);
-
-function finalizeNamedAggValues(name: AggName, values: CellValue[]): CellValue {
-  if (name === "count") {
-    let count = 0;
-    for (const value of values) {
-      if (!isMissing(value)) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-  if (name === "sum" || name === "mean") {
-    const numbers = numericValues(values);
-    if (numbers.length === 0) {
-      return null;
-    }
-    const total = numbers.reduce((sum, value) => sum + value, 0);
-    return name === "sum" ? total : total / numbers.length;
-  }
-
-  if (name === "min" || name === "max") {
-    let best: CellValue = null;
-    for (const value of values) {
-      if (isMissing(value)) {
-        continue;
-      }
-      if (best === null) {
-        best = value;
-        continue;
-      }
-      const compared = compareCellValues(value, best);
-      if ((name === "min" && compared < 0) || (name === "max" && compared > 0)) {
-        best = value;
-      }
-    }
-    return best;
-  }
-
-  if (name === "median") {
-    return median(numericValues(values));
-  }
-
-  if (name === "std") {
-    return std(numericValues(values));
-  }
-
-  if (name === "var") {
-    return variance(numericValues(values));
-  }
-
-  if (name === "first") {
-    for (const value of values) {
-      if (!isMissing(value)) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  if (name === "last") {
-    for (let i = values.length - 1; i >= 0; i -= 1) {
-      const value = values[i]!;
-      if (!isMissing(value)) {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  const seen = new Set<string>();
-  for (const value of values) {
-    if (isMissing(value)) {
-      continue;
-    }
-    seen.add(JSON.stringify(normalizeKeyCell(value)));
-  }
-  return seen.size;
-}
-
-function keyForRow(row: Row, columns: string[]): string {
-  let key = "";
-  for (const column of columns) {
-    key += keyFragment(row[column]);
-  }
-  return key;
-}
-
-function keyForSingleValue(value: CellValue): string {
-  return keyFragment(value);
-}
-
-function hasMissingByValue(row: Row, columns: string[]): boolean {
-  for (const column of columns) {
-    if (isMissing(row[column])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function updateFastGroupStates(
-  state: FastGroupState,
-  plans: NamedAggPlan[],
-  planCodes: number[],
-  row: Row
-): void {
-  for (let i = 0; i < plans.length; i += 1) {
-    const plan = plans[i]!;
-    const code = planCodes[i]!;
-    const value = row[plan.column];
-    if (code === AGG_COUNT) {
-      if (!isMissing(value)) {
-        state.counts[i]! += 1;
-      }
-      continue;
-    }
-
-    if (code === AGG_SUM || code === AGG_MEAN) {
-      if (isNumber(value)) {
-        state.hasAny[i] = true;
-        state.counts[i]! += 1;
-        state.sums[i]! += value;
-      }
-      continue;
-    }
-
-    if (isMissing(value)) {
-      continue;
-    }
-    if (!state.seen[i]) {
-      state.best[i] = value;
-      state.seen[i] = true;
-      continue;
-    }
-
-    const compared = compareCellValues(value, state.best[i]);
-    if (
-      (code === AGG_MIN && compared < 0) ||
-      (code === AGG_MAX && compared > 0)
-    ) {
-      state.best[i] = value;
-    }
-  }
-}
 
 const AGG_COUNT = 1;
 const AGG_SUM = 2;
@@ -1197,58 +1055,11 @@ const AGG_MIN = 4;
 const AGG_MAX = 5;
 
 function aggCodeForName(name: AggName): number {
-  if (name === "count") {
-    return AGG_COUNT;
-  }
-  if (name === "sum") {
-    return AGG_SUM;
-  }
-  if (name === "mean") {
-    return AGG_MEAN;
-  }
-  if (name === "min") {
-    return AGG_MIN;
-  }
+  if (name === "count") return AGG_COUNT;
+  if (name === "sum") return AGG_SUM;
+  if (name === "mean") return AGG_MEAN;
+  if (name === "min") return AGG_MIN;
   return AGG_MAX;
-}
-
-/** Maps an AggName to the wasm kernel's aggregation code, or null. */
-function wasmCodeForName(name: AggName): number | null {
-  // Kernel codes: sum=0, mean=1, min=2, max=3, count=4.
-  if (name === "count") {
-    return 4;
-  }
-  if (name === "sum") {
-    return 0;
-  }
-  if (name === "mean") {
-    return 1;
-  }
-  if (name === "min") {
-    return 2;
-  }
-  if (name === "max") {
-    return 3;
-  }
-  return null;
-}
-
-function compareKeyValues(left: CellValue[], right: CellValue[]): number {
-  const size = Math.min(left.length, right.length);
-  for (let i = 0; i < size; i += 1) {
-    const compared = compareCellValues(left[i], right[i]);
-    if (compared !== 0) {
-      return compared;
-    }
-  }
-  return left.length - right.length;
-}
-
-function toIndexLabel(value: CellValue, fallback: number): IndexLabel {
-  if (typeof value === "number" || typeof value === "string") {
-    return value;
-  }
-  return String(value ?? fallback);
 }
 
 function groupCacheKey(by: string[], dropna: boolean): string {
