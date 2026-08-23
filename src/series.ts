@@ -22,6 +22,13 @@ import {
   seriesProd,
   seriesVariance,
 } from "./internal/series/stats";
+import {
+  cumcountValues,
+  cummaxValues,
+  cumminValues,
+  cumprodValues,
+  cumsumValues,
+} from "./internal/series/cumulative";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
 import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
@@ -660,65 +667,39 @@ export class Series<T extends CellValue = CellValue> {
   // ---- cumulative ----
 
   cumsum(): Series<number> {
-    let acc = 0;
-    const out = this._values.map((value): number | null => {
-      if (isMissing(value)) {
-        return null;
-      }
-      acc += typeof value === "number" ? value : Number(value);
-      return acc;
+    return new Series(cumsumValues(this._values) as unknown as number[], {
+      index: this._index,
+      name: this.name,
     });
-    return new Series(out as unknown as number[], { index: this._index, name: this.name });
   }
 
   cummax(): Series<T> {
-    let acc: number | null = null;
-    const out = this._values.map((value): T | null => {
-      if (isMissing(value)) {
-        return null;
-      }
-      const n = typeof value === "number" ? value : Number(value);
-      acc = acc === null ? n : Math.max(acc, n);
-      return acc as unknown as T;
+    return new Series(cummaxValues(this._values) as unknown as T[], {
+      index: this._index,
+      name: this.name,
     });
-    return new Series(out as unknown as T[], { index: this._index, name: this.name });
   }
 
   cummin(): Series<T> {
-    let acc: number | null = null;
-    const out = this._values.map((value): T | null => {
-      if (isMissing(value)) {
-        return null;
-      }
-      const n = typeof value === "number" ? value : Number(value);
-      acc = acc === null ? n : Math.min(acc, n);
-      return acc as unknown as T;
+    return new Series(cumminValues(this._values) as unknown as T[], {
+      index: this._index,
+      name: this.name,
     });
-    return new Series(out as unknown as T[], { index: this._index, name: this.name });
   }
 
   cumprod(): Series<number> {
-    let acc = 1;
-    const out = this._values.map((value): number | null => {
-      if (isMissing(value)) {
-        return null;
-      }
-      acc *= typeof value === "number" ? value : Number(value);
-      return acc;
+    return new Series(cumprodValues(this._values) as unknown as number[], {
+      index: this._index,
+      name: this.name,
     });
-    return new Series(out as unknown as number[], { index: this._index, name: this.name });
   }
 
   /** 0-based position within the run of non-null values (pandas cumcount). */
   cumcount(): Series<number> {
-    let count = 0;
-    const out = this._values.map((value): number | null => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return count++;
+    return new Series(cumcountValues(this._values) as unknown as number[], {
+      index: this._index,
+      name: this.name,
     });
-    return new Series(out as unknown as number[], { index: this._index, name: this.name });
   }
 
   isnull(): Series<boolean> {
