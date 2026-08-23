@@ -27,6 +27,11 @@ import {
   wasmFilterPositions as computeWasmFilterPositions,
   wasmSortPositions as computeWasmSortPositions,
 } from "./internal/dataframe/selection";
+import {
+  assertSameShape,
+  elementwiseBinaryOp,
+  elementwiseCompareOp,
+} from "./internal/dataframe/arith";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -768,27 +773,18 @@ export class DataFrame {
     other: number | DataFrame,
     fn: (a: number, b: number) => number
   ): DataFrame {
-    const otherFrame =
-      other instanceof DataFrame ? other : null;
-    if (otherFrame && (otherFrame._rows.length !== this._rows.length || otherFrame._columns.length !== this._columns.length)) {
-      throw new Error("Binary op requires frames of identical shape.");
+    const otherFrame = other instanceof DataFrame ? other : null;
+    if (otherFrame) {
+      assertSameShape(this._rows, this._columns, otherFrame._rows, otherFrame._columns);
     }
-    const rows: Row[] = this._rows.map(() => ({}));
-    for (let c = 0; c < this._columns.length; c += 1) {
-      const column = this._columns[c]!;
-      for (let r = 0; r < this._rows.length; r += 1) {
-        const a = this._rows[r]![column];
-        const b = otherFrame ? otherFrame._rows[r]![otherFrame._columns[c]!] : other;
-        if (
-          (typeof a !== "number" || !Number.isFinite(a)) ||
-          (typeof b !== "number" || !Number.isFinite(b))
-        ) {
-          rows[r]![column] = null;
-        } else {
-          rows[r]![column] = fn(a, typeof b === "number" ? b : Number(b));
-        }
-      }
-    }
+    const rows = elementwiseBinaryOp(
+      this._rows,
+      this._columns,
+      otherFrame?._rows ?? null,
+      otherFrame?._columns ?? null,
+      otherFrame ? null : (other as number),
+      fn
+    );
     return this.withRows(rows, [...this._index], [...this._columns], true);
   }
 
@@ -855,18 +851,13 @@ export class DataFrame {
     fn: (a: number, b: number) => boolean
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
-    const rows: Row[] = this._rows.map(() => ({}));
-    for (const column of this._columns) {
-      for (let r = 0; r < this._rows.length; r += 1) {
-        const a = this._rows[r]![column];
-        const b = otherFrame ? otherFrame._rows[r]?.[column] : other;
-        if (typeof a === "number" && Number.isFinite(a) && typeof b === "number" && Number.isFinite(b)) {
-          rows[r]![column] = fn(a, b);
-        } else {
-          rows[r]![column] = null;
-        }
-      }
-    }
+    const rows = elementwiseCompareOp(
+      this._rows,
+      this._columns,
+      otherFrame?._rows ?? null,
+      otherFrame ? null : (other as CellValue),
+      fn
+    );
     return this.withRows(rows, [...this._index], [...this._columns], true);
   }
 
