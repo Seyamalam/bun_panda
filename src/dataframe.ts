@@ -21,6 +21,12 @@ import {
   pairwiseNumericMatrix,
   pearson,
 } from "./internal/dataframe/stats";
+import {
+  duplicateKeepFlags as computeDuplicateKeepFlags,
+  isNumericColumn,
+  wasmFilterPositions as computeWasmFilterPositions,
+  wasmSortPositions as computeWasmSortPositions,
+} from "./internal/dataframe/selection";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -43,10 +49,7 @@ import {
   type DataFrameApplyRowFn,
   type DataFrameMapFn,
 } from "./internal/dataframe/apply";
-import {
-  keyForColumns,
-  normalizeKeyCell,
-} from "./internal/dataframe/keys";
+import { normalizeKeyCell } from "./internal/dataframe/keys";
 import {
   computeClipRows,
   computeIsinRows,
@@ -72,8 +75,6 @@ import {
   selectTopKPositions,
 } from "./internal/dataframe/ordering";
 import { Series } from "./series";
-import { wasmArgsortF64, wasmFilterIndices } from "./wasm/kernel";
-import { buildColumnStore } from "./wasm/columns";
 import type {
   AggFn,
   AggName,
@@ -901,7 +902,7 @@ export class DataFrame {
       }
       // Fast path for the common boolean-array form: compress indices
       // in wasm, then gather rows in one pass.
-      const wasmIndices = this.wasmFilterPositions(mask);
+      const wasmIndices = computeWasmFilterPositions(mask);
       if (wasmIndices !== null) {
         const rows: Row[] = new Array(wasmIndices.length);
         const index: IndexLabel[] = new Array(wasmIndices.length);
@@ -1463,12 +1464,9 @@ export class DataFrame {
     if (
       columns.length === 1 &&
       na_position === "last" &&
-      this.isNumericColumnForSort(columns[0]!)
+      isNumericColumn(this._rows, columns[0]!)
     ) {
-      const wasmPos = this.wasmSortPositions(
-        columns[0]!,
-        ascendingPerColumn[0]!
-      );
+      const wasmPos = computeWasmSortPositions(this._rows, columns[0]!, ascendingPerColumn[0]!);
       if (wasmPos) {
         const sliced =
           limit !== undefined
@@ -1530,7 +1528,7 @@ export class DataFrame {
     keep: DropDuplicatesKeep = "first",
     ignore_index = false
   ): DataFrame {
-    const include = this.duplicateKeepFlags(subset, keep);
+    const include = computeDuplicateKeepFlags(this._rows, subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns, keep);
 
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
@@ -1546,7 +1544,7 @@ export class DataFrame {
   }
 
   duplicated(subset?: string | string[], keep: DropDuplicatesKeep = "first"): Series<boolean> {
-    const include = this.duplicateKeepFlags(subset, keep);
+    const include = computeDuplicateKeepFlags(this._rows, subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns, keep);
     return new Series(
       include.map((flag) => !flag),
       { name: "duplicated", index: this._index }
@@ -1973,48 +1971,6 @@ export class DataFrame {
     return Array.from({ length: rowCount }, () => value);
   }
 
-  private duplicateKeepFlags(
-    subset?: string | string[],
-    keep: DropDuplicatesKeep = "first"
-  ): boolean[] {
-    const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
-    for (const column of columns) {
-      this.assertColumnExists(column);
-    }
-
-    const include = new Array(this._rows.length).fill(false);
-
-    if (keep === false) {
-      const counts = new Map<string, number>();
-      for (const row of this._rows) {
-        const key = keyForColumns(row, columns);
-        counts.set(key, (counts.get(key) ?? 0) + 1);
-      }
-      for (let i = 0; i < this._rows.length; i += 1) {
-        include[i] = (counts.get(keyForColumns(this._rows[i]!, columns)) ?? 0) === 1;
-      }
-    } else if (keep === "last") {
-      const seen = new Set<string>();
-      for (let i = this._rows.length - 1; i >= 0; i -= 1) {
-        const key = keyForColumns(this._rows[i]!, columns);
-        if (!seen.has(key)) {
-          seen.add(key);
-          include[i] = true;
-        }
-      }
-    } else {
-      const seen = new Set<string>();
-      for (let i = 0; i < this._rows.length; i += 1) {
-        const key = keyForColumns(this._rows[i]!, columns);
-        if (!seen.has(key)) {
-          seen.add(key);
-          include[i] = true;
-        }
-      }
-    }
-
-    return include;
-  }
 
   private resolveTargetColumns(columns?: string | string[]): string[] {
     const targets = columns ? (Array.isArray(columns) ? columns : [columns]) : this._columns;
@@ -2059,42 +2015,5 @@ export class DataFrame {
   }
 
   // ---- wasm-backed helpers ----
-
-  private isNumericColumnForSort(column: string): boolean {
-    for (let i = 0; i < this._rows.length; i += 1) {
-      const value = this._rows[i]![column];
-      if (
-        value !== null &&
-        value !== undefined &&
-        (typeof value !== "number" || !Number.isFinite(value))
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private wasmSortPositions(column: string, ascending: boolean): Int32Array | null {
-    // Disabled when opt-out flag is set, matching GroupBy.shouldTryWasm.
-    const env = (process as unknown as { env?: Record<string, string> }).env;
-    if (env?.BUN_PANDA_WASM === "0") {
-      return null;
-    }
-    const store = buildColumnStore(this._rows, [column]);
-    const entry = store.columns.get(column);
-    if (!entry || entry.kind !== "f64") {
-      return null;
-    }
-    return wasmArgsortF64(entry.values, ascending);
-  }
-
-  private wasmFilterPositions(mask: boolean[]): Int32Array | null {
-    const env = (process as unknown as { env?: Record<string, string> }).env;
-    if (env?.BUN_PANDA_WASM === "0") {
-      return null;
-    }
-    const bytes = Uint8Array.from(mask, (value) => (value ? 1 : 0));
-    return wasmFilterIndices(bytes);
-  }
 }
 
