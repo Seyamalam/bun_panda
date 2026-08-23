@@ -13,6 +13,15 @@ import {
   computeSeriesReplace,
   type SeriesReplaceInput,
 } from "./internal/series/compat";
+import {
+  adjustedSkew,
+  autocorrelation,
+  excessKurtosis,
+  semOfMean,
+  seriesCount,
+  seriesProd,
+  seriesVariance,
+} from "./internal/series/stats";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
 import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
@@ -308,7 +317,7 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Number of non-missing values (pandas count). */
   count(): number {
-    return this._values.filter((value) => !isMissing(value)).length;
+    return seriesCount(this._values);
   }
 
   median(): number | null {
@@ -316,22 +325,11 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   var(): number | null {
-    const numbers = numericValues(this._values);
-    if (numbers.length < 2) {
-      return null;
-    }
-    const mean = numbers.reduce((s, v) => s + v, 0) / numbers.length;
-    return (
-      numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - 1)
-    );
+    return seriesVariance(numericValues(this._values));
   }
 
   prod(): number | null {
-    const numbers = numericValues(this._values);
-    if (numbers.length === 0) {
-      return null;
-    }
-    return numbers.reduce((acc, value) => acc * value, 1);
+    return seriesProd(numericValues(this._values));
   }
 
   product(): number | null {
@@ -340,84 +338,23 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Unbiased skewness (Fisher-Pearson with sample correction G1). */
   skew(): number | null {
-    return this.adjustedSkew(numericValues(this._values));
+    return adjustedSkew(numericValues(this._values));
   }
 
-  private adjustedSkew(numbers: number[]): number | null {
-    const n = numbers.length;
-    if (n < 3) return null;
-    const mean = numbers.reduce((s, v) => s + v, 0) / n;
-    const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
-    const m3 = numbers.reduce((s, v) => s + (v - mean) ** 3, 0);
-    const popStd = Math.sqrt(m2 / n);
-    if (popStd === 0) return null;
-    const g1 = m3 / popStd ** 3;
-    // Sample-corrected skewness G1.
-    return (Math.sqrt(n * (n - 1)) / (n - 2)) * g1;
-  }
 
   /** Excess kurtosis (Fisher definition; normal distribution = 0). */
   kurt(): number | null {
-    const numbers = numericValues(this._values);
-    const n = numbers.length;
-    if (n < 4) {
-      return null;
-    }
-    const mean = numbers.reduce((s, v) => s + v, 0) / n;
-    const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
-    const m4 = numbers.reduce((s, v) => s + (v - mean) ** 4, 0);
-    if (m2 === 0) {
-      return null;
-    }
-    const sampleStd = Math.sqrt(m2 / (n - 1));
-    return m4 / (sampleStd ** 4 * n) - 3;
+    return excessKurtosis(numericValues(this._values));
   }
 
   /** Standard error of the mean (sample std / sqrt(n)). */
   sem(): number | null {
-    const numbers = numericValues(this._values);
-    if (numbers.length < 2) {
-      return null;
-    }
-    const mean = numbers.reduce((s, v) => s + v, 0) / numbers.length;
-    const sampleStd = Math.sqrt(
-      numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - 1)
-    );
-    return sampleStd / Math.sqrt(numbers.length);
+    return semOfMean(numericValues(this._values));
   }
 
   /** Lag-N autocorrelation (default lag 1). */
   autocorr(lag = 1): number | null {
-    const values = this._values;
-    const a: number[] = [];
-    const b: number[] = [];
-    for (let i = lag; i < values.length; i += 1) {
-      const x = values[i];
-      const y = values[i - lag];
-      if (
-        !isMissing(x) && typeof x === "number" &&
-        !isMissing(y) && typeof y === "number"
-      ) {
-        a.push(x);
-        b.push(y);
-      }
-    }
-    const n = a.length;
-    if (n < 2) {
-      return null;
-    }
-    const ma = a.reduce((s, v) => s + v, 0) / n;
-    const mb = b.reduce((s, v) => s + v, 0) / n;
-    let cov = 0;
-    let va = 0;
-    let vb = 0;
-    for (let i = 0; i < n; i += 1) {
-      cov += (a[i]! - ma) * (b[i]! - mb);
-      va += (a[i]! - ma) ** 2;
-      vb += (b[i]! - mb) ** 2;
-    }
-    const denom = Math.sqrt(va) * Math.sqrt(vb);
-    return denom === 0 ? null : cov / denom;
+    return autocorrelation(this._values, lag);
   }
 
   /** True for values within [lower, upper] inclusive. */
