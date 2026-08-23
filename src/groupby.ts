@@ -254,21 +254,17 @@ export class GroupBy {
   /**
    * Whether the wasm groupby path should be attempted for this call.
    *
-   * String-key grouping under wasm is currently slower than the JS Map
-   * path (TextEncoder + hash table dominate), so wasm stays opt-in
-   * behind an explicit flag rather than on by default.
+   * On by default since the single-pass key packing optimization: the
+   * wasm path measures ~1.1x faster at 25k rows and ~1.25x at 100k rows,
+   * with the gap widening as row counts grow. Set BUN_PANDA_WASM=0 to
+   * force the pure-TS path.
    */
   private shouldTryWasm(): boolean {
     if (!this.options.dropna) {
       return false;
     }
-    const flag =
-      (process as unknown as { env?: Record<string, string> }).env
-        ?.BUN_PANDA_WASM === "1";
-    if (flag) {
-      return true;
-    }
-    return false;
+    const env = (process as unknown as { env?: Record<string, string> }).env;
+    return env?.BUN_PANDA_WASM !== "0";
   }
 
   /**

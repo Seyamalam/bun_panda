@@ -111,8 +111,25 @@ pub unsafe extern "C" fn bp_group_ids(keys: *const u8, offsets: *const i32, n: u
     if table.is_null() || hashes.is_null() || first_row.is_null() || ids.is_null() {
         return core::ptr::null_mut();
     }
-    for slot in 0..capacity {
-        *table.add(slot) = -1;
+    // Generation counter: instead of memsetting `capacity` slots to -1 on
+    // every call, tag each occupied slot with the current generation. A
+    // slot whose tag differs is logically empty. The table is allocated
+    // fresh from the bump arena each call, so its bytes are dirty — but
+    // we only need `hashes` zeroed once per page, which is far cheaper
+    // than a full pass when groups are few. For simplicity and safety
+    // (dirty bytes could alias a valid group tag), keep the clearing pass
+    // but write it as an unrolled word-at-a-time loop.
+    {
+        let words = table as *mut i64;
+        let byte_len = capacity * 4;
+        let mut w = 0;
+        while w + 8 <= byte_len {
+            *(words.add(w / 8)) = -1i64; // two i32 -1s per word
+            w += 8;
+        }
+        if w < byte_len {
+            *(words.add(w / 8)) = -1i64;
+        }
     }
 
     let mut group_count: usize = 0;

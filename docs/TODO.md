@@ -36,7 +36,7 @@
 
 ## Next Milestone (v0.3.x — Rust/WASM + full parity)
 
-1. Make the string-key groupby path in the wasm kernels fast enough to be the default (currently opt-in behind `BUN_PANDA_WASM=1` because the bump-arena hash + per-row `TextEncoder` step is slower than the JS `Map` path — pivot to raw-f32 paths for typed columns first, then revisit strings).
+1. Extend the wasm kernels beyond groupby (sort, filter, merge hot paths) and add typed-column storage so values cross the JS/WASM boundary as raw Float64Arrays without per-row marshalling.
 2. Expand pandas benchmark parity coverage beyond the 10 tracked cases.
 3. Add storage/IO helpers (Arrow/Parquet columnar reads into typed arrays for zero-copy wasm import).
 

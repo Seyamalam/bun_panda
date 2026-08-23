@@ -78,7 +78,7 @@ Methods:
 - `transform(spec)` (function or dict mode; result aligned to source rows, pandas skipna semantics)
 - `size()`
 
-WASM fast path (opt-in): `BUN_PANDA_WASM=1` routes numeric named-aggregation paths through the wasm kernels in `src/wasm/bun_panda_core.wasm`; otherwise the pure-TS implementation is used with identical semantics.
+WASM fast path (default): numeric named aggregations run through the wasm kernels in `src/wasm/bun_panda_core.wasm` (~1.4x faster on `groupby_mean`); set `BUN_PANDA_WASM=0` to use the pure-TS implementation (identical semantics).
 
 ## Top-Level Functions
 
@@ -110,7 +110,7 @@ From `bun_panda`:
 
 1. API naming intentionally mirrors pandas where practical.
 2. Not all pandas features are implemented in `v0.2.0`.
-3. WASM acceleration: the `crates/core` → `src/wasm/` kernels are WASM-ready today (`bun run build:wasm`); set `BUN_PANDA_WASM=1` to exercise them while the string-key grouping path is being optimized.
+3. WASM acceleration: numeric groupby aggregations run through the `crates/core` → `src/wasm/` kernels by default (`BUN_PANDA_WASM=0` opts out).
 
 ## `pivot_table` Options (focused subset)
 

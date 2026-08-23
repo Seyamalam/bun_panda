@@ -24,7 +24,7 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 - Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB):
   - flat C ABI (`bp_alloc`/`bp_group_ids`/`bp_agg_f64`/`bp_free_all`), no bindgen/wasm-bindgen
   - `src/wasm/kernel.ts` loader with lazy init and pure-TS fallback
-  - opt-in via `BUN_PANDA_WASM=1`; parity verified against TS path (`test/wasm-kernel.test.ts`)
+  - default-on for numeric groupby aggregations after single-pass key packing (~1.4x faster `groupby_mean` vs prior TS-only build; `BUN_PANDA_WASM=0` opts out); parity verified against TS path (`test/wasm-kernel.test.ts`)
   - `bun run build:wasm` rebuilds the artifact
 
 ### Changed

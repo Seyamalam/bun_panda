@@ -56,7 +56,7 @@
 - pandas-like options: `dropna`, `sort`
 - pandas-like options: `as_index` (single-key output supported)
 - `size`
-- WASM fast path for numeric named aggregations via `src/wasm/kernel.ts` → `src/wasm/bun_panda_core.wasm` (opt-in behind `BUN_PANDA_WASM=1`; pure-TS fallback otherwise)
+- WASM fast path for numeric named aggregations via `src/wasm/kernel.ts` → `src/wasm/bun_panda_core.wasm` (default; `BUN_PANDA_WASM=0` falls back to pure TS)
 
 ### IO and Utilities
 

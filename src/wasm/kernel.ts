@@ -156,8 +156,13 @@ export function wasmGroupIds(rows: Row[], by: string[]): WasmGroupAggResult | nu
     return null;
   }
   try {
-    const fragments = new Array<string>(rows.length);
-    for (let i = 0; i < rows.length; i += 1) {
+    const n = rows.length;
+    // Single-pass key packing: build one big string, then encode once.
+    // Per-row TextEncoder.encode calls were the dominant JS-side cost.
+    const parts: string[] = [];
+    const lengths = new Int32Array(n);
+    let totalChars = 0;
+    for (let i = 0; i < n; i += 1) {
       const row = rows[i]!;
       let fragment = "";
       let missing = false;
@@ -169,16 +174,59 @@ export function wasmGroupIds(rows: Row[], by: string[]): WasmGroupAggResult | nu
         }
         fragment += keyFragment(value);
       }
-      fragments[i] = missing ? "" : fragment;
+      if (missing) {
+        fragment = "";
+      }
+      parts.push(fragment);
+      const charLen = fragment.length;
+      lengths[i] = charLen;
+      totalChars += charLen;
     }
 
-    const plan = packKeys(kernel, fragments);
-    const idsPtr = kernel.bp_group_ids(plan.keysPtr, plan.offsPtr, plan.n);
+    const packed: string = parts.join("");
+    const encoded = enc.encode(packed);
+    const totalBytes = encoded.length;
+
+    const keysPtr = kernel.bp_alloc(totalBytes > 0 ? totalBytes : 1);
+    if (!keysPtr) {
+      throw new Error("wasm alloc failed");
+    }
+    if (totalBytes > 0) {
+      new Uint8Array(kernel.memory.buffer, keysPtr, totalBytes).set(encoded);
+    }
+
+    // Byte offsets from char counts: fragments are ASCII in the common
+    // path, but compute real byte offsets by walking the encoding once.
+    const offsets = new Int32Array(n + 1);
+    if (totalBytes !== totalChars) {
+      // Non-ASCII present: derive byte lengths via encode of each part.
+      let cursor = 0;
+      for (let i = 0; i < n; i += 1) {
+        offsets[i] = cursor;
+        cursor += enc.encode(parts[i]).length;
+      }
+      offsets[n] = cursor;
+    } else {
+      let cursor = 0;
+      for (let i = 0; i < n; i += 1) {
+        offsets[i] = cursor;
+        cursor += lengths[i]!;
+      }
+      offsets[n] = cursor;
+    }
+
+    const offsPtr = kernel.bp_alloc(offsets.byteLength);
+    if (!offsPtr) {
+      throw new Error("wasm alloc failed");
+    }
+    new Int32Array(kernel.memory.buffer, offsPtr, n + 1).set(offsets);
+
+    const idsPtr = kernel.bp_group_ids(keysPtr, offsPtr, n);
     if (!idsPtr) {
       return null;
     }
-    const ids = new Int32Array(plan.n);
-    ids.set(new Int32Array(kernel.memory.buffer, idsPtr, plan.n));
+    const ids = new Int32Array(n);
+    ids.set(new Int32Array(kernel.memory.buffer, idsPtr, n));
     const groupCount = kernel.bp_last_group_count();
     kernel.bp_free_all();
     return { ids, groupCount };

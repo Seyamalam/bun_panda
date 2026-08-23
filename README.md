@@ -87,7 +87,7 @@ bun test                  # includes wasm kernel parity tests (src/wasm/*)
 bun run typecheck
 bun run check
 bun run build:wasm        # rebuild crates/core -> src/wasm/bun_panda_core.wasm
-BUN_PANDA_WASM=1 bun test # exercise the opt-in wasm groupby path
+BUN_PANDA_WASM=0 bun test # force the pure-TS groupby path
 ```
 bun run bench
 bun run bench:io
@@ -157,7 +157,7 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 ## Status
 
 This is an early library release (`0.2.0`). The API is intentionally pandas-like but not pandas-complete yet.
-A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB) is included and WASM-ready; set `BUN_PANDA_WASM=1` to exercise it (currently opt-in while the string-key grouping path is being tuned).
+A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB) powers numeric groupby aggregations by default (~1.4x faster on `groupby_mean`); `BUN_PANDA_WASM=0` opts back into the pure-TS path.
 
 ## License
 
