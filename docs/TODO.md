@@ -36,7 +36,7 @@
 
 ## Next Milestone (v0.3.x — Rust/WASM + full parity)
 
-1. Extend the wasm kernels beyond groupby (sort, filter, merge hot paths) and add typed-column storage so values cross the JS/WASM boundary as raw Float64Arrays without per-row marshalling.
+1. Extend the wasm kernels beyond groupby (sort, filter, merge hot paths) and add typed-column storage so values cross the JS/WASM boundary as raw Float64Arrays without per-row marshalling. *(done for groupby agg, sort_values, filter, and parquet ingest; merge kernels remain)*
 2. Expand pandas benchmark parity coverage beyond the 10 tracked cases.
 3. Add storage/IO helpers (Arrow/Parquet columnar reads into typed arrays for zero-copy wasm import).
 

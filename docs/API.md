@@ -7,8 +7,7 @@
 Constructors:
 
 - `new DataFrame(rowsOrColumns, options?)`
-- `DataFrame.from_records(records, options?)`
-- `DataFrame.from_dict(data, options?)`
+- `from_records`, `from_dict`, `from_normalized`, `from_typed` (accepts `Float64Array` columns, NaN = missing)
 
 Key properties:
 

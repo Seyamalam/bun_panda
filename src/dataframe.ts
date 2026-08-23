@@ -200,6 +200,47 @@ export class DataFrame {
     return DataFrame.createInternal(rows, [...columns], index ? [...index] : range(rows.length));
   }
 
+  /**
+   * Builds a frame from column-major data where numeric columns may be
+   * Float64Arrays (NaN = missing) — the typed-ingest path used by
+   * read_parquet. Typed columns are copied into row-major storage once,
+   * without per-cell type dispatch on plain values.
+   */
+  static from_typed(
+    data: Record<string, CellValue[] | Float64Array>,
+    options: DataFrameOptions = {}
+  ): DataFrame {
+    const columns = Object.keys(data);
+    const rowCount = columns.reduce(
+      (max, column) => Math.max(max, (data[column] as ArrayLike<CellValue>)?.length ?? 0),
+      0
+    );
+
+    const rows: Row[] = new Array(rowCount);
+    for (let i = 0; i < rowCount; i += 1) {
+      rows[i] = {};
+    }
+
+    for (const column of columns) {
+      const source = data[column];
+      if (!source) {
+        continue;
+      }
+      if (source instanceof Float64Array) {
+        for (let i = 0; i < rowCount; i += 1) {
+          const value = source[i] as number;
+          rows[i]![column] = Number.isNaN(value) ? null : value;
+        }
+      } else {
+        for (let i = 0; i < rowCount; i += 1) {
+          rows[i]![column] = (source as CellValue[])[i] ?? null;
+        }
+      }
+    }
+
+    return new DataFrame(rows, options);
+  }
+
   get columns(): string[] {
     return [...this._columns];
   }

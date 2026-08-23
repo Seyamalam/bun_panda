@@ -72,7 +72,7 @@
 - `read_json` (async)
 - `read_json_sync`
 - `parse_json` (`lines: true` JSON-lines support)
-- `read_parquet` (async)
+- `read_parquet` (async; numeric columns decode into typed arrays — ~20% faster than row-major)
 - `read_excel` (async)
 - `read_excel_sync`
 - `to_parquet`

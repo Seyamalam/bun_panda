@@ -27,6 +27,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
   - default-on for numeric groupby aggregations after single-pass key packing (~1.4x faster `groupby_mean` vs prior TS-only build; `BUN_PANDA_WASM=0` opts out); parity verified against TS path (`test/wasm-kernel.test.ts`)
   - columnar typed-array substrate `src/wasm/columns.ts` (`Float64Array` with NaN = missing) — one fused kernel call per `groupby(...).agg({...})` instead of per-column marshalling
   - single-column numeric `DataFrame.sort_values` and boolean-mask `DataFrame.filter` delegated to wasm kernels (stable argsort, `BUN_PANDA_WASM=0` falls back)
+- Typed columnar parquet ingest (`src/internal/io/parquetTyped.ts`): numeric columns decode straight into `Float64Array`s (NaN = missing) per row group, skipping per-cell conversion dispatch — ~20% faster end-to-end `read_parquet`; null handling verified by round-trip tests
+- `DataFrame.from_typed(data)` constructor accepting `Float64Array` columns (NaN = missing) for column-major ingestion
   - `bun run build:wasm` rebuilds the artifact
 
 ### Changed
