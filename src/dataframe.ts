@@ -33,6 +33,11 @@ import {
   elementwiseCompareOp,
 } from "./internal/dataframe/arith";
 import { performJoin } from "./internal/dataframe/join";
+import {
+  diffRows,
+  pctChangeRows,
+  shiftRows,
+} from "./internal/dataframe/deltas";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -983,71 +988,19 @@ export class DataFrame {
    * (introducing nulls at the top), matching pandas.
    */
   shift(periods = 1): DataFrame {
-    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => {
-      const row: Row = {};
-      for (const column of this._columns) {
-        row[column] = null;
-      }
-      return row;
-    });
-    for (let i = 0; i < this._rows.length; i += 1) {
-      const source = i - periods;
-      if (source < 0 || source >= this._rows.length) {
-        continue;
-      }
-      const sourceRow = this._rows[source]!;
-      const target = rows[i]!;
-      for (const column of this._columns) {
-        target[column] = sourceRow[column];
-      }
-    }
+    const rows = shiftRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
   /** First discrete difference of numeric columns. */
   diff(periods = 1): DataFrame {
-    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => ({}));
-    for (let i = 0; i < this._rows.length; i += 1) {
-      const target = rows[i]!;
-      const current = this._rows[i]!;
-      const previous = i - periods >= 0 ? this._rows[i - periods] : undefined;
-      for (const column of this._columns) {
-        const a = current[column];
-        const b = previous?.[column];
-        if (
-          typeof a === "number" && Number.isFinite(a) &&
-          typeof b === "number" && Number.isFinite(b)
-        ) {
-          target[column] = a - b;
-        } else {
-          target[column] = null;
-        }
-      }
-    }
+    const rows = diffRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
   /** Percentage change between the current and prior row (numeric columns). */
   pct_change(periods = 1): DataFrame {
-    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => ({}));
-    for (let i = 0; i < this._rows.length; i += 1) {
-      const target = rows[i]!;
-      const current = this._rows[i]!;
-      const previous = i - periods >= 0 ? this._rows[i - periods] : undefined;
-      for (const column of this._columns) {
-        const a = current[column];
-        const b = previous?.[column];
-        if (
-          typeof a === "number" && Number.isFinite(a) &&
-          typeof b === "number" && Number.isFinite(b) &&
-          b !== 0
-        ) {
-          target[column] = (a - b) / b;
-        } else {
-          target[column] = null;
-        }
-      }
-    }
+    const rows = pctChangeRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
