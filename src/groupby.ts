@@ -640,6 +640,107 @@ export class GroupBy {
     return new DataFrame(kept);
   }
 
+  /** Per-group describe: count/mean/std/min/quantiles/max as rows. */
+  describe(): DataFrame {
+    const stats = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"];
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const outRows: Row[] = [];
+
+    const quantileOf = (sorted: number[], q: number): number => {
+      const pos = (sorted.length - 1) * q;
+      const lower = Math.floor(pos);
+      const upper = Math.ceil(pos);
+      return sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (pos - lower);
+    };
+
+    for (const group of groups) {
+      for (const stat of stats) {
+        const row: Row = {};
+        this.by.forEach((key, i) => {
+          row[key] = group.keyValues[i];
+        });
+        row.stat = stat;
+        for (const column of this.numericColumns()) {
+          const values = numericValues(group.rows.map((r) => r[column])).sort((a, b) => a - b);
+          let value: number | null = null;
+          if (stat === "count") {
+            value = values.length;
+          } else if (values.length > 0) {
+            switch (stat) {
+              case "mean":
+                value = values.reduce((s, v) => s + v, 0) / values.length;
+                break;
+              case "std":
+                value =
+                  values.length > 1
+                    ? std(values)
+                    : null;
+                break;
+              case "min":
+                value = values[0]!;
+                break;
+              case "25%":
+                value = quantileOf(values, 0.25);
+                break;
+              case "50%":
+                value = quantileOf(values, 0.5);
+                break;
+              case "75%":
+                value = quantileOf(values, 0.75);
+                break;
+              case "max":
+                value = values[values.length - 1]!;
+                break;
+            }
+          }
+          row[column] = value;
+        }
+        outRows.push(row);
+      }
+    }
+
+    const columns = [...this.by, "stat", ...this.numericColumns()];
+    return new DataFrame(outRows, { columns });
+  }
+
+  /**
+   * Per-group value counts of one column, with the group keys and the
+   * counted value as extra columns.
+   */
+  value_counts(column: string): DataFrame {
+    if (!this.sourceColumns.includes(column)) {
+      throw new Error(`Column '${column}' does not exist.`);
+    }
+    const groups = this.sortGroups([...this.getGroups().entries()].map(([_, entry]) => entry));
+    const outRows: Row[] = [];
+    for (const group of this.sortGroups([...this.getGroups().values()])) {
+      const counts = new Map<string, { value: CellValue; count: number }>();
+      for (const row of group.rows) {
+        const value = row[column];
+        if (isMissing(value)) {
+          continue;
+        }
+        const key = String(value);
+        const entry = counts.get(key);
+        if (entry) {
+          entry.count += 1;
+        } else {
+          counts.set(key, { value, count: 1 });
+        }
+      }
+      for (const entry of counts.values()) {
+        const row: Row = {};
+        this.by.forEach((key, i) => {
+          row[key] = group.keyValues[i];
+        });
+        row[column] = entry.value;
+        row.count = entry.count;
+        outRows.push(row);
+      }
+    }
+    return new DataFrame(outRows, { columns: [...this.by, column, "count"] });
+  }
+
   /** Applies fn to each group frame and concatenates the results. */
   apply(fn: (group: DataFrame) => DataFrame): DataFrame {
     const groups = this.sortGroups([...this.getGroups().values()]);

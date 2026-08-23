@@ -7,8 +7,8 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 | DataFrame | 197 | 98 | 50% |
 | Series | 195 | 66 | 34% |
 | Top-level | 75 | 19 | 25% |
-| GroupBy | 38 | 23 | 61% |
-| **Total** | **505** | **206** | **41%** |
+| GroupBy | 38 | 25 | 66% |
+| **Total** | **505** | **208** | **41%** |
 
 ## DataFrame — missing (99)
 
@@ -92,11 +92,11 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 `Categorical`, `CategoricalDtype`, `DatetimeIndex`, `Index`, `Interval`, `MultiIndex`, `NA`, `NaT`, `Period`, `PeriodIndex`, `Timedelta`, `TimedeltaIndex`, `Timestamp`, `align`, `array`, `bdate_range`, `describe_option`, `interval_range`, `isin`, `lreshape`, `map`, `melt`, `merge_asof`, `merge_ordered`, `option_context`, `period_range`, `pivot`, `reset_option`, `set_option`, `show_versions`, `test`, `timedelta_range`, `unique`, `value_counts`, `wide_to_long`
 
-## GroupBy — missing (15)
+## GroupBy — missing (13)
 
-### other (11)
+### other (9)
 
-`corr`, `cov`, `describe`, `kurt`, `ohlc`, `pct_change`, `rank`, `resample`, `sem`, `skew`, `value_counts`
+`corr`, `cov`, `kurt`, `ohlc`, `pct_change`, `rank`, `resample`, `sem`, `skew`
 
 ### selection (2)
 
