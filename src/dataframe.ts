@@ -43,6 +43,11 @@ import {
   selectDtypeColumns,
   transposeFrame,
 } from "./internal/dataframe/shape";
+import {
+  fillnaRows,
+  indexLabelsFromColumn,
+  resetIndexRows,
+} from "./internal/dataframe/missing";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -1513,32 +1518,12 @@ export class DataFrame {
   }
 
   fillna(value: CellValue | Record<string, CellValue>): DataFrame {
-    const rows = this._rows.map((row) => {
-      const next = cloneRow(row, this._columns);
-      for (const column of this._columns) {
-        if (!isMissing(next[column])) {
-          continue;
-        }
-        if (typeof value === "object" && value !== null && !(value instanceof Date)) {
-          next[column] = value[column] ?? next[column];
-        } else {
-          next[column] = value;
-        }
-      }
-      return next;
-    });
-    return this.withRows(rows, this._index, this._columns, true);
+    return this.withRows(fillnaRows(this._rows, this._columns, value), this._index, this._columns, true);
   }
 
   set_index(column: string, drop = true): DataFrame {
     this.assertColumnExists(column);
-    const index: IndexLabel[] = this._rows.map((row, position) => {
-      const value = row[column];
-      if (typeof value === "number" || typeof value === "string") {
-        return value;
-      }
-      return String(value ?? this._index[position]!);
-    });
+    const index = indexLabelsFromColumn(this._rows, column, this._index);
 
     if (!drop) {
       return this.withRows(this.to_records(), index, this._columns, true);
@@ -1550,10 +1535,7 @@ export class DataFrame {
     if (this._columns.includes(name)) {
       throw new Error(`Column '${name}' already exists.`);
     }
-    const rows = this._rows.map((row, position) => ({
-      [name]: this._index[position]!,
-      ...cloneRow(row, this._columns),
-    }));
+    const rows = resetIndexRows(this._rows, this._columns, this._index, name);
     return new DataFrame(rows, { columns: [name, ...this._columns] });
   }
 
