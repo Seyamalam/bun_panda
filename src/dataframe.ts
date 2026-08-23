@@ -32,6 +32,7 @@ import {
   elementwiseBinaryOp,
   elementwiseCompareOp,
 } from "./internal/dataframe/arith";
+import { performJoin } from "./internal/dataframe/join";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -1841,87 +1842,21 @@ export class DataFrame {
    * `merge` with index-based keying. The result keeps this frame's
    * row order; for `on` joins the key column appears once (unsuffixed).
    */
-  join(
-    right: DataFrame,
-    options: JoinOptions = {}
-  ): DataFrame {
-    const how = options.how ?? "left";
-    const suffixes = options.suffixes ?? ["_x", "_y"];
-    // Both sides must be keyed on comparable values: when joining on a
-    // column, both frames take that column; otherwise index labels.
-    let leftKeyed: DataFrame;
-    let rightKeyed: DataFrame;
-
-    if (options.on !== undefined) {
-      this.assertColumnExists(options.on);
-      right.assertColumnExists(options.on);
-      leftKeyed = this.withKeyColumn("__join_key__", options.on);
-      rightKeyed = right.withKeyColumn("__join_key__", options.on);
-    } else {
-      leftKeyed = this.withKeyColumn("__join_key__");
-      rightKeyed = right.withKeyColumn("__join_key__", undefined, [...right.index]);
-    }
-
-    const joined = leftKeyed.merge(rightKeyed, {
-      on: "__join_key__",
-      how,
-      suffixes: options.suffixes ?? ["_x", "_y"],
-    });
-
-    // When joining `on` a column that exists on both sides, the merge
-    // suffixes it (k_x/k_y). Build the output by keeping one copy under
-    // the original name and dropping suffixed duplicates.
-    if (options.on !== undefined && !joined.columns.includes(options.on)) {
-      const leftOnName = `${options.on}${suffixes[0]}`;
-      const source = joined.select([leftOnName]).to_records();
-      const keptNoOn = joined.columns.filter(
-        (column) =>
-          column !== "__join_key__" &&
-          !column.startsWith("__join_key__") &&
-          column !== `${options.on}${suffixes[0]}` &&
-          column !== `${options.on}${suffixes[1]}`
-      );
-      const rows = joined
-        .select(keptNoOn)
-        .to_records()
-        .map((row, i) => {
-          const next: Row = {};
-          const onName = options.on;
-          if (onName !== undefined) {
-            next[onName] = source[i]![leftOnName];
-          }
-          for (const [key, value] of Object.entries(row)) {
-            next[key] = value;
-          }
-          return next;
-        });
-      const columns = [options.on as string, ...keptNoOn];
-      const fixed = new DataFrame(rows, { columns });
-      if (how === "left") {
-        return fixed.withIndex([...this._index]);
-      }
-      return fixed;
-    }
-
-    const kept: string[] = [];
-    for (const column of joined.columns) {
-      if (column === "__join_key__" || column.startsWith("__join_key__")) {
-        continue;
-      }
-      kept.push(column);
-    }
-    const result = joined.select(kept);
-
-    // Restore index labels from the join key where possible: when no
-    // `on` column was given, the key IS the index label.
-    if (options.on === undefined) {
-      const labels = joined
-        .select(["__join_key__"])
-        .to_records()
-        .map((row) => row.__join_key__ as IndexLabel);
-      return result.withIndex(labels);
-    }
-    return result;
+  join(right: DataFrame, options: JoinOptions = {}): DataFrame {
+    return performJoin(
+      {
+        rows: () => this._rows,
+        columns: () => this._columns,
+        index: () => this._index,
+        assertColumnExists: (column) => this.assertColumnExists(column),
+        withKeyColumn: (keyColumn, sourceColumn, labels) =>
+          this.withKeyColumn(keyColumn, sourceColumn, labels),
+        withRows: (rows, index, columns, normalized) =>
+          this.withRows(rows, index, columns, normalized ?? false),
+      },
+      right,
+      options
+    );
   }
 
   private withKeyColumn(
