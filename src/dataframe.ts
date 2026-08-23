@@ -91,7 +91,6 @@ import {
   inferColumnDType,
   isMissing,
   isNumber,
-  numericValues,
   range,
 } from "./utils";
 
@@ -1980,15 +1979,6 @@ export class DataFrame {
     return targets;
   }
 
-  private reduceNumericColumns(
-    reduce: (values: number[]) => number | null
-  ): Record<string, number | null> {
-    const out: Record<string, number | null> = {};
-    for (const column of this._columns) {
-      out[column] = reduce(numericValues(this._rows.map((row) => row[column])));
-    }
-    return out;
-  }
 
   private assertColumnExists(column: string): void {
     if (!this._columns.includes(column)) {
