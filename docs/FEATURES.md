@@ -17,6 +17,8 @@
 - `iloc`, `loc`, `at`
 - `assign`, `drop`, `rename`
 - `filter`, `query`
+- `iterrows`, `itertuples`, `items`
+- `shift(periods)`, `diff(periods)`, `pct_change(periods)`
 - `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`; single-column numeric sorts use wasm `bp_argsort_f64`)
 - `apply` (`axis=0|1` and aliases), `applymap`, `map`
 - `where`/`mask` (function and column-map conditions; `other` defaults to `null`), `transform`
@@ -41,6 +43,10 @@
 - `head`, `tail`
 - `iloc`, `loc`
 - `map`, `apply`, `filter`
+- Arithmetic: `add`, `sub`, `rsub`, `mul`, `div`, `mod`, `pow`, `neg`, `abs`, `round` (scalar or element-wise Series; nulls propagate)
+- Comparisons: `eq`, `ne`, `lt`, `le`, `gt`, `ge` (boolean Series)
+- Cumulative: `cumsum`, `cummax`, `cummin`; selection: `nlargest`, `nsmallest`
+- `.str` accessor: 20 pandas-style string methods with null propagation
 - `fillna`, `dropna`
 - `sum`, `mean`, `min`, `max`
 - `unique`, `value_counts`

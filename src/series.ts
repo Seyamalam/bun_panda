@@ -12,6 +12,7 @@ import {
   computeSeriesReplace,
   type SeriesReplaceInput,
 } from "./internal/series/compat";
+import { StringMethods } from "./internal/series/stringMethods";
 
 export type SeriesDType = DType;
 
@@ -249,6 +250,203 @@ export class Series<T extends CellValue = CellValue> {
       return undefined;
     }
     return resolved;
+  }
+
+  // ---- arithmetic (pandas element-wise, null-propagating) ----
+
+  /** Applies a numeric op; missing values stay missing. */
+  private numericOp(
+    other: number | Series<T>,
+    fn: (left: number, right: number) => number,
+    name?: string
+  ): Series<number> {
+    const otherValues =
+      other instanceof Series ? other._values : new Array(this.length).fill(other);
+    const out = this._values.map((value, i): number | null => {
+      const right = otherValues[i];
+      if (isMissing(value) || isMissing(right)) {
+        return null;
+      }
+      const left = typeof value === "number" ? value : Number(value);
+      const r = typeof right === "number" ? right : Number(right);
+      return fn(left, r);
+    });
+    return new Series(out as never, { index: this._index, name: name ?? this.name });
+  }
+
+  add(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a + b);
+  }
+
+  sub(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a - b);
+  }
+
+  rsub(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => b - a);
+  }
+
+  mul(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a * b);
+  }
+
+  div(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a / b);
+  }
+
+  mod(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a % b);
+  }
+
+  pow(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => a ** b);
+  }
+
+  neg(): Series<number> {
+    const out = this._values.map((value): number | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      return -(typeof value === "number" ? value : Number(value));
+    });
+    return new Series(out as never, { index: this._index, name: this.name });
+  }
+
+  abs(): Series<CellValue> {
+    const out = this._values.map((value) => {
+      if (isMissing(value)) {
+        return null;
+      }
+      return Math.abs(typeof value === "number" ? value : Number(value));
+    });
+    return new Series(out, { index: this._index, name: this.name });
+  }
+
+  round(decimals = 0): Series<CellValue> {
+    const factor = 10 ** decimals;
+    const out = this._values.map((value) => {
+      if (isMissing(value)) {
+        return null;
+      }
+      const n = typeof value === "number" ? value : Number(value);
+      return Math.round(n * factor) / factor;
+    });
+    return new Series(out, { index: this._index, name: this.name });
+  }
+
+  // ---- comparisons (return boolean Series) ----
+
+  private compareOp(
+    other: CellValue | Series<T>,
+    fn: (left: number | string | boolean, right: number | string | boolean) => boolean
+  ): Series<boolean> {
+    const otherValues =
+      other instanceof Series ? other._values : new Array(this.length).fill(other);
+    const out = this._values.map((value, i): boolean | null => {
+      const right = otherValues[i];
+      if (isMissing(value) || isMissing(right)) {
+        return null;
+      }
+      return fn(value as never, right as never);
+    });
+    return new Series(out as never, { index: this._index, name: this.name });
+  }
+
+  eq(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => a === b);
+  }
+
+  ne(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => a !== b);
+  }
+
+  lt(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => (a as number) < (b as number));
+  }
+
+  le(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => (a as number) <= (b as number));
+  }
+
+  gt(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => (a as number) > (b as number));
+  }
+
+  ge(other: CellValue | Series<T>): Series<boolean> {
+    return this.compareOp(other, (a, b) => (a as number) >= (b as number));
+  }
+
+  // ---- cumulative ----
+
+  cumsum(): Series<number> {
+    let acc = 0;
+    const out = this._values.map((value): number | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      acc += typeof value === "number" ? value : Number(value);
+      return acc;
+    });
+    return new Series(out as unknown as number[], { index: this._index, name: this.name });
+  }
+
+  cummax(): Series<T> {
+    let acc: number | null = null;
+    const out = this._values.map((value): T | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      const n = typeof value === "number" ? value : Number(value);
+      acc = acc === null ? n : Math.max(acc, n);
+      return acc as unknown as T;
+    });
+    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+  }
+
+  cummin(): Series<T> {
+    let acc: number | null = null;
+    const out = this._values.map((value): T | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      const n = typeof value === "number" ? value : Number(value);
+      acc = acc === null ? n : Math.min(acc, n);
+      return acc as unknown as T;
+    });
+    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+  }
+
+  // ---- selection helpers ----
+
+  nlargest(n = 5): Series<T> {
+    const pairs = this._values
+      .map((value, i) => ({ value, index: this._index[i]!, num: Number(value) }))
+      .filter((pair) => !isMissing(pair.value) && Number.isFinite(pair.num))
+      .sort((a, b) => b.num - a.num)
+      .slice(0, Math.max(0, n));
+    return new Series(pairs.map((p) => p.value), {
+      index: pairs.map((p) => p.index),
+      name: this.name,
+    });
+  }
+
+  nsmallest(n = 5): Series<T> {
+    const pairs = this._values
+      .map((value, i) => ({ value, index: this._index[i]!, num: Number(value) }))
+      .filter((pair) => !isMissing(pair.value) && Number.isFinite(pair.num))
+      .sort((a, b) => a.num - b.num)
+      .slice(0, Math.max(0, n));
+    return new Series(pairs.map((p) => p.value), {
+      index: pairs.map((p) => p.index),
+      name: this.name,
+    });
+  }
+
+  /**
+   * pandas-style `.str` accessor for element-wise string operations.
+   */
+  get str(): StringMethods {
+    return new StringMethods(this._values as CellValue[]);
   }
 
   private valueKey(value: T): string {

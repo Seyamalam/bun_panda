@@ -12,6 +12,14 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
   - `DataFrame.where(cond, other?)` and `DataFrame.mask(cond, other?)` (function or column-map conditions, `null` fill default).
   - `DataFrame.transform(input)` with function and column-map modes.
   - `DataFrame.insert(loc, column, value)` and `DataFrame.pop(column)`.
+- pandas-parity Series operations (`src/series.ts`):
+  - element-wise arithmetic: `add`, `sub`, `rsub`, `mul`, `div`, `mod`, `pow` (scalar or Series; nulls propagate), `neg`, `abs`, `round`
+  - comparisons returning boolean Series: `eq`, `ne`, `lt`, `le`, `gt`, `ge`
+  - cumulative: `cumsum`, `cummax`, `cummin`; selection: `nlargest`, `nsmallest`
+  - `.str` accessor (`upper`, `lower`, `capitalize`, `title`, `strip/lstrip/rstrip`, `zfill`, `pad`, `slice`, `replace`, `contains`, `startswith`, `endswith`, `match`, `find`, `len`, `get`, `count`, `split`, `cat`) with null propagation
+- pandas-parity DataFrame iteration and deltas:
+  - `iterrows()`, `itertuples()`, `items()`
+  - `shift(periods)`, `diff(periods)`, `pct_change(periods)`
 - Numeric parity helpers on `DataFrame`:
   - `duplicated(subset?, keep?)`, `equals(other)`.
   - `median()`, `std()`, `var()`, `min()`, `max()`, `count()` column summaries.

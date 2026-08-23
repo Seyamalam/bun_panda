@@ -4,13 +4,13 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 | Surface | pandas API | bun_panda | Parity |
 | --- | ---: | ---: | ---: |
-| DataFrame | 197 | 63 | 32% |
-| Series | 195 | 23 | 12% |
+| DataFrame | 197 | 66 | 34% |
+| Series | 195 | 44 | 23% |
 | Top-level | 75 | 10 | 13% |
 | GroupBy | 38 | 14 | 37% |
-| **Total** | **505** | **110** | **22%** |
+| **Total** | **505** | **134** | **27%** |
 
-## DataFrame — missing (134)
+## DataFrame — missing (131)
 
 ### arithmetic (17)
 
@@ -28,9 +28,9 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 `bfill`, `ffill`, `interpolate`, `isna`, `isnull`, `notna`, `notnull`
 
-### other (79)
+### other (76)
 
-`agg`, `aggregate`, `align`, `all`, `any`, `asfreq`, `asof`, `at_time`, `attrs`, `axes`, `between_time`, `boxplot`, `combine`, `combine_first`, `compare`, `convert_dtypes`, `corr`, `corrwith`, `cov`, `diff`, `dot`, `droplevel`, `eval`, `ewm`, `explode`, `first_valid_index`, `from_arrow`, `from_dict`, `from_records`, `hist`, `html`, `iat`, `infer_objects`, `info`, `isetitem`, `items`, `iterrows`, `itertuples`, `join`, `keys`, `kurt`, `kurtosis`, `last_valid_index`, `melt`, `memory_usage`, `ndim`, `pct_change`, `pipe`, `pivot`, `prod`, `product`, `quantile`, `reindex`, `reindex_like`, `rename_axis`, `reorder_levels`, `resample`, `rfloordiv`, `rtruediv`, `select_dtypes`, `sem`, `set_axis`, `set_flags`, `shift`, `size`, `skew`, `sparse`, `squeeze`, `stack`, `style`, `swaplevel`, `take`, `transpose`, `truncate`, `tz_convert`, `tz_localize`, `unstack`, `update`, `xs`
+`agg`, `aggregate`, `align`, `all`, `any`, `asfreq`, `asof`, `at_time`, `attrs`, `axes`, `between_time`, `boxplot`, `combine`, `combine_first`, `compare`, `convert_dtypes`, `corr`, `corrwith`, `cov`, `dot`, `droplevel`, `eval`, `ewm`, `explode`, `first_valid_index`, `from_arrow`, `from_dict`, `from_records`, `hist`, `html`, `iat`, `infer_objects`, `info`, `isetitem`, `items`, `iterrows`, `itertuples`, `join`, `keys`, `kurt`, `kurtosis`, `last_valid_index`, `melt`, `memory_usage`, `ndim`, `pipe`, `pivot`, `prod`, `product`, `quantile`, `reindex`, `reindex_like`, `rename_axis`, `reorder_levels`, `resample`, `rfloordiv`, `rtruediv`, `select_dtypes`, `sem`, `set_axis`, `set_flags`, `size`, `skew`, `sparse`, `squeeze`, `stack`, `style`, `swaplevel`, `take`, `transpose`, `truncate`, `tz_convert`, `tz_localize`, `unstack`, `update`, `xs`
 
 ### plotting (1)
 
@@ -44,19 +44,19 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 `cummax`, `cummin`, `cumprod`, `expanding`, `rolling`
 
-## Series — missing (172)
+## Series — missing (151)
 
-### accessors (2)
+### accessors (1)
 
-`dt`, `str`
+`dt`
 
-### arithmetic (19)
+### arithmetic (10)
 
-`abs`, `add`, `add_prefix`, `add_suffix`, `div`, `floordiv`, `mod`, `mode`, `mul`, `pow`, `radd`, `rdiv`, `rmod`, `rmul`, `round`, `rpow`, `rsub`, `sub`, `truediv`
+`add_prefix`, `add_suffix`, `floordiv`, `mode`, `radd`, `rdiv`, `rmod`, `rmul`, `rpow`, `truediv`
 
-### comparison (8)
+### comparison (2)
 
-`eq`, `equals`, `ge`, `get`, `gt`, `le`, `lt`, `ne`
+`equals`, `get`
 
 ### export (15)
 
@@ -74,13 +74,13 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 `plot`
 
-### selection (5)
+### selection (3)
 
-`idxmax`, `idxmin`, `nlargest`, `nsmallest`, `sample`
+`idxmax`, `idxmin`, `sample`
 
-### window/cumulative (6)
+### window/cumulative (3)
 
-`cummax`, `cummin`, `cumprod`, `cumsum`, `expanding`, `rolling`
+`cumprod`, `expanding`, `rolling`
 
 ## Top-level — missing (65)
 

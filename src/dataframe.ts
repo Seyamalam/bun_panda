@@ -609,6 +609,122 @@ export class DataFrame {
     return this.filter(predicate);
   }
 
+  // ---- iteration ----
+
+  /** Yields [index, row] pairs like pandas `DataFrame.iterrows()`. */
+  *iterrows(): Generator<[IndexLabel, Row]> {
+    for (let i = 0; i < this._rows.length; i += 1) {
+      yield [this._index[i]!, cloneRow(this._rows[i]!, this._columns)];
+    }
+  }
+
+  /**
+   * Yields named-tuple-like objects per row like pandas
+   * `DataFrame.itertuples()`: `{ Index, <col1>, <col2>, ... }`.
+   */
+  *itertuples(): Generator<Record<string, CellValue | IndexLabel>> {
+    for (let i = 0; i < this._rows.length; i += 1) {
+      const tuple: Record<string, CellValue | IndexLabel> = { Index: this._index[i]! };
+      const row = this._rows[i]!;
+      for (const column of this._columns) {
+        tuple[column] = row[column];
+      }
+      yield tuple;
+    }
+  }
+
+  /** Yields [columnName, Series] pairs like pandas `DataFrame.items()`. */
+  *items(): Generator<[string, Series<CellValue>]> {
+    for (const column of this._columns) {
+      yield [column, this.columnSeries(column)];
+    }
+  }
+
+  private columnSeries(column: string): Series<CellValue> {
+    return new Series(
+      this._rows.map((row) => row[column]),
+      {
+        index: [...this._index],
+        name: column,
+      }
+    );
+  }
+
+  // ---- shifts and deltas ----
+
+  /**
+   * Shifts values by `periods` rows. Positive shifts move values down
+   * (introducing nulls at the top), matching pandas.
+   */
+  shift(periods = 1): DataFrame {
+    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => {
+      const row: Row = {};
+      for (const column of this._columns) {
+        row[column] = null;
+      }
+      return row;
+    });
+    for (let i = 0; i < this._rows.length; i += 1) {
+      const source = i - periods;
+      if (source < 0 || source >= this._rows.length) {
+        continue;
+      }
+      const sourceRow = this._rows[source]!;
+      const target = rows[i]!;
+      for (const column of this._columns) {
+        target[column] = sourceRow[column];
+      }
+    }
+    return this.withRows(rows, [...this._index], this._columns, true);
+  }
+
+  /** First discrete difference of numeric columns. */
+  diff(periods = 1): DataFrame {
+    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => ({}));
+    for (let i = 0; i < this._rows.length; i += 1) {
+      const target = rows[i]!;
+      const current = this._rows[i]!;
+      const previous = i - periods >= 0 ? this._rows[i - periods] : undefined;
+      for (const column of this._columns) {
+        const a = current[column];
+        const b = previous?.[column];
+        if (
+          typeof a === "number" && Number.isFinite(a) &&
+          typeof b === "number" && Number.isFinite(b)
+        ) {
+          target[column] = a - b;
+        } else {
+          target[column] = null;
+        }
+      }
+    }
+    return this.withRows(rows, [...this._index], this._columns, true);
+  }
+
+  /** Percentage change between the current and prior row (numeric columns). */
+  pct_change(periods = 1): DataFrame {
+    const rows: Row[] = new Array(this._rows.length).fill(null).map(() => ({}));
+    for (let i = 0; i < this._rows.length; i += 1) {
+      const target = rows[i]!;
+      const current = this._rows[i]!;
+      const previous = i - periods >= 0 ? this._rows[i - periods] : undefined;
+      for (const column of this._columns) {
+        const a = current[column];
+        const b = previous?.[column];
+        if (
+          typeof a === "number" && Number.isFinite(a) &&
+          typeof b === "number" && Number.isFinite(b) &&
+          b !== 0
+        ) {
+          target[column] = (a - b) / b;
+        } else {
+          target[column] = null;
+        }
+      }
+    }
+    return this.withRows(rows, [...this._index], this._columns, true);
+  }
+
   apply(
     fn: DataFrameApplyColumnFn,
     axis?: 0 | "index"
