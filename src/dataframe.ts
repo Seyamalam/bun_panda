@@ -38,6 +38,11 @@ import {
   pctChangeRows,
   shiftRows,
 } from "./internal/dataframe/deltas";
+import {
+  projectColumns,
+  selectDtypeColumns,
+  transposeFrame,
+} from "./internal/dataframe/shape";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -1212,16 +1217,8 @@ export class DataFrame {
    * labels become the new index as strings.
    */
   transpose(): DataFrame {
-    const outRows: Row[] = this._columns.map((column) => {
-      const row: Row = {};
-      row["index"] = column;
-      for (let i = 0; i < this._rows.length; i += 1) {
-        row[String(this._index[i])] = this._rows[i]![column];
-      }
-      return row;
-    });
-    const outColumns = ["index", ...this._index.map((label) => String(label))];
-    return DataFrame.createInternal(outRows, outColumns, this._columns.map((c) => String(c)));
+    const shaped = transposeFrame(this._rows, this._columns, this._index);
+    return DataFrame.createInternal(shaped.rows, shaped.columns, shaped.index);
   }
 
   /**
@@ -1229,26 +1226,11 @@ export class DataFrame {
    * ones (`"number"`, `"string"`, `"boolean"`, `"date"`).
    */
   select_dtypes(include: DType | DType[]): DataFrame {
-    const wanted = Array.isArray(include) ? include : [include];
-    const keep = this._columns.filter((column) => {
-      const dtype = inferColumnDType(this._rows.map((row) => row[column]));
-      return wanted.includes(dtype as DType);
-    });
+    const keep = selectDtypeColumns(this._rows, this._columns, include);
     if (keep.length === 0) {
       throw new Error("select_dtypes matched no columns.");
     }
-    return this.withRows(
-      this._rows.map((row) => {
-        const next: Row = {};
-        for (const column of keep) {
-          next[column] = row[column];
-        }
-        return next;
-      }),
-      [...this._index],
-      keep,
-      true
-    );
+    return this.withRows(projectColumns(this._rows, keep), [...this._index], keep, true);
   }
 
   apply(
