@@ -6,6 +6,7 @@ export {
   type DataFrameMapFn,
   type DataFrameOptions,
   type DropDuplicatesKeep,
+  type JoinOptions,
   type MergeOptions,
   type PivotTableOptions,
   type RankOptions,
@@ -51,6 +52,12 @@ export {
   type ReadParquetOptions,
   type ReadTableOptions,
 } from "./io";
+export {
+  date_range,
+  isna,
+  notna,
+  to_datetime,
+} from "./datetime";
 export {
   Series,
   type SeriesDType,

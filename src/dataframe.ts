@@ -10,6 +10,7 @@ import {
 import { writeExcelFrame } from "./internal/io/excelWrite";
 import { writeParquetFrame } from "./internal/io/parquetWrite";
 import { computeMergeRows } from "./internal/dataframe/merge";
+import { computeMeltRows, computePivot } from "./internal/dataframe/reshape";
 import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
@@ -109,6 +110,14 @@ export interface MergeOptions {
   on: string | string[];
   how?: "inner" | "left" | "right" | "outer";
   suffixes?: [string, string];
+}
+
+export interface JoinOptions {
+  on?: string;
+  how?: "inner" | "left" | "right" | "outer";
+  suffixes?: [string, string];
+  /** Column names from `right` to include (defaults to all). */
+  rsuffixOnly?: string[];
 }
 
 export interface ValueCountsOptions {
@@ -725,6 +734,95 @@ export class DataFrame {
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
+  // ---- reshaping ----
+
+  /**
+   * Unpivots the frame from wide to long format. Columns listed in
+   * `id_vars` are repeated; every other column (or those in
+   * `value_vars`) becomes one (`variable`, `value`) pair per row.
+   */
+  melt(options: { id_vars?: string | string[]; value_vars?: string | string[] } = {}): DataFrame {
+    const idVarsRaw = options.id_vars ?? [];
+    const idVars = Array.isArray(idVarsRaw) ? idVarsRaw : [idVarsRaw];
+    for (const id of idVars) {
+      this.assertColumnExists(id);
+    }
+
+    let valueVars: string[];
+    if (options.value_vars !== undefined) {
+      valueVars = Array.isArray(options.value_vars) ? options.value_vars : [options.value_vars];
+      for (const col of valueVars) {
+        this.assertColumnExists(col);
+      }
+    } else {
+      valueVars = this._columns.filter((column) => !idVars.includes(column));
+    }
+
+    const melted = computeMeltRows(this._rows, idVars, valueVars);
+    return this.withRows(melted.rows, range(melted.rows.length), melted.columns, true);
+  }
+
+  /**
+   * Pivots the frame from long to wide. Rows are grouped by the
+   * `index` column, spread by `columns`, and filled from `values`.
+   */
+  pivot(
+    index: string,
+    columns: string,
+    values: string,
+    options: { aggregate?: (values: CellValue[]) => CellValue } = {}
+  ): DataFrame {
+    for (const column of [index, columns, values]) {
+      this.assertColumnExists(column);
+    }
+    const pivoted = computePivot(this._rows, index, columns, values, options.aggregate);
+    return new DataFrame(pivoted.rows, { index: pivoted.index as IndexLabel[] });
+  }
+
+  /**
+   * Transposes the frame: columns become rows and vice versa. Column
+   * labels become the new index as strings.
+   */
+  transpose(): DataFrame {
+    const outRows: Row[] = this._columns.map((column) => {
+      const row: Row = {};
+      row["index"] = column;
+      for (let i = 0; i < this._rows.length; i += 1) {
+        row[String(this._index[i])] = this._rows[i]![column];
+      }
+      return row;
+    });
+    const outColumns = ["index", ...this._index.map((label) => String(label))];
+    return DataFrame.createInternal(outRows, outColumns, this._columns.map((c) => String(c)));
+  }
+
+  /**
+   * Keeps only columns whose inferred dtype matches any of the given
+   * ones (`"number"`, `"string"`, `"boolean"`, `"date"`).
+   */
+  select_dtypes(include: DType | DType[]): DataFrame {
+    const wanted = Array.isArray(include) ? include : [include];
+    const keep = this._columns.filter((column) => {
+      const dtype = inferColumnDType(this._rows.map((row) => row[column]));
+      return wanted.includes(dtype as DType);
+    });
+    if (keep.length === 0) {
+      throw new Error("select_dtypes matched no columns.");
+    }
+    return this.withRows(
+      this._rows.map((row) => {
+        const next: Row = {};
+        for (const column of keep) {
+          next[column] = row[column];
+        }
+        return next;
+      }),
+      [...this._index],
+      keep,
+      true
+    );
+  }
+
   apply(
     fn: DataFrameApplyColumnFn,
     axis?: 0 | "index"
@@ -1254,6 +1352,109 @@ export class DataFrame {
     });
 
     return new DataFrame(result.rows, { columns: result.columns });
+  }
+
+  /**
+   * pandas-style `join`: merges on the caller's index against the
+   * other frame's index (or `on` column). Convenience wrapper over
+   * `merge` with index-based keying. The result keeps this frame's
+   * row order; for `on` joins the key column appears once (unsuffixed).
+   */
+  join(
+    right: DataFrame,
+    options: JoinOptions = {}
+  ): DataFrame {
+    const how = options.how ?? "left";
+    const suffixes = options.suffixes ?? ["_x", "_y"];
+    // Both sides must be keyed on comparable values: when joining on a
+    // column, both frames take that column; otherwise index labels.
+    let leftKeyed: DataFrame;
+    let rightKeyed: DataFrame;
+
+    if (options.on !== undefined) {
+      this.assertColumnExists(options.on);
+      right.assertColumnExists(options.on);
+      leftKeyed = this.withKeyColumn("__join_key__", options.on);
+      rightKeyed = right.withKeyColumn("__join_key__", options.on);
+    } else {
+      leftKeyed = this.withKeyColumn("__join_key__");
+      rightKeyed = right.withKeyColumn("__join_key__", undefined, [...right.index]);
+    }
+
+    const joined = leftKeyed.merge(rightKeyed, {
+      on: "__join_key__",
+      how,
+      suffixes: options.suffixes ?? ["_x", "_y"],
+    });
+
+    // When joining `on` a column that exists on both sides, the merge
+    // suffixes it (k_x/k_y). Build the output by keeping one copy under
+    // the original name and dropping suffixed duplicates.
+    if (options.on !== undefined && !joined.columns.includes(options.on)) {
+      const leftOnName = `${options.on}${suffixes[0]}`;
+      const source = joined.select([leftOnName]).to_records();
+      const keptNoOn = joined.columns.filter(
+        (column) =>
+          column !== "__join_key__" &&
+          !column.startsWith("__join_key__") &&
+          column !== `${options.on}${suffixes[0]}` &&
+          column !== `${options.on}${suffixes[1]}`
+      );
+      const rows = joined
+        .select(keptNoOn)
+        .to_records()
+        .map((row, i) => {
+          const next: Row = {};
+          const onName = options.on;
+          if (onName !== undefined) {
+            next[onName] = source[i]![leftOnName];
+          }
+          for (const [key, value] of Object.entries(row)) {
+            next[key] = value;
+          }
+          return next;
+        });
+      const columns = [options.on as string, ...keptNoOn];
+      const fixed = new DataFrame(rows, { columns });
+      if (how === "left") {
+        return fixed.withIndex([...this._index]);
+      }
+      return fixed;
+    }
+
+    const kept: string[] = [];
+    for (const column of joined.columns) {
+      if (column === "__join_key__" || column.startsWith("__join_key__")) {
+        continue;
+      }
+      kept.push(column);
+    }
+    const result = joined.select(kept);
+
+    // Restore index labels from the join key where possible: when no
+    // `on` column was given, the key IS the index label.
+    if (options.on === undefined) {
+      const labels = joined
+        .select(["__join_key__"])
+        .to_records()
+        .map((row) => row.__join_key__ as IndexLabel);
+      return result.withIndex(labels);
+    }
+    return result;
+  }
+
+  private withKeyColumn(
+    keyColumn: string,
+    sourceColumn?: string,
+    labels?: IndexLabel[]
+  ): DataFrame {
+    const rows = this._rows.map((row, i) => {
+      const next = cloneRow(row, this._columns);
+      next[keyColumn] =
+        sourceColumn !== undefined ? row[sourceColumn] : labels ? labels[i] : this._index[i];
+      return next;
+    });
+    return DataFrame.createInternal(rows, [...this._columns, keyColumn], [...this._index]);
   }
 
   to_string(maxRows = 10): string {
