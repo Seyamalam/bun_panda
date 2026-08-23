@@ -49,6 +49,25 @@ import {
   indexLabelsFromColumn,
   resetIndexRows,
 } from "./internal/dataframe/missing";
+import { bfillRows, ffillRows, interpolateRows } from "./internal/dataframe/fill";
+import {
+  aggFrame,
+  columnKurt,
+  columnSem,
+  columnSkew,
+  cumminRows,
+  cummaxRows,
+  cumprodRows,
+  frameInfo,
+  frameMemoryUsage,
+  modeRows,
+  reindexRows,
+  squeezeResult,
+  takeRowsWithIndex,
+  toHtmlString,
+  toMarkdownString,
+  truncateRows,
+} from "./internal/dataframe/extended";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -572,7 +591,7 @@ export class DataFrame {
   insert(
     loc: number,
     column: string,
-    value: CellValue | CellValue[] | Series<CellValue>
+    value: CellValue | CellValue[] | Series<any>
   ): DataFrame {
     if (this._columns.includes(column)) {
       throw new Error(`Column '${column}' already exists.`);
@@ -1769,6 +1788,138 @@ export class DataFrame {
     const preview = rows.map((row) => JSON.stringify(row)).join("\n");
     const suffix = rowCount > maxRows ? `\n... (${rowCount - maxRows} more rows)` : "";
     return preview + suffix;
+  }
+
+  // ---- missing-data fills ----
+  ffill(): DataFrame {
+    return this.withRows(ffillRows(this._rows, this._columns), [...this._index], this._columns, true);
+  }
+
+  bfill(): DataFrame {
+    return this.withRows(bfillRows(this._rows, this._columns), [...this._index], this._columns, true);
+  }
+
+  interpolate(method = "linear"): DataFrame {
+    return this.withRows(interpolateRows(this._rows, this._columns, method), [...this._index], this._columns, true);
+  }
+
+  // ---- extended stats ----
+  skew(): Record<string, number | null> {
+    return columnSkew(this._columns, this._rows);
+  }
+
+  kurt(): Record<string, number | null> {
+    return columnKurt(this._columns, this._rows);
+  }
+
+  kurtosis(): Record<string, number | null> {
+    return this.kurt();
+  }
+
+  sem(): Record<string, number | null> {
+    return columnSem(this._columns, this._rows);
+  }
+
+  mode(): DataFrame {
+    const result = modeRows(this._rows, this._columns);
+    return this.withRows(result.rows, undefined, result.columns, true);
+  }
+
+  // ---- cumulative ----
+  cummax(): DataFrame {
+    return this.withRows(cummaxRows(this._rows, this._columns), [...this._index], this._columns, true);
+  }
+
+  cummin(): DataFrame {
+    return this.withRows(cumminRows(this._rows, this._columns), [...this._index], this._columns, true);
+  }
+
+  cumprod(): DataFrame {
+    return this.withRows(cumprodRows(this._rows, this._columns), [...this._index], this._columns, true);
+  }
+
+  // ---- export ----
+  to_numpy(): CellValue[][] {
+    return this.values();
+  }
+
+  to_html(): string {
+    return toHtmlString(this._rows, this._columns, this._index);
+  }
+
+  to_markdown(): string {
+    return toMarkdownString(this._rows, this._columns, this._index);
+  }
+
+  // ---- reshaping / selection ----
+  squeeze(): DataFrame | Series<CellValue> | CellValue | null {
+    const result = squeezeResult(this._rows, this._columns, this._index);
+    if (result.kind === "scalar") return result.value;
+    if (result.kind === "column") return new Series(result.values, { index: result.index, name: result.name });
+    if (result.kind === "row") return new Series(result.values, { index: result.index });
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  take(indices: number[]): DataFrame {
+    const result = takeRowsWithIndex(this._rows, this._columns, this._index, indices);
+    return this.withRows(result.rows, result.index, this._columns, true);
+  }
+
+  truncate(beforeOrOptions?: IndexLabel | { before?: IndexLabel; after?: IndexLabel }, after?: IndexLabel): DataFrame {
+    let before: IndexLabel | undefined;
+    let afterLabel: IndexLabel | undefined;
+    if (
+      beforeOrOptions !== undefined &&
+      typeof beforeOrOptions === "object" &&
+      !(beforeOrOptions instanceof Date) &&
+      ("before" in (beforeOrOptions as Record<string, unknown>) || "after" in (beforeOrOptions as Record<string, unknown>))
+    ) {
+      const opts = beforeOrOptions as { before?: IndexLabel; after?: IndexLabel };
+      before = opts.before;
+      afterLabel = opts.after;
+    } else {
+      before = beforeOrOptions as IndexLabel | undefined;
+      afterLabel = after;
+    }
+    const result = truncateRows(this._rows, this._columns, this._index, before, afterLabel);
+    return this.withRows(result.rows, result.index, this._columns, true);
+  }
+
+  reindex(options: { index?: IndexLabel[]; columns?: string[]; fill_value?: CellValue } = {}): DataFrame {
+    const result = reindexRows(
+      this._rows,
+      this._columns,
+      this._index,
+      options.index,
+      options.columns,
+      options.fill_value ?? null
+    );
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  info(): string {
+    return frameInfo(this._rows, this._columns, this._index);
+  }
+
+  memory_usage(): Record<string, number> {
+    return frameMemoryUsage(this._rows, this._columns);
+  }
+
+  // ---- additional aliases ----
+  rfloordiv(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => Math.floor(b / a));
+  }
+
+  rtruediv(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b / a);
+  }
+
+  agg(spec: import("./types").AggName | Record<string, import("./types").AggName | import("./types").AggFn>): Record<string, CellValue> {
+    return aggFrame(this._rows, this._columns, spec as import("./types").AggName | Record<string, import("./types").AggName>);
+  }
+
+  aggregate(spec: import("./types").AggName | Record<string, import("./types").AggName | import("./types").AggFn>): Record<string, CellValue> {
+    return this.agg(spec);
   }
 
   private resolveAssignment(column: string, value: AssignmentValue, rowCount: number): CellValue[] {

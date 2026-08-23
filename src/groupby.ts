@@ -25,6 +25,14 @@ import {
   range,
   std,
 } from "./utils";
+import {
+  adjustedSkew,
+  excessKurtosis,
+  semOfMean,
+} from "./internal/series/stats";
+import { computeRank } from "./internal/series/rank";
+import { computeRolling } from "./internal/dataframe/rolling";
+import { covariance, pearson } from "./internal/dataframe/stats";
 
 interface GroupEntry {
   keyValues: CellValue[];
@@ -65,6 +73,22 @@ export type GroupTransformFn = (
 interface TransformGroupEntry {
   keyValues: CellValue[];
   positions: number[];
+}
+
+export interface RollingGroupBy {
+  mean(): DataFrame;
+  sum(): DataFrame;
+  min(): DataFrame;
+  max(): DataFrame;
+  count(): DataFrame;
+  std(): DataFrame;
+}
+
+export interface RankOptions {
+  method?: "average" | "min" | "max" | "first" | "dense";
+  ascending?: boolean;
+  na_option?: "keep" | "top" | "bottom";
+  pct?: boolean;
 }
 
 export class GroupBy {
@@ -569,8 +593,13 @@ export class GroupBy {
     return this.groupCumulative("cummin", columns);
   }
 
+  /** Cumulative product within each group. */
+  cumprod(columns?: string[]): DataFrame {
+    return this.groupCumulative("cumprod", columns);
+  }
+
   private groupCumulative(
-    kind: "cumsum" | "cummax" | "cummin",
+    kind: "cumsum" | "cummax" | "cummin" | "cumprod",
     columns?: string[]
   ): DataFrame {
     const candidates = columns ?? this.numericColumns();
@@ -591,14 +620,16 @@ export class GroupBy {
             next[column] = null;
             continue;
           }
-          const prev = accs.get(column) ?? 0;
+          const prev = accs.get(column) ?? (kind === "cumprod" ? 1 : 0);
           let updated: number;
           if (kind === "cumsum") {
             updated = prev + value;
           } else if (kind === "cummax") {
             updated = accs.has(column) ? Math.max(prev, value) : value;
-          } else {
+          } else if (kind === "cummin") {
             updated = accs.has(column) ? Math.min(prev, value) : value;
+          } else {
+            updated = accs.has(column) ? prev * value : value;
           }
           accs.set(column, updated);
           next[column] = updated;
@@ -829,6 +860,261 @@ export class GroupBy {
     return DataFrame.from_normalized(outRows as Row[], outColumns, range(outRows.length));
   }
 
+  // ── 13 missing GroupBy APIs ──────────────────────────────────────────
+
+  /** Per-group unbiased skewness (sample-corrected Fisher-Pearson G1). */
+  skew(columns?: string[]): DataFrame {
+    return this.groupAggNumeric(columns, (nums) => adjustedSkew(nums));
+  }
+
+  /** Per-group excess kurtosis (Fisher, kurtosis() alias). */
+  kurt(columns?: string[]): DataFrame {
+    return this.kurtosis(columns);
+  }
+
+  kurtosis(columns?: string[]): DataFrame {
+    return this.groupAggNumeric(columns, (nums) => excessKurtosis(nums));
+  }
+
+  /** Per-group standard error of the mean (sample std / sqrt(n)). */
+  sem(columns?: string[]): DataFrame {
+    return this.groupAggNumeric(columns, (nums) => semOfMean(nums));
+  }
+
+  /** Per-group percentage change within each group (same periods as pct_change). */
+  pct_change(periods = 1, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.buildGroupPositions();
+    const outRows: Row[] = new Array(this.sourceRows.length);
+    for (const group of groups.values()) {
+      for (let i = 0; i < group.positions.length; i += 1) {
+        const targetPosition = group.positions[i]!;
+        const current = this.sourceRows[targetPosition]!;
+        const prevPos = i - periods >= 0 ? group.positions[i - periods] : undefined;
+        const previous = prevPos !== undefined ? this.sourceRows[prevPos] : undefined;
+        const next: Row = {};
+        for (const column of this.by) {
+          next[column] = current[column];
+        }
+        for (const column of candidates) {
+          const a = current[column];
+          const b = previous?.[column];
+          if (
+            typeof a === "number" && Number.isFinite(a) &&
+            typeof b === "number" && Number.isFinite(b) &&
+            b !== 0
+          ) {
+            next[column] = (a - b) / b;
+          } else {
+            next[column] = null;
+          }
+        }
+        outRows[targetPosition] = next;
+      }
+    }
+    return DataFrame.from_normalized(outRows as Row[], [...this.by, ...candidates], range(outRows.length));
+  }
+
+  /** Per-group rank (aligned to source rows, same signature as DataFrame.rank). */
+  rank(options: RankOptions = {}, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.buildGroupPositions();
+    const outRows: Row[] = new Array(this.sourceRows.length);
+    for (let i = 0; i < outRows.length; i += 1) {
+      outRows[i] = {} as Row;
+      for (const col of this.by) {
+        outRows[i]![col] = this.sourceRows[i]![col];
+      }
+      for (const col of candidates) {
+        outRows[i]![col] = null;
+      }
+    }
+    for (const group of groups.values()) {
+      for (const col of candidates) {
+        const values = group.positions.map((p) => this.sourceRows[p]![col] ?? null);
+        const ranks = computeRank(values, options as any);
+        group.positions.forEach((pos, idx) => {
+          outRows[pos]![col] = ranks[idx] ?? null;
+        });
+      }
+    }
+    return DataFrame.from_normalized(outRows as Row[], [...this.by, ...candidates], [...this.source.index]);
+  }
+
+  /** Per-group index label of the max value (returns aggregated frame, one row per group). */
+  idxmax(columns?: string[]): DataFrame {
+    return this.groupIdx(columns, "max");
+  }
+
+  /** Per-group index label of the min value (returns aggregated frame, one row per group). */
+  idxmin(columns?: string[]): DataFrame {
+    return this.groupIdx(columns, "min");
+  }
+
+  /** Per-group pairwise correlation (numeric columns, same as df.corr() per group — returns stacked frame). */
+  corr(): DataFrame {
+    return this.pairwisePerGroup(pearson);
+  }
+
+  /** Per-group pairwise covariance (numeric columns). */
+  cov(): DataFrame {
+    return this.pairwisePerGroup(covariance);
+  }
+
+  /** OHLC summary per group: open/high/low/close of each numeric column. */
+  ohlc(columns?: string[]): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) row[this.by[i]!] = group.keyValues[i];
+      for (const col of candidates) {
+        const nums = group.rows.map((r) => r[col]).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+        if (nums.length === 0) {
+          row[`${col}_open`] = null; row[`${col}_high`] = null; row[`${col}_low`] = null; row[`${col}_close`] = null;
+        } else {
+          row[`${col}_open`] = nums[0]; row[`${col}_high`] = Math.max(...nums); row[`${col}_low`] = Math.min(...nums); row[`${col}_close`] = nums[nums.length - 1]!;
+        }
+      }
+      rows.push(row);
+    }
+    const valueCols = candidates.flatMap((c) => [`${c}_open`, `${c}_high`, `${c}_low`, `${c}_close`]);
+    return this.materializeGroupedRows(rows, valueCols);
+  }
+
+  /** Stub — GroupBy resampling requires a DatetimeIndex (MutliIndex/Rolling path not yet implemented). */
+  resample(_rule: string): never {
+    throw new Error("GroupBy.resample() requires a DatetimeIndex — not yet implemented (MultiIndex/Rolling resample path).");
+  }
+
+  /**
+   * GroupBy rolling — groupby().rolling(window).mean() pattern.
+   * Each group's values are rolled independently, aligned to source index.
+   */
+  rolling(window: number, minPeriods?: number): RollingGroupBy {
+    const candidates = this.numericColumns();
+    const groups = this.buildGroupPositions();
+    const wrap = (key: string) => {
+      return () => {
+        const outRows: Row[] = new Array(this.sourceRows.length);
+        for (let i = 0; i < outRows.length; i += 1) {
+          outRows[i] = {} as Row;
+          for (const col of this.by) outRows[i]![col] = this.sourceRows[i]![col];
+          for (const col of candidates) outRows[i]![col] = null;
+        }
+        for (const group of groups.values()) {
+          for (const col of candidates) {
+            const vals = group.positions.map((p) => this.sourceRows[p]![col]);
+            const rollingVals = computeRolling(vals, window, minPeriods);
+            const res = (() => {
+              switch (key) {
+                case "mean": return rollingVals.mean();
+                case "sum": return rollingVals.sum();
+                case "min": return rollingVals.min();
+                case "max": return rollingVals.max();
+                case "count": return rollingVals.count();
+                case "std": return rollingVals.std();
+                default: return rollingVals.mean();
+              }
+            })();
+            group.positions.forEach((pos, idx) => { outRows[pos]![col] = res[idx] ?? null; });
+          }
+        }
+        return DataFrame.from_normalized(outRows as Row[], [...this.by, ...candidates], [...this.source.index]);
+      };
+    };
+    return {
+      mean: wrap("mean"),
+      sum: wrap("sum"),
+      min: wrap("min"),
+      max: wrap("max"),
+      count: wrap("count"),
+      std: wrap("std"),
+    };
+  }
+
+  // ── helpers for the new APIs ─────────────────────────────────────────
+
+  private groupAggNumeric(
+    columns: string[] | undefined,
+    reducer: (nums: number[]) => number | null
+  ): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) row[this.by[i]!] = group.keyValues[i];
+      for (const col of candidates) {
+        const nums = numericValues(group.rows.map((r) => r[col]));
+        row[col] = reducer(nums);
+      }
+      rows.push(row);
+    }
+    return this.materializeGroupedRows(rows, candidates);
+  }
+
+  private groupIdx(columns: string[] | undefined, mode: "max" | "min"): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) row[this.by[i]!] = group.keyValues[i];
+      for (const col of candidates) {
+        // Find index position (source index label) of the extreme within the group
+        let best: number | null = null;
+        let bestPos = -1;
+        group.rows.forEach((r) => {
+          const v = r[col];
+          if (typeof v !== "number" || !Number.isFinite(v)) return;
+          if (best === null || (mode === "max" ? v > best : v < best)) { best = v; bestPos = this.sourceRows.indexOf(r); }
+        });
+        row[col] = bestPos >= 0 ? this.source.index[bestPos] ?? bestPos : null;
+      }
+      rows.push(row);
+    }
+    return this.materializeGroupedRows(rows, candidates);
+  }
+
+  private pairwisePerGroup(fn: (a: number[], b: number[]) => number): DataFrame {
+    const numericCols = this.numericColumns();
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      for (const rowVar of numericCols) {
+        const row: Row = {};
+        for (let i = 0; i < this.by.length; i += 1) row[this.by[i]!] = group.keyValues[i];
+        row["variable"] = rowVar;
+        for (const colVar of numericCols) {
+          if (rowVar === colVar) { row[colVar] = 1; continue; }
+          const pairs = group.rows
+            .map((r) => [r[rowVar], r[colVar]] as const)
+            .filter((pair): pair is [number, number] =>
+              typeof pair[0] === "number" && Number.isFinite(pair[0]) &&
+              typeof pair[1] === "number" && Number.isFinite(pair[1])
+            );
+          if (pairs.length < 2) { row[colVar] = null; continue; }
+          const aa = pairs.map((p) => p[0]);
+          const bb = pairs.map((p) => p[1]);
+          const val = fn(aa, bb);
+          row[colVar] = Number.isNaN(val) ? null : val;
+        }
+        rows.push(row);
+      }
+    }
+    const valueCols = [...numericCols, "variable"];
+    if (rows.length === 0) return this.materializeGroupedRows([], valueCols);
+    const sampleRow = rows[0]!;
+    const allCols = Object.keys(sampleRow);
+    // Re-materialize directly to avoid materializeGroupedRows re-filtering
+    if (!this.options.as_index) {
+      return DataFrame.from_normalized(rows, [...this.by, ...allCols.filter((c) => !this.by.includes(c))]);
+    }
+    return DataFrame.from_normalized(rows, [...this.by, ...allCols.filter((c) => !this.by.includes(c))]);
+  }
+
   private namedColumnAgg(name: AggName, candidates: string[]): DataFrame {
     const spec: AggSpec = {};
     for (const column of candidates) {
@@ -878,8 +1164,8 @@ export class GroupBy {
       if (typeof spec === "function") {
         for (let c = 0; c < outColumns.length; c += 1) {
           const column = outColumns[c]!;
-          const subSeries = new Series(
-            groupRows.map((row) => row[column] ?? null),
+          const subSeries = new Series<CellValue>(
+            groupRows.map((row) => row[column] ?? null) as CellValue[],
             { name: column }
           );
           const result = spec(subSeries, column, c);
