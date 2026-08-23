@@ -17,7 +17,7 @@
 - `iloc`, `loc`, `at`
 - `assign`, `drop`, `rename`
 - `filter`, `query`
-- `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`)
+- `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`; single-column numeric sorts use wasm `bp_argsort_f64`)
 - `apply` (`axis=0|1` and aliases), `applymap`, `map`
 - `where`/`mask` (function and column-map conditions; `other` defaults to `null`), `transform`
 - `insert(loc, column, value)`, `pop(column)`
@@ -56,7 +56,7 @@
 - pandas-like options: `dropna`, `sort`
 - pandas-like options: `as_index` (single-key output supported)
 - `size`
-- WASM fast path for numeric named aggregations via `src/wasm/kernel.ts` → `src/wasm/bun_panda_core.wasm` (default; `BUN_PANDA_WASM=0` falls back to pure TS)
+- WASM fast path for numeric named aggregations via fused `bp_agg_multi_f64` over columnar `Float64Array`s from `src/wasm/columns.ts` (default; `BUN_PANDA_WASM=0` falls back to pure TS)
 
 ### IO and Utilities
 
@@ -85,11 +85,10 @@
 ### Tooling and Quality
 
 - Benchmark harness in `bench/compare.js` comparing against Arquero.
-- Expanded benchmark coverage (`73` cases) including skewed, wide, high-cardinality, and missing-value datasets.
-- Python benchmark companion (`bench/pandas_compare.py`) for pandas comparison.
-- Performance regression gate script (`bench/assert-regression.js`) for CI.
-- GitHub Actions CI in `.github/workflows/ci.yml` for typecheck/tests.
-- Extended test suite with utility-level unit tests in `test/unit-utils.test.ts`.
+- Expanded benchmark coverage (`82` cases across base/skewed/wide/high-cardinality/missing + join families).
+- Python benchmark companion (`bench/pandas_compare.py`) — 10-case pandas track with headroom to grow alongside the wasm typed-column kernels.
+- Columnar typed-array substrate (`src/wasm/columns.ts`): numeric columns as `Float64Array` with NaN = missing; zero-copy handoff to wasm (one fused `bp_agg_multi_f64` per agg spec, `bp_argsort_f64` / `bp_filter_indices` for sort/filter).
+- GitHub Actions CI in `.github/workflows/ci.yml` — builds wasm (`build:wasm`), guards drift with `git diff --exit-code src/wasm/bun_panda_core.wasm`, runs both the wasm-default and `BUN_PANDA_WASM=0` pure-TS test paths.
 
 ## Compatibility Goal
 

@@ -4,8 +4,10 @@ import { Series } from "./series";
 import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
 import {
   wasmAggregateColumn,
+  wasmAggMultiF64,
   wasmGroupIds,
 } from "./wasm/kernel";
+import { buildColumnStore } from "./wasm/columns";
 import {
   compareCellValues,
   isMissing,
@@ -302,6 +304,52 @@ export class GroupBy {
       keyValues: CellValue[];
       values: (number | null)[];
     }
+
+    // Columnar fast path: build a typed store once, verify all plan
+    // columns are numeric, then run one fused kernel call for every
+    // aggregation plan instead of per-column marshalling. Duplicate
+    // columns in a spec resolve to the same store entry.
+    const planColumns = [...new Set(namedPlans.map((plan) => plan.column))];
+    const store = buildColumnStore(this.sourceRows, planColumns);
+    const numericColumns: Float64Array[] = [];
+    const wasmCodes: number[] = [];
+    let columnar = true;
+    for (const plan of namedPlans) {
+      const code = wasmCodeForName(plan.name);
+      const col = store.columns.get(plan.column);
+      if (code === null || !col || col.kind !== "f64") {
+        columnar = false;
+        break;
+      }
+      numericColumns.push(col.values);
+      wasmCodes.push(code);
+    }
+
+    if (columnar && numericColumns.length > 0) {
+      const fused = wasmAggMultiF64(
+        numericColumns,
+        wasmCodes,
+        grouped.ids,
+        grouped.groupCount
+      );
+      if (fused) {
+        const groups: GroupResult[] = [];
+        for (let g = 0; g < grouped.groupCount; g += 1) {
+          const sourceRow = this.sourceRows[firstRowOfGroup[g]!]!;
+          const keyValues: CellValue[] = [];
+          for (let i = 0; i < this.by.length; i += 1) {
+            keyValues.push(sourceRow[this.by[i]!]);
+          }
+          const values = namedPlans.map((_, planIndex) => {
+            const raw = fused.results[planIndex * grouped.groupCount + g]!;
+            return Number.isNaN(raw) ? null : raw;
+          });
+          groups.push({ keyValues, values });
+        }
+        return this.materializeOrderedGroups(groups, aggColumns);
+      }
+    }
+
     const perPlanResults: (Float64Array | null)[] = [];
 
     for (const plan of namedPlans) {
@@ -363,6 +411,36 @@ export class GroupBy {
       }
       namedPlans.forEach((plan, planIndex) => {
         row[plan.column] = group.values[planIndex];
+      });
+      rows.push(row);
+    }
+
+    return this.materializeGroupedRows(rows, aggColumns);
+  }
+
+  /** Sorts wasm-path group results and materializes the output frame. */
+  private materializeOrderedGroups(
+    groups: { keyValues: CellValue[]; values: (number | null)[] }[],
+    aggColumns: string[]
+  ): DataFrame {
+    interface GroupResult {
+      keyValues: CellValue[];
+      values: (number | null)[];
+    }
+    const ordered = this.options.sort
+      ? (groups as GroupResult[]).sort((left, right) =>
+          compareKeyValues(left.keyValues, right.keyValues)
+        )
+      : groups;
+
+    const rows: Row[] = [];
+    for (const group of ordered) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) {
+        row[this.by[i]!] = group.keyValues[i];
+      }
+      group.values.forEach((value, i) => {
+        row[aggColumns[i]!] = value;
       });
       rows.push(row);
     }

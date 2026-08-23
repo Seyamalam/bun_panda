@@ -78,7 +78,7 @@ Methods:
 - `transform(spec)` (function or dict mode; result aligned to source rows, pandas skipna semantics)
 - `size()`
 
-WASM fast path (default): numeric named aggregations run through the wasm kernels in `src/wasm/bun_panda_core.wasm` (~1.4x faster on `groupby_mean`); set `BUN_PANDA_WASM=0` to use the pure-TS implementation (identical semantics).
+WASM fast path (default): numeric named aggregations run through fused `bp_agg_multi_f64` over columnar `Float64Array`s (`src/wasm/columns.ts`); single-column numeric `sort_values` and boolean-array `filter` use `bp_argsort_f64` / `bp_filter_indices`. Set `BUN_PANDA_WASM=0` to use the pure-TS implementations (identical semantics).
 
 ## Top-Level Functions
 

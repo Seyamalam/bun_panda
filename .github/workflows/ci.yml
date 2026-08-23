@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Build wasm kernels
+        run: bun run build:wasm
+
+      - name: Verify wasm artifact is committed and current
+        run: git diff --exit-code src/wasm/bun_panda_core.wasm
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck and test (wasm default path)
+        run: bun run check
+
+      - name: Test pure-TS fallback path
+        env:
+          BUN_PANDA_WASM: "0"
+        run: bun test

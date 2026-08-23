@@ -32,6 +32,18 @@ interface KernelExports {
     counts: number,
     nGroups: number
   ): void;
+  bp_agg_multi_f64(
+    values: number,
+    ids: number,
+    n: number,
+    planCodes: number,
+    nPlans: number,
+    out: number,
+    counts: number,
+    nGroups: number
+  ): void;
+  bp_argsort_f64(values: number, n: number, ascending: number): number;
+  bp_filter_indices(mask: number, n: number): number;
 }
 
 let cached: KernelExports | null = null;
@@ -60,6 +72,9 @@ export function wasmKernel(): KernelExports | null {
     if (
       typeof exports.bp_alloc !== "function" ||
       typeof exports.bp_agg_f64 !== "function" ||
+      typeof exports.bp_agg_multi_f64 !== "function" ||
+      typeof exports.bp_argsort_f64 !== "function" ||
+      typeof exports.bp_filter_indices !== "function" ||
       !(exports.memory instanceof WebAssembly.Memory)
     ) {
       failed = true;
@@ -279,6 +294,136 @@ export function wasmAggregateColumn(
     out.set(new Float64Array(kernel.memory.buffer, outPtr, groupCount));
     kernel.bp_free_all();
     return out;
+  } catch {
+    failed = true;
+    return null;
+  }
+}
+
+/**
+ * Fused multi-plan aggregation over columnar Float64Arrays.
+ *
+ * `columns` are the plan columns (same length), `codes` one aggregation
+ * code per column. Returns a plan-major array: plan p's group results
+ * start at `p * groupCount`. Groups with no contributing values are
+ * NaN (or 0 for count). Returns null when the kernel is unavailable or
+ * the call shape is unsupported.
+ */
+export function wasmAggMultiF64(
+  columns: Float64Array[],
+  codes: number[],
+  ids: Int32Array,
+  groupCount: number
+): { results: Float64Array; nPlans: number } | null {
+  const kernel = wasmKernel();
+  if (!kernel || groupCount === 0 || columns.length === 0) {
+    return null;
+  }
+  const n = ids.length;
+  try {
+    const nPlans = columns.length;
+    // Pack columns contiguously into one buffer.
+    const packedPtr = kernel.bp_alloc(nPlans * n * 8);
+    const idsPtr = kernel.bp_alloc(ids.byteLength);
+    const codesPtr = kernel.bp_alloc(codes.length * 4);
+    const outPtr = kernel.bp_alloc(nPlans * groupCount * 8);
+    const cntPtr = kernel.bp_alloc(nPlans * groupCount * 4);
+    if (!packedPtr || !idsPtr || !codesPtr || !outPtr || !cntPtr) {
+      return null;
+    }
+    new Float64Array(kernel.memory.buffer, outPtr, nPlans * groupCount).fill(0);
+    new Int32Array(kernel.memory.buffer, cntPtr, nPlans * groupCount).fill(0);
+
+    for (let p = 0; p < nPlans; p += 1) {
+      new Float64Array(kernel.memory.buffer, packedPtr + p * n * 8, n).set(
+        columns[p]!
+      );
+    }
+    new Int32Array(kernel.memory.buffer, idsPtr, n).set(ids);
+    new Int32Array(kernel.memory.buffer, codesPtr, nPlans).set(codes);
+
+    kernel.bp_agg_multi_f64(
+      packedPtr,
+      idsPtr,
+      n,
+      codesPtr,
+      nPlans,
+      outPtr,
+      cntPtr,
+      groupCount
+    );
+
+    const results = new Float64Array(nPlans * groupCount);
+    results.set(
+      new Float64Array(kernel.memory.buffer, outPtr, nPlans * groupCount)
+    );
+    kernel.bp_free_all();
+    return { results, nPlans };
+  } catch {
+    failed = true;
+    return null;
+  }
+}
+
+/**
+ * Stable argsort of an f64 column; NaN entries go last regardless of
+ * direction. Returns source indices in sorted order, or null when the
+ * kernel is unavailable.
+ */
+export function wasmArgsortF64(
+  values: Float64Array,
+  ascending: boolean
+): Int32Array | null {
+  const kernel = wasmKernel();
+  if (!kernel || values.length === 0) {
+    return null;
+  }
+  try {
+    const n = values.length;
+    const valsPtr = kernel.bp_alloc(n * 8);
+    if (!valsPtr) {
+      return null;
+    }
+    new Float64Array(kernel.memory.buffer, valsPtr, n).set(values);
+    const idxPtr = kernel.bp_argsort_f64(valsPtr, n, ascending ? 1 : 0);
+    if (!idxPtr) {
+      return null;
+    }
+    const idx = new Int32Array(n);
+    idx.set(new Int32Array(kernel.memory.buffer, idxPtr, n));
+    kernel.bp_free_all();
+    return idx;
+  } catch {
+    failed = true;
+    return null;
+  }
+}
+
+/**
+ * Compacted row indices for a boolean mask. `kept` count is returned
+ * via the result length; returns null when the kernel is unavailable.
+ */
+export function wasmFilterIndices(mask: Uint8Array): Int32Array | null {
+  const kernel = wasmKernel();
+  if (!kernel || mask.length === 0) {
+    return null;
+  }
+  try {
+    const n = mask.length;
+    const maskPtr = kernel.bp_alloc(n);
+    if (!maskPtr) {
+      return null;
+    }
+    new Uint8Array(kernel.memory.buffer, maskPtr, n).set(mask);
+    const idxPtr = kernel.bp_filter_indices(maskPtr, n);
+    const kept = kernel.bp_last_group_count();
+    if (!idxPtr) {
+      return null;
+    }
+    const idx = new Int32Array(kept);
+    idx.set(new Int32Array(kernel.memory.buffer, idxPtr, kept));
+    kernel.bp_free_all();
+    return idx;
   } catch {
     failed = true;
     return null;

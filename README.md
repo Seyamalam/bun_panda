@@ -120,44 +120,44 @@ CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck/tests p
 ### Automated Benchmark Snapshot
 
 Generated from benchmark scripts (rows=25000, iterations=8).
-bun_panda vs Arquero: faster or equal in 73/82 cases.
-bun_panda vs pandas: faster or equal in 3/10 tracked cases.
+bun_panda vs Arquero: faster or equal in 71/82 cases.
+bun_panda vs pandas: faster or equal in 5/10 tracked cases.
 
 #### bun_panda vs Arquero (headline cases)
 
 | case | dataset | bun_panda avg | arquero avg | ratio (bun/aq) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 2.46ms | 4.81ms | 0.51x |
-| filter_sort_top100 | base | 0.63ms | 2.01ms | 0.31x |
-| sort_top1000 | base | 10.36ms | 18.42ms | 0.56x |
-| sort_multicol_top800 | base | 14.47ms | 32.71ms | 0.44x |
-| value_counts_city | base | 0.86ms | 14.78ms | 0.06x |
-| value_counts_group_city_top10 | base | 4.03ms | 20.38ms | 0.20x |
-| value_counts_missing_city_dropna_false | missing | 0.79ms | 7.22ms | 0.11x |
-| value_counts_high_card_city_top20 | high_card | 28.74ms | 42.52ms | 0.68x |
-| value_counts_high_card_user_top100 | high_card | 18.80ms | 32.12ms | 0.59x |
+| groupby_mean | base | 1.65ms | 2.34ms | 0.70x |
+| filter_sort_top100 | base | 0.41ms | 1.00ms | 0.41x |
+| sort_top1000 | base | 2.58ms | 3.56ms | 0.72x |
+| sort_multicol_top800 | base | 3.66ms | 6.93ms | 0.53x |
+| value_counts_city | base | 0.20ms | 2.37ms | 0.09x |
+| value_counts_group_city_top10 | base | 0.90ms | 3.90ms | 0.23x |
+| value_counts_missing_city_dropna_false | missing | 0.31ms | 1.23ms | 0.25x |
+| value_counts_high_card_city_top20 | high_card | 5.40ms | 10.69ms | 0.51x |
+| value_counts_high_card_user_top100 | high_card | 3.01ms | 8.18ms | 0.37x |
 
 #### bun_panda vs pandas
 
 | case | dataset | bun_panda avg | pandas avg | ratio (bun/pd) |
 | --- | --- | ---: | ---: | ---: |
-| groupby_mean | base | 2.46ms | 1.08ms | 2.28x |
-| filter_sort_top100 | base | 0.63ms | 1.22ms | 0.52x |
-| sort_top1000 | base | 10.36ms | 2.18ms | 4.75x |
-| sort_multicol_top800 | base | 14.47ms | 4.50ms | 3.21x |
-| value_counts_city | base | 0.86ms | 0.82ms | 1.06x |
-| value_counts_group_city_top10 | base | 4.03ms | 1.50ms | 2.68x |
-| value_counts_missing_city_dropna_false | missing | 0.79ms | 1.39ms | 0.57x |
-| groupby_missing_city_mean | missing | 2.71ms | 1.52ms | 1.79x |
-| value_counts_high_card_city_top20 | high_card | 28.74ms | 13.75ms | 2.09x |
-| value_counts_high_card_user_top100 | high_card | 18.80ms | 23.69ms | 0.79x |
+| groupby_mean | base | 1.65ms | 1.13ms | 1.46x |
+| filter_sort_top100 | base | 0.41ms | 0.93ms | 0.44x |
+| sort_top1000 | base | 2.58ms | 0.31ms | 8.27x |
+| sort_multicol_top800 | base | 3.66ms | 3.00ms | 1.22x |
+| value_counts_city | base | 0.20ms | 0.86ms | 0.24x |
+| value_counts_group_city_top10 | base | 0.90ms | 1.41ms | 0.64x |
+| value_counts_missing_city_dropna_false | missing | 0.31ms | 0.46ms | 0.66x |
+| groupby_missing_city_mean | missing | 1.11ms | 0.37ms | 3.04x |
+| value_counts_high_card_city_top20 | high_card | 5.40ms | 2.61ms | 2.07x |
+| value_counts_high_card_user_top100 | high_card | 3.01ms | 8.90ms | 0.34x |
 
 <!-- BENCHMARKS:END -->
 
 ## Status
 
 This is an early library release (`0.2.0`). The API is intentionally pandas-like but not pandas-complete yet.
-A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB) powers numeric groupby aggregations by default (~1.4x faster on `groupby_mean`); `BUN_PANDA_WASM=0` opts back into the pure-TS path.
+A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`) powers numeric groupby aggregations and the single-column numeric `sort_values` / `filter` paths; `BUN_PANDA_WASM=0` opts back into pure TS. The columnar store in `src/wasm/columns.ts` (`Float64Array` with NaN = missing) feeds one fused `bp_agg_multi_f64` call per agg spec.
 
 ## License
 

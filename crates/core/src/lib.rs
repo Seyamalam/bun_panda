@@ -286,6 +286,217 @@ unsafe fn aggregate_extreme(
     }
 }
 
+/// Aggregates multiple f64 columns per group in one pass over the data.
+///
+/// `values` points to `n_plans` consecutive column buffers of length
+/// `n` (column-major); `plan_codes` has one aggregation code per plan.
+/// `out` is `n_groups * n_plans` floats, plan-major; `counts` is
+/// `n_groups * n_plans` i32. Caller MUST zero both. NaN = missing.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn bp_agg_multi_f64(
+    values: *const f64,
+    ids: *const i32,
+    n: usize,
+    plan_codes: *const i32,
+    n_plans: usize,
+    out: *mut f64,
+    counts: *mut i32,
+    n_groups: usize,
+) {
+    let codes = slice::from_raw_parts(plan_codes, n_plans);
+    let group_ids = slice::from_raw_parts(ids, n);
+    // Plan-major output: plan p's buffer starts at out.add(p * n_groups).
+    for p in 0..n_plans {
+        let col = slice::from_raw_parts(values.add(p * n), n);
+        let code = codes[p];
+        let out_p = out.add(p * n_groups);
+        let cnt_p = counts.add(p * n_groups);
+        match code {
+            AGG_SUM | AGG_MEAN => {
+                for i in 0..n {
+                    let v = col[i];
+                    if v.is_nan() {
+                        continue;
+                    }
+                    let g = group_ids[i];
+                    if g < 0 {
+                        continue;
+                    }
+                    let g = g as usize;
+                    *out_p.add(g) += v;
+                    *cnt_p.add(g) += 1;
+                }
+                if code == AGG_MEAN {
+                    for g in 0..n_groups {
+                        let c = *cnt_p.add(g);
+                        if c > 0 {
+                            *out_p.add(g) /= c as f64;
+                        } else {
+                            *out_p.add(g) = f64::NAN;
+                        }
+                    }
+                } else {
+                    for g in 0..n_groups {
+                        if *cnt_p.add(g) == 0 {
+                            *out_p.add(g) = f64::NAN;
+                        }
+                    }
+                }
+            }
+            AGG_MIN => aggregate_extreme(out_p, cnt_p, group_ids, col, n, false),
+            AGG_MAX => aggregate_extreme(out_p, cnt_p, group_ids, col, n, true),
+            AGG_COUNT => {
+                for i in 0..n {
+                    let v = col[i];
+                    if v.is_nan() {
+                        continue;
+                    }
+                    let g = group_ids[i];
+                    if g >= 0 {
+                        *cnt_p.add(g as usize) += 1;
+                    }
+                }
+                for g in 0..n_groups {
+                    *out_p.add(g) = *cnt_p.add(g) as f64;
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// Argsort of an f64 column (NaN sorted last), ascending or descending.
+///
+/// Returns a pointer to `n` u16-pair-free plain i32 indices inside the
+/// arena; rows are ordered so that `values[idx[0]] <= values[idx[1]]...`
+/// NaN entries go to the end regardless of direction (pandas
+/// `na_position="last"` default). Stable: ties keep source order via a
+/// merge sort on index/value pairs.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn bp_argsort_f64(values: *const f64, n: usize, ascending: i32) -> *mut i32 {
+    let vals = slice::from_raw_parts(values, n);
+    let idx = bp_alloc(n.max(1) * 4) as *mut i32;
+    if idx.is_null() {
+        return core::ptr::null_mut();
+    }
+
+    // Partition into finite prefix and NaN suffix, remembering order.
+    let mut finite = 0usize;
+    let mut nan_count = 0usize;
+    for i in 0..n {
+        if vals[i].is_nan() {
+            nan_count += 1;
+        } else {
+            finite += 1;
+        }
+    }
+
+    // Simple stable approach: copy indices of finite values, then do a
+    // bottom-up merge sort comparing by value; append NaN indices after.
+    let tmp = bp_alloc(finite.max(1) * 4) as *mut i32;
+    if tmp.is_null() {
+        return core::ptr::null_mut();
+    }
+
+    let mut w = 0usize;
+    for i in 0..n {
+        if !vals[i].is_nan() {
+            *idx.add(w) = i as i32;
+            w += 1;
+        }
+    }
+
+    // Bottom-up merge sort (stable).
+    let mut width = 1usize;
+    while width < finite {
+        let mut lo = 0usize;
+        while lo < finite {
+            let mid = (lo + width).min(finite);
+            let hi = (lo + 2 * width).min(finite);
+            merge_run(vals, idx, tmp, lo, mid, hi, ascending != 0);
+            lo += 2 * width;
+        }
+        width *= 2;
+    }
+
+    // Append NaN indices at the end, preserving source order.
+    let mut tail = finite;
+    for i in 0..n {
+        if vals[i].is_nan() {
+            *idx.add(tail) = i as i32;
+            tail += 1;
+        }
+    }
+    debug_assert_eq!(tail, n);
+
+    idx
+}
+
+unsafe fn merge_run(
+    vals: &[f64],
+    idx: *mut i32,
+    tmp: *mut i32,
+    lo: usize,
+    mid: usize,
+    hi: usize,
+    ascending: bool,
+) {
+    // Copy left run into tmp.
+    for t in lo..mid {
+        *tmp.add(t - lo) = *idx.add(t);
+    }
+    let mut i = lo;
+    let mut l = 0usize;
+    let mut r = mid;
+    while l < mid - lo && r < hi {
+        let lv = vals[*tmp.add(l) as usize];
+        let rv = vals[*idx.add(r) as usize];
+        let take_left = if ascending { lv <= rv } else { lv >= rv };
+        if take_left {
+            *idx.add(i) = *tmp.add(l);
+            l += 1;
+        } else {
+            *idx.add(i) = *idx.add(r);
+            r += 1;
+        }
+        i += 1;
+    }
+    while l < mid - lo {
+        *idx.add(i) = *tmp.add(l);
+        l += 1;
+        i += 1;
+    }
+    while r < hi {
+        *idx.add(i) = *idx.add(r);
+        r += 1;
+        i += 1;
+    }
+}
+
+/// Boolean mask filter producing compacted row indices.
+///
+/// `mask` is `n` bytes (0 = drop, nonzero = keep). Returns indices of
+/// kept rows inside the arena; count via `bp_last_group_count`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn bp_filter_indices(mask: *const u8, n: usize) -> *mut i32 {
+    let flags = slice::from_raw_parts(mask, n);
+    let idx = bp_alloc(n.max(1) * 4) as *mut i32;
+    if idx.is_null() {
+        return core::ptr::null_mut();
+    }
+    let mut w = 0usize;
+    for i in 0..n {
+        if flags[i] != 0 {
+            *idx.add(w) = i as i32;
+            w += 1;
+        }
+    }
+    unsafe {
+        LAST_GROUP_COUNT.0.get().write(w);
+    }
+    idx
+}
+
 fn last_group_count() -> usize {
     unsafe { LAST_GROUP_COUNT.0.get().read() }
 }

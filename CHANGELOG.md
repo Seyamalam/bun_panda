@@ -22,14 +22,16 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 - `agg` support for `median`, `std`, `var`, `first`, `last`, and `nunique` via the unified finalize path.
 - Parity test coverage in `test/dataframe-parity.test.ts` and `test/groupby-parity.test.ts`.
 - Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB):
-  - flat C ABI (`bp_alloc`/`bp_group_ids`/`bp_agg_f64`/`bp_free_all`), no bindgen/wasm-bindgen
-  - `src/wasm/kernel.ts` loader with lazy init and pure-TS fallback
+  - flat C ABI (`bp_alloc`/`bp_group_ids`/`bp_agg_f64`/`bp_agg_multi_f64`/`bp_argsort_f64`/`bp_filter_indices`/`bp_free_all`), no bindgen/wasm-bindgen
+  - `src/wasm/kernel.ts` loader with lazy init and pure-TS fallback; new high-level wrappers `wasmAggMultiF64`, `wasmArgsortF64`, `wasmFilterIndices`
   - default-on for numeric groupby aggregations after single-pass key packing (~1.4x faster `groupby_mean` vs prior TS-only build; `BUN_PANDA_WASM=0` opts out); parity verified against TS path (`test/wasm-kernel.test.ts`)
+  - columnar typed-array substrate `src/wasm/columns.ts` (`Float64Array` with NaN = missing) — one fused kernel call per `groupby(...).agg({...})` instead of per-column marshalling
+  - single-column numeric `DataFrame.sort_values` and boolean-mask `DataFrame.filter` delegated to wasm kernels (stable argsort, `BUN_PANDA_WASM=0` falls back)
   - `bun run build:wasm` rebuilds the artifact
 
 ### Changed
 
-- CI workflows disabled (`ci.yml` renamed to `ci.yml.disabled`).
+- CI re-enabled (`.github/workflows/ci.yml`): Rust toolchain + `bun run build:wasm` + `git diff --exit-code src/wasm/bun_panda_core.wasm` guard; `bun test` runs on both the wasm-default and `BUN_PANDA_WASM=0` pure-TS paths.
 
 ## [0.1.19] - 2026-02-22
 
