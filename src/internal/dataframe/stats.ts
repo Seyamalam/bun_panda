@@ -170,3 +170,27 @@ export function describeStatRows(
 }
 
 export type { CellValue };
+
+/** Index labels of the maximum/minimum in each numeric column. */
+export function columnIdx(
+  rows: Row[],
+  columns: string[],
+  index: IndexLabel[],
+  mode: "max" | "min"
+): Record<string, IndexLabel | null> {
+  const out: Record<string, IndexLabel | null> = {};
+  for (const column of columns) {
+    let best: number | null = null;
+    let bestLabel: IndexLabel | null = null;
+    rows.forEach((row, i) => {
+      const value = row[column];
+      if (typeof value !== "number" || !Number.isFinite(value)) return;
+      if (best === null || (mode === "max" ? value > best : value < best)) {
+        best = value;
+        bestLabel = index[i]!;
+      }
+    });
+    out[column] = bestLabel;
+  }
+  return out;
+}

@@ -16,6 +16,7 @@ import {
   columnStd,
   columnSum,
   columnVariance,
+  columnIdx,
   covariance,
   describeStatRows,
   pairwiseNumericMatrix,
@@ -711,40 +712,12 @@ export class DataFrame {
 
   /** Index labels of the maximum in each numeric column. */
   idxmax(): Record<string, IndexLabel | null> {
-    const out: Record<string, IndexLabel | null> = {};
-    for (const column of this._columns) {
-      let best: number | null = null;
-      let bestLabel: IndexLabel | null = null;
-      this._rows.forEach((row, i) => {
-        const value = row[column];
-        if (typeof value !== "number" || !Number.isFinite(value)) return;
-        if (best === null || value > best) {
-          best = value;
-          bestLabel = this._index[i]!;
-        }
-      });
-      out[column] = bestLabel;
-    }
-    return out;
+    return columnIdx(this._rows, this._columns, this._index, "max");
   }
 
   /** Index labels of the minimum in each numeric column. */
   idxmin(): Record<string, IndexLabel | null> {
-    const out: Record<string, IndexLabel | null> = {};
-    for (const column of this._columns) {
-      let best: number | null = null;
-      let bestLabel: IndexLabel | null = null;
-      this._rows.forEach((row, i) => {
-        const value = row[column];
-        if (typeof value !== "number" || !Number.isFinite(value)) return;
-        if (best === null || value < best) {
-          best = value;
-          bestLabel = this._index[i]!;
-        }
-      });
-      out[column] = bestLabel;
-    }
-    return out;
+    return columnIdx(this._rows, this._columns, this._index, "min");
   }
 
   /** First `n` rows ordered by `by` descending (pandas nlargest). */
