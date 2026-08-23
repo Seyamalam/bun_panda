@@ -1,6 +1,6 @@
 # Feature List
 
-## Implemented (v0.1.x)
+## Implemented (v0.2.x)
 
 ### Data Structures
 
@@ -19,6 +19,8 @@
 - `filter`, `query`
 - `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`)
 - `apply` (`axis=0|1` and aliases), `applymap`, `map`
+- `where`/`mask` (function and column-map conditions; `other` defaults to `null`), `transform`
+- `insert(loc, column, value)`, `pop(column)`
 - `sort_index`
 - `drop_duplicates` (`ignore_index` supported)
 - `value_counts` (`limit`, `sort`, `ascending`)
@@ -26,7 +28,9 @@
 - `dropna`, `fillna`
 - `set_index`, `reset_index`
 - `dtypes`, `astype`
-- `sum`, `mean`, `describe`
+- `sum`, `mean`, `median`, `std`, `var`, `min`, `max`, `count`, `describe`
+- `round(decimals?)`, `abs(columns?)`, `cumsum(columns?)`
+- `duplicated(subset?, keep?)`, `equals(other)`
 - `nunique(dropna?)`
 - `pivot_table` (`margins`, `sort`, `dropna`, `fill_value`)
 - `to_records`, `to_dict`, `to_json`, `to_csv`, `to_parquet`, `to_excel`, `to_string`
@@ -46,13 +50,13 @@
 
 ### GroupBy
 
-- `agg`
-- `count`
-- `sum`
-- `mean`
+- `agg` (supports `sum`/`mean`/`min`/`max`/`median`/`std`/`var`/`nunique`/`first`/`last`/`count` plus custom functions)
+- `count`, `sum`, `mean`, `min`, `max`, `median`, `std`, `var`, `nunique`, `first`, `last` (each with optional column list)
+- `transform(spec)` (function and dict modes; aligned to source rows)
 - pandas-like options: `dropna`, `sort`
 - pandas-like options: `as_index` (single-key output supported)
 - `size`
+- WASM fast path for numeric named aggregations via `src/wasm/kernel.ts` → `src/wasm/bun_panda_core.wasm` (opt-in behind `BUN_PANDA_WASM=1`; pure-TS fallback otherwise)
 
 ### IO and Utilities
 

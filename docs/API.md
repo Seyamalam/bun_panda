@@ -1,4 +1,4 @@
-# API Reference (v0.1.x)
+# API Reference (v0.2.x)
 
 ## Core Classes
 
@@ -22,12 +22,16 @@ Key methods:
 - Access/select: `get`, `select`, `iloc`, `loc`, `at`
 - Transform: `assign`, `drop`, `rename`, `filter`, `query`, `sort_values` (single/multi-column, optional `limit` for top-k, `na_position`)
 - Apply/map: `apply` (`axis=0|1` and aliases), `applymap`, `map`
+- Where/mask/transform: `where(cond, other?)`, `mask(cond, other?)` (function or per-column conditions; `other` defaults to `null`), `transform(input)` (function or per-column transforms)
+- Column mutation: `insert(loc, column, value)`, `pop(column)` (returns a `Series`)
 - Index-aware transforms: `sort_index`, `drop_duplicates` (`ignore_index` supported), `value_counts` (`limit`, `sort`, `ascending`)
 - Compatibility helpers: `isin`, `clip`, `replace`, `sample`, `rank`
 - Missing values: `dropna`, `fillna`
 - Indexing: `set_index`, `reset_index`
 - Typing: `dtypes`, `astype`
-- Summary: `sum`, `mean`, `describe`, `pivot_table`
+- Summary: `sum`, `mean`, `median`, `std`, `var`, `min`, `max`, `count`, `describe`, `pivot_table`
+- Elementwise: `round(decimals?)`, `abs(columns?)`, `cumsum(columns?)`
+- Duplicate/identity: `duplicated(subset?, keep?)`, `equals(other)`
 - Distinct counts: `nunique(dropna?)`
 - Grouping: `groupby`
 - Joins: `merge`
@@ -70,7 +74,11 @@ Methods:
 - `count(columns?)`
 - `sum(columns?)`
 - `mean(columns?)`
+- `min(columns?)`, `max(columns?)`, `median(columns?)`, `std(columns?)`, `var(columns?)`, `nunique(columns?)`, `first(columns?)`, `last(columns?)`
+- `transform(spec)` (function or dict mode; result aligned to source rows, pandas skipna semantics)
 - `size()`
+
+WASM fast path (opt-in): `BUN_PANDA_WASM=1` routes numeric named-aggregation paths through the wasm kernels in `src/wasm/bun_panda_core.wasm`; otherwise the pure-TS implementation is used with identical semantics.
 
 ## Top-Level Functions
 
@@ -101,7 +109,8 @@ From `bun_panda`:
 ## Notes
 
 1. API naming intentionally mirrors pandas where practical.
-2. Not all pandas features are implemented in `v0.1.15`.
+2. Not all pandas features are implemented in `v0.2.0`.
+3. WASM acceleration: the `crates/core` → `src/wasm/` kernels are WASM-ready today (`bun run build:wasm`); set `BUN_PANDA_WASM=1` to exercise them while the string-key grouping path is being optimized.
 
 ## `pivot_table` Options (focused subset)
 

@@ -1,6 +1,6 @@
 {
   "name": "bun_panda",
-  "version": "0.1.19",
+  "version": "0.2.0",
   "description": "Pandas-inspired DataFrame and Series utilities for Bun/TypeScript.",
   "license": "MIT",
   "homepage": "https://github.com/your-org/bun_panda#readme",
@@ -26,6 +26,7 @@
   "files": [
     "index.ts",
     "src",
+    "crates",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -34,6 +35,8 @@
   "scripts": {
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
+    "typecheck:src": "bunx tsc --noEmit src/index.ts",
+    "build:wasm": "(cd crates/core && cargo build --target wasm32-unknown-unknown --release && cp target/wasm32-unknown-unknown/release/bun_panda_core.wasm ../../src/wasm/) && echo \"wasm: $(wc -c < src/wasm/bun_panda_core.wasm) bytes\"",
     "check": "bun run typecheck && bun run test",
     "bench": "bun run bench:arquero",
     "bench:arquero": "bun run bench/compare.js",

@@ -34,11 +34,11 @@
 30. Expanded comparative benchmark coverage with join/merge scenarios and added CI drift reporting artifacts.
 31. Added pandas-style apply APIs (`DataFrame.apply`, `DataFrame.applymap`, `DataFrame.map`) and Series helpers (`isin`, `clip`, `replace`).
 
-## Next Milestone (v0.2.x)
+## Next Milestone (v0.3.x — Rust/WASM + full parity)
 
-1. Add `DataFrame.where` and `DataFrame.mask` compatibility helpers.
-2. Add `Series.rank` and `DataFrame.transform` compatibility helpers.
-3. Expand pandas benchmark parity coverage beyond 10 tracked cases.
+1. Make the string-key groupby path in the wasm kernels fast enough to be the default (currently opt-in behind `BUN_PANDA_WASM=1` because the bump-arena hash + per-row `TextEncoder` step is slower than the JS `Map` path — pivot to raw-f32 paths for typed columns first, then revisit strings).
+2. Expand pandas benchmark parity coverage beyond the 10 tracked cases.
+3. Add storage/IO helpers (Arrow/Parquet columnar reads into typed arrays for zero-copy wasm import).
 
 ## Mid-Term (v0.3.x+)
 

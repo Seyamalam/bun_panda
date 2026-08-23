@@ -32,5 +32,6 @@ benchmark.txt
 # IntelliJ based IDEs
 .idea
 
-# Finder (MacOS) folder config
-.DS_Store
+# Rust build artifacts
+target
+Cargo.lock

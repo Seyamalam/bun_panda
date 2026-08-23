@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.2.0] - 2026-08-22
+
+### Added
+
+- pandas-parity `DataFrame` transforms:
+  - `DataFrame.where(cond, other?)` and `DataFrame.mask(cond, other?)` (function or column-map conditions, `null` fill default).
+  - `DataFrame.transform(input)` with function and column-map modes.
+  - `DataFrame.insert(loc, column, value)` and `DataFrame.pop(column)`.
+- Numeric parity helpers on `DataFrame`:
+  - `duplicated(subset?, keep?)`, `equals(other)`.
+  - `median()`, `std()`, `var()`, `min()`, `max()`, `count()` column summaries.
+  - `round(decimals?)`, `abs(columns?)`, `cumsum(columns?)`.
+- Expanded `AggName` set and shared median/variance stats helpers in `src/utils.ts`.
+- `GroupBy` convenience aggregations: `min`, `max`, `median`, `std`, `var`, `nunique`, `first`, `last` (each accepts an optional column list).
+- `GroupBy.transform(spec)` aligned to source rows, supporting function and dict modes with pandas skipna semantics.
+- `agg` support for `median`, `std`, `var`, `first`, `last`, and `nunique` via the unified finalize path.
+- Parity test coverage in `test/dataframe-parity.test.ts` and `test/groupby-parity.test.ts`.
+- Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB):
+  - flat C ABI (`bp_alloc`/`bp_group_ids`/`bp_agg_f64`/`bp_free_all`), no bindgen/wasm-bindgen
+  - `src/wasm/kernel.ts` loader with lazy init and pure-TS fallback
+  - opt-in via `BUN_PANDA_WASM=1`; parity verified against TS path (`test/wasm-kernel.test.ts`)
+  - `bun run build:wasm` rebuilds the artifact
+
+### Changed
+
+- CI workflows disabled (`ci.yml` renamed to `ci.yml.disabled`).
+
 ## [0.1.19] - 2026-02-22
 
 ### Added

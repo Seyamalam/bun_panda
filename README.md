@@ -10,7 +10,7 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 - `DataFrame`
 - `Series`
 - `read_csv`, `read_table`, `read_tsv`, `read_json`, `read_parquet`, `read_excel`, `concat`, `merge`, `pivot_table`
-- `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`, `sample`, `rank`
+- `head`, `tail`, `iloc`, `loc`, `groupby`, `agg`, `dropna`, `fillna`, `sort_values`, `sample`, `rank`, `where`, `mask`, `transform`, `insert`, `pop`, `round`, `abs`, `cumsum`, `duplicated`, `equals`
 - `value_counts`, `sort_index`, `drop_duplicates`, `dtypes`, `astype`, `apply`, `applymap`, `map`, `isin`, `clip`, `replace`, `to_parquet`, `to_excel`
 - pandas-like options where practical (`groupby(..., { dropna, sort })`, `value_counts({ sort, ascending })`)
 - more pandas-style helpers (`nunique`, `groupby(..., { as_index })`, `groupby().size()`)
@@ -83,9 +83,12 @@ const out = aq
 ## Development
 
 ```bash
-bun test
+bun test                  # includes wasm kernel parity tests (src/wasm/*)
 bun run typecheck
 bun run check
+bun run build:wasm        # rebuild crates/core -> src/wasm/bun_panda_core.wasm
+BUN_PANDA_WASM=1 bun test # exercise the opt-in wasm groupby path
+```
 bun run bench
 bun run bench:io
 bun run bench:gate
@@ -153,7 +156,8 @@ bun_panda vs pandas: faster or equal in 3/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.1.19`). The API is intentionally pandas-like but not pandas-complete yet.
+This is an early library release (`0.2.0`). The API is intentionally pandas-like but not pandas-complete yet.
+A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`, 3.3KB) is included and WASM-ready; set `BUN_PANDA_WASM=1` to exercise it (currently opt-in while the string-key grouping path is being tuned).
 
 ## License
 

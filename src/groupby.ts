@@ -3,6 +3,10 @@ import { keyFragment, normalizeKeyCell } from "./internal/dataframe/keys";
 import { Series } from "./series";
 import type { AggFn, AggName, AggSpec, CellValue, IndexLabel, Row } from "./types";
 import {
+  wasmAggregateColumn,
+  wasmGroupIds,
+} from "./wasm/kernel";
+import {
   compareCellValues,
   isMissing,
   isNumber,
@@ -161,6 +165,12 @@ export class GroupBy {
   }
 
   private fastNamedAgg(namedPlans: NamedAggPlan[], aggColumns: string[]): DataFrame {
+    if (this.shouldTryWasm()) {
+      const wasmResult = this.tryWasmNamedAgg(namedPlans, aggColumns);
+      if (wasmResult) {
+        return wasmResult;
+      }
+    }
     const states = new Map<string, FastGroupState>();
     const planCodes = namedPlans.map((plan) => aggCodeForName(plan.name));
     const byLength = this.by.length;
@@ -235,6 +245,129 @@ export class GroupBy {
           row[plan.column] = group.seen[i] ? group.best[i] : null;
         }
       }
+      rows.push(row);
+    }
+
+    return this.materializeGroupedRows(rows, aggColumns);
+  }
+
+  /**
+   * Whether the wasm groupby path should be attempted for this call.
+   *
+   * String-key grouping under wasm is currently slower than the JS Map
+   * path (TextEncoder + hash table dominate), so wasm stays opt-in
+   * behind an explicit flag rather than on by default.
+   */
+  private shouldTryWasm(): boolean {
+    if (!this.options.dropna) {
+      return false;
+    }
+    const flag =
+      (process as unknown as { env?: Record<string, string> }).env
+        ?.BUN_PANDA_WASM === "1";
+    if (flag) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * WASM fast path for named aggregations over numeric columns.
+   *
+   * Returns null (caller falls back to the TS path) whenever the shape
+   * isn't supported: kernel unavailable, a plan references a column with
+   * non-numeric values, or the wasm group count disagrees with the TS
+   * grouping semantics. Result ordering matches `sort: true` output.
+   */
+  private tryWasmNamedAgg(
+    namedPlans: NamedAggPlan[],
+    aggColumns: string[]
+  ): DataFrame | null {
+    const grouped = wasmGroupIds(this.sourceRows, this.by);
+    if (!grouped || grouped.groupCount === 0) {
+      return null;
+    }
+
+    // Collect representative key values per group from the first row of
+    // each group id, preserving source order; sort afterwards like the
+    // TS path does when options.sort is on.
+    const firstRowOfGroup = new Int32Array(grouped.groupCount).fill(-1);
+    for (let i = 0; i < grouped.ids.length; i += 1) {
+      const g = grouped.ids[i]!;
+      if (g >= 0 && firstRowOfGroup[g] === -1) {
+        firstRowOfGroup[g] = i;
+      }
+    }
+    if (firstRowOfGroup.some((row) => row === -1)) {
+      return null;
+    }
+
+    interface GroupResult {
+      keyValues: CellValue[];
+      values: (number | null)[];
+    }
+    const perPlanResults: (Float64Array | null)[] = [];
+
+    for (const plan of namedPlans) {
+      const code = wasmCodeForName(plan.name);
+      if (code === null) {
+        return null;
+      }
+      let allNumeric = true;
+      for (let i = 0; i < this.sourceRows.length; i += 1) {
+        const value = this.sourceRows[i]![plan.column];
+        if (!(value === null || value === undefined || isNumber(value))) {
+          allNumeric = false;
+          break;
+        }
+      }
+      if (!allNumeric) {
+        return null;
+      }
+      perPlanResults.push(
+        wasmAggregateColumn(
+          this.sourceRows,
+          plan.column,
+          grouped.ids,
+          grouped.groupCount,
+          code
+        )
+      );
+    }
+
+    if (perPlanResults.some((result) => result === null)) {
+      return null;
+    }
+
+    const groups: GroupResult[] = [];
+    for (let g = 0; g < grouped.groupCount; g += 1) {
+      const sourceRow = this.sourceRows[firstRowOfGroup[g]!]!;
+      const keyValues: CellValue[] = [];
+      for (let i = 0; i < this.by.length; i += 1) {
+        keyValues.push(sourceRow[this.by[i]!]);
+      }
+      const values = namedPlans.map((_, planIndex) => {
+        const raw = perPlanResults[planIndex]![g]!;
+        return Number.isNaN(raw) ? null : raw;
+      });
+      groups.push({ keyValues, values });
+    }
+
+    const ordered = this.options.sort
+      ? groups.sort((left, right) =>
+          compareKeyValues(left.keyValues, right.keyValues)
+        )
+      : groups;
+
+    const rows: Row[] = [];
+    for (const group of ordered) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) {
+        row[this.by[i]!] = group.keyValues[i];
+      }
+      namedPlans.forEach((plan, planIndex) => {
+        row[plan.column] = group.values[planIndex];
+      });
       rows.push(row);
     }
 
@@ -726,6 +859,27 @@ function aggCodeForName(name: AggName): number {
     return AGG_MIN;
   }
   return AGG_MAX;
+}
+
+/** Maps an AggName to the wasm kernel's aggregation code, or null. */
+function wasmCodeForName(name: AggName): number | null {
+  // Kernel codes: sum=0, mean=1, min=2, max=3, count=4.
+  if (name === "count") {
+    return 4;
+  }
+  if (name === "sum") {
+    return 0;
+  }
+  if (name === "mean") {
+    return 1;
+  }
+  if (name === "min") {
+    return 2;
+  }
+  if (name === "max") {
+    return 3;
+  }
+  return null;
 }
 
 function compareKeyValues(left: CellValue[], right: CellValue[]): number {
