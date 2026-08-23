@@ -5,6 +5,22 @@ import {
   dataFrameToParquet,
   dataFrameToExcel,
 } from "./internal/dataframe/io";
+import {
+  columnCount,
+  columnMax,
+  columnMean,
+  columnMedian,
+  columnMin,
+  columnProd,
+  columnQuantile,
+  columnStd,
+  columnSum,
+  columnVariance,
+  covariance,
+  describeStatRows,
+  pairwiseNumericMatrix,
+  pearson,
+} from "./internal/dataframe/stats";
 import type { GroupByOptions } from "./groupby";
 import {
   assertRowsShape,
@@ -74,11 +90,8 @@ import {
   inferColumnDType,
   isMissing,
   isNumber,
-  median,
   numericValues,
   range,
-  std,
-  variance,
 } from "./utils";
 
 export interface DataFrameOptions {
@@ -1621,56 +1634,36 @@ export class DataFrame {
   }
 
   sum(): Record<string, number | null> {
-    const out: Record<string, number | null> = {};
-    for (const column of this._columns) {
-      const values = numericValues(this._rows.map((row) => row[column]));
-      out[column] = values.length > 0 ? values.reduce((acc, value) => acc + value, 0) : null;
-    }
-    return out;
+    return columnSum(this._columns, this._rows);
   }
 
   mean(): Record<string, number | null> {
-    const out: Record<string, number | null> = {};
-    for (const column of this._columns) {
-      const values = numericValues(this._rows.map((row) => row[column]));
-      out[column] =
-        values.length > 0 ? values.reduce((acc, value) => acc + value, 0) / values.length : null;
-    }
-    return out;
+    return columnMean(this._columns, this._rows);
   }
 
   median(): Record<string, number | null> {
-    return this.reduceNumericColumns(median);
+    return columnMedian(this._columns, this._rows);
   }
 
   std(): Record<string, number | null> {
-    return this.reduceNumericColumns(std);
+    return columnStd(this._columns, this._rows);
   }
 
   var(): Record<string, number | null> {
-    return this.reduceNumericColumns(variance);
+    return columnVariance(this._columns, this._rows);
   }
 
   min(): Record<string, number | null> {
-    return this.reduceNumericColumns((values) =>
-      values.length > 0 ? Math.min(...values) : null
-    );
+    return columnMin(this._columns, this._rows);
   }
 
   max(): Record<string, number | null> {
-    return this.reduceNumericColumns((values) =>
-      values.length > 0 ? Math.max(...values) : null
-    );
+    return columnMax(this._columns, this._rows);
   }
 
   /** Product of numeric column values (pandas prod/product). */
   prod(): Record<string, number | null> {
-    const out: Record<string, number | null> = {};
-    for (const column of this._columns) {
-      const values = numericValues(this._rows.map((row) => row[column]));
-      out[column] = values.length > 0 ? values.reduce((acc, value) => acc * value, 1) : null;
-    }
-    return out;
+    return columnProd(this._columns, this._rows);
   }
 
   product(): Record<string, number | null> {
@@ -1682,36 +1675,15 @@ export class DataFrame {
    * or an array of quantiles to get a frame indexed by q.
    */
   quantile(q: number | number[] = 0.5): Record<string, number | null> | DataFrame {
-    const compute = (qValue: number): Record<string, number | null> => {
-      const out: Record<string, number | null> = {};
-      for (const column of this._columns) {
-        const values = numericValues(this._rows.map((row) => row[column])).sort(
-          (a, b) => a - b
-        );
-        if (values.length === 0) {
-          out[column] = null;
-          continue;
-        }
-        const pos = (values.length - 1) * qValue;
-        const lower = Math.floor(pos);
-        const upper = Math.ceil(pos);
-        const t = pos - lower;
-        out[column] = values[lower]! + (values[upper]! - values[lower]!) * t;
-      }
-      return out;
-    };
-
     if (!Array.isArray(q)) {
-      return compute(q);
+      return columnQuantile(this._columns, this._rows, q);
     }
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
     for (const qValue of q) {
       const record: Row = { q: qValue };
-      for (const [column, value] of Object.entries(compute(qValue))) {
-        if (column !== "q") {
-          record[column] = value;
-        }
+      for (const [column, value] of Object.entries(columnQuantile(this._columns, this._rows, qValue))) {
+        if (column !== "q") record[column] = value;
       }
       rows.push(record);
       index.push(qValue);
@@ -1721,65 +1693,21 @@ export class DataFrame {
 
   /** Pearson correlation between numeric column pairs. */
   corr(): DataFrame {
-    return this.pairwiseNumeric((a, b) => {
-      const n = a.length;
-      if (n < 2) return NaN;
-      const ma = a.reduce((s, v) => s + v, 0) / n;
-      const mb = b.reduce((s, v) => s + v, 0) / n;
-      let cov = 0;
-      let va = 0;
-      let vb = 0;
-      for (let i = 0; i < n; i += 1) {
-        const da = a[i]! - ma;
-        const dbv = b[i]! - mb;
-        cov += da * dbv;
-        va += da * da;
-        vb += dbv * dbv;
-      }
-      const denom = Math.sqrt(va) * Math.sqrt(vb);
-      return denom === 0 ? NaN : cov / denom;
-    });
+    return this.pairwiseNumeric(pearson);
   }
 
   /** Covariance between numeric column pairs. */
   cov(): DataFrame {
-    return this.pairwiseNumeric((a, b) => {
-      const n = a.length;
-      if (n < 2) return NaN;
-      const ma = a.reduce((s, v) => s + v, 0) / n;
-      const mb = b.reduce((s, v) => s + v, 0) / n;
-      let cov = 0;
-      for (let i = 0; i < n; i += 1) {
-        cov += (a[i]! - ma) * (b[i]! - mb);
-      }
-      return cov / (n - 1);
-    });
+    return this.pairwiseNumeric(covariance);
   }
 
   private pairwiseNumeric(fn: (a: number[], b: number[]) => number): DataFrame {
-    const numericCols = this._columns.filter((column) =>
-      this._rows.some((row) => typeof row[column] === "number")
-    );
-    const columns: string[] = [];
-    const rows: Row[] = numericCols.map(() => ({}));
-    for (let c = 0; c < numericCols.length; c += 1) {
-      columns.push(numericCols[c]!);
-      for (let r = 0; r < numericCols.length; r += 1) {
-        const a = numericValues(this._rows.map((row) => row[numericCols[r]!]));
-        const b = numericValues(this._rows.map((row) => row[numericCols[c]!]));
-        rows[r]![numericCols[c]!] =
-          numericCols[r] === numericCols[c] ? 1 : fn(a, b);
-      }
-    }
-    return DataFrame.createInternal(rows, columns, [...numericCols]);
+    const result = pairwiseNumericMatrix(this._columns, this._rows, fn);
+    return DataFrame.createInternal(result.rows, result.columns, result.index);
   }
 
   count(): Record<string, number> {
-    const out: Record<string, number> = {};
-    for (const column of this._columns) {
-      out[column] = this._rows.filter((row) => !isMissing(row[column])).length;
-    }
-    return out;
+    return columnCount(this._columns, this._rows);
   }
 
   round(decimals = 0): DataFrame {
@@ -1856,26 +1784,10 @@ export class DataFrame {
   }
 
   describe(): DataFrame {
-    const numericColumns = this._columns.filter((column) =>
-      this._rows.some((row) => isNumber(row[column]))
-    );
-
-    const stats = ["count", "mean", "std", "min", "max"];
-    const rows: Row[] = stats.map((statName) => ({ stat: statName }));
-
-    for (const column of numericColumns) {
-      const values = numericValues(this._rows.map((row) => row[column]));
-      rows[0]![column] = values.length;
-      rows[1]![column] =
-        values.length > 0 ? values.reduce((acc, value) => acc + value, 0) / values.length : null;
-      rows[2]![column] = std(values);
-      rows[3]![column] = values.length > 0 ? Math.min(...values) : null;
-      rows[4]![column] = values.length > 0 ? Math.max(...values) : null;
-    }
-
+    const { rows, numericColumns } = describeStatRows(this._columns, this._rows);
     return new DataFrame(rows, {
       columns: ["stat", ...numericColumns],
-      index: stats,
+      index: rows.map((row) => row.stat as string),
     });
   }
 
