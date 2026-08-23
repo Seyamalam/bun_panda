@@ -38,6 +38,7 @@
     "typecheck:src": "bunx tsc --noEmit src/index.ts",
     "build:wasm": "(cd crates/core && cargo build --target wasm32-unknown-unknown --release && cp target/wasm32-unknown-unknown/release/bun_panda_core.wasm ../../src/wasm/) && echo \"wasm: $(wc -c < src/wasm/bun_panda_core.wasm) bytes\"",
     "check": "bun run typecheck && bun run test",
+    "parity": "bun run scripts/parity-audit.ts",
     "bench": "bun run bench:arquero",
     "bench:arquero": "bun run bench/compare.js",
     "bench:io": "bun run bench/io.js",
