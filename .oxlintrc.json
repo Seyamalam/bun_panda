@@ -1,0 +1,11 @@
+{
+  "plugins": ["oxc"],
+  "rules": {
+    "unicorn/no-new-array": "off",
+    "no-unused-vars": "error"
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": ["src/wasm/bun_panda_core.wasm"]
+}
