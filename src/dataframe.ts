@@ -7,6 +7,7 @@ import {
 } from "./internal/dataframe/io";
 import type { GroupByOptions } from "./groupby";
 import {
+  assertRowsShape,
   normalizeColumnar,
   normalizeRecords,
   resolvePosition,
@@ -180,15 +181,11 @@ export class DataFrame {
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
 
-    if (this._index.length !== this._rows.length) {
-      throw new Error("DataFrame index length must match row count.");
-    }
+    assertRowsShape(this._rows, this._index);
   }
 
   private static createInternal(rows: Row[], columns: string[], index: IndexLabel[]): DataFrame {
-    if (index.length !== rows.length) {
-      throw new Error("DataFrame index length must match row count.");
-    }
+    assertRowsShape(rows, index);
     const frame = Object.create(DataFrame.prototype) as DataFrame;
     (frame as unknown as { _rows: Row[] })._rows = rows;
     (frame as unknown as { _columns: string[] })._columns = columns;

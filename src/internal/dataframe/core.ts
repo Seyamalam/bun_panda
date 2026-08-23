@@ -1,3 +1,4 @@
+import { BunPandaValidationError } from "../../errors";
 import type { AggFn, AggName, CellValue, Row } from "../../types";
 import { cloneRow, compareCellValues, isMissing, numericValues } from "../../utils";
 import { normalizeKeyCell } from "./keys";
@@ -179,4 +180,14 @@ export function buildMergedRow(
   }
 
   return row;
+}
+
+
+export function assertRowsShape(rows: unknown[], index: unknown[]): void {
+  if (!Array.isArray(rows) || !Array.isArray(index)) {
+    throw new BunPandaValidationError("Rows and index must be arrays.");
+  }
+  if (index.length !== rows.length) {
+    throw new BunPandaValidationError("DataFrame index length must match row count.");
+  }
 }

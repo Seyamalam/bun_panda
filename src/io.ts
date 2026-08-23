@@ -11,6 +11,7 @@ import { parseCsvText } from "./internal/io/csv";
 import { readExcelFile, readExcelFileSync } from "./internal/io/excelRead";
 import { writeExcelFrame } from "./internal/io/excelWrite";
 import { parseJsonText } from "./internal/io/json";
+import { BunPandaValidationError } from "./errors";
 import { readParquetFile } from "./internal/io/parquetRead";
 import { writeParquetFrame } from "./internal/io/parquetWrite";
 import type { IndexLabel, Row } from "./types";
@@ -48,12 +49,25 @@ export interface ReadExcelOptions {
   index_col?: string | number;
 }
 
+
+function assertValidPath(path: unknown): asserts path is string {
+  if (typeof path !== "string" || path.trim().length === 0) {
+    throw new BunPandaValidationError("Expected a non-empty file path string.");
+  }
+}
+
+export function validateReadPath(path: unknown): void {
+  assertValidPath(path);
+}
+
 export async function read_csv(path: string, options: ReadCSVOptions = {}): Promise<DataFrame> {
+  assertValidPath(path);
   const text = await Bun.file(path).text();
   return parse_csv(text, options);
 }
 
 export function read_csv_sync(path: string, options: ReadCSVOptions = {}): DataFrame {
+  assertValidPath(path);
   const text = readFileSync(path, "utf8");
   return parse_csv(text, options);
 }
@@ -90,11 +104,13 @@ export function parse_tsv(text: string, options: ReadTableOptions = {}): DataFra
 }
 
 export async function read_json(path: string, options: ReadJSONOptions = {}): Promise<DataFrame> {
+  assertValidPath(path);
   const text = await Bun.file(path).text();
   return parse_json(text, options);
 }
 
 export function read_json_sync(path: string, options: ReadJSONOptions = {}): DataFrame {
+  assertValidPath(path);
   const text = readFileSync(path, "utf8");
   return parse_json(text, options);
 }
@@ -111,6 +127,7 @@ export async function read_parquet(
   path: string,
   options: ReadParquetOptions = {}
 ): Promise<DataFrame> {
+  assertValidPath(path);
   return readParquetFile(path, options);
 }
 
@@ -118,6 +135,7 @@ export async function read_excel(
   path: string,
   options: ReadExcelOptions = {}
 ): Promise<DataFrame> {
+  assertValidPath(path);
   return readExcelFile(path, options);
 }
 
@@ -125,6 +143,7 @@ export function read_excel_sync(
   path: string,
   options: ReadExcelOptions = {}
 ): DataFrame {
+  assertValidPath(path);
   return readExcelFileSync(path, options);
 }
 

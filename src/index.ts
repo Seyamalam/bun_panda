@@ -23,6 +23,7 @@ export {
   type WhereOther,
 } from "./dataframe";
 export { GroupBy } from "./groupby";
+export { BunPandaValidationError } from "./errors";
 export {
   concat,
   merge,
