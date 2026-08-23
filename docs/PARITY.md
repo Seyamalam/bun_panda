@@ -4,13 +4,13 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 | Surface | pandas API | bun_panda | Parity |
 | --- | ---: | ---: | ---: |
-| DataFrame | 197 | 96 | 49% |
-| Series | 195 | 64 | 33% |
+| DataFrame | 197 | 98 | 50% |
+| Series | 195 | 66 | 34% |
 | Top-level | 75 | 19 | 25% |
 | GroupBy | 38 | 23 | 61% |
-| **Total** | **505** | **202** | **40%** |
+| **Total** | **505** | **206** | **41%** |
 
-## DataFrame — missing (101)
+## DataFrame — missing (99)
 
 ### arithmetic (15)
 
@@ -36,11 +36,11 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 
 `plot`
 
-### window/cumulative (5)
+### window/cumulative (3)
 
-`cummax`, `cummin`, `cumprod`, `expanding`, `rolling`
+`cummax`, `cummin`, `cumprod`
 
-## Series — missing (131)
+## Series — missing (129)
 
 ### arithmetic (4)
 
@@ -69,10 +69,6 @@ Generated 2026-08-23 — pandas methods scraped from the official API reference 
 ### selection (1)
 
 `sample`
-
-### window/cumulative (2)
-
-`expanding`, `rolling`
 
 ## Top-level — missing (56)
 

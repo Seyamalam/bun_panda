@@ -14,6 +14,7 @@ import {
 } from "./internal/series/compat";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
+import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
 
 export type SeriesDType = DType;
 
@@ -583,6 +584,19 @@ export class Series<T extends CellValue = CellValue> {
 
   notnull(): Series<boolean> {
     return this.notna();
+  }
+
+  /**
+   * Rolling window aggregations (pandas rolling): `rolling(3).mean()`.
+   * Windows at the start shorter than `min_periods ?? window` are null.
+   */
+  rolling(window: number, minPeriods?: number): RollingWindow {
+    return computeRolling(this._values, window, minPeriods);
+  }
+
+  /** Expanding (cumulative) window aggregations. */
+  expanding(minPeriods = 1): RollingWindow {
+    return computeExpanding(this._values, minPeriods);
   }
 
   // ---- selection helpers ----

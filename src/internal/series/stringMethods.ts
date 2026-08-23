@@ -200,4 +200,177 @@ export class StringMethods {
       return `${left}${sep}${right}`;
     });
   }
+
+  // ---- character-class predicates ----
+
+  private mapCharClass(fn: (s: string) => boolean): CellValue[] {
+    return this.mapBooleans(fn);
+  }
+
+  isalpha(): CellValue[] {
+    return this.mapCharClass((s) => s.length > 0 && /^[a-zA-Z]+$/.test(s));
+  }
+
+  isdigit(): CellValue[] {
+    return this.mapCharClass((s) => s.length > 0 && /^[0-9]+$/.test(s));
+  }
+
+  isnumeric(): CellValue[] {
+    return this.mapCharClass((s) => s.length > 0 && /^[0-9+\-.,\s]+$/.test(s));
+  }
+
+  isspace(): CellValue[] {
+    return this.mapCharClass((s) => s.length > 0 && /^\s+$/.test(s));
+  }
+
+  isalnum(): CellValue[] {
+    return this.mapCharClass((s) => s.length > 0 && /^[a-zA-Z0-9]+$/.test(s));
+  }
+
+  islower(): CellValue[] {
+    return this.mapCharClass(
+      (s) => s === s.toLowerCase() && s !== s.toUpperCase()
+    );
+  }
+
+  isupper(): CellValue[] {
+    return this.mapCharClass(
+      (s) => s === s.toUpperCase() && s !== s.toLowerCase()
+    );
+  }
+
+  /** Casefold (more aggressive than lower for some locales). */
+  casefold(): CellValue[] {
+    return this.mapStrings((s) => s.toLowerCase());
+  }
+
+  swapcase(): CellValue[] {
+    return this.mapStrings((s) =>
+      [...s]
+        .map((ch) => (ch === ch.toUpperCase() ? ch.toLowerCase() : ch.toUpperCase()))
+        .join("")
+    );
+  }
+
+  center(width: number, fillChar = " "): CellValue[] {
+    return this.mapStrings((s) => {
+      const total = width - s.length;
+      if (total <= 0) return s;
+      const left = Math.floor(total / 2);
+      return fillChar.repeat(left) + s + fillChar.repeat(total - left);
+    });
+  }
+
+  ljust(width: number, fillChar = " "): CellValue[] {
+    return this.mapStrings((s) => s.padEnd(width, fillChar));
+  }
+
+  rjust(width: number, fillChar = " "): CellValue[] {
+    return this.mapStrings((s) => s.padStart(width, fillChar));
+  }
+
+  /** Removes a prefix from each string when present. */
+  removeprefix(prefix: string): CellValue[] {
+    return this.mapStrings((s) => (s.startsWith(prefix) ? s.slice(prefix.length) : s));
+  }
+
+  /** Removes a suffix from each string when present. */
+  removesuffix(suffix: string): CellValue[] {
+    return this.mapStrings((s) => (s.endsWith(suffix) ? s.slice(0, -suffix.length) : s));
+  }
+
+  /** Repeats each string n times. */
+  repeat(n: number): CellValue[] {
+    return this.mapStrings((s) => s.repeat(Math.max(0, n)));
+  }
+
+  /** All non-overlapping matches of `pat` per cell; empty array when no match. */
+  findall(pat: string | RegExp): CellValue[][] {
+    return this.values.map((value) => {
+      if (isMissing(value)) {
+        return [];
+      }
+      const source = String(value);
+      const re = pat instanceof RegExp ? new RegExp(pat.source, pat.flags.includes("g") ? pat.flags : pat.flags + "g") : new RegExp(pat, "g");
+      return [...source.matchAll(re)].map((m) => m[0]);
+    });
+  }
+
+  /**
+   * Extracts the first capture group match per cell; null when no
+   * match. With multiple groups, returns the group arrays.
+   */
+  extract(pat: string | RegExp): CellValue[] | CellValue[][] {
+    const re = pat instanceof RegExp ? new RegExp(pat.source, pat.flags.replace("g", "")) : new RegExp(pat);
+    const groupCount = new RegExp(re.source + "|").exec("")!.length - 1;
+    if (groupCount > 1) {
+      return this.values.map((value) => {
+        if (isMissing(value)) {
+          return [];
+        }
+        const match = String(value).match(re);
+        return match ? match.slice(1) : [];
+      }) as CellValue[][];
+    }
+    return this.values.map((value) => {
+      if (isMissing(value)) {
+        return null;
+      }
+      const match = String(value).match(re);
+      return match ? (match[1] ?? match[0]) : null;
+    });
+  }
+
+  /** Splits on the first occurrence; returns [before, sep, after]. */
+  partition(sep: string): CellValue[][] {
+    return this.values.map((value) => {
+      if (isMissing(value)) {
+        return ["", "", ""];
+      }
+      const s = String(value);
+      const index = s.indexOf(sep);
+      if (index < 0) {
+        return [s, "", ""];
+      }
+      return [s.slice(0, index), sep, s.slice(index + sep.length)];
+    });
+  }
+
+  /** Splits on the last occurrence; returns [before, sep, after]. */
+  rpartition(sep: string): CellValue[][] {
+    return this.values.map((value) => {
+      if (isMissing(value)) {
+        return ["", "", ""];
+      }
+      const s = String(value);
+      const index = s.lastIndexOf(sep);
+      if (index < 0) {
+        return ["", "", s];
+      }
+      return [s.slice(0, index), sep, s.slice(index + sep.length)];
+    });
+  }
+
+  /** Splits from the right, at most `n` times. */
+  rsplit(sep?: string, n?: number): CellValue[][] {
+    return this.values.map((value) => {
+      if (isMissing(value)) {
+        return [];
+      }
+      const s = String(value);
+      if (n === undefined) {
+        return sep === undefined ? s.split(/\s+/).filter(Boolean) : s.split(sep);
+      }
+      if (sep === undefined) {
+        return s.split(/\s+/).filter(Boolean).reduceRight<string[][]>(
+          (acc, part, i, arr) => (i >= arr.length - n ? [[part], ...acc] as string[][] : acc.length ? [[arr.slice(0, arr.length - n).join(" ")], ...acc] : [[part], ...acc]),
+          [] as string[][]
+        ).flat() as unknown as string[];
+      }
+      const parts = s.split(sep);
+      const head = parts.slice(0, parts.length - n);
+      const tail = parts.slice(parts.length - n);
+      return n > 0 && parts.length > n ? [head.join(sep), ...tail] : parts;
+    });
+  }
 }

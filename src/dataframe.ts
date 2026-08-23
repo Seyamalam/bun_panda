@@ -11,6 +11,7 @@ import { writeExcelFrame } from "./internal/io/excelWrite";
 import { writeParquetFrame } from "./internal/io/parquetWrite";
 import { computeMergeRows } from "./internal/dataframe/merge";
 import { computeMeltRows, computePivot } from "./internal/dataframe/reshape";
+import { computeRolling, computeExpanding } from "./internal/dataframe/rolling";
 import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
@@ -944,7 +945,149 @@ export class DataFrame {
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
-  // ---- reshaping ----
+  // ---- window functions ----
+
+  private applyWindow(
+    values: CellValue[],
+    result: CellValue[]
+  ): void {
+    void values;
+    void result;
+  }
+
+  /**
+   * Rolling window aggregations over numeric columns:
+   * `df.rolling(7).mean()`. Non-numeric columns are dropped.
+   */
+  rolling(window: number, minPeriods?: number): {
+    mean(): DataFrame;
+    sum(): DataFrame;
+    min(): DataFrame;
+    max(): DataFrame;
+    count(): DataFrame;
+    std(): DataFrame;
+    median(): DataFrame;
+    aggregate(aggregator: (values: number[]) => number | null): DataFrame;
+  } {
+    const numericCols = this._columns.filter((column) =>
+      this._rows.some((row) => typeof row[column] === "number" && Number.isFinite(row[column]))
+    );
+    const columnsByResult = new Map<string, Map<string, CellValue[]>>();
+    for (const column of numericCols) {
+      const rolling = computeRolling(
+        this._rows.map((row) => row[column]),
+        window,
+        minPeriods
+      );
+      for (const [name, fn] of Object.entries(rolling)) {
+        if (typeof fn !== "function") continue;
+        const result = (rolling as unknown as Record<string, () => CellValue[]>)[name]!();
+        if (!columnsByResult.has(name)) {
+          columnsByResult.set(name, new Map());
+        }
+        columnsByResult.get(name)!.set(column, result);
+      }
+    }
+
+    const build = (name: string): DataFrame => {
+      const perColumn = columnsByResult.get(name)!;
+      const rows: Row[] = this._rows.map(() => ({}));
+      for (const [column, values] of perColumn) {
+        values.forEach((value, i) => {
+          rows[i]![column] = value;
+        });
+      }
+      return this.withRows(rows, [...this._index], numericCols, true);
+    };
+
+    return {
+      mean: () => build("mean"),
+      sum: () => build("sum"),
+      min: () => build("min"),
+      max: () => build("max"),
+      count: () => build("count"),
+      std: () => build("std"),
+      median: () => build("median"),
+      aggregate: (aggregator) => {
+        const rows: Row[] = this._rows.map(() => ({}));
+        for (const column of numericCols) {
+          const rolling = computeRolling(
+            this._rows.map((row) => row[column]),
+            window,
+            minPeriods
+          );
+          // Reuse the sum windows as raw slices via count/mean trick is
+          // lossy; instead recompute slices directly.
+          let index = 0;
+          for (let i = 0; i < this._rows.length; i += 1) {
+            const slice: number[] = [];
+            for (let j = Math.max(0, i - window + 1); j <= i; j += 1) {
+              const v = this._rows[j]![column];
+              if (typeof v === "number" && Number.isFinite(v)) {
+                slice.push(v);
+              }
+            }
+            const min = minPeriods ?? window;
+            rows[i]![column] = slice.length >= min ? aggregator(slice) : null;
+            index += 1;
+          }
+          void index;
+        }
+        return this.withRows(rows, [...this._index], numericCols, true);
+      },
+    };
+  }
+
+  /** Expanding (cumulative from start) aggregations over numeric columns. */
+  expanding(minPeriods = 1): {
+    mean(): DataFrame;
+    sum(): DataFrame;
+    min(): DataFrame;
+    max(): DataFrame;
+    count(): DataFrame;
+    std(): DataFrame;
+    median(): DataFrame;
+  } {
+    const numericCols = this._columns.filter((column) =>
+      this._rows.some((row) => typeof row[column] === "number" && Number.isFinite(row[column]))
+    );
+    const results = new Map<string, Map<string, CellValue[]>>();
+    for (const column of numericCols) {
+      const expanding = computeExpanding(
+        this._rows.map((row) => row[column]),
+        minPeriods
+      );
+      for (const [name, fn] of Object.entries(expanding)) {
+        if (typeof fn !== "function") continue;
+        const result = (expanding as unknown as Record<string, () => CellValue[]>)[name]!();
+        if (!results.has(name)) {
+          results.set(name, new Map());
+        }
+        results.get(name)!.set(column, result);
+      }
+    }
+
+    const build = (name: string): DataFrame => {
+      const perColumn = results.get(name)!;
+      const rows: Row[] = this._rows.map(() => ({}));
+      for (const [column, values] of perColumn) {
+        values.forEach((value, i) => {
+          rows[i]![column] = value;
+        });
+      }
+      return this.withRows(rows, [...this._index], numericCols, true);
+    };
+
+    return {
+      mean: () => build("mean"),
+      sum: () => build("sum"),
+      min: () => build("min"),
+      max: () => build("max"),
+      count: () => build("count"),
+      std: () => build("std"),
+      median: () => build("median"),
+    };
+  }
 
   /** Inverse of isna. */
   notna(): DataFrame {
