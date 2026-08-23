@@ -8,13 +8,15 @@
  * so callers transparently keep the pure-TS path.
  */
 import { keyFragment } from "../internal/dataframe/keys";
-import type { CellValue, Row } from "../types";
+import type { Row } from "../types";
 
 export const AGG_SUM = 0;
 export const AGG_MEAN = 1;
 export const AGG_MIN = 2;
 export const AGG_MAX = 3;
 export const AGG_COUNT = 4;
+
+const enc = new TextEncoder();
 
 interface KernelExports {
   memory: WebAssembly.Memory;
@@ -120,51 +122,7 @@ export interface WasmGroupAggResult {
   groupCount: number;
 }
 
-interface KeyPlan {
-  keysPtr: number;
-  offsPtr: number;
-  n: number;
-}
 
-const enc = new TextEncoder();
-
-function packKeys(kernel: KernelExports, fragments: string[]): KeyPlan {
-  const encoded: Uint8Array[] = [];
-  let total = 0;
-  const offsets = new Int32Array(fragments.length + 1);
-  for (let i = 0; i < fragments.length; i += 1) {
-    const bytes = enc.encode(fragments[i]);
-    encoded.push(bytes);
-    total += bytes.length;
-    offsets[i + 1] = total;
-  }
-
-  const keysPtr = kernel.bp_alloc(total > 0 ? total : 1);
-  if (!keysPtr) {
-    throw new Error("wasm alloc failed");
-  }
-  if (total > 0) {
-    const heap = new Uint8Array(kernel.memory.buffer);
-    let cursor = keysPtr;
-    for (const bytes of encoded) {
-      heap.set(bytes, cursor);
-      cursor += bytes.length;
-    }
-  }
-
-  const offsPtr = kernel.bp_alloc(offsets.byteLength);
-  if (!offsPtr) {
-    throw new Error("wasm alloc failed");
-  }
-  new Int32Array(kernel.memory.buffer, offsPtr, offsets.length).set(offsets);
-
-  return { keysPtr, offsPtr, n: fragments.length };
-}
-
-/**
- * Computes dense group ids for `rows` keyed by `by`. Rows whose key is
- * missing receive id `-1`, mirroring pandas `dropna=True`.
- */
 export function wasmGroupIds(rows: Row[], by: string[]): WasmGroupAggResult | null {
   const kernel = wasmKernel();
   if (!kernel) {

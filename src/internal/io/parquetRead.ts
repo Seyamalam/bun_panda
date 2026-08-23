@@ -2,20 +2,11 @@ import { DataFrame } from "../../dataframe";
 import type { Row } from "../../types";
 import type { ReadParquetOptions } from "../../io";
 import { applyIndexColumn } from "./frame";
-import { normalizeExternalCell } from "./shared";
 import { buildTypedColumns, typedColumnsToRecords } from "./parquetTyped";
 
 interface ShreddedRowBuffer {
   rowCount: number;
   columnData: Record<string, unknown>;
-}
-
-function normalizeRecord(raw: Record<string, unknown>): Row {
-  const row: Row = {};
-  for (const [column, value] of Object.entries(raw)) {
-    row[column] = normalizeExternalCell(value);
-  }
-  return row;
 }
 
 export async function readParquetFile(
