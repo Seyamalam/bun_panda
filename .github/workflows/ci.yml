@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Lint (oxlint, 50x faster than eslint)
+        run: bun run lint
+
       - name: Typecheck and test (wasm default path)
         run: bun run check
 
@@ -44,3 +47,6 @@ jobs:
         env:
           BUN_PANDA_WASM: "0"
         run: bun test
+
+      - name: Coverage (70% threshold)
+        run: bun test --coverage --coverage-threshold 70

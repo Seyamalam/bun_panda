@@ -20,7 +20,20 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 ## Installation
 
 ```bash
-bun install
+# clone
+git clone https://github.com/Seyamalam/bun_panda.git && cd bun_panda
+
+# reproducible install (bun.lock is committed)
+bun install --frozen-lockfile
+
+# (optional) rebuild the 3KB Rust/WASM kernels after pulling Rust changes
+bun run build:wasm
+
+# run the full test + lint + typecheck suite
+bun run check
+
+# WASM is on by default; force the pure-TS groupby path (CI also does this)
+BUN_PANDA_WASM=0 bun test
 ```
 
 ## Quick Start
@@ -83,11 +96,13 @@ const out = aq
 ## Development
 
 ```bash
-bun test                  # includes wasm kernel parity tests (src/wasm/*)
+bun run lint                 # oxlint (up to 50x faster than eslint)
 bun run typecheck
-bun run check
-bun run build:wasm        # rebuild crates/core -> src/wasm/bun_panda_core.wasm
-BUN_PANDA_WASM=0 bun test # force the pure-TS groupby path
+bun run check                # lint + typecheck + test
+bun test                     # includes wasm kernel parity tests (src/wasm/*)
+bun test --coverage          # line+function coverage; CI gates at 70%
+BUN_PANDA_WASM=0 bun test    # force the pure-TS groupby path
+bun run build:wasm           # rebuild crates/core -> src/wasm/bun_panda_core.wasm
 ```
 bun run bench
 bun run bench:io
