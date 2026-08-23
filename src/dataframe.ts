@@ -780,6 +780,138 @@ export class DataFrame {
     );
   }
 
+  // ---- element-wise arithmetic (numeric columns; nulls propagate) ----
+
+  private binaryOp(
+    other: number | DataFrame,
+    fn: (a: number, b: number) => number
+  ): DataFrame {
+    const otherFrame =
+      other instanceof DataFrame ? other : null;
+    if (otherFrame && (otherFrame._rows.length !== this._rows.length || otherFrame._columns.length !== this._columns.length)) {
+      throw new Error("Binary op requires frames of identical shape.");
+    }
+    const rows: Row[] = this._rows.map(() => ({}));
+    for (let c = 0; c < this._columns.length; c += 1) {
+      const column = this._columns[c]!;
+      for (let r = 0; r < this._rows.length; r += 1) {
+        const a = this._rows[r]![column];
+        const b = otherFrame ? otherFrame._rows[r]![otherFrame._columns[c]!] : other;
+        if (
+          (typeof a !== "number" || !Number.isFinite(a)) ||
+          (typeof b !== "number" || !Number.isFinite(b))
+        ) {
+          rows[r]![column] = null;
+        } else {
+          rows[r]![column] = fn(a, typeof b === "number" ? b : Number(b));
+        }
+      }
+    }
+    return this.withRows(rows, [...this._index], [...this._columns], true);
+  }
+
+  add(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a + b);
+  }
+
+  sub(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a - b);
+  }
+
+  rsub(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b - a);
+  }
+
+  mul(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a * b);
+  }
+
+  div(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a / b);
+  }
+
+  truediv(other: number | DataFrame): DataFrame {
+    return this.div(other);
+  }
+
+  mod(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a % b);
+  }
+
+  pow(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a ** b);
+  }
+
+  floordiv(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => Math.floor(a / b));
+  }
+
+  radd(other: number | DataFrame): DataFrame {
+    return this.add(other);
+  }
+
+  rmul(other: number | DataFrame): DataFrame {
+    return this.mul(other);
+  }
+
+  rdiv(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b / a);
+  }
+
+  rpow(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b ** a);
+  }
+
+  rmod(other: number | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b % a);
+  }
+
+  // ---- element-wise comparisons (boolean frames) ----
+
+  private compareOp(
+    other: CellValue | DataFrame,
+    fn: (a: number, b: number) => boolean
+  ): DataFrame {
+    const otherFrame = other instanceof DataFrame ? other : null;
+    const rows: Row[] = this._rows.map(() => ({}));
+    for (const column of this._columns) {
+      for (let r = 0; r < this._rows.length; r += 1) {
+        const a = this._rows[r]![column];
+        const b = otherFrame ? otherFrame._rows[r]?.[column] : other;
+        if (typeof a === "number" && Number.isFinite(a) && typeof b === "number" && Number.isFinite(b)) {
+          rows[r]![column] = fn(a, b);
+        } else {
+          rows[r]![column] = null;
+        }
+      }
+    }
+    return this.withRows(rows, [...this._index], [...this._columns], true);
+  }
+
+  eq(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a === b);
+  }
+
+  ne(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a !== b);
+  }
+
+  lt(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a < b);
+  }
+
+  le(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a <= b);
+  }
+
+  gt(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a > b);
+  }
+
+  ge(other: CellValue | DataFrame): DataFrame {
+    return this.compareOp(other, (a, b) => a >= b);
+  }
+
   filter(mask: boolean[] | ((row: Row, index: IndexLabel, position: number) => boolean)): DataFrame {
     if (Array.isArray(mask)) {
       if (mask.length !== this._rows.length) {

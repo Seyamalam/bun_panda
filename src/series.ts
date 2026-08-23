@@ -1,4 +1,5 @@
 import type { CellValue, DType, IndexLabel } from "./types";
+import { DataFrame } from "./dataframe";
 import {
   coerceValueToDType,
   compareCellValues,
@@ -245,6 +246,211 @@ export class Series<T extends CellValue = CellValue> {
       }
     });
     return bestIndex;
+  }
+
+  /**
+   * Positions that would keep the values sorted (pandas argsort).
+   * Stable; missing values go last.
+   */
+  argsort(): number[] {
+    const indexed = this._values
+      .map((value, position) => ({ value, position }))
+      .filter((entry) => !isMissing(entry.value));
+    indexed.sort((a, b) => compareCellValues(a.value, b.value));
+    return indexed.map((entry) => entry.position);
+  }
+
+  /**
+   * Position where `value` would be inserted to keep the (sorted)
+   * series sorted: "left" for the first equal slot, "right" for the last.
+   */
+  searchsorted(
+    value: number,
+    side: "left" | "right" = "left"
+  ): number {
+    const numbers = numericValues(this._values).sort((a, b) => a - b);
+    let low = 0;
+    let high = numbers.length;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      const current = numbers[mid]!;
+      if (side === "left" ? current < value : current <= value) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
+  }
+
+  /** True when the numeric values are in non-decreasing order. */
+  is_monotonic_increasing(): boolean {
+    const numbers = numericValues(this._values);
+    return numbers.every((value, i) => i === 0 || numbers[i - 1]! <= value);
+  }
+
+  /** True when the numeric values are in non-increasing order. */
+  is_monotonic_decreasing(): boolean {
+    const numbers = numericValues(this._values);
+    return numbers.every((value, i) => i === 0 || numbers[i - 1]! >= value);
+  }
+
+  /** True when every non-missing value occurs exactly once. */
+  is_unique(): boolean {
+    return new Set(this.dropna().to_list().map(this.valueKey, this)).size ===
+      this.dropna().length;
+  }
+
+  /** True when the series contains any missing value. */
+  hasnans(): boolean {
+    return this._values.some((value) => isMissing(value));
+  }
+
+  /** Number of non-missing values (pandas count). */
+  count(): number {
+    return this._values.filter((value) => !isMissing(value)).length;
+  }
+
+  median(): number | null {
+    return this.quantile(0.5);
+  }
+
+  var(): number | null {
+    const numbers = numericValues(this._values);
+    if (numbers.length < 2) {
+      return null;
+    }
+    const mean = numbers.reduce((s, v) => s + v, 0) / numbers.length;
+    return (
+      numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - 1)
+    );
+  }
+
+  prod(): number | null {
+    const numbers = numericValues(this._values);
+    if (numbers.length === 0) {
+      return null;
+    }
+    return numbers.reduce((acc, value) => acc * value, 1);
+  }
+
+  product(): number | null {
+    return this.prod();
+  }
+
+  /** Unbiased skewness (Fisher-Pearson with sample correction G1). */
+  skew(): number | null {
+    return this.adjustedSkew(numericValues(this._values));
+  }
+
+  private adjustedSkew(numbers: number[]): number | null {
+    const n = numbers.length;
+    if (n < 3) return null;
+    const mean = numbers.reduce((s, v) => s + v, 0) / n;
+    const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
+    const m3 = numbers.reduce((s, v) => s + (v - mean) ** 3, 0);
+    const popStd = Math.sqrt(m2 / n);
+    if (popStd === 0) return null;
+    const g1 = m3 / popStd ** 3;
+    // Sample-corrected skewness G1.
+    return (Math.sqrt(n * (n - 1)) / (n - 2)) * g1;
+  }
+
+  /** Excess kurtosis (Fisher definition; normal distribution = 0). */
+  kurt(): number | null {
+    const numbers = numericValues(this._values);
+    const n = numbers.length;
+    if (n < 4) {
+      return null;
+    }
+    const mean = numbers.reduce((s, v) => s + v, 0) / n;
+    const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
+    const m4 = numbers.reduce((s, v) => s + (v - mean) ** 4, 0);
+    if (m2 === 0) {
+      return null;
+    }
+    const sampleStd = Math.sqrt(m2 / (n - 1));
+    return m4 / (sampleStd ** 4 * n) - 3;
+  }
+
+  /** Standard error of the mean (sample std / sqrt(n)). */
+  sem(): number | null {
+    const numbers = numericValues(this._values);
+    if (numbers.length < 2) {
+      return null;
+    }
+    const mean = numbers.reduce((s, v) => s + v, 0) / numbers.length;
+    const sampleStd = Math.sqrt(
+      numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - 1)
+    );
+    return sampleStd / Math.sqrt(numbers.length);
+  }
+
+  /** Lag-N autocorrelation (default lag 1). */
+  autocorr(lag = 1): number | null {
+    const values = this._values;
+    const a: number[] = [];
+    const b: number[] = [];
+    for (let i = lag; i < values.length; i += 1) {
+      const x = values[i];
+      const y = values[i - lag];
+      if (
+        !isMissing(x) && typeof x === "number" &&
+        !isMissing(y) && typeof y === "number"
+      ) {
+        a.push(x);
+        b.push(y);
+      }
+    }
+    const n = a.length;
+    if (n < 2) {
+      return null;
+    }
+    const ma = a.reduce((s, v) => s + v, 0) / n;
+    const mb = b.reduce((s, v) => s + v, 0) / n;
+    let cov = 0;
+    let va = 0;
+    let vb = 0;
+    for (let i = 0; i < n; i += 1) {
+      cov += (a[i]! - ma) * (b[i]! - mb);
+      va += (a[i]! - ma) ** 2;
+      vb += (b[i]! - mb) ** 2;
+    }
+    const denom = Math.sqrt(va) * Math.sqrt(vb);
+    return denom === 0 ? null : cov / denom;
+  }
+
+  /** True for values within [lower, upper] inclusive. */
+  between(lower: number, upper: number, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<boolean> {
+    const out = this._values.map((value): boolean | null => {
+      if (isMissing(value) || typeof value !== "number") {
+        return null;
+      }
+      switch (inclusive) {
+        case "neither":
+          return value > lower && value < upper;
+        case "left":
+          return value >= lower && value < upper;
+        case "right":
+          return value > lower && value <= upper;
+        default:
+          return value >= lower && value <= upper;
+      }
+    });
+    return new Series(out as never, { index: this._index, name: this.name });
+  }
+
+  /** First element as a scalar (pandas item / iat shortcut). */
+  item(): T | undefined {
+    return this._values[0];
+  }
+
+  /** Wraps the series in a single-column DataFrame. */
+  to_frame(name?: string): DataFrame {
+    return new DataFrame(
+      this._values.map((value) => ({ [name ?? this.name ?? "0"]: value })),
+      { columns: [name ?? this.name ?? "0"], index: [...this._index] }
+    );
   }
 
   dropna(): Series<T> {

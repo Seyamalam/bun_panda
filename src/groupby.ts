@@ -751,6 +751,11 @@ export class GroupBy {
     return new DataFrame(kept);
   }
 
+  /** Alias of agg (pandas aggregate). */
+  aggregate(spec: AggSpec): DataFrame {
+    return this.agg(spec);
+  }
+
   /** Functional chaining helper over the grouped frame. */
   pipe<T>(fn: (groupby: any, ...args: never[]) => T, ...args: never[]): T {
     return fn(this, ...args);

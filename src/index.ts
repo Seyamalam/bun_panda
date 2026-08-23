@@ -53,10 +53,19 @@ export {
   type ReadTableOptions,
 } from "./io";
 export {
+  bdate_range,
   date_range,
+  isin,
   isna,
+  isnull,
+  map,
   notna,
+  notnull,
   to_datetime,
+  to_numeric,
+  to_timedelta,
+  unique,
+  value_counts,
 } from "./datetime";
 export {
   crosstab,
