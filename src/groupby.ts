@@ -14,6 +14,7 @@ import {
   isNumber,
   median,
   numericValues,
+  range,
   std,
   variance,
 } from "./utils";
@@ -548,6 +549,176 @@ export class GroupBy {
 
   last(columns?: string[]): DataFrame {
     return this.namedColumnAgg("last", columns ?? this.nonKeyColumns());
+  }
+
+  /** Cumulative sums within each group, aligned to source rows. */
+  cumsum(columns?: string[]): DataFrame {
+    return this.groupCumulative("cumsum", columns);
+  }
+
+  /** Cumulative max within each group. */
+  cummax(columns?: string[]): DataFrame {
+    return this.groupCumulative("cummax", columns);
+  }
+
+  /** Cumulative min within each group. */
+  cummin(columns?: string[]): DataFrame {
+    return this.groupCumulative("cummin", columns);
+  }
+
+  private groupCumulative(
+    kind: "cumsum" | "cummax" | "cummin",
+    columns?: string[]
+  ): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.buildGroupPositions();
+    const outRows: Row[] = new Array(this.sourceRows.length);
+
+    for (const group of groups.values()) {
+      const accs = new Map<string, number>();
+      for (const position of group.positions) {
+        const sourceRow = this.sourceRows[position]!;
+        const next: Row = {};
+        for (const column of this.by) {
+          next[column] = sourceRow[column];
+        }
+        for (const column of candidates) {
+          const value = sourceRow[column];
+          if (typeof value !== "number" || !Number.isFinite(value)) {
+            next[column] = null;
+            continue;
+          }
+          const prev = accs.get(column) ?? 0;
+          let updated: number;
+          if (kind === "cumsum") {
+            updated = prev + value;
+          } else if (kind === "cummax") {
+            updated = accs.has(column) ? Math.max(prev, value) : value;
+          } else {
+            updated = accs.has(column) ? Math.min(prev, value) : value;
+          }
+          accs.set(column, updated);
+          next[column] = updated;
+        }
+        outRows[position] = next;
+      }
+    }
+
+    const outColumns = [...this.by, ...candidates];
+    return DataFrame.from_normalized(outRows as Row[], outColumns, range(outRows.length));
+  }
+
+  /** Per-group quantile of numeric columns. */
+  quantile(q = 0.5, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const spec: AggSpec = {};
+    for (const column of candidates) {
+      spec[column] = (values: CellValue[]) => {
+        const nums = values
+          .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
+          .sort((a, b) => a - b);
+        if (nums.length === 0) return null;
+        const pos = (nums.length - 1) * q;
+        const lower = Math.floor(pos);
+        const upper = Math.ceil(pos);
+        return nums[lower]! + (nums[upper]! - nums[lower]!) * (pos - lower);
+      };
+    }
+    return this.agg(spec);
+  }
+
+  /** Filters whole groups by a predicate over the group frame. */
+  filter(predicate: (group: DataFrame) => boolean): DataFrame {
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const kept: Row[] = [];
+    for (const group of groups) {
+      const groupFrame = new DataFrame(group.rows);
+      if (predicate(groupFrame)) {
+        kept.push(...group.rows);
+      }
+    }
+    return new DataFrame(kept);
+  }
+
+  /** Applies fn to each group frame and concatenates the results. */
+  apply(fn: (group: DataFrame) => DataFrame): DataFrame {
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const kept: Row[] = [];
+    for (const group of groups) {
+      kept.push(...fn(new DataFrame(group.rows)).to_records());
+    }
+    return new DataFrame(kept);
+  }
+
+  /** Functional chaining helper over the grouped frame. */
+  pipe<T>(fn: (groupby: any, ...args: never[]) => T, ...args: never[]): T {
+    return fn(this, ...args);
+  }
+
+  /**
+   * Shifts values within each group by `periods`, aligned to source
+   * rows like pandas `groupby().shift()`.
+   */
+  shift(periods = 1, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.nonKeyColumns();
+    const groups = this.buildGroupPositions();
+    const outRows: Row[] = new Array(this.sourceRows.length);
+
+    for (const group of groups.values()) {
+      for (let i = 0; i < group.positions.length; i += 1) {
+        const targetPosition = group.positions[i]!;
+        const sourcePosition = i - periods >= 0 ? group.positions[i - periods] : undefined;
+        const sourceRow =
+          sourcePosition !== undefined ? this.sourceRows[sourcePosition]! : null;
+        const next: Row = {};
+        for (const column of this.by) {
+          next[column] = this.sourceRows[targetPosition]![column];
+        }
+        for (const column of candidates) {
+          next[column] = sourceRow ? sourceRow[column] : null;
+        }
+        outRows[targetPosition] = next;
+      }
+    }
+
+    const outColumns = [...this.by, ...candidates];
+    return DataFrame.from_normalized(outRows as Row[], outColumns, range(outRows.length));
+  }
+
+  /** First difference within each group. */
+  diff(periods = 1, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.numericColumns();
+    const groups = this.buildGroupPositions();
+    const outRows: Row[] = new Array(this.sourceRows.length);
+
+    for (const group of groups.values()) {
+      for (let i = 0; i < group.positions.length; i += 1) {
+        const targetPosition = group.positions[i]!;
+        const current = this.sourceRows[targetPosition]!;
+        const prevPos = i - periods >= 0 ? group.positions[i - periods] : undefined;
+        const previous = prevPos !== undefined ? this.sourceRows[prevPos] : undefined;
+        const next: Row = {};
+        for (const column of this.by) {
+          next[column] = current[column];
+        }
+        for (const column of candidates) {
+          const a = current[column];
+          const b = previous?.[column];
+          if (
+            typeof a === "number" && Number.isFinite(a) &&
+            typeof b === "number" && Number.isFinite(b)
+          ) {
+            next[column] = a - b;
+          } else {
+            next[column] = null;
+          }
+        }
+        outRows[targetPosition] = next;
+      }
+    }
+
+    const outColumns = [...this.by, ...candidates];
+    return DataFrame.from_normalized(outRows as Row[], outColumns, range(outRows.length));
   }
 
   private namedColumnAgg(name: AggName, candidates: string[]): DataFrame {

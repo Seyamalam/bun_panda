@@ -136,6 +136,116 @@ export class Series<T extends CellValue = CellValue> {
     return this.map((entry) => (isMissing(entry) ? value : entry) as T);
   }
 
+  /** Forward-fill: replaces missing values with the last seen value. */
+  ffill(): Series<T> {
+    let last: T | null = null;
+    const out = this._values.map((value): T | null => {
+      if (isMissing(value)) {
+        return last;
+      }
+      last = value;
+      return value;
+    });
+    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+  }
+
+  /** Backward-fill: replaces missing values with the next seen value. */
+  bfill(): Series<T> {
+    let next: T | null = null;
+    const out: (T | null)[] = new Array(this._values.length).fill(null);
+    for (let i = this._values.length - 1; i >= 0; i -= 1) {
+      const value = this._values[i]!;
+      if (!isMissing(value)) {
+        next = value;
+        out[i] = value;
+      } else {
+        out[i] = next;
+      }
+    }
+    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+  }
+
+  isna(): Series<boolean> {
+    const out = this._values.map(
+      (value) => isMissing(value) || (typeof value === "number" && Number.isNaN(value))
+    );
+    return new Series(out, { index: this._index, name: this.name });
+  }
+
+  notna(): Series<boolean> {
+    return this.isna().map((value) => !value) as Series<boolean>;
+  }
+
+  /** q-quantile of the numeric values (linear interpolation). */
+  quantile(q = 0.5): number | null {
+    const values = numericValues(this._values).sort((a, b) => a - b);
+    if (values.length === 0) {
+      return null;
+    }
+    const pos = (values.length - 1) * q;
+    const lower = Math.floor(pos);
+    const upper = Math.ceil(pos);
+    return values[lower]! + (values[upper]! - values[lower]!) * (pos - lower);
+  }
+
+  /** Most frequent value(s); ties return all of them in first-seen order. */
+  mode(): T[] {
+    const counts = new Map<string, { value: T; count: number; first: number }>();
+    this._values.forEach((value, i) => {
+      if (isMissing(value)) {
+        return;
+      }
+      const key = this.valueKey(value);
+      const entry = counts.get(key);
+      if (entry) {
+        entry.count += 1;
+      } else {
+        counts.set(key, { value, count: 1, first: i });
+      }
+    });
+    let max = 0;
+    for (const entry of counts.values()) {
+      max = Math.max(max, entry.count);
+    }
+    return [...counts.values()]
+      .filter((entry) => entry.count === max)
+      .sort((a, b) => a.first - b.first)
+      .map((entry) => entry.value);
+  }
+
+  /** Functional chaining helper (pandas pipe). */
+  pipe<T>(fn: (series: any, ...args: never[]) => T, ...args: never[]): T {
+    return fn(this, ...args);
+  }
+
+  /** Index label of the maximum numeric value (pandas idxmax). */
+  idxmax(): IndexLabel | null {
+    let best: number | null = null;
+    let bestIndex: IndexLabel | null = null;
+    this._values.forEach((value, i) => {
+      if (isMissing(value) || typeof value !== "number") return;
+      if (best === null || value > best) {
+        best = value;
+        bestIndex = this._index[i]!;
+      }
+    });
+    return bestIndex;
+  }
+
+  /** Index label of the minimum numeric value (pandas idxmin). */
+  idxmin(): IndexLabel | null {
+    let best: number | null = null;
+    let bestIndex: IndexLabel | null = null;
+    this._values.forEach((value, i) => {
+      if (isMissing(value) || typeof value !== "number") return;
+      if (best === null || value < best) {
+        best = value;
+        bestIndex = this._index[i]!;
+      }
+    });
+    return bestIndex;
+  }
+
   dropna(): Series<T> {
     return this.filter((entry) => !isMissing(entry));
   }
@@ -303,6 +413,32 @@ export class Series<T extends CellValue = CellValue> {
     return this.numericOp(other, (a, b) => a ** b);
   }
 
+  // pandas long-form aliases
+  subtract(other: number | Series<T>): Series<number> {
+    return this.sub(other);
+  }
+  multiply(other: number | Series<T>): Series<number> {
+    return this.mul(other);
+  }
+  truediv(other: number | Series<T>): Series<number> {
+    return this.div(other);
+  }
+  floordiv(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => Math.floor(a / b));
+  }
+  radd(other: number | Series<T>): Series<number> {
+    return this.add(other);
+  }
+  rmul(other: number | Series<T>): Series<number> {
+    return this.mul(other);
+  }
+  rdiv(other: number | Series<T>): Series<number> {
+    return this.numericOp(other, (a, b) => b / a);
+  }
+  rtruediv(other: number | Series<T>): Series<number> {
+    return this.rdiv(other);
+  }
+
   neg(): Series<number> {
     const out = this._values.map((value): number | null => {
       if (isMissing(value)) {
@@ -415,6 +551,38 @@ export class Series<T extends CellValue = CellValue> {
       return acc as unknown as T;
     });
     return new Series(out as unknown as T[], { index: this._index, name: this.name });
+  }
+
+  cumprod(): Series<number> {
+    let acc = 1;
+    const out = this._values.map((value): number | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      acc *= typeof value === "number" ? value : Number(value);
+      return acc;
+    });
+    return new Series(out as unknown as number[], { index: this._index, name: this.name });
+  }
+
+  /** 0-based position within the run of non-null values (pandas cumcount). */
+  cumcount(): Series<number> {
+    let count = 0;
+    const out = this._values.map((value): number | null => {
+      if (isMissing(value)) {
+        return null;
+      }
+      return count++;
+    });
+    return new Series(out as unknown as number[], { index: this._index, name: this.name });
+  }
+
+  isnull(): Series<boolean> {
+    return this.isna();
+  }
+
+  notnull(): Series<boolean> {
+    return this.notna();
   }
 
   // ---- selection helpers ----

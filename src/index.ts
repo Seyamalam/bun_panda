@@ -59,6 +59,13 @@ export {
   to_datetime,
 } from "./datetime";
 export {
+  crosstab,
+  cut,
+  factorize,
+  get_dummies,
+  qcut,
+} from "./reshape";
+export {
   Series,
   type SeriesDType,
   type SeriesOptions,

@@ -266,6 +266,77 @@ export class DataFrame {
     return this._rows.length === 0;
   }
 
+  /** Number of axes (always 2), matching pandas ndim. */
+  get ndim(): number {
+    return 2;
+  }
+
+  /** Total cell count, matching pandas size. */
+  get size(): number {
+    return this._rows.length * this._columns.length;
+  }
+
+  /** Iterable of [columnName, Series] — alias of items for dict-like use. */
+  keys(): string[] {
+    return [...this._columns];
+  }
+
+  /** Index label of the first row with any non-missing value. */
+  first_valid_index(): IndexLabel | null {
+    for (let i = 0; i < this._rows.length; i += 1) {
+      const row = this._rows[i]!;
+      const hasValue = this._columns.some((column) => !isMissing(row[column]));
+      if (hasValue) {
+        return this._index[i]!;
+      }
+    }
+    return null;
+  }
+
+  /** Index label of the last row with any non-missing value. */
+  last_valid_index(): IndexLabel | null {
+    for (let i = this._rows.length - 1; i >= 0; i -= 1) {
+      const row = this._rows[i]!;
+      const hasValue = this._columns.some((column) => !isMissing(row[column]));
+      if (hasValue) {
+        return this._index[i]!;
+      }
+    }
+    return null;
+  }
+
+  isna(): DataFrame {
+    const rows = this._rows.map((row) => {
+      const next: Row = {};
+      for (const column of this._columns) {
+        next[column] = isMissing(row[column]) ||
+          (typeof row[column] === "number" && Number.isNaN(row[column]));
+      }
+      return next;
+    });
+    return this.withRows(rows, [...this._index], this._columns, true);
+  }
+
+  isnull(): DataFrame {
+    return this.isna();
+  }
+
+  notnull(): DataFrame {
+    return this.notna();
+  }
+
+  add_prefix(prefix: string): DataFrame {
+    return this.rename(
+      Object.fromEntries(this._columns.map((column) => [column, `${prefix}${column}`]))
+    );
+  }
+
+  add_suffix(suffix: string): DataFrame {
+    return this.rename(
+      Object.fromEntries(this._columns.map((column) => [column, `${column}${suffix}`]))
+    );
+  }
+
   copy(): DataFrame {
     return new DataFrame(this.to_records(), {
       columns: this._columns,
@@ -569,6 +640,145 @@ export class DataFrame {
     return this.withRows(nextRows, this._index, renamedColumns, true);
   }
 
+  /** Renames the axis (index) labels via a mapper or new label list. */
+  rename_axis(mapper: Record<string, IndexLabel> | ((label: IndexLabel) => IndexLabel)): DataFrame {
+    const mapLabel = (label: IndexLabel): IndexLabel => {
+      if (typeof mapper === "function") {
+        return mapper(label);
+      }
+      const key = String(label);
+      return key in mapper ? mapper[key]! : label;
+    };
+    return this.withIndex(this._index.map(mapLabel));
+  }
+
+  /** Assigns a new index label list (pandas set_axis). */
+  set_axis(labels: IndexLabel[], axis: "index" | "columns" = "index"): DataFrame {
+    if (axis === "columns") {
+      if (labels.length !== this._columns.length) {
+        throw new Error("set_axis length must match column count.");
+      }
+      const nextRows = this._rows.map((row) => {
+        const next: Row = {};
+        this._columns.forEach((column, i) => {
+          next[String(labels[i])] = row[column];
+        });
+        return next;
+      });
+      return this.withRows(nextRows, this._index, [...labels] as string[], true);
+    }
+    if (labels.length !== this._index.length) {
+      throw new Error("set_axis length must match index length.");
+    }
+    return this.withIndex([...labels]);
+  }
+
+  /**
+   * Functional chaining helper (pandas pipe): applies `fn` to the frame
+   * with extra args, returning its result.
+   */
+  pipe<T>(fn: (frame: DataFrame, ...args: never[]) => T, ...args: never[]): T {
+    return fn(this, ...args);
+  }
+
+  /** True for every numeric column (skipping nulls); false otherwise. */
+  all(): Record<string, boolean> {
+    const out: Record<string, boolean> = {};
+    for (const column of this._columns) {
+      out[column] = this._rows.every((row) => {
+        const value = row[column];
+        return value !== null && value !== undefined && value !== 0 && value !== false;
+      });
+    }
+    return out;
+  }
+
+  /** True for at least one truthy entry per numeric column. */
+  any(): Record<string, boolean> {
+    const out: Record<string, boolean> = {};
+    for (const column of this._columns) {
+      out[column] = this._rows.some((row) => {
+        const value = row[column];
+        return value !== null && value !== undefined && value !== 0 && value !== false;
+      });
+    }
+    return out;
+  }
+
+  /** Index labels of the maximum in each numeric column. */
+  idxmax(): Record<string, IndexLabel | null> {
+    const out: Record<string, IndexLabel | null> = {};
+    for (const column of this._columns) {
+      let best: number | null = null;
+      let bestLabel: IndexLabel | null = null;
+      this._rows.forEach((row, i) => {
+        const value = row[column];
+        if (typeof value !== "number" || !Number.isFinite(value)) return;
+        if (best === null || value > best) {
+          best = value;
+          bestLabel = this._index[i]!;
+        }
+      });
+      out[column] = bestLabel;
+    }
+    return out;
+  }
+
+  /** Index labels of the minimum in each numeric column. */
+  idxmin(): Record<string, IndexLabel | null> {
+    const out: Record<string, IndexLabel | null> = {};
+    for (const column of this._columns) {
+      let best: number | null = null;
+      let bestLabel: IndexLabel | null = null;
+      this._rows.forEach((row, i) => {
+        const value = row[column];
+        if (typeof value !== "number" || !Number.isFinite(value)) return;
+        if (best === null || value < best) {
+          best = value;
+          bestLabel = this._index[i]!;
+        }
+      });
+      out[column] = bestLabel;
+    }
+    return out;
+  }
+
+  /** First `n` rows ordered by `by` descending (pandas nlargest). */
+  nlargest(n: number, by: string | string[]): DataFrame {
+    return this.orderByColumns(by, false).head(n);
+  }
+
+  /** First `n` rows ordered by `by` ascending (pandas nsmallest). */
+  nsmallest(n: number, by: string | string[]): DataFrame {
+    return this.orderByColumns(by, true).head(n);
+  }
+
+  private orderByColumns(by: string | string[], ascendingFirst: boolean): DataFrame {
+    const columns = Array.isArray(by) ? by : [by];
+    for (const column of columns) {
+      this.assertColumnExists(column);
+    }
+    const positions = [...range(this._rows.length)];
+    positions.sort((leftPos, rightPos) => {
+      for (const column of columns) {
+        const compared = compareCellValues(
+          this._rows[leftPos]![column],
+          this._rows[rightPos]![column]
+        );
+        if (compared !== 0) {
+          return ascendingFirst ? compared : -compared;
+        }
+      }
+      return 0;
+    });
+    return this.withRows(
+      positions.map((position) => this._rows[position]!),
+      positions.map((position) => this._index[position]!),
+      this._columns,
+      true
+    );
+  }
+
   filter(mask: boolean[] | ((row: Row, index: IndexLabel, position: number) => boolean)): DataFrame {
     if (Array.isArray(mask)) {
       if (mask.length !== this._rows.length) {
@@ -735,6 +945,22 @@ export class DataFrame {
   }
 
   // ---- reshaping ----
+
+  /** Inverse of isna. */
+  notna(): DataFrame {
+    return this.isna().mapValues((value) => !value);
+  }
+
+  private mapValues(fn: (value: CellValue) => CellValue): DataFrame {
+    const rows = this._rows.map((row) => {
+      const next: Row = {};
+      for (const column of this._columns) {
+        next[column] = fn(row[column]);
+      }
+      return next;
+    });
+    return this.withRows(rows, [...this._index], this._columns, true);
+  }
 
   /**
    * Unpivots the frame from wide to long format. Columns listed in
@@ -1191,6 +1417,117 @@ export class DataFrame {
     return this.reduceNumericColumns((values) =>
       values.length > 0 ? Math.max(...values) : null
     );
+  }
+
+  /** Product of numeric column values (pandas prod/product). */
+  prod(): Record<string, number | null> {
+    const out: Record<string, number | null> = {};
+    for (const column of this._columns) {
+      const values = numericValues(this._rows.map((row) => row[column]));
+      out[column] = values.length > 0 ? values.reduce((acc, value) => acc * value, 1) : null;
+    }
+    return out;
+  }
+
+  product(): Record<string, number | null> {
+    return this.prod();
+  }
+
+  /**
+   * Quantile of each numeric column. `q` in [0, 1] (default 0.5 = median),
+   * or an array of quantiles to get a frame indexed by q.
+   */
+  quantile(q: number | number[] = 0.5): Record<string, number | null> | DataFrame {
+    const compute = (qValue: number): Record<string, number | null> => {
+      const out: Record<string, number | null> = {};
+      for (const column of this._columns) {
+        const values = numericValues(this._rows.map((row) => row[column])).sort(
+          (a, b) => a - b
+        );
+        if (values.length === 0) {
+          out[column] = null;
+          continue;
+        }
+        const pos = (values.length - 1) * qValue;
+        const lower = Math.floor(pos);
+        const upper = Math.ceil(pos);
+        const t = pos - lower;
+        out[column] = values[lower]! + (values[upper]! - values[lower]!) * t;
+      }
+      return out;
+    };
+
+    if (!Array.isArray(q)) {
+      return compute(q);
+    }
+    const rows: Row[] = [];
+    const index: IndexLabel[] = [];
+    for (const qValue of q) {
+      const record: Row = { q: qValue };
+      for (const [column, value] of Object.entries(compute(qValue))) {
+        if (column !== "q") {
+          record[column] = value;
+        }
+      }
+      rows.push(record);
+      index.push(qValue);
+    }
+    return DataFrame.createInternal(rows, ["q", ...this._columns], index);
+  }
+
+  /** Pearson correlation between numeric column pairs. */
+  corr(): DataFrame {
+    return this.pairwiseNumeric((a, b) => {
+      const n = a.length;
+      if (n < 2) return NaN;
+      const ma = a.reduce((s, v) => s + v, 0) / n;
+      const mb = b.reduce((s, v) => s + v, 0) / n;
+      let cov = 0;
+      let va = 0;
+      let vb = 0;
+      for (let i = 0; i < n; i += 1) {
+        const da = a[i]! - ma;
+        const dbv = b[i]! - mb;
+        cov += da * dbv;
+        va += da * da;
+        vb += dbv * dbv;
+      }
+      const denom = Math.sqrt(va) * Math.sqrt(vb);
+      return denom === 0 ? NaN : cov / denom;
+    });
+  }
+
+  /** Covariance between numeric column pairs. */
+  cov(): DataFrame {
+    return this.pairwiseNumeric((a, b) => {
+      const n = a.length;
+      if (n < 2) return NaN;
+      const ma = a.reduce((s, v) => s + v, 0) / n;
+      const mb = b.reduce((s, v) => s + v, 0) / n;
+      let cov = 0;
+      for (let i = 0; i < n; i += 1) {
+        cov += (a[i]! - ma) * (b[i]! - mb);
+      }
+      return cov / (n - 1);
+    });
+  }
+
+  private pairwiseNumeric(fn: (a: number[], b: number[]) => number): DataFrame {
+    const numericCols = this._columns.filter((column) =>
+      this._rows.some((row) => typeof row[column] === "number")
+    );
+    const columns: string[] = [];
+    const rows: Row[] = numericCols.map(() => ({}));
+    for (let c = 0; c < numericCols.length; c += 1) {
+      columns.push(numericCols[c]!);
+      for (let r = 0; r < numericCols.length; r += 1) {
+        const a = numericValues(this._rows.map((row) => row[numericCols[r]!]));
+        const b = numericValues(this._rows.map((row) => row[numericCols[c]!]));
+        rows[r]![numericCols[c]!] =
+          numericCols[r] === numericCols[c] ? 1 : fn(a, b);
+      }
+    }
+    return DataFrame.createInternal(rows, columns, [...numericCols]);
   }
 
   count(): Record<string, number> {
