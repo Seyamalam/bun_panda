@@ -37,7 +37,7 @@ const topLevel = [
 ];
 
 // ---- Extract bun_panda surface from source ----
-function extractClassMethods(path, className) {
+function extractClassMethods(path: string, className: string) {
   const src = readFileSync(path, "utf8");
   const classStart = src.indexOf(`class ${className}`);
   if (classStart < 0) return [];
@@ -58,7 +58,7 @@ function extractClassMethods(path, className) {
   return extractMethodNames(src.slice(classStart));
 }
 
-function extractMethodNames(body) {
+function extractMethodNames(body: string) {
   const names = new Set();
   const re = /^\s{2}([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<[^>]*>)?\(/gm;
   let match;
@@ -106,8 +106,8 @@ function hasAny(names: string[], candidate: string): boolean {
 }
 
 function auditSection(pandasNames: string[], ours: string[], label: string) {
-  const have = pandasNames.filter((name) => hasAny(ours, name));
-  const missing = pandasNames.filter((name) => !hasAny(ours, name));
+  const have = pandasNames.filter((name: string) => hasAny(ours, name));
+  const missing = pandasNames.filter((name: string) => !hasAny(ours, name));
   const pct = pandasNames.length ? Math.round((have.length / pandasNames.length) * 100) : 0;
   return { label, total: pandasNames.length, have: have.length, missing, pct };
 }
@@ -115,7 +115,7 @@ function auditSection(pandasNames: string[], ours: string[], label: string) {
 const sections = [
   auditSection(frameMethods, dfMethods, "DataFrame"),
   auditSection(seriesMethods, serMethods, "Series"),
-  auditSection(topLevel, [...exportedTopLevel], "Top-level"),
+  auditSection(topLevel, [...exportedTopLevel] as string[], "Top-level"),
   auditSection(
     ["agg", "transform", "filter", "apply", "size", "count", "sum", "mean",
      "median", "std", "var", "min", "max", "first", "last", "nunique",

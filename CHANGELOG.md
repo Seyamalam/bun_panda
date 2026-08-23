@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.2.1] - 2026-08-23
+
+### Added
+
+- Validation layer (`src/errors.ts:1`, `src/internal/dataframe/core.ts:1`, `src/io.ts:51`):
+  - `BunPandaValidationError` typed error class with `name === "BunPandaValidationError"`.
+  - `assertRowsShape(rows, index)` helper and two call sites (`DataFrame` constructor, `createInternal`) so mismatched index lengths raise a single typed error.
+  - typed `assertValidPath` guard in every `read_*` entry point (`read_csv`/`read_parquet`/`read_excel`/`read_json`); `test/validation.test.ts` covers the helper and each entry point.
+- GroupBy extracted helper (`src/internal/groupby/fastAgg.ts:1`, `test/groupby-fastagg.test.ts:1`): `shouldTryWasm` + ordering helpers lifted into a dedicated module with its own test so `src/groupby.ts` drops from 1255 → 1067 LOC.
+- DataFrame IO module (`src/internal/dataframe/io.ts:1`): `to_csv`/`to_json` pure formatting helpers extracted so `src/dataframe.ts` drops from 2253 → 2190 LOC.
+- Coverage gate (`package.json:41`, `.github/workflows/ci.yml`): `bun test --coverage --coverage-threshold 70` step.
+- Lockfile (`bun.lock`) now committed so `bun install --frozen-lockfile` is reproducible on `master`.
+
+### Changed
+
+- Linter is now **oxlint** (up to 50× faster than eslint): `bun run lint` uses `oxlint --deny-warnings` (`oxlint 1.79.0`, fixed config in `.oxlintrc.json`), `bun run check` now runs `typecheck + lint + test`. `README.md` installation now spells out the frozen-lockfile workflow and `tsconfig.json` excludes `scripts/` so the fresh-clone check is green.
+- `GroupBy` fast path now delegates `shouldTryWasm` to `src/internal/groupby/fastAgg.ts`; wasm default-on semantics unchanged (`BUN_PANDA_WASM=0` opts out).
+
+### Fixed
+
+- Fresh-clone build/test now works from the `README` alone (reproducible via `bun.lock` + `.oxlintrc.json`).
+
 ## [0.2.0] - 2026-08-22
 
 ### Added
