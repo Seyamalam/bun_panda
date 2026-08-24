@@ -105,6 +105,32 @@ export {
   wide_to_long,
 } from "./top-level";
 export {
+  Categorical,
+  CategoricalDtype,
+} from "./categorical";
+export {
+  read_clipboard,
+  read_feather,
+  read_fwf,
+  read_gbq,
+  read_hdf,
+  read_html,
+  read_json_lines,
+  read_orc,
+  read_pickle,
+  read_sas,
+  read_spss,
+  read_sql,
+  read_sql_query,
+  read_sql_table,
+  read_stata,
+  read_xml,
+} from "./top-level-io";
+export {
+  show_versions,
+  test as run_self_test,
+} from "./top-level-meta";
+export {
   Series,
   type SeriesDType,
   type SeriesOptions,

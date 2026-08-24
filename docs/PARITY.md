@@ -6,9 +6,9 @@ Generated 2026-08-24 — pandas methods scraped from the official API reference 
 | --- | ---: | ---: | ---: |
 | DataFrame | 197 | 166 | 84% |
 | Series | 195 | 172 | 88% |
-| Top-level | 75 | 50 | 67% |
+| Top-level | 75 | 69 | 92% |
 | GroupBy | 38 | 38 | 100% |
-| **Total** | **505** | **426** | **84%** |
+| **Total** | **505** | **445** | **88%** |
 
 ## DataFrame — missing (31)
 
@@ -38,15 +38,11 @@ Generated 2026-08-24 — pandas methods scraped from the official API reference 
 
 `plot`
 
-## Top-level — missing (25)
+## Top-level — missing (6)
 
-### io (16)
+### other (6)
 
-`read_clipboard`, `read_feather`, `read_fwf`, `read_gbq`, `read_hdf`, `read_html`, `read_json_lines`, `read_orc`, `read_pickle`, `read_sas`, `read_spss`, `read_sql`, `read_sql_query`, `read_sql_table`, `read_stata`, `read_xml`
-
-### other (9)
-
-`Categorical`, `CategoricalDtype`, `Interval`, `align`, `array`, `melt`, `pivot`, `show_versions`, `test`
+`Interval`, `align`, `array`, `melt`, `pivot`, `test`
 
 ## GroupBy — missing (0)
 
