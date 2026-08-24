@@ -336,6 +336,203 @@ export function period_range(
 }
 
 // ---------------------------------------------------------------------------
+// Interval
+// ---------------------------------------------------------------------------
+
+/** Which sides of the interval include their boundary (pandas `closed`). */
+export type IntervalClosed = "left" | "right" | "both" | "neither";
+
+const CLOSED_SIDES: readonly IntervalClosed[] = ["left", "right", "both", "neither"];
+
+function includesLower(closed: IntervalClosed): boolean {
+  return closed === "left" || closed === "both";
+}
+
+function includesUpper(closed: IntervalClosed): boolean {
+  return closed === "right" || closed === "both";
+}
+
+/** Minimal pandas.Interval: bounded scalar range with configurable closure. */
+export class Interval {
+  constructor(
+    readonly left: number,
+    readonly right: number,
+    readonly closed: IntervalClosed = "right"
+  ) {
+    if (!CLOSED_SIDES.includes(closed)) {
+      throw new Error("closed must be one of 'left', 'right', 'both', 'neither'.");
+    }
+    if (!Number.isFinite(left) || !Number.isFinite(right)) {
+      throw new Error("Interval bounds must be finite numbers.");
+    }
+    if (left > right) {
+      throw new Error(`Interval left bound (${left}) must not exceed right bound (${right}).`);
+    }
+  }
+
+  private hasLeft(value: number): boolean {
+    return value > this.left || (value === this.left && includesLower(this.closed));
+  }
+
+  private hasRight(value: number): boolean {
+    return value < this.right || (value === this.right && includesUpper(this.closed));
+  }
+
+  /** True when the scalar or sub-interval lies fully inside this interval. */
+  contains(value: number | Interval): boolean {
+    if (value instanceof Interval) {
+      // An empty sub-interval (left === right, open sides) is contained iff its
+      // point would be contained; degenerate closed points behave likewise.
+      return (
+        this.hasLeft(value.left) &&
+        this.hasRight(value.right)
+      );
+    }
+    return this.hasLeft(value) && this.hasRight(value);
+  }
+
+  /** True when the two intervals share at least one common point. */
+  overlaps(other: Interval): boolean {
+    const lo = Math.max(this.left, other.left);
+    const hi = Math.min(this.right, other.right);
+    if (lo > hi) return false;
+    if (lo < hi) return true;
+    // Shared region collapses to the single point `lo`: it counts only when
+    // both intervals actually include that point.
+    return this.contains(lo) && other.contains(lo);
+  }
+
+  equals(other: Interval): boolean {
+    return (
+      this.left === other.left &&
+      this.right === other.right &&
+      this.closed === other.closed
+    );
+  }
+
+  toString(): string {
+    return `Interval(${this.left}, ${this.right}, closed='${this.closed}')`;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Align helper
+// ---------------------------------------------------------------------------
+
+export type AlignJoin = "outer" | "inner" | "left" | "right";
+
+/**
+ * Structural slice of Series used by {@link align}. Declared as an interface
+ * (rather than picking off `Series<CellValue>`) so concrete series like
+ * `Series<number>` remain assignable despite Series being invariant in its
+ * value type through `numericOp`.
+ */
+export interface AlignSeriesLike {
+  readonly index: IndexLabel[];
+  readonly values: CellValue[];
+  reindex(newIndex: IndexLabel[]): AlignSeriesLike;
+}
+
+function joinedKeys(
+  a: IndexLabel[],
+  b: IndexLabel[],
+  join: AlignJoin
+): IndexLabel[] {
+  switch (join) {
+    case "left": return [...a];
+    case "right": return [...b];
+    case "inner": {
+      const bSet = new Set(b.map((k) => String(k)));
+      const seen = new Set<string>();
+      const out: IndexLabel[] = [];
+      for (const key of a) {
+        if (bSet.has(String(key)) && !seen.has(String(key))) {
+          seen.add(String(key));
+          out.push(key);
+        }
+      }
+      return out;
+    }
+    case "outer": {
+      const seen = new Set<string>();
+      const out: IndexLabel[] = [];
+      for (const key of [...a, ...b]) {
+        if (!seen.has(String(key))) {
+          seen.add(String(key));
+          out.push(key);
+        }
+      }
+      return out;
+    }
+  }
+}
+
+/**
+ * pandas-style `align`: bring two objects onto a common index (and, for
+ * frames, common columns) under the given join. Returns `[left, right]`.
+ */
+export function align<T extends AlignSeriesLike>(
+  left: T,
+  right: T,
+  join?: AlignJoin
+): [T, T];
+export function align(
+  left: DataFrame,
+  right: DataFrame,
+  join?: AlignJoin
+): [DataFrame, DataFrame];
+export function align(
+  left: DataFrame | AlignSeriesLike,
+  right: DataFrame | AlignSeriesLike,
+  join: AlignJoin = "outer"
+): [DataFrame, DataFrame] | [AlignSeriesLike, AlignSeriesLike] {
+  const isFrame = (v: unknown): v is DataFrame => v instanceof DataFrame;
+  if (isFrame(left) && isFrame(right)) {
+    const index = joinedKeys(left.index, right.index, join);
+    const columns = joinedKeys(left.columns, right.columns, join) as string[];
+    return [
+      left.reindex({ index, columns }),
+      right.reindex({ index, columns }),
+    ];
+  }
+  if (!isFrame(left) && !isFrame(right)) {
+    const seriesA = left as AlignSeriesLike;
+    const seriesB = right as AlignSeriesLike;
+    const index = joinedKeys(seriesA.index, seriesB.index, join);
+    return [seriesA.reindex(index), seriesB.reindex(index)];
+  }
+  throw new Error("align() operands must both be DataFrames or both be Series.");
+}
+
+// ---------------------------------------------------------------------------
+// array namespace
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal stand-in for the pandas.array extension-point surface. Full dtype
+ * machinery is out of scope; these helpers give an honest JSON round-trip.
+ */
+export const array = {
+  /** Serialise a flat value array to JSON text. */
+  to_json(values: CellValue[]): string {
+    return JSON.stringify(values);
+  },
+  /** Parse JSON text produced by {@link array.to_json} back into values. */
+  from_json(text: string): CellValue[] {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch (err) {
+      throw new Error(`array.from_json: invalid JSON (${(err as Error).message}).`);
+    }
+    if (!Array.isArray(parsed)) {
+      throw new Error("array.from_json expects a JSON array of scalars.");
+    }
+    return parsed as CellValue[];
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Reshape / merge wrappers
 // ---------------------------------------------------------------------------
 

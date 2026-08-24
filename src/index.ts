@@ -79,8 +79,12 @@ export {
   qcut,
 } from "./reshape";
 export {
+  align,
+  array,
   DatetimeIndex,
   Index,
+  Interval,
+  type IntervalClosed,
   MultiIndex,
   NA,
   NaT,
@@ -93,11 +97,13 @@ export {
   get_option,
   interval_range,
   lreshape,
+  melt,
   melt as melt_frame,
   merge_asof,
   merge_ordered,
   option_context,
   period_range,
+  pivot,
   pivot as pivot_frame,
   reset_option,
   set_option,
@@ -128,7 +134,7 @@ export {
 } from "./top-level-io";
 export {
   show_versions,
-  test as run_self_test,
+  test,
 } from "./top-level-meta";
 export {
   Series,

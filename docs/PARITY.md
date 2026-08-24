@@ -6,9 +6,9 @@ Generated 2026-08-24 — pandas methods scraped from the official API reference 
 | --- | ---: | ---: | ---: |
 | DataFrame | 197 | 166 | 84% |
 | Series | 195 | 172 | 88% |
-| Top-level | 75 | 69 | 92% |
+| Top-level | 75 | 75 | 100% |
 | GroupBy | 38 | 38 | 100% |
-| **Total** | **505** | **445** | **88%** |
+| **Total** | **505** | **451** | **89%** |
 
 ## DataFrame — missing (31)
 
@@ -38,11 +38,7 @@ Generated 2026-08-24 — pandas methods scraped from the official API reference 
 
 `plot`
 
-## Top-level — missing (6)
-
-### other (6)
-
-`Interval`, `align`, `array`, `melt`, `pivot`, `test`
+## Top-level — missing (0)
 
 ## GroupBy — missing (0)
 
