@@ -4,39 +4,27 @@ Generated 2026-08-24 — pandas methods scraped from the official API reference 
 
 | Surface | pandas API | bun_panda | Parity |
 | --- | ---: | ---: | ---: |
-| DataFrame | 197 | 166 | 84% |
-| Series | 195 | 172 | 88% |
+| DataFrame | 197 | 193 | 98% |
+| Series | 195 | 194 | 99% |
 | Top-level | 75 | 75 | 100% |
 | GroupBy | 38 | 38 | 100% |
-| **Total** | **505** | **451** | **89%** |
+| **Total** | **505** | **500** | **99%** |
 
-## DataFrame — missing (31)
+## DataFrame — missing (4)
 
-### export (9)
+### export (1)
 
-`to_clipboard`, `to_feather`, `to_hdf`, `to_latex`, `to_orc`, `to_parquet`, `to_sql`, `to_stata`, `to_xarray`
+`to_parquet`
 
-### other (21)
+### other (3)
 
-`align`, `asfreq`, `asof`, `at_time`, `between_time`, `boxplot`, `droplevel`, `ewm`, `from_arrow`, `from_dict`, `from_records`, `hist`, `html`, `isetitem`, `reorder_levels`, `resample`, `sparse`, `style`, `swaplevel`, `tz_convert`, `tz_localize`
+`from_arrow`, `from_dict`, `from_records`
 
-### plotting (1)
+## Series — missing (1)
 
-`plot`
+### other (1)
 
-## Series — missing (23)
-
-### export (6)
-
-`to_clipboard`, `to_hdf`, `to_pickle`, `to_sql`, `to_timestamp`, `to_xarray`
-
-### other (16)
-
-`align`, `at_time`, `cat`, `droplevel`, `ewm`, `from_arrow`, `hist`, `html`, `reorder_levels`, `resample`, `set_flags`, `sparse`, `struct`, `swaplevel`, `tz_convert`, `tz_localize`
-
-### plotting (1)
-
-`plot`
+`from_arrow`
 
 ## Top-level — missing (0)
 

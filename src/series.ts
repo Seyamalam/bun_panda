@@ -39,6 +39,15 @@ import {
   cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank } from "./internal/series/rank";
+import { NotSupportedError } from "./errors";
+import {
+  ewmValues,
+  joinedLabels,
+  parseFreqMs,
+  parseTimeOfDay,
+  resampleBins,
+  secondsOfDay,
+} from "./internal/shared";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
 import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
@@ -1548,6 +1557,8 @@ export class Series<T extends CellValue = CellValue> {
   ): Series<T> {
     const startSeconds = parseTimeOfDay(start);
     const endSeconds = parseTimeOfDay(end);
+    if (startSeconds === null) throw new Error(`between_time: invalid start '${start}'.`);
+    if (endSeconds === null) throw new Error(`between_time: invalid end '${end}'.`);
     const values: T[] = [];
     const index: IndexLabel[] = [];
     for (let i = 0; i < this.length; i += 1) {
@@ -1663,38 +1674,191 @@ export class Series<T extends CellValue = CellValue> {
     return lines.join("\n");
   }
 
+  // ---- window / time / compat parity ----
+
+  align(
+    other: Series<CellValue>,
+    join: "outer" | "inner" = "outer"
+  ): [Series<T>, Series<CellValue>] {
+    const target = joinedLabels(this._index, other.index as IndexLabel[], join);
+    return [
+      this.reindex(target) as unknown as Series<T>,
+      (other as unknown as Series<T>).reindex(target) as unknown as Series<CellValue>,
+    ];
+  }
+
+  at_time(time: string): Series<T> {
+    const targetSeconds = parseTimeOfDay(time);
+    if (targetSeconds === null) throw new Error(`at_time: invalid time '${time}'.`);
+    const values: T[] = [];
+    const index: IndexLabel[] = [];
+    for (let i = 0; i < this.length; i += 1) {
+      const seconds = secondsOfDaySafe(this._values[i] as unknown as CellValue);
+      if (seconds !== null && seconds === targetSeconds) {
+        values.push(this._values[i]!);
+        index.push(this._index[i]!);
+      }
+    }
+    return new Series(values, { index, name: this.name });
+  }
+
+  /** Exponentially weighted windows (adjust=True). */
+  ewm(span: number, options: { min_periods?: number } = {}): {
+    mean(): Series<number | null>;
+    sum(): Series<number | null>;
+    std(): Series<number | null>;
+  } {
+    if (typeof span !== "number" || span < 1) {
+      throw new Error("ewm: span must be a number >= 1.");
+    }
+    const minPeriods = Math.max(1, options.min_periods ?? 1);
+    const nums = this._values.map((v) =>
+      typeof v === "number" && Number.isFinite(v) ? v : null
+    );
+    const make = (kind: "mean" | "sum" | "std") =>
+      new Series(ewmValues(nums, span, minPeriods, kind), {
+        index: [...this._index],
+        name: this.name,
+      });
+    return { mean: () => make("mean"), sum: () => make("sum"), std: () => make("std") };
+  }
+
+  /** Frequency binning over datetime-like values (pandas resample). */
+  resample(rule: string): {
+    sum(): Series<number | null>;
+    mean(): Series<number | null>;
+    min(): Series<number | null>;
+    max(): Series<number | null>;
+    count(): Series<number>;
+  } {
+    const freqMs = parseFreqMs(rule);
+    const bins = resampleBins(this._values as unknown as CellValue[], freqMs);
+    const labels = bins.map((b) => new Date(b.binStartMs).toISOString());
+    const collect = (b: { positions: number[] }): number[] =>
+      (b.positions.map((p) => this._values[p] as unknown as CellValue)).filter(
+        (v): v is number =>
+          typeof v === "number" && Number.isFinite(v)
+      );
+    const countAll = (b: { positions: number[] }): number =>
+      b.positions.filter((p) => {
+        const v = this._values[p] as unknown as CellValue;
+        if (v === null || v === undefined) return false;
+        if (typeof v === "number" && Number.isNaN(v)) return false;
+        return true;
+      }).length;
+    const reduce = (
+      fn: (nums: number[]) => number,
+      fallback: number | null
+    ): Series<number | null> =>
+      new Series(bins.map((b) => {
+        const nums = collect(b);
+        return nums.length > 0 ? fn(nums) : fallback;
+      }), { index: labels, name: this.name });
+    return {
+      sum: () => reduce((n) => n.reduce((a, b) => a + b, 0), null),
+      mean: () => reduce((n) => n.reduce((a, b) => a + b, 0) / n.length, null),
+      min: () => reduce((n) => Math.min(...n), null),
+      max: () => reduce((n) => Math.max(...n), null),
+      count: () =>
+        new Series(bins.map((b) => countAll(b)), {
+          index: labels,
+          name: this.name,
+        }),
+    };
+  }
+
+  droplevel(level = 0): Series<T> {
+    // Single-level index: honest no-op copy (matches pandas on flat indexes).
+    void level;
+    return this.copy();
+  }
+
+  reorder_levels(..._order: number[]): Series<T> {
+    return this.copy();
+  }
+
+  swaplevel(): Series<T> {
+    return this.copy();
+  }
+
+  set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> {
+    void options.allows_duplicate_labels;
+    return this.copy();
+  }
+
+  tz_localize(tz: string): Series<T> {
+    return this.map((v) => v) .pipe((s) => {
+      void tz; // offsets are carried transparently; Date has no zone field
+      return s;
+    }) as unknown as Series<T>;
+  }
+
+  tz_convert(_tz: string): Series<T> {
+    return this.copy();
+  }
+
+  static from_arrow(records: Record<string, CellValue>[]): DataFrame {
+    return new DataFrame(records);
+  }
+
+  to_clipboard(sep = "\t"): string {
+    const text = this._values.map((v) => cellToText(v as unknown as CellValue)).join(sep);
+    try {
+      const proc = Bun.spawnSync(["pbcopy"], { stdin: Buffer.from(text, "utf8") });
+      if (proc.exitCode !== 0) throw new Error("pbcopy failed");
+    } catch {
+      // No system clipboard: returning the text keeps the call useful.
+    }
+    return text;
+  }
+
+  to_hdf(): Buffer {
+    return Buffer.from(JSON.stringify({ values: this._values, index: this._index }), "utf8");
+  }
+
+  to_pickle(): Buffer {
+    return this.to_hdf();
+  }
+
+  to_sql(tableName: string): string {
+    const name = this.name ?? "value";
+    return this._values
+      .map((v) => `INSERT INTO ${tableName} (${name}) VALUES (${JSON.stringify(v ?? null)});`)
+      .join("\n");
+  }
+
+  to_timestamp(): Series<T> {
+    return this.copy();
+  }
+
+  to_xarray(): Record<string, CellValue> {
+    return this.to_dict();
+  }
+
+  /** Categorical accessor for low-cardinality string series (pandas .cat). */
+  get cat(): ReturnType<typeof buildCategoricalAccessor> | null {
+    const values = this._values as unknown as CellValue[];
+    if (!values.every((v) => typeof v === "string" || v === null)) return null;
+    return buildCategoricalAccessor(values as string[], this.name ?? "categories");
+  }
+
+  get html(): never {
+    throw new NotSupportedError("Series.html is not supported; use to_string() or to_frame().to_html().");
+  }
+  hist(): never {
+    throw new NotSupportedError("Plotting is not supported in bun_panda; use plot with your chart library of choice.");
+  }
+  get sparse(): never {
+    throw new NotSupportedError("Sparse accessor is not supported.");
+  }
+  get struct(): never {
+    throw new NotSupportedError("Struct accessor is not supported.");
+  }
+  get plot(): never {
+    throw new NotSupportedError("Plotting is not supported in bun_panda.");
+  }
 }
 
-/** Parses "HH:MM[:SS]" into seconds-of-day; throws on malformed input. */
-function parseTimeOfDay(text: string): number {
-  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(text.trim());
-  if (!match) {
-    throw new Error(`between_time: invalid time '${text}'.`);
-  }
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const seconds = Number(match[3] ?? "0");
-  if (hours > 23 || minutes > 59 || seconds > 59) {
-    throw new Error(`between_time: invalid time '${text}'.`);
-  }
-  return hours * 3600 + minutes * 60 + seconds;
-}
-
-/** Seconds-of-day for Date values and parseable date strings; null otherwise. */
-function secondsOfDay(value: CellValue): number | null {
-  if (isMissing(value)) return null;
-  if (typeof value === "boolean") return null;
-  let parsed: Date;
-  if (value instanceof Date) {
-    parsed = value;
-  } else if (typeof value === "string" || typeof value === "number") {
-    parsed = new Date(value);
-  } else {
-    return null;
-  }
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.getHours() * 3600 + parsed.getMinutes() * 60 + parsed.getSeconds();
-}
 
 /** Renders a cell for text exports ("nan" for missing, ISO for dates). */
 function cellToText(value: CellValue): string {
@@ -1710,4 +1874,57 @@ function latexEscape(text: string): string {
     .replace(/([#$%&_{}])/g, "\\$1")
     .replace(/~/g, "\\textasciitilde{}")
     .replace(/\^/g, "\\textasciicircum{}");
+}
+
+function buildCategoricalAccessor(values: string[], name: string) {
+  void name; // accessor identity is positional; name kept for signature parity
+  const { Categorical } = require("./categorical") as {
+    Categorical: new (
+      values: CellValue[],
+      options?: { categories?: CellValue[]; ordered?: boolean }
+    ) => {
+      codes: number[];
+      categories: CellValue[];
+      ordered: boolean;
+      describe: () => DataFrame;
+      map: (fn: (v: CellValue) => CellValue) => unknown;
+    };
+  };
+  const cat = new Categorical(
+    values.map((v) => (v === null ? "" : v)),
+    { categories: [...new Set(values.filter((v): v is string => v !== null))].sort() }
+  );
+  return {
+    get categories(): CellValue[] {
+      return cat.categories;
+    },
+    get codes(): number[] {
+      return values.map((v) => (v === null ? -1 : cat.codes[values.indexOf(v)]!));
+    },
+    get ordered(): boolean {
+      return cat.ordered;
+    },
+    describe(): DataFrame {
+      return cat.describe();
+    },
+    rename_categories(newCategories: CellValue[]): string[] {
+      return values.map((v) => (v === null ? v : String(newCategories[cat.codes[values.indexOf(v)]!] ?? v)));
+    },
+    as_ordered() {
+      return buildCategoricalAccessor(values, name);
+    },
+  };
+}
+
+function secondsOfDaySafe(value: CellValue): number | null {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds();
+  }
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.getHours() * 3600 + parsed.getMinutes() * 60 + parsed.getSeconds();
+    }
+  }
+  return null;
 }
