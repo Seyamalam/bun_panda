@@ -92,6 +92,12 @@ import {
 } from "./internal/dataframe/apply";
 import { normalizeKeyCell } from "./internal/dataframe/keys";
 import {
+  applyUpdateOverwrite,
+  computeDotMatrix,
+} from "./internal/dataframe/frameOps";
+import { computeExplodeRows } from "./internal/dataframe/explode";
+import { compileFrameExpression } from "./internal/dataframe/evalExpr";
+import {
   computeClipRows,
   computeIsinRows,
   computeRankRows,
@@ -115,6 +121,18 @@ import {
   normalizeSortLimit,
   selectTopKPositions,
 } from "./internal/dataframe/ordering";
+import {
+  combineFrames,
+  combineFirstFrames,
+  compareFrames,
+  convertDtypesRows,
+  corrwithValues,
+  hasDuplicateLabels,
+  inferObjectsRows,
+  stackFrame,
+  unstackFrame,
+  type FrameCombineFn,
+} from "./internal/dataframe/combine";
 import { Series } from "./series";
 import type {
   AggFn,
@@ -196,6 +214,7 @@ export interface SampleOptions {
 
 export type DropDuplicatesKeep = "first" | "last" | false;
 export type { RankOptions, ReplaceInput };
+export type { FrameCombineFn };
 export type {
   DataFrameApplyAxis,
   DataFrameApplyColumnFn,
@@ -219,12 +238,24 @@ export interface PivotTableOptions {
   sort?: boolean;
 }
 
+export interface DataFrameCompareOptions {
+  /** Include rows whose values are equal (pandas `equal_values`). */
+  equal_values?: boolean;
+}
+
+export interface DataFrameFlagsOptions {
+  /** When false, throw if the index contains duplicate labels. */
+  allows_duplicate_labels?: boolean;
+}
+
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
 
 export class DataFrame {
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
+  /** Free-form metadata dict, matching pandas DataFrame.attrs. */
+  private _attrs: Record<string, unknown> = {};
 
   constructor(data: Row[] | Record<string, CellValue[]> = [], options: DataFrameOptions = {}) {
     const normalized = Array.isArray(data)
@@ -238,7 +269,7 @@ export class DataFrame {
     assertRowsShape(this._rows, this._index);
   }
 
-  private static createInternal(rows: Row[], columns: string[], index: IndexLabel[]): DataFrame {
+  static createInternal(rows: Row[], columns: string[], index: IndexLabel[]): DataFrame {
     assertRowsShape(rows, index);
     const frame = Object.create(DataFrame.prototype) as DataFrame;
     (frame as unknown as { _rows: Row[] })._rows = rows;
@@ -251,8 +282,11 @@ export class DataFrame {
     return new DataFrame(records, options);
   }
 
-  static from_dict(data: Record<string, CellValue[]>, options: DataFrameOptions = {}): DataFrame {
-    return new DataFrame(data, options);
+  static from_dict(
+    data: Record<string, CellValue[]> | Row[],
+    options: DataFrameOptions = {}
+  ): DataFrame {
+    return new DataFrame(data as Record<string, CellValue[]>, options);
   }
 
   static from_normalized(
@@ -944,18 +978,26 @@ export class DataFrame {
 
   // ---- iteration ----
 
-  /** Yields [index, row] pairs like pandas `DataFrame.iterrows()`. */
-  *iterrows(): Generator<[IndexLabel, Row]> {
+  /** Returns [index, row] pairs like pandas `DataFrame.iterrows()`. */
+  iterrows(): IterableIterator<[IndexLabel, Row]> {
+    return this.iterrowsGenerator();
+  }
+
+  private *iterrowsGenerator(): Generator<[IndexLabel, Row]> {
     for (let i = 0; i < this._rows.length; i += 1) {
       yield [this._index[i]!, cloneRow(this._rows[i]!, this._columns)];
     }
   }
 
   /**
-   * Yields named-tuple-like objects per row like pandas
+   * Returns named-tuple-like objects per row like pandas
    * `DataFrame.itertuples()`: `{ Index, <col1>, <col2>, ... }`.
    */
-  *itertuples(): Generator<Record<string, CellValue | IndexLabel>> {
+  itertuples(): IterableIterator<Record<string, CellValue | IndexLabel>> {
+    return this.itertuplesGenerator();
+  }
+
+  private *itertuplesGenerator(): Generator<Record<string, CellValue | IndexLabel>> {
     for (let i = 0; i < this._rows.length; i += 1) {
       const tuple: Record<string, CellValue | IndexLabel> = { Index: this._index[i]! };
       const row = this._rows[i]!;
@@ -966,11 +1008,149 @@ export class DataFrame {
     }
   }
 
-  /** Yields [columnName, Series] pairs like pandas `DataFrame.items()`. */
-  *items(): Generator<[string, Series<CellValue>]> {
+  /** Returns [columnName, Series] pairs like pandas `DataFrame.items()`. */
+  items(): IterableIterator<[string, Series<CellValue>]> {
+    return this.itemsGenerator();
+  }
+
+  private *itemsGenerator(): Generator<[string, Series<CellValue>]> {
     for (const column of this._columns) {
       yield [column, this.columnSeries(column)];
     }
+  }
+
+  /**
+   * Positional cell accessor like pandas `DataFrame.iat`, used as
+   * `df.iat[rowPosition][columnPosition]`. Read-only Proxy view over the
+   * frame; out-of-range positions yield undefined.
+   */
+  get iat(): Record<number, Record<number, CellValue>> {
+    const self = this;
+    return new Proxy({} as Record<number, Record<number, CellValue>>, {
+      get(_target, rowProp: string | symbol) {
+        const rowPosition = resolvePosition(Number(rowProp), self._rows.length);
+        if (rowPosition === undefined) {
+          // pandas iat[oor] returns a row of NaN/None rather than throwing on
+          // the outer lookup; mirror with an always-undefined inner proxy.
+          return new Proxy({} as Record<number, CellValue>, {
+            get() {
+              return undefined;
+            },
+          });
+        }
+        return new Proxy({} as Record<number, CellValue>, {
+          get(_innerTarget, colProp: string | symbol) {
+            const colPosition = resolvePosition(Number(colProp), self._columns.length);
+            if (colPosition === undefined) {
+              return undefined;
+            }
+            return self._rows[rowPosition]?.[self._columns[colPosition]!];
+          },
+        });
+      },
+    });
+  }
+
+  /** Axis labels as `[indexLabels, columnNames]`, matching pandas axes. */
+  get axes(): [IndexLabel[], string[]] {
+    return [[...this._index], [...this._columns]];
+  }
+
+  /** Free-form metadata dict, matching pandas DataFrame.attrs. */
+  get attrs(): Record<string, unknown> {
+    if (!this._attrs) {
+      this._attrs = {};
+    }
+    return this._attrs;
+  }
+
+  set attrs(value: Record<string, unknown>) {
+    this._attrs = value ?? {};
+  }
+
+  /**
+   * Cross-section selector. A key naming a column returns that column as a
+   * Series (pandas `xs(key, axis=1)`); a key naming an index label returns
+   * that row as a record; anything else raises.
+   */
+  xs(key: IndexLabel): Series<CellValue> | Row {
+    if (this._columns.includes(key as string)) {
+      return this.columnSeries(key as string);
+    }
+    const rowPosition = this._index.findIndex((label) => label === key);
+    if (rowPosition >= 0) {
+      return cloneRow(this._rows[rowPosition]!, this._columns);
+    }
+    throw new Error(`Key '${String(key)}' not found in columns or index.`);
+  }
+
+  /**
+   * In-place cell merge like pandas `DataFrame.update(other)`: where index
+   * labels and columns align, non-missing values from `other` overwrite
+   * this frame's cells in place.
+   */
+  update(other: DataFrame): void {
+    applyUpdateOverwrite(
+      this._rows,
+      this._index,
+      this._columns,
+      other._rows,
+      other._index,
+      other._columns
+    );
+  }
+
+  /**
+   * Blows list-valued cells of `column` out into one row per element,
+   * repeating every other column's values and the original index label.
+   * Empty lists drop out; scalar cells pass through unchanged.
+   */
+  explode(column: string): DataFrame {
+    this.assertColumnExists(column);
+    const { rows, index } = computeExplodeRows(
+      this._rows,
+      this._columns,
+      column,
+      this._index
+    );
+    return this.withRows(rows, index, this._columns, true);
+  }
+
+  /**
+   * Matrix product with another frame: self must have as many columns as
+   * `other` has rows. Result keeps self's index and adopts other's columns;
+   * cells touching missing/non-numeric operands become null.
+   */
+  dot(other: DataFrame): DataFrame {
+    const grid = computeDotMatrix(
+      this._rows,
+      this._columns,
+      other._rows,
+      other._columns
+    );
+    const rows: Row[] = grid.map((line) => {
+      const row: Row = {};
+      other._columns.forEach((column, k) => {
+        row[column] = line[k]!;
+      });
+      return row;
+    });
+    return DataFrame.from_normalized(rows, other.columns, this.index);
+  }
+
+  /**
+   * Evaluates a simple column expression such as `"a + b"` or `"a > 2"`
+   * safely — tokenized and compiled by hand, no `eval()` involved.
+   * Returns a Series aligned to this frame's index; arithmetic/comparison
+   * touching a missing cell yields null.
+   */
+  eval(expr: string): Series<CellValue> {
+    const compiled = compileFrameExpression(expr);
+    for (const column of compiled.referencedColumns) {
+      this.assertColumnExists(column);
+    }
+    const values = this._rows.map((row) => compiled.evaluate(row));
+    return new Series(values, { index: this.index, name: expr });
   }
 
   private columnSeries(column: string): Series<CellValue> {
@@ -1969,6 +2149,164 @@ export class DataFrame {
 
   private withIndex(index: IndexLabel[]): DataFrame {
     return this.withRows(this.to_records(), index, this._columns, true);
+  }
+
+  // ---- combine / compare / dtype conversion ----
+
+  /**
+   * pandas-style `combine`: align both frames on the union of their
+   * indexes/columns and build each column by calling `fn` with the two
+   * aligned value arrays. A scalar return broadcasts across the column.
+   */
+  combine(other: DataFrame, fn: FrameCombineFn): DataFrame {
+    const result = combineFrames(
+      this._rows,
+      this._columns,
+      this._index,
+      other._rows,
+      other._columns,
+      other._index,
+      fn
+    );
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  /** pandas-style `combine_first`: first non-missing value per cell. */
+  combine_first(other: DataFrame): DataFrame {
+    const result = combineFirstFrames(
+      this._rows,
+      this._columns,
+      this._index,
+      other._rows,
+      other._columns,
+      other._index
+    );
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  /**
+   * pandas-style `compare`: element-wise diff against an identically
+   * labeled frame. Differing positions become rows with `<column>` /
+   * `<column>_other` value pairs.
+   */
+  compare(other: DataFrame, options: DataFrameCompareOptions = {}): DataFrame {
+    if (
+      JSON.stringify(this._columns) !== JSON.stringify(other._columns) ||
+      this._rows.length !== other._rows.length ||
+      JSON.stringify(this._index) !== JSON.stringify(other._index)
+    ) {
+      throw new Error(
+        "Can only compare identically-labeled (both index and columns) DataFrame objects."
+      );
+    }
+    const result = compareFrames(this._rows, this._columns, this._index, other._rows, options);
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  /**
+   * pandas-style `convert_dtypes`: coerce numeric-looking and
+   * boolean-looking strings to real numbers/booleans in every column.
+   */
+  convert_dtypes(): DataFrame {
+    return this.withRows(
+      convertDtypesRows(this._rows, this._columns),
+      [...this._index],
+      this._columns,
+      true
+    );
+  }
+
+  /**
+   * pandas-style `infer_objects`: like `convert_dtypes`, but only mixed
+   * ("object"-like) columns are converted; homogeneous columns pass through.
+   */
+  infer_objects(): DataFrame {
+    return this.withRows(
+      inferObjectsRows(this._rows, this._columns),
+      [...this._index],
+      this._columns,
+      true
+    );
+  }
+
+  /**
+   * pandas-style `corrwith`: Pearson correlation between the shared numeric
+   * columns of two frames, pairing values by matching index label.
+   */
+  corrwith(other: DataFrame): Record<string, number | null> {
+    return corrwithValues(
+      this._rows,
+      this._columns,
+      this._index,
+      other._rows,
+      other._columns,
+      other._index
+    );
+  }
+
+  /** pandas-style `reindex_like`: reindex to another frame's index+columns. */
+  reindex_like(other: DataFrame): DataFrame {
+    const result = reindexRows(
+      this._rows,
+      this._columns,
+      this._index,
+      [...other._index],
+      [...other._columns],
+      null
+    );
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  // ---- reshaping: stack / unstack ----
+
+  /**
+   * pandas-style `stack` (single-level columns): pivot each column into
+   * long rows `{ index, column, value }`; missing cells dropped unless
+   * `dropna` is false.
+   */
+  stack(dropna = true): DataFrame {
+    const result = stackFrame(this._rows, this._columns, this._index, dropna);
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  /**
+   * Inverse of `stack` for single-level long frames: expects exactly three
+   * columns `[row key, column key, value]`; distinct row keys become the
+   * wide frame's index and distinct column keys its columns.
+   */
+  unstack(): DataFrame {
+    const result = unstackFrame(this._rows, this._columns);
+    return this.withRows(result.rows, result.index, result.columns, true);
+  }
+
+  // ---- export / identity shims ----
+
+  /** Serializes the frame to JSON and returns it as a `Buffer`. */
+  to_pickle(): Buffer {
+    return Buffer.from(
+      JSON.stringify({ columns: this._columns, index: this._index, rows: this.to_records() })
+    );
+  }
+
+  /** Identity shim for period-conversion parity. */
+  to_period(): DataFrame {
+    return this.copy();
+  }
+
+  /** Identity shim for timestamp-conversion parity. */
+  to_timestamp(): DataFrame {
+    return this.copy();
+  }
+
+  /**
+   * pandas-style `set_flags`: currently only validates
+   * `allows_duplicate_labels`; always returns a copy of the frame.
+   */
+  set_flags(options: DataFrameFlagsOptions = {}): DataFrame {
+    if (options.allows_duplicate_labels === false && hasDuplicateLabels(this._index)) {
+      throw new Error("Initialization failed: index has duplicates.");
+    }
+    return this.copy();
   }
 
   // ---- wasm-backed helpers ----

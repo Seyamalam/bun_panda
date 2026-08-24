@@ -16,34 +16,44 @@ export function to_datetime(values: CellValue[]): (Date | null)[] {
  * "Y" (year start), "h"/"H" (hours), "min"/"T" (minutes).
  */
 export function date_range(
-  options: {
-    start: Date | string;
-    end?: Date | string;
-    periods?: number;
-    freq?: number | string;
-  }
+  optionsOrStart:
+    | { start: Date | string; end?: Date | string; periods?: number; freq?: number | string }
+    | Date
+    | string,
+  maybeEnd?: Date | string,
+  maybePeriods?: number,
+  maybeFreq: number | string = "D"
 ): Date[] {
-  const start = coerceDate(options.start);
+  const normalized =
+    typeof optionsOrStart === "object" && !(optionsOrStart instanceof Date)
+      ? optionsOrStart
+      : {
+          start: optionsOrStart as Date | string,
+          end: maybeEnd,
+          periods: maybePeriods,
+          freq: maybeFreq,
+        };
+  const start = coerceDate(normalized.start);
   if (!start) {
     throw new Error("date_range requires a valid start date.");
   }
 
-  const freq = parseFreq(options.freq ?? "D");
+  const freq = parseFreq(normalized.freq ?? "D");
   const out: Date[] = [start];
 
-  if (options.periods !== undefined) {
+  if (normalized.periods !== undefined) {
     let current = new Date(start.getTime());
-    for (let i = 1; i < Math.max(0, options.periods); i += 1) {
+    for (let i = 1; i < Math.max(0, normalized.periods); i += 1) {
       current = freq.add(current);
       out.push(new Date(current.getTime()));
     }
     return out;
   }
 
-  if (options.end === undefined) {
+  if (normalized.end === undefined) {
     throw new Error("date_range requires either end or periods.");
   }
-  const end = coerceDate(options.end);
+  const end = coerceDate(normalized.end);
   if (!end) {
     throw new Error("date_range requires a valid end date.");
   }

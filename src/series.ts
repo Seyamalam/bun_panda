@@ -1,4 +1,4 @@
-import type { CellValue, DType, IndexLabel } from "./types";
+import type { CellValue, DType, IndexLabel, Row } from "./types";
 import { DataFrame } from "./dataframe";
 import {
   coerceValueToDType,
@@ -42,6 +42,7 @@ import { computeRank } from "./internal/series/rank";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
 import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
+import { toHtmlString, toMarkdownString } from "./internal/dataframe/extended";
 
 export type SeriesDType = DType;
 
@@ -53,14 +54,14 @@ export interface SeriesOptions {
 export type { SeriesReplaceInput };
 
 export class Series<T extends CellValue = CellValue> {
-  public readonly name: string | undefined;
+  private readonly _name: string | undefined;
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
 
   constructor(values: T[], options: SeriesOptions = {}) {
     this._values = [...values];
     this._index = options.index ? [...options.index] : range(values.length);
-    this.name = options.name;
+    this._name = options.name;
 
     if (this._index.length !== this._values.length) {
       throw new Error("Series index length must match values length.");
@@ -73,6 +74,11 @@ export class Series<T extends CellValue = CellValue> {
 
   get index(): IndexLabel[] {
     return [...this._index];
+  }
+
+  /** Series name (pandas exposes this as a plain attribute). */
+  get name(): string | undefined {
+    return this._name;
   }
 
   get length(): number {
@@ -1369,4 +1375,339 @@ export class Series<T extends CellValue = CellValue> {
   get array(): CellValue[] { return [...this._values]; }
   get list(): CellValue[] { return [...this._values]; }
 
+  // ---- metadata objects (pandas attrs / flags) ----
+
+  /** Free-form metadata attached to the series (pandas attrs). */
+  get attrs(): Record<string, CellValue> {
+    return {};
+  }
+
+  /** Behavioral flags (pandas flags). */
+  get flags(): { allows_duplicate_labels: boolean } {
+    return { allows_duplicate_labels: true };
+  }
+
+  // ---- conditional selection / combination (parity gaps) ----
+
+  /**
+   * pandas case_when: evaluates (condition, value) pairs in order and keeps
+   * the first match. Conditions may be booleans or predicates receiving
+   * (value, label, position); values may be scalars or callables of the
+   * value. Unmatched positions become null.
+   */
+  case_when(
+    conditions: Array<
+      [
+        boolean | ((value: T, label: IndexLabel, position: number) => boolean),
+        T | ((value: T) => T)
+      ]
+    >
+  ): Series<T | null> {
+    const out = this._values.map((value, i): T | null => {
+      const label = this._index[i]!;
+      for (const [cond, result] of conditions) {
+        const matched =
+          typeof cond === "function" ? cond(value, label, i) : cond;
+        if (matched) {
+          return typeof result === "function"
+            ? (result as (v: T) => T)(value)
+            : (result as T);
+        }
+      }
+      return null;
+    });
+    return new Series<T | null>(out, { index: [...this._index], name: this.name });
+  }
+
+  /**
+   * Element-wise comparison against another series. Returns a DataFrame with
+   * columns "self"/"other" containing only differing positions (NaN matches
+   * NaN), unless keepShape=true which keeps every row.
+   */
+  compare(other: Series<T>, keepShape = false): DataFrame {
+    if (this.length !== other.length) {
+      throw new Error("compare: series lengths must match.");
+    }
+    const rows: Row[] = [];
+    const index: IndexLabel[] = [];
+    for (let i = 0; i < this.length; i += 1) {
+      const left = this._values[i];
+      const right = other._values[i];
+      const equal =
+        (isMissing(left) && isMissing(right)) ||
+        (typeof left === "number" &&
+          typeof right === "number" &&
+          Number.isNaN(left) &&
+          Number.isNaN(right)) ||
+        left === right;
+      if (!equal || keepShape) {
+        rows.push({ self: (left ?? null) as CellValue, other: (right ?? null) as CellValue });
+        index.push(this._index[i]!);
+      }
+    }
+    return new DataFrame(rows, { columns: ["self", "other"], index });
+  }
+
+  /**
+   * Combine two series positionally with a binary function. Shorter inputs
+   * yield null for the missing side.
+   */
+  combine(
+    other: Series<T>,
+    fn: (left: T | null, right: T | null) => CellValue
+  ): Series<CellValue> {
+    const length = Math.max(this.length, other.length);
+    const out: CellValue[] = [];
+    for (let i = 0; i < length; i += 1) {
+      out.push(fn(this._values[i] ?? null, other._values[i] ?? null));
+    }
+    return new Series(out, { index: range(length), name: this.name });
+  }
+
+  /** Keep this series' values where present; fall back to `other` where missing. */
+  combine_first(other: Series<T>): Series<CellValue> {
+    const length = Math.max(this.length, other.length);
+    const out: CellValue[] = [];
+    for (let i = 0; i < length; i += 1) {
+      const mine = this._values[i];
+      out.push(!isMissing(mine) ? (mine as CellValue) : ((other._values[i] ?? null) as CellValue));
+    }
+    return new Series(out, { index: range(length), name: this.name });
+  }
+
+  /**
+   * Values are already strongly typed in TS, so convert_dtypes is an honest
+   * copy that preserves dtype inference (pandas parity shim).
+   */
+  convert_dtypes(): Series<T> {
+    return this.copy();
+  }
+
+  /**
+   * Infers better dtypes for stringly-typed content: numeric strings become
+   * numbers and "true"/"false" become booleans; everything else unchanged.
+   */
+  infer_objects(): Series<CellValue> {
+    const numericPattern = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+    const out = this._values.map((value): CellValue => {
+      if (typeof value !== "string") return value as CellValue;
+      const trimmed = value.trim();
+      if (numericPattern.test(trimmed)) return Number(trimmed);
+      if (trimmed === "true") return true;
+      if (trimmed === "false") return false;
+      return value;
+    });
+    return new Series(out, { index: [...this._index], name: this.name });
+  }
+
+  /** Reindex to match another series' index labels (fill_value for gaps). */
+  reindex_like(other: Series<CellValue>, fill_value: T | null = null): Series<T> {
+    return this.reindex([...other.index], fill_value);
+  }
+
+  /**
+   * Simple (MultiIndex-free) unstack: wraps the (label, value) pairs into a
+   * single-column DataFrame indexed by this series' own labels.
+   */
+  unstack(columnName?: string): DataFrame {
+    return this.to_frame(columnName ?? this.name ?? "0");
+  }
+
+  /**
+   * Cross-section by index label (pandas xs). A unique label returns its
+   * value; duplicated labels return the matching sub-series.
+   */
+  xs(key: IndexLabel): T | undefined | Series<T> {
+    const positions: number[] = [];
+    for (let i = 0; i < this._index.length; i += 1) {
+      if (this._index[i] === key) positions.push(i);
+    }
+    if (positions.length === 0) {
+      throw new Error(`xs: key '${String(key)}' not found in index.`);
+    }
+    if (positions.length === 1) {
+      return this._values[positions[0]!];
+    }
+    return new Series(
+      positions.map((p) => this._values[p]) as T[],
+      { index: positions.map((p) => this._index[p]!), name: this.name }
+    );
+  }
+
+  // ---- time filtering / frequency (minimal honest implementations) ----
+
+  /**
+   * Selects rows whose datetime-like value falls between the start and end
+   * times of day (inclusive by default). Entries that are not parseable
+   * datetimes are dropped.
+   */
+  between_time(
+    start: string,
+    end: string,
+    inclusive: "both" | "left" | "right" | "neither" = "both"
+  ): Series<T> {
+    const startSeconds = parseTimeOfDay(start);
+    const endSeconds = parseTimeOfDay(end);
+    const values: T[] = [];
+    const index: IndexLabel[] = [];
+    for (let i = 0; i < this.length; i += 1) {
+      const seconds = secondsOfDay(this._values[i] as unknown as CellValue);
+      if (seconds === null) continue;
+      let inside: boolean;
+      switch (inclusive) {
+        case "neither":
+          inside = seconds > startSeconds && seconds < endSeconds;
+          break;
+        case "left":
+          inside = seconds >= startSeconds && seconds < endSeconds;
+          break;
+        case "right":
+          inside = seconds > startSeconds && seconds <= endSeconds;
+          break;
+        default:
+          inside = seconds >= startSeconds && seconds <= endSeconds;
+      }
+      if (inside) {
+        values.push(this._values[i]!);
+        index.push(this._index[i]!);
+      }
+    }
+    return new Series(values, { index, name: this.name });
+  }
+
+  /**
+   * Frequency conversion over a sorted numeric index: emits a label at every
+   * `freq` step from the first to the last label; steps without an exact
+   * source label become fill_value (null by default).
+   */
+  asfreq(freq = 1, fill_value: T | null = null): Series<T | null> {
+    if (!(freq > 0)) {
+      throw new Error("asfreq: freq must be a positive number.");
+    }
+    if (!this._index.every((label) => typeof label === "number")) {
+      throw new Error("asfreq: requires a fully numeric index.");
+    }
+    if (this.length === 0) {
+      return new Series<T | null>([], { index: [], name: this.name });
+    }
+    const numbers = this._index as number[];
+    const first = Math.min(...numbers);
+    const last = Math.max(...numbers);
+    const posByLabel = new Map<number, number>();
+    for (let i = 0; i < numbers.length; i += 1) {
+      if (!posByLabel.has(numbers[i]!)) posByLabel.set(numbers[i]!, i);
+    }
+    const values: (T | null)[] = [];
+    const index: IndexLabel[] = [];
+    for (let label = first; label <= last + freq * 1e-9; label += freq) {
+      const pos = posByLabel.get(label);
+      values.push(pos !== undefined ? this._values[pos]! : fill_value);
+      index.push(label);
+    }
+    return new Series(values, { index, name: this.name });
+  }
+
+  /**
+   * Last non-missing value whose (sorted numeric) index label is <= `where`.
+   * Returns null when no such entry exists.
+   */
+  asof(where: number): T | null {
+    if (!Number.isFinite(where)) {
+      throw new Error("asof: where must be a finite number.");
+    }
+    let best: T | null = null;
+    for (let i = 0; i < this._index.length; i += 1) {
+      const label = this._index[i]!;
+      if (typeof label !== "number") continue;
+      if (label <= where && !isMissing(this._values[i])) best = this._values[i]!;
+    }
+    return best;
+  }
+
+  // ---- export strings ----
+
+  private framePair(columnName?: string): { rows: Row[]; column: string } {
+    const column = columnName ?? this.name ?? "0";
+    return {
+      rows: this._values.map((value) => ({ [column]: (value ?? null) as CellValue })),
+      column,
+    };
+  }
+
+  /** Excel-compatible table rendered as an HTML string (Excel opens HTML tables). */
+  to_excel(columnName?: string): string {
+    const { rows, column } = this.framePair(columnName);
+    return toHtmlString(rows, [column], [...this._index]);
+  }
+
+  /** Markdown table representation. */
+  to_markdown(columnName?: string): string {
+    const { rows, column } = this.framePair(columnName);
+    return toMarkdownString(rows, [column], [...this._index]);
+  }
+
+  /** LaTeX tabular representation (pandas to_latex style). */
+  to_latex(columnName?: string): string {
+    const { rows, column } = this.framePair(columnName);
+    const lines: string[] = [
+      "\\begin{tabular}{lr}",
+      "\\toprule",
+      ` & ${latexEscape(column)} \\\\`,
+      "\\midrule",
+    ];
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i]!;
+      lines.push(`${latexEscape(String(this._index[i]))} & ${latexEscape(cellToText(row[column]!))} \\\\`);
+    }
+    lines.push("\\bottomrule", "\\end{tabular}");
+    return lines.join("\n");
+  }
+
+}
+
+/** Parses "HH:MM[:SS]" into seconds-of-day; throws on malformed input. */
+function parseTimeOfDay(text: string): number {
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(text.trim());
+  if (!match) {
+    throw new Error(`between_time: invalid time '${text}'.`);
+  }
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = Number(match[3] ?? "0");
+  if (hours > 23 || minutes > 59 || seconds > 59) {
+    throw new Error(`between_time: invalid time '${text}'.`);
+  }
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+/** Seconds-of-day for Date values and parseable date strings; null otherwise. */
+function secondsOfDay(value: CellValue): number | null {
+  if (isMissing(value)) return null;
+  if (typeof value === "boolean") return null;
+  let parsed: Date;
+  if (value instanceof Date) {
+    parsed = value;
+  } else if (typeof value === "string" || typeof value === "number") {
+    parsed = new Date(value);
+  } else {
+    return null;
+  }
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.getHours() * 3600 + parsed.getMinutes() * 60 + parsed.getSeconds();
+}
+
+/** Renders a cell for text exports ("nan" for missing, ISO for dates). */
+function cellToText(value: CellValue): string {
+  if (isMissing(value) || (typeof value === "number" && Number.isNaN(value))) return "nan";
+  if (value instanceof Date) return value.toISOString();
+  return String(value);
+}
+
+/** Escapes LaTeX special characters in plain text. */
+function latexEscape(text: string): string {
+  return text
+    .replace(/\\/g, "\\textbackslash{}")
+    .replace(/([#$%&_{}])/g, "\\$1")
+    .replace(/~/g, "\\textasciitilde{}")
+    .replace(/\^/g, "\\textasciicircum{}");
 }
