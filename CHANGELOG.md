@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.3.0] - 2026-08-24
+
+### Added
+
+- **Pandas API parity climb: 50% → 84% (255/505 → 426/505 tracked APIs)** across two batches (`584d79e`, `0a4e4ba`):
+  - DataFrame (+48): fills/cumulative/stats exports (`ffill`/`bfill`/`interpolate`, `cummax`/`cummin`/`cumprod`, `skew`/`kurt`/`sem`, `mode`), iteration (`items`/`iterrows`/`itertuples`/`iat`/`axes`/`attrs`), selection (`xs`, `take`, `truncate`, `reindex`, `reindex_like`), frame algebra (`combine`, `combine_first`, `compare`, `dot`, `corrwith`, `update`, `explode`, safe `eval` expression parser, `stack`/`unstack`), dtype tools (`convert_dtypes`, `infer_objects`), export (`to_numpy`/`to_html`/`to_markdown`), plus `squeeze`/`info`/`memory_usage` and arithmetic aliases.
+  - Series (+70): property getters (`empty`/`ndim`/`size`/`shape`/`dtype`/`name`), stats aliases (`kurtosis`, `agg`), ops (`nunique`, `sort_values`/`sort_index`, `where`/`mask`, `sample`, `reindex`, `shift`/`diff`/`pct_change`, `drop_duplicates`/`duplicated`, `case_when`, `compare`, `combine*`), datetime helpers (`between_time`, `asfreq`, `asof`, `.dt` expansion), pair ops (`corr`/`cov`/`dot`), structural (`factorize`, `explode`, `groupby`, `unstack`, `xs`, `set_axis`, `repeat`, `rename`, `reset_index`, `transform`, `update`, `pop`), and string exports (`to_csv`/`to_json`/`to_string`/`to_excel`/`to_markdown`/`to_latex`).
+  - GroupBy (+13 → **100% of the audited surface**): `skew`/`kurt`/`sem`/`pct_change`/`rank`/`idxmax`/`idxmin`/`cumprod`/`rolling`/`corr`/`cov`/`ohlc`/`resample`.
+  - Top-level module (`src/top-level.ts`, +22): options registry (`get_option`/`set_option`/`reset_option`/`describe_option`/`option_context`), `NA`/`NaT` sentinels, scalar & index types (`Timestamp`, `Timedelta`, `Period`, `Index`, `MultiIndex`, `DatetimeIndex`, `TimedeltaIndex`, `PeriodIndex`), range builders (`date_range` positional form, `timedelta_range`, `interval_range`, `period_range`), reshape wrappers (`melt_frame`, `pivot_frame`, `lreshape`, `wide_to_long`) and ordered merges (`merge_asof`, `merge_ordered`).
+
+### Fixed
+
+- `DataFrame.combine`/`combine_first`: column alignment now projects both sides onto the index union instead of each side's own labels (`alignColumn` in `src/internal/dataframe/combine.ts`).
+- `DataFrame.iat` out-of-bounds row lookup returns an undefined-yielding proxy rather than throwing on the inner access.
+- `Series.infer_objects` / `DataFrame.infer_objects` coerce all-string numeric columns honestly (previous mixed-kind heuristic left them untouched).
+- `date_range("2026-01-01", "2026-01-05")` positional call shape no longer throws (options-object and positional forms both supported).
+
+### Tests
+
+- Suite grows from 255 to **306 tests / 627 expects** across 18 files; coverage 81% lines against the 70% gate.
+
 ## [0.2.1] - 2026-08-23
 
 ### Added
