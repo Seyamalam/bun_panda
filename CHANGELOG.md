@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [0.4.0] - 2026-08-25
+
+### Added
+
+- **Pandas API parity: 84% → 99% (426/505 → 500/505).** The remaining 5 APIs are plotting-only stubs.
+  - Top-level closed out at **100% (75/75)** (`711a224`): `Interval` with closure-aware `contains`/`overlaps`, top-level `align`, `array` namespace, bare-name `melt`/`pivot`, pandas-named `test`.
+  - Categorical + IO batch (`3bbfe08`): `Categorical`/`CategoricalDtype` (codes/categories/equals/map/describe), `read_html` table scraper, `read_fwf` colspecs, `read_json_lines`, `read_xml`, clipboard/pickle/feather/orc/hdf bridges, async `read_sql` family, `show_versions`.
+  - Window/time batch (`f8a4d44`): `ewm(span)` with pandas adjust=True seeding on both Series and DataFrame, `resample(rule)` binning with sum/mean/min/max/count/ohlc/asfreq, `at_time`/`between_time` time-of-day filters, `align`, `asof`, level ops (`droplevel`/`swaplevel`/`reorder_levels`), `isetitem`, tz helpers, export shims (`to_clipboard`/`to_sql`/`to_xarray`/`to_latex`/…), `cat` accessor, `from_arrow`. Shared engines extracted to `src/internal/shared/{time,windows}.ts`.
+
+### Tests
+
+- Suite grows from 306 to **352 tests / 743 expects** across 22 files; coverage 81% lines against the 70% gate.
+
 ## [0.3.0] - 2026-08-24
 
 ### Added

@@ -171,7 +171,7 @@ bun_panda vs pandas: faster or equal in 5/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.3.0`). The API is intentionally pandas-like; the measurable audit (`bun run parity` → docs/PARITY.md) tracks 84% of the 505-API pandas surface (DataFrame 84%, Series 88%, GroupBy 100%).
+This is an early library release (`0.4.0`). The API is intentionally pandas-like; the measurable audit (`bun run parity` → docs/PARITY.md) tracks 99% of the 505-API pandas surface (DataFrame 98%, Series 99%, Top-level 100%, GroupBy 100%); the remaining 5 APIs are plotting-only stubs.
 A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`) powers numeric groupby aggregations and the single-column numeric `sort_values` / `filter` paths; `BUN_PANDA_WASM=0` opts back into pure TS. The columnar store in `src/wasm/columns.ts` (`Float64Array` with NaN = missing) feeds one fused `bp_agg_multi_f64` call per agg spec.
 
 ### pandas API parity: ~27%
