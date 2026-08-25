@@ -2,7 +2,12 @@
 // reference docs) against bun_panda's implemented surface.
 import { readFileSync, writeFileSync } from "node:fs";
 
-const methodLines = readFileSync("/tmp/pd-methods.txt", "utf8")
+// Baseline is committed (scripts/pandas-api-baseline.txt) so the audit runs
+// offline; refresh it with scripts/refresh-pandas-baseline.sh.
+const methodLines = readFileSync(
+  new URL("./pandas-api-baseline.txt", import.meta.url),
+  "utf8"
+)
   .split("\n")
   .filter(Boolean)
   .map((line) => line.replace("pandas.", ""));
