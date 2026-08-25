@@ -39,7 +39,15 @@ import {
   cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank } from "./internal/series/rank";
+import { NotSupportedError } from "./errors";
 import * as seriesApi from "./internal/series/seriesApi";
+import {
+  asciiBoxplot,
+  asciiHistogram,
+  sparseInfo,
+  svgHistogram,
+  svgLine,
+} from "./internal/shared/plotting";
 import {
 } from "./internal/shared";
 import { StringMethods } from "./internal/series/stringMethods";
@@ -1274,8 +1282,24 @@ export class Series<T extends CellValue = CellValue> {
   to_xarray(): Record<string, CellValue> { return seriesApi.to_xarray(this.view()); }
 
   get cat() { return seriesApi.accessor_cat(this.view()); }
-  hist(): never { return seriesApi.hist(this.view()); }
-  plot(): never { return seriesApi.accessor_plot(this.view()); }
+  /** ASCII histogram of the numeric values. */
+  hist(bins = 10): string { return asciiHistogram(this._values as unknown as CellValue[], bins); }
+  /** SVG line plot over positions. */
+  plot(height = 120): string { return svgLine(this._values as unknown as CellValue[], height); }
+  /** SVG histogram. */
+  plot_hist(bins = 10, height = 120): string {
+    return svgHistogram(this._values as unknown as CellValue[], bins, height);
+  }
+  boxplot(width = 50): string { return asciiBoxplot(this._values as unknown as CellValue[], width); }
+  get sparse(): { density: number; filled: number; missing: number } {
+    return sparseInfo(this._values as unknown as CellValue[]);
+  }
+  get style(): never {
+    throw new NotSupportedError("Styled rendering is not supported; use to_string()/to_html().");
+  }
+  get struct(): never {
+    throw new NotSupportedError("Struct accessor is not supported.");
+  }
 }
 
 

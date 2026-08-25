@@ -127,11 +127,12 @@ describe("DataFrame export shims + stubs", () => {
 
   test("plotting/style stubs raise NotSupportedError", () => {
     const df = new DataFrame({ a: [1] });
-    expect(() => df.plot()).toThrow(NotSupportedError);
-    expect(() => df.hist()).toThrow(NotSupportedError);
-    expect(() => df.boxplot()).toThrow(NotSupportedError);
+    expect(() => df.plot("a")).not.toThrow();
+    expect(df.plot("a")).toContain("<svg");
+    expect(df.hist("a")).toContain("█");
+    expect(df.boxplot("a")).toContain("med=");
+    expect(Object.keys(df.sparse)).toEqual(["a"]);
     expect(() => df.style()).toThrow(NotSupportedError);
-    expect(() => df.sparse()).toThrow(NotSupportedError);
   });
 
   test("level ops are honest copies on flat frames", () => {

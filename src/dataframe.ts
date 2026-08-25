@@ -135,6 +135,12 @@ import {
 } from "./internal/dataframe/combine";
 import { NotSupportedError } from "./errors";
 import * as windowApi from "./internal/dataframe/windowApi";
+import {
+  asciiBoxplot,
+  asciiHistogram,
+  sparseInfo,
+  svgLine,
+} from "./internal/shared/plotting";
 import { buildLatexTable } from "./internal/dataframe/windowTime";
 import { Series } from "./series";
 import type {
@@ -2396,20 +2402,31 @@ export class DataFrame {
   get html(): string {
     return this.to_html();
   }
-  sparse(): never {
-    throw new NotSupportedError("Sparse accessor is not supported in bun_panda.");
+  /** Per-column density report (pandas sparse accessor). */
+  get sparse(): Record<string, { density: number; filled: number; missing: number }> {
+    const out: Record<string, { density: number; filled: number; missing: number }> = {};
+    for (const c of this._columns) {
+      out[c] = sparseInfo(this._rows.map((r) => r[c] as CellValue));
+    }
+    return out;
   }
   style(): never {
-    throw new NotSupportedError("Styling is not supported in bun_panda.");
+    throw new NotSupportedError("Styled rendering is not supported; use to_html().");
   }
-  hist(): never {
-    throw new NotSupportedError("Plotting is not supported in bun_panda.");
+  /** ASCII histogram for one numeric column. */
+  hist(column: string, bins = 10): string {
+    this.assertColumnExists(column);
+    return asciiHistogram(this._rows.map((r) => r[column] as CellValue), bins);
   }
-  boxplot(): never {
-    throw new NotSupportedError("Plotting is not supported in bun_panda.");
+  /** ASCII boxplot for one numeric column. */
+  boxplot(column: string, width = 50): string {
+    this.assertColumnExists(column);
+    return asciiBoxplot(this._rows.map((r) => r[column] as CellValue), width);
   }
-  plot(): never {
-    throw new NotSupportedError("Plotting is not supported in bun_panda.");
+  /** SVG line plot for one numeric column. */
+  plot(column: string, height = 120): string {
+    this.assertColumnExists(column);
+    return svgLine(this._rows.map((r) => r[column] as CellValue), height);
   }
 }
 
