@@ -1,109 +1,59 @@
 # Feature List
 
-## Implemented (v0.2.x)
+## Implemented (v0.4.x — 99% of the audited 505-API pandas surface)
 
 ### Data Structures
 
 - `DataFrame`
 - `Series`
-- `GroupBy`
+- `GroupBy` (100% of the audited GroupBy surface)
+- Top-level types: `Timestamp`, `Timedelta`, `Period`, `Index`, `MultiIndex`, `DatetimeIndex`, `TimedeltaIndex`, `PeriodIndex`, `Interval`, `Categorical`, `CategoricalDtype`
 
 ### DataFrame Operations
 
-- Construction from records and columnar objects
-- `columns`, `index`, `shape`, `empty`
-- `head`, `tail`, `copy`
-- `get`, `set`, `select`
-- `iloc`, `loc`, `at`
-- `assign`, `drop`, `rename`
-- `filter`, `query`
-- `iterrows`, `itertuples`, `items`
-- `shift(periods)`, `diff(periods)`, `pct_change(periods)`
-- `sort_values` (single and multi-column with per-column ascending flags, optional top-k `limit`, `na_position`; single-column numeric sorts use wasm `bp_argsort_f64`)
-- `apply` (`axis=0|1` and aliases), `applymap`, `map`
-- `where`/`mask` (function and column-map conditions; `other` defaults to `null`), `transform`
-- `insert(loc, column, value)`, `pop(column)`
-- `sort_index`
-- `drop_duplicates` (`ignore_index` supported)
-- `value_counts` (`limit`, `sort`, `ascending`)
-- `isin`, `clip`, `replace`, `sample`, `rank`
-- `dropna`, `fillna`
-- `set_index`, `reset_index`
-- `dtypes`, `astype`
-- `sum`, `mean`, `median`, `std`, `var`, `min`, `max`, `count`, `describe`
-- `round(decimals?)`, `abs(columns?)`, `cumsum(columns?)`
-- `duplicated(subset?, keep?)`, `equals(other)`
-- `nunique(dropna?)`
-- `pivot_table` (`margins`, `sort`, `dropna`, `fill_value`)
-- `to_records`, `to_dict`, `to_json`, `to_csv`, `to_parquet`, `to_excel`, `to_string`
-- `merge`
+- Construction from records, columnar objects, typed arrays; `from_records`/`from_dict` factories
+- Selection: `get select iloc loc at iat xs take truncate reindex reindex_like sample align`
+- Transform: `assign drop rename filter query sort_values sort_index drop_duplicates melt pivot stack unstack transpose select_dtypes explode eval` (safe expression parser)
+- Apply: `apply applymap map pipe transform`
+- Where/mask: function or per-column conditions
+- Arithmetic: full elementwise set + r-variants + comparisons + `dot`
+- Missing data: `dropna fillna ffill bfill interpolate isna notna`
+- Stats: `sum mean median std var min max count prod quantile describe skew kurt sem corr cov corrwith mode idxmax idxmin nunique`
+- Cumulative: `cumsum cummax cummin cumprod cumcount`
+- Windows & time: `rolling expanding ewm resample(at_time between_time asof asfreq)` with sum/mean/min/max/count/std/median/ohlc/asfreq aggregations
+- Frame algebra: `combine combine_first compare merge join update`
+- Levels/index: `set_index reset_index set_axis rename_axis droplevel swaplevel reorder_levels isetitem insert pop`
+- Typing: `dtypes astype convert_dtypes infer_objects`
+- Export: CSV/JSON/HTML/LaTeX/Markdown/parquet/excel/clipboard/pickle/hdf/orc/feather/stata/sql/xarray/numpy
+- Info & iteration: `info memory_usage keys items iterrows itertuples squeeze agg aggregate`
 
 ### Series Operations
 
-- `head`, `tail`
-- `iloc`, `loc`
-- `map`, `apply`, `filter`
-- Arithmetic: `add`, `sub`, `rsub`, `mul`, `div`, `mod`, `pow`, `neg`, `abs`, `round` (scalar or element-wise Series; nulls propagate)
-- Comparisons: `eq`, `ne`, `lt`, `le`, `gt`, `ge` (boolean Series)
-- Cumulative: `cumsum`, `cummax`, `cummin`; selection: `nlargest`, `nsmallest`
-- `.str` accessor: 20 pandas-style string methods with null propagation
-- `fillna`, `dropna`
-- `sum`, `mean`, `min`, `max`
-- `unique`, `value_counts`
-- `isin`, `clip`, `replace`
-- `astype`
-- `to_list`, `to_dict`
+- Full elementwise arithmetic with r-variants and long-form aliases
+- Comparisons, `between`, `case_when`
+- Missing data incl. linear interpolation
+- Stats incl. skew/kurt/sem/autocorr/corr/cov/dot/describe/mode
+- Windows: `rolling expanding ewm resample shift diff pct_change`
+- Time filters: `at_time between_time asfreq asof`
+- Accessors: `.str` (~40 methods), `.dt`, `.cat` (categories/codes/describe/map)
+- Structural: `factorize explode groupby unstack repeat rename rename_axis set_axis reset_index transform update pop case_when compare combine_first from_arrow`
+- Ordering: `rank sort_values sort_index argsort searchsorted nlargest nsmallest monotonic checks duplicated drop_duplicates`
+- Export mirrors the DataFrame export surface
 
 ### GroupBy
 
-- `agg` (supports `sum`/`mean`/`min`/`max`/`median`/`std`/`var`/`nunique`/`first`/`last`/`count` plus custom functions)
-- `count`, `sum`, `mean`, `min`, `max`, `median`, `std`, `var`, `nunique`, `first`, `last` (each with optional column list)
-- `transform(spec)` (function and dict modes; aligned to source rows)
-- pandas-like options: `dropna`, `sort`
-- pandas-like options: `as_index` (single-key output supported)
-- `size`
-- WASM fast path for numeric named aggregations via fused `bp_agg_multi_f64` over columnar `Float64Array`s from `src/wasm/columns.ts` (default; `BUN_PANDA_WASM=0` falls back to pure TS)
+Complete audited API: named aggs, cumulative, windowed (`rolling`), statistical (`skew kurt sem corr cov ohlc`), positional (`rank idxmax idxmin shift diff pct_change cumprod`), plus `filter/apply/pipe/transform/describe/value_counts`. WASM fast path for numeric named aggs (default-on; `BUN_PANDA_WASM=0` opts out).
 
-### IO and Utilities
+### Top-level
 
-- `read_csv` (async)
-- `read_csv_sync`
-- `parse_csv`
-- `read_table` (async, tab-separated default)
-- `read_table_sync`
-- `parse_table`
-- `read_tsv` (alias)
-- `read_tsv_sync` (alias)
-- `parse_tsv` (alias)
-- `read_json` (async)
-- `read_json_sync`
-- `parse_json` (`lines: true` JSON-lines support)
-- `read_parquet` (async; numeric columns decode into typed arrays — ~20% faster than row-major)
-- `read_excel` (async)
-- `read_excel_sync`
-- `to_parquet`
-- `to_excel`
-- `to_csv`
-- `concat`
-- `merge`
-- `pivot_table`
+- Options registry (`get_option` … `option_context`), `NA`/`NaT` sentinels
+- Range builders: `date_range bdate_range period_range timedelta_range interval_range`
+- Readers: CSV/TSV/table/Excel/JSON(+lines)/fixed-width/HTML tables/XML/parquet/feather/orc/hdf/pickle/sas/spss/stata/clipboard/sql/gbq
+- Reshape & merge: `concat merge merge_ordered merge_asof pivot crosstab cut qcut get_dummies factorize lreshape wide_to_long melt`
+- Utilities: `to_datetime to_numeric to_timedelta unique value_counts isin map align array show_versions test`
 
-### Tooling and Quality
+### Platform
 
-- Benchmark harness in `bench/compare.js` comparing against Arquero.
-- Expanded benchmark coverage (`82` cases across base/skewed/wide/high-cardinality/missing + join families).
-- Python benchmark companion (`bench/pandas_compare.py`) — 10-case pandas track with headroom to grow alongside the wasm typed-column kernels.
-- Columnar typed-array substrate (`src/wasm/columns.ts`): numeric columns as `Float64Array` with NaN = missing; zero-copy handoff to wasm (one fused `bp_agg_multi_f64` per agg spec, `bp_argsort_f64` / `bp_filter_indices` for sort/filter).
-- GitHub Actions CI in `.github/workflows/ci.yml` — builds wasm (`build:wasm`), guards drift with `git diff --exit-code src/wasm/bun_panda_core.wasm`, runs both the wasm-default and `BUN_PANDA_WASM=0` pure-TS test paths.
-
-## Compatibility Goal
-
-API naming follows pandas as closely as practical for a JS/TS runtime.
-
-## Known Differences vs pandas
-
-1. No MultiIndex yet.
-2. Dtype support is focused (`number`/`string`/`boolean`/`date`) rather than pandas-complete.
-3. No lazy execution.
-4. No SQL/database connectors yet.
-5. No full statistical or time-series API yet.
+- Rust/WASM core for numeric hot paths (groupby aggregation, argsort), flat C ABI over linear memory, no wasm-bindgen; pure-TS fallback always available
+- Typed errors: `BunPandaValidationError`, `NotSupportedError`
+- Gates: typecheck + oxlint + 352-test suite + 70% coverage floor in CI

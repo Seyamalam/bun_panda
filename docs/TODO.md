@@ -34,22 +34,29 @@
 30. Expanded comparative benchmark coverage with join/merge scenarios and added CI drift reporting artifacts.
 31. Added pandas-style apply APIs (`DataFrame.apply`, `DataFrame.applymap`, `DataFrame.map`) and Series helpers (`isin`, `clip`, `replace`).
 
-## Next Milestone (v0.3.x — Rust/WASM + full parity)
+## Completed in v0.3.x–v0.4.0 (parity sprint)
 
-1. Extend the wasm kernels beyond groupby (sort, filter, merge hot paths) and add typed-column storage so values cross the JS/WASM boundary as raw Float64Arrays without per-row marshalling. *(done for groupby agg, sort_values, filter, and parquet ingest; merge kernels remain)*
-2. Expand pandas benchmark parity coverage beyond the 10 tracked cases.
-3. Add storage/IO helpers (Arrow/Parquet columnar reads into typed arrays for zero-copy wasm import).
+1. Pandas API parity 50% → 99% (255/505 → 500/505); GroupBy and Top-level at 100%.
+2. Self-contained parity audit (`bun run parity` — committed baseline, refresh script included).
+3. Categorical dtype support: `Categorical`, `CategoricalDtype`, `.cat` accessor.
+4. Datetime helpers: `resample`, `ewm`, `at_time`, `between_time`, `asof`, `asfreq`, tz shims, `Interval`.
+5. IO expansion: HTML tables, fixed-width, JSON lines, XML, clipboard, pickle/feather/orc/hdf bridges, async SQL family.
 
-## Mid-Term (v0.3.x+)
+## Next Milestone (v0.4.x)
 
-1. Add datetime-focused helpers.
-2. Add categorical dtype support.
-3. Add optional Arrow interoperability layer.
-4. Add package build output for npm dist targets.
-5. Add docs website with runnable examples.
+1. Extract the window/time/export method blocks from `dataframe.ts`/`series.ts` back into `src/internal/` modules (class files regressed to 2600/1930 LOC during the sprint).
+2. Replace the five plotting stubs (`plot hist boxplot style sparse`) with text/SVG renderers or a pluggable backend.
+3. Re-benchmark after the API expansion; verify the WASM groupby fast path still wins.
+4. npm publish prep: `prepublishOnly` gates + `npm pack` smoke test.
+
+## Mid-Term (v0.5.x+)
+
+1. Optional Arrow interoperability layer (real binary Feather/IPC read/write).
+2. Package build output for npm dist targets.
+3. Docs website with runnable examples.
 
 ## Quality Backlog
 
-1. Raise test coverage and add more edge-case suites.
-2. Add property-based tests for CSV parser behavior.
-3. Add performance regression checks.
+1. Raise test coverage past 85%.
+2. Property-based tests for CSV/JSON parsers.
+3. Performance regression checks in CI (benchmark drift gate).

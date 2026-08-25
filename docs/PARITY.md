@@ -1,6 +1,6 @@
 # pandas API Parity Audit
 
-Generated 2026-08-24 — pandas methods scraped from the official API reference (frame.html, series.html), bun_panda surface extracted from `src/`.
+Generated 2026-08-25 — pandas methods scraped from the official API reference (frame.html, series.html), bun_panda surface extracted from `src/`.
 
 | Surface | pandas API | bun_panda | Parity |
 | --- | ---: | ---: | ---: |
