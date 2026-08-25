@@ -134,20 +134,8 @@ import {
   type FrameCombineFn,
 } from "./internal/dataframe/combine";
 import { NotSupportedError } from "./errors";
-import {
-  joinedLabels,
-  parseTimeOfDay,
-  timeFilterPositions,
-} from "./internal/shared";
-import {
-  buildInsertStatements,
-  buildLatexTable,
-  buildXarray,
-  ewmColumn,
-  reduceBinColumn,
-  resampleFrameRows,
-} from "./internal/dataframe/windowTime";
-
+import * as windowApi from "./internal/dataframe/windowApi";
+import { buildLatexTable } from "./internal/dataframe/windowTime";
 import { Series } from "./series";
 import type {
   AggFn,
@@ -2325,262 +2313,88 @@ export class DataFrame {
   }
 
   // ---- wasm-backed helpers ----
-  // ---- window / time / compat parity ----
-
-  align(
-    other: DataFrame,
-    join: "outer" | "inner" = "outer"
-  ): [DataFrame, DataFrame] {
-    const target = joinedLabels(this._index, other._index, join);
-    return [this.reindex({ index: target }), other.reindex({ index: target })];
-  }
-
-  asfreq(freq: string): DataFrame {
-    return this.resample(freq).asfreq();
-  }
-
-  asof(where: IndexLabel): CellValue | Row {
-    const position = this._index.findIndex((l) => String(l) === String(where));
-    if (position < 0) {
-      const past = this._index.filter((l) => String(l) <= String(where));
-      if (past.length === 0) return null;
-      const lastLabel = past[past.length - 1]!;
-      const pos2 = this._index.findIndex((l) => l === lastLabel);
-      return this.iloc(pos2) as Row;
-    }
-    return this.iloc(position) as Row;
-  }
-
-  at_time(time: string): DataFrame {
-    const seconds = parseTimeOfDay(time);
-    if (seconds === null) throw new Error(`at_time: invalid time '${time}'.`);
-    const dateColumn = this._columns.find((c) =>
-      this._rows.some((r) => r[c] instanceof Date)
-    );
-    if (!dateColumn) throw new Error("at_time: frame has no datetime-like column.");
-    const positions = timeFilterPositions(
-      this._rows.map((r) => r[dateColumn] as CellValue),
-      seconds,
-      seconds,
-      "both"
-    );
-    return this.withRows(
-      positions.map((p) => this._rows[p]!),
-      positions.map((p) => this._index[p]!),
-      this._columns,
-      true
-    );
-  }
-
-  between_time(
-    start: string,
-    end: string,
-    inclusive: "both" | "neither" | "left" | "right" = "both"
-  ): DataFrame {
-    const startSeconds = parseTimeOfDay(start);
-    const endSeconds = parseTimeOfDay(end);
-    if (startSeconds === null) throw new Error(`between_time: invalid start '${start}'.`);
-    if (endSeconds === null) throw new Error(`between_time: invalid end '${end}'.`);
-    const dateColumn = this._columns.find((c) =>
-      this._rows.some((r) => r[c] instanceof Date)
-    );
-    if (!dateColumn) throw new Error("between_time: frame has no datetime-like column.");
-    const positions = timeFilterPositions(
-      this._rows.map((r) => r[dateColumn] as CellValue),
-      startSeconds,
-      endSeconds,
-      inclusive
-    );
-    return this.withRows(
-      positions.map((p) => this._rows[p]!),
-      positions.map((p) => this._index[p]!),
-      this._columns,
-      true
-    );
-  }
-
-  ewm(span: number, options: { min_periods?: number } = {}): {
-    mean(): DataFrame;
-    sum(): DataFrame;
-    std(): DataFrame;
-  } {
-    if (typeof span !== "number" || span < 1) {
-      throw new Error("ewm: span must be a number >= 1.");
-    }
-    const minPeriods = Math.max(1, options.min_periods ?? 1);
-    const compute = (kind: "mean" | "sum" | "std"): DataFrame => {
-      const outRows: Row[] = this._rows.map(() => ({} as Row));
-      for (const column of this._columns) {
-        const values = this._rows.map((r) => r[column] as CellValue);
-        const numeric = values.some((v) => typeof v === "number");
-        if (!numeric) continue;
-        const result = ewmColumn(values, span, minPeriods, kind);
-        for (let i = 0; i < outRows.length; i += 1) {
-          (outRows[i] as Row)[column] = result[i] ?? null;
-        }
-      }
-      return this.withRows(outRows, [...this._index], [...this._columns], true);
-    };
-    return { mean: () => compute("mean"), sum: () => compute("sum"), std: () => compute("std") };
-  }
-
-  resample(rule: string): {
-    sum(): DataFrame;
-    mean(): DataFrame;
-    min(): DataFrame;
-    max(): DataFrame;
-    count(): DataFrame;
-    ohlc(): DataFrame;
-    asfreq(): DataFrame;
-  } {
-    const bins = resampleFrameRows(this._rows, this._columns, rule);
-    const labels = bins.map((b) => new Date(b.binStartMs).toISOString());
-    const numericColumns = this._columns.filter((c) =>
-      this._rows.some((r) => typeof r[c] === "number")
-    );
-    const build = (reducer: ((nums: number[]) => number) | "count"): DataFrame => {
-      const outRows: Row[] = bins.map((b) => {
-        const row: Row = {};
-        if (reducer === "count") {
-          for (const c of numericColumns) {
-            row[c] = b.rows.filter((r) => !isMissing(r[c])).length;
-          }
-        } else {
-          for (const c of numericColumns) {
-            row[c] = reduceBinColumn(b, c, reducer);
-          }
-        }
-        return row;
-      });
-      return DataFrame.createInternal(
-        outRows,
-        numericColumns.length > 0 ? numericColumns : this._columns,
-        labels
-      );
-    };
+  private view(): import("./internal/dataframe/windowApi").HostView {
     return {
-      sum: () => build((n) => n.reduce((a, b) => a + b, 0)),
-      mean: () => build((n) => n.reduce((a, b) => a + b, 0) / n.length),
-      min: () => build((n) => Math.min(...n)),
-      max: () => build((n) => Math.max(...n)),
-      count: () => build("count"),
-      ohlc: () => {
-        const outRows: Row[] = bins.map((b) => {
-          const row: Row = {};
-          for (const c of numericColumns) {
-            const nums: number[] = [];
-            for (const r of b.rows) {
-              const v = r[c];
-              if (typeof v === "number" && Number.isFinite(v)) nums.push(v);
-            }
-            if (nums.length > 0) {
-              row[`${c}_open`] = nums[0];
-              row[`${c}_high`] = Math.max(...nums);
-              row[`${c}_low`] = Math.min(...nums);
-              row[`${c}_close`] = nums[nums.length - 1]!;
-            } else {
-              row[`${c}_open`] = null;
-              row[`${c}_high`] = null;
-              row[`${c}_low`] = null;
-              row[`${c}_close`] = null;
-            }
-          }
-          return row;
-        });
-        const cols = [
-          ...new Set(outRows.flatMap((r) => Object.keys(r))),
-        ];
-        return DataFrame.createInternal(outRows, cols, labels);
-      },
-      asfreq: () =>
-        DataFrame.createInternal(
-          bins.map((b) => b.rows[b.rows.length - 1] as Row),
-          [...this._columns],
-          labels
-        ),
+      rowsSnapshot: () => this._rows,
+      columnsSnapshot: () => this._columns,
+      labels: () => this._index,
+      withRows: (rows: Row[], index?: IndexLabel[], columns?: string[], normalized?: boolean) =>
+        this.withRows(rows, index, columns, normalized),
+      iloc: (position: number) => this.iloc(position),
+      reindex: (options: { index?: IndexLabel[]; columns?: string[]; fill_value?: CellValue }) =>
+        this.reindex(options),
+      copy: () => this.copy(),
+      to_html: () => this.to_html(),
     };
   }
 
+  // ---- window / time / export parity (delegates to internal/dataframe/windowApi) ----
+
+  align(other: DataFrame, join: "outer" | "inner" = "outer"): [DataFrame, DataFrame] {
+    return windowApi.align(this.view(), other, join);
+  }
+  asfreq(freq: string): DataFrame {
+    return windowApi.asfreq(this.view(), freq);
+  }
+  asof(where: IndexLabel): CellValue | Row {
+    return windowApi.asof(this.view(), where);
+  }
+  at_time(time: string): DataFrame {
+    return windowApi.at_time(this.view(), time);
+  }
+  between_time(start: string, end: string, inclusive: "both" | "neither" | "left" | "right" = "both"): DataFrame {
+    return windowApi.between_time(this.view(), start, end, inclusive);
+  }
+  ewm(span: number, options: { min_periods?: number } = {}): ReturnType<typeof windowApi.ewm> {
+    return windowApi.ewm(this.view(), span, options);
+  }
+  resample(rule: string): ReturnType<typeof windowApi.resample> {
+    return windowApi.resample(this.view(), rule);
+  }
   droplevel(level = 0): DataFrame {
-    void level; // flat index: honest copy
-    return this.copy();
+    return windowApi.droplevel(this.view(), level);
   }
-
-  reorder_levels(..._order: number[]): DataFrame {
-    return this.copy();
+  reorder_levels(...order: number[]): DataFrame {
+    return windowApi.reorder_levels(this.view(), ...order);
   }
-
   swaplevel(): DataFrame {
-    return this.copy();
+    return windowApi.swaplevel(this.view());
   }
-
   isetitem(position: number, value: CellValue[] | Series<CellValue>): DataFrame {
-    if (position < 0 || position >= this._columns.length) {
-      throw new Error(`isetitem: position ${String(position)} out of bounds.`);
-    }
-    const column = this._columns[position]!;
-    const values =
-      value instanceof Series ? value.to_list() : value;
-    if (values.length !== this._rows.length) {
-      throw new Error("isetitem: value length must match row count.");
-    }
-    const rows = this._rows.map((row, i) => {
-      const next = { ...row };
-      next[column] = (values as CellValue[])[i] ?? null;
-      return next;
-    });
-    return this.withRows(rows, [...this._index], [...this._columns], true);
+    return windowApi.isetitem(this.view(), position, value);
   }
-
   tz_localize(tz: string): DataFrame {
-    void tz;
-    return this.copy();
+    return windowApi.tz_localize(this.view(), tz);
   }
-
   tz_convert(tz: string): DataFrame {
-    void tz;
-    return this.copy();
+    return windowApi.tz_convert(this.view(), tz);
   }
-
   to_clipboard(sep = ","): string {
-    const text = dataFrameToCsv(this, { sep });
-    try {
-      Bun.spawnSync(["pbcopy"], { stdin: Buffer.from(text, "utf8") });
-    } catch {
-      // no clipboard available; fall through and still return the text
-    }
-    return text;
+    return windowApi.to_clipboard(this.view(), sep);
   }
-
   to_feather(): Buffer {
-    return Buffer.from(JSON.stringify({ columns: this._columns, rows: this._rows }), "utf8");
+    return windowApi.to_feather(this.view());
   }
-
   to_orc(): Buffer {
-    return Buffer.from(JSON.stringify({ format: "orc-bridge", columns: this._columns, rows: this._rows }), "utf8");
+    return windowApi.to_orc(this.view());
   }
-
   to_hdf(key = "frame"): Buffer {
-    return Buffer.from(JSON.stringify({ key, columns: this._columns, rows: this._rows }), "utf8");
+    return windowApi.to_hdf(this.view(), key);
   }
-
   to_stata(): string {
-    return dataFrameToCsv(this, {});
+    return windowApi.to_stata(this.view());
   }
-
   to_sql(tableName: string): string {
-    return buildInsertStatements(this._rows, this._columns, tableName);
+    return windowApi.to_sql(this.view(), tableName);
   }
-
   to_xarray(): object {
-    return buildXarray(this._rows, this._columns, this._index);
-  }
-
-  get html(): string {
-    return this.to_html();
+    return windowApi.to_xarray(this.view());
   }
   to_latex(): string {
     return buildLatexTable(this._rows, this._columns, this._index);
+  }
+  get html(): string {
+    return this.to_html();
   }
   sparse(): never {
     throw new NotSupportedError("Sparse accessor is not supported in bun_panda.");
@@ -2597,6 +2411,5 @@ export class DataFrame {
   plot(): never {
     throw new NotSupportedError("Plotting is not supported in bun_panda.");
   }
-
 }
 
