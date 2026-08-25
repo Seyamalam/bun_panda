@@ -1,4 +1,4 @@
-import type { CellValue, DType, IndexLabel, Row } from "./types";
+import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
 import {
   coerceValueToDType,
@@ -39,19 +39,12 @@ import {
   cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank } from "./internal/series/rank";
-import { NotSupportedError } from "./errors";
+import * as seriesApi from "./internal/series/seriesApi";
 import {
-  ewmValues,
-  joinedLabels,
-  parseFreqMs,
-  parseTimeOfDay,
-  resampleBins,
-  secondsOfDay,
 } from "./internal/shared";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
 import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
-import { toHtmlString, toMarkdownString } from "./internal/dataframe/extended";
 
 export type SeriesDType = DType;
 
@@ -1197,734 +1190,94 @@ export class Series<T extends CellValue = CellValue> {
     }
     return `${typeof value}:${String(value)}`;
   }
-  // ---- additional pandas compat (parity gaps) ----
+  // ---- compat / window / export parity (delegates to internal/series/seriesApi) ----
 
-  corr(other: Series<CellValue>): number | null {
-    const a: number[] = []; const b: number[] = [];
-    for (let i = 0; i < this._values.length; i += 1) {
-      const x = this._values[i] as unknown as CellValue; const y = (other as unknown as Series<CellValue>)._values[i] as unknown as CellValue;
-      if (typeof x === "number" && Number.isFinite(x) && typeof y === "number" && Number.isFinite(y)) {
-        a.push(x as number); b.push(y as number);
-      }
-    }
-    if (a.length < 2) return null;
-    const ma = a.reduce((s, v) => s + v, 0) / a.length;
-    const mb = b.reduce((s, v) => s + v, 0) / b.length;
-    let cov = 0, va = 0, vb = 0;
-    for (let i = 0; i < a.length; i += 1) {
-      cov += (a[i]! - ma) * (b[i]! - mb);
-      va += (a[i]! - ma) ** 2; vb += (b[i]! - mb) ** 2;
-    }
-    const denom = Math.sqrt(va) * Math.sqrt(vb);
-    return denom === 0 ? null : cov / denom;
-  }
-
-  cov(other: Series<CellValue>): number | null {
-    const a: number[] = []; const b: number[] = [];
-    for (let i = 0; i < this._values.length; i += 1) {
-      const x = this._values[i] as unknown as CellValue; const y = (other as unknown as Series<CellValue>)._values[i] as unknown as CellValue;
-      if (typeof x === "number" && Number.isFinite(x) && typeof y === "number" && Number.isFinite(y)) {
-        a.push(x as number); b.push(y as number);
-      }
-    }
-    if (a.length < 2) return null;
-    const ma = a.reduce((s, v) => s + v, 0) / a.length;
-    const mb = b.reduce((s, v) => s + v, 0) / b.length;
-    let cov = 0;
-    for (let i = 0; i < a.length; i += 1) cov += (a[i]! - ma) * (b[i]! - mb);
-    return cov / (a.length - 1);
-  }
-
-  dot(other: Series<CellValue>): number | null {
-    if (this._values.length !== other.length) throw new Error("dot: length mismatch");
-    let sum = 0; let any = false;
-    for (let i = 0; i < this._values.length; i += 1) {
-      const x = this._values[i]; const y = (other as Series<CellValue>)._values[i];
-      if (typeof x !== "number" || !Number.isFinite(x) || typeof y !== "number" || !Number.isFinite(y)) continue;
-      sum += x * y; any = true;
-    }
-    return any ? sum : null;
-  }
-
-  first_valid_index(): IndexLabel | null {
-    for (let i = 0; i < this._values.length; i += 1) if (!isMissing(this._values[i])) return this._index[i]!;
-    return null;
-  }
-
-  last_valid_index(): IndexLabel | null {
-    for (let i = this._values.length - 1; i >= 0; i -= 1) if (!isMissing(this._values[i])) return this._index[i]!;
-    return null;
-  }
-
-  factorize(): [number[], CellValue[]] {
-    const uniq: CellValue[] = []; const idx = new Map<string, number>();
-    const codes: number[] = [];
-    for (const v of this._values) {
-      const k = JSON.stringify(normalizeKeyCell(v as CellValue));
-      if (!idx.has(k)) { idx.set(k, uniq.length); uniq.push(v as CellValue); }
-      codes.push(idx.get(k)!);
-    }
-    return [codes, uniq];
-  }
-
-  explode(): Series<CellValue> {
-    const vals: CellValue[] = [];
-    const idx: IndexLabel[] = [];
-    for (let i = 0; i < this._values.length; i += 1) {
-      const v = this._values[i];
-      if (Array.isArray(v)) {
-        for (const item of v as CellValue[]) { vals.push(item as CellValue); idx.push(this._index[i]!); }
-      } else { vals.push(v as CellValue); idx.push(this._index[i]!); }
-    }
-    return new Series(vals as unknown as T[], { index: idx, name: this.name }) as unknown as Series<CellValue>;
-  }
-
-  groupby(by: string | string[]): import("./groupby").GroupBy {
-    const df = this.to_frame(String(this.name ?? "value"));
-    return df.groupby(by);
-  }
-
-  to_numpy(): CellValue[] { return [...this._values]; }
-
-  to_string(): string { return this._values.map((v) => String(v)).join("\\n"); }
-  to_csv(): string { return this._values.map((v) => String(v ?? "")).join("\\n"); }
-  to_json(): string { return JSON.stringify(this._values); }
-  to_period(): Series<T> { return this.copy(); }
-
-  info(): string {
-    return `Series: ${this.length} entries, dtype=${this.dtype}, hasNaN=${this.hasnans()}`;
-  }
-
-  items(): [IndexLabel, T][] { return this._values.map((v, i) => [this._index[i]!, v]); }
-  keys(): IndexLabel[] { return [...this._index]; }
-
-  pop(label: IndexLabel): T | undefined {
-    const pos = this._index.findIndex((e) => e === label);
-    if (pos < 0) throw new Error(`pop: label '${String(label)}' not found`);
-    const v = this._values[pos]!;
-    (this as unknown as { _values: T[] })._values.splice(pos, 1);
-    (this as unknown as { _index: IndexLabel[] })._index.splice(pos, 1);
-    return v;
-  }
-
-  repeat(repeats: number): Series<T> {
-    if (!Number.isInteger(repeats) || repeats < 0) throw new Error("repeat: repeats must be non-negative integer");
-    const vals: T[] = []; const idx: IndexLabel[] = [];
-    for (let i = 0; i < this._values.length; i += 1) {
-      for (let r = 0; r < repeats; r += 1) { vals.push(this._values[i]!); idx.push(this._index[i]!); }
-    }
-    return new Series(vals, { index: idx, name: this.name });
-  }
-
-  rename(name: string): Series<T> { return new Series([...this._values], { index: [...this._index], name }); }
-
-  rename_axis(name: string): Series<T> { return this.rename(name); }
-
-  reset_index(drop = false): DataFrame | Series<T> {
-    if (drop) return new Series([...this._values], { index: range(this._values.length), name: this.name });
-    const df = new DataFrame(
-      this._values.map((v, i) => ({ index: this._index[i]!, [String(this.name ?? "0")]: v })),
-      { columns: ["index", String(this.name ?? "0")] }
-    );
-    return df;
-  }
-
-  set_axis(labels: IndexLabel[]): Series<T> {
-    if (labels.length !== this._values.length) throw new Error("set_axis: length mismatch");
-    return new Series([...this._values], { index: [...labels], name: this.name });
-  }
-
-  squeeze(): T | Series<T> { return this.length === 1 ? this._values[0]! : this; }
-
-  take(indices: number[]): Series<T> {
-    return new Series((indices.map((i) => {
-      const pos = i < 0 ? this._values.length + i : i;
-      if (pos < 0 || pos >= this._values.length) throw new Error(`take: index ${String(i)} out of bounds`);
-      return this._values[pos]!;
-    }) as unknown as T[]), { index: indices.map((i) => { const p = i < 0 ? this._index.length + i : i; return this._index[p]!; }), name: this.name });
-  }
-
-  transform(fn: (s: Series<T>) => Series<T> | CellValue[]): Series<T> {
-    const r = fn(this);
-    return Array.isArray(r) ? new Series(r as T[], { index: [...this._index], name: this.name }) : r as Series<T>;
-  }
-
-  truncate(before?: IndexLabel, after?: IndexLabel): Series<T> {
-    let start = 0, end = this._values.length;
-    if (before !== undefined) { const p = this._index.indexOf(before); if (p >= 0) start = p; }
-    if (after !== undefined) { const p = this._index.indexOf(after); if (p >= 0) end = p + 1; }
-    return new Series(this._values.slice(start, end), { index: this._index.slice(start, end), name: this.name });
-  }
-
-  update(other: Series<T>): void {
-    for (let i = 0; i < other.length; i += 1) {
-      const label = other.index[i]!;
-      const pos = this._index.indexOf(label);
-      const v = other._values[i];
-      if (pos >= 0 && !isMissing(v)) (this as unknown as { _values: T[] })._values[pos] = v;
-    }
-  }
-
-  memory_usage(): number { return this._values.length * 8; }
-
-  get at(): Record<string, T | undefined> {
-    const self = this;
-    return new Proxy({} as Record<string, T | undefined>, {
-      get(_t, prop: string) { return self.loc(prop as unknown as IndexLabel); },
-    });
-  }
-
-  get iat(): Record<number, T | undefined> {
-    const self = this;
-    return new Proxy({} as Record<number, T | undefined>, {
-      get(_t, prop: string) { return self.iloc(Number(prop)); },
-    });
-  }
-
-  get array(): CellValue[] { return [...this._values]; }
-  get list(): CellValue[] { return [...this._values]; }
-
-  // ---- metadata objects (pandas attrs / flags) ----
-
-  /** Free-form metadata attached to the series (pandas attrs). */
-  get attrs(): Record<string, CellValue> {
-    return {};
-  }
-
-  /** Behavioral flags (pandas flags). */
-  get flags(): { allows_duplicate_labels: boolean } {
-    return { allows_duplicate_labels: true };
-  }
-
-  // ---- conditional selection / combination (parity gaps) ----
-
-  /**
-   * pandas case_when: evaluates (condition, value) pairs in order and keeps
-   * the first match. Conditions may be booleans or predicates receiving
-   * (value, label, position); values may be scalars or callables of the
-   * value. Unmatched positions become null.
-   */
-  case_when(
-    conditions: Array<
-      [
-        boolean | ((value: T, label: IndexLabel, position: number) => boolean),
-        T | ((value: T) => T)
-      ]
-    >
-  ): Series<T | null> {
-    const out = this._values.map((value, i): T | null => {
-      const label = this._index[i]!;
-      for (const [cond, result] of conditions) {
-        const matched =
-          typeof cond === "function" ? cond(value, label, i) : cond;
-        if (matched) {
-          return typeof result === "function"
-            ? (result as (v: T) => T)(value)
-            : (result as T);
-        }
-      }
-      return null;
-    });
-    return new Series<T | null>(out, { index: [...this._index], name: this.name });
-  }
-
-  /**
-   * Element-wise comparison against another series. Returns a DataFrame with
-   * columns "self"/"other" containing only differing positions (NaN matches
-   * NaN), unless keepShape=true which keeps every row.
-   */
-  compare(other: Series<T>, keepShape = false): DataFrame {
-    if (this.length !== other.length) {
-      throw new Error("compare: series lengths must match.");
-    }
-    const rows: Row[] = [];
-    const index: IndexLabel[] = [];
-    for (let i = 0; i < this.length; i += 1) {
-      const left = this._values[i];
-      const right = other._values[i];
-      const equal =
-        (isMissing(left) && isMissing(right)) ||
-        (typeof left === "number" &&
-          typeof right === "number" &&
-          Number.isNaN(left) &&
-          Number.isNaN(right)) ||
-        left === right;
-      if (!equal || keepShape) {
-        rows.push({ self: (left ?? null) as CellValue, other: (right ?? null) as CellValue });
-        index.push(this._index[i]!);
-      }
-    }
-    return new DataFrame(rows, { columns: ["self", "other"], index });
-  }
-
-  /**
-   * Combine two series positionally with a binary function. Shorter inputs
-   * yield null for the missing side.
-   */
-  combine(
-    other: Series<T>,
-    fn: (left: T | null, right: T | null) => CellValue
-  ): Series<CellValue> {
-    const length = Math.max(this.length, other.length);
-    const out: CellValue[] = [];
-    for (let i = 0; i < length; i += 1) {
-      out.push(fn(this._values[i] ?? null, other._values[i] ?? null));
-    }
-    return new Series(out, { index: range(length), name: this.name });
-  }
-
-  /** Keep this series' values where present; fall back to `other` where missing. */
-  combine_first(other: Series<T>): Series<CellValue> {
-    const length = Math.max(this.length, other.length);
-    const out: CellValue[] = [];
-    for (let i = 0; i < length; i += 1) {
-      const mine = this._values[i];
-      out.push(!isMissing(mine) ? (mine as CellValue) : ((other._values[i] ?? null) as CellValue));
-    }
-    return new Series(out, { index: range(length), name: this.name });
-  }
-
-  /**
-   * Values are already strongly typed in TS, so convert_dtypes is an honest
-   * copy that preserves dtype inference (pandas parity shim).
-   */
-  convert_dtypes(): Series<T> {
-    return this.copy();
-  }
-
-  /**
-   * Infers better dtypes for stringly-typed content: numeric strings become
-   * numbers and "true"/"false" become booleans; everything else unchanged.
-   */
-  infer_objects(): Series<CellValue> {
-    const numericPattern = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
-    const out = this._values.map((value): CellValue => {
-      if (typeof value !== "string") return value as CellValue;
-      const trimmed = value.trim();
-      if (numericPattern.test(trimmed)) return Number(trimmed);
-      if (trimmed === "true") return true;
-      if (trimmed === "false") return false;
-      return value;
-    });
-    return new Series(out, { index: [...this._index], name: this.name });
-  }
-
-  /** Reindex to match another series' index labels (fill_value for gaps). */
-  reindex_like(other: Series<CellValue>, fill_value: T | null = null): Series<T> {
-    return this.reindex([...other.index], fill_value);
-  }
-
-  /**
-   * Simple (MultiIndex-free) unstack: wraps the (label, value) pairs into a
-   * single-column DataFrame indexed by this series' own labels.
-   */
-  unstack(columnName?: string): DataFrame {
-    return this.to_frame(columnName ?? this.name ?? "0");
-  }
-
-  /**
-   * Cross-section by index label (pandas xs). A unique label returns its
-   * value; duplicated labels return the matching sub-series.
-   */
-  xs(key: IndexLabel): T | undefined | Series<T> {
-    const positions: number[] = [];
-    for (let i = 0; i < this._index.length; i += 1) {
-      if (this._index[i] === key) positions.push(i);
-    }
-    if (positions.length === 0) {
-      throw new Error(`xs: key '${String(key)}' not found in index.`);
-    }
-    if (positions.length === 1) {
-      return this._values[positions[0]!];
-    }
-    return new Series(
-      positions.map((p) => this._values[p]) as T[],
-      { index: positions.map((p) => this._index[p]!), name: this.name }
-    );
-  }
-
-  // ---- time filtering / frequency (minimal honest implementations) ----
-
-  /**
-   * Selects rows whose datetime-like value falls between the start and end
-   * times of day (inclusive by default). Entries that are not parseable
-   * datetimes are dropped.
-   */
-  between_time(
-    start: string,
-    end: string,
-    inclusive: "both" | "left" | "right" | "neither" = "both"
-  ): Series<T> {
-    const startSeconds = parseTimeOfDay(start);
-    const endSeconds = parseTimeOfDay(end);
-    if (startSeconds === null) throw new Error(`between_time: invalid start '${start}'.`);
-    if (endSeconds === null) throw new Error(`between_time: invalid end '${end}'.`);
-    const values: T[] = [];
-    const index: IndexLabel[] = [];
-    for (let i = 0; i < this.length; i += 1) {
-      const seconds = secondsOfDay(this._values[i] as unknown as CellValue);
-      if (seconds === null) continue;
-      let inside: boolean;
-      switch (inclusive) {
-        case "neither":
-          inside = seconds > startSeconds && seconds < endSeconds;
-          break;
-        case "left":
-          inside = seconds >= startSeconds && seconds < endSeconds;
-          break;
-        case "right":
-          inside = seconds > startSeconds && seconds <= endSeconds;
-          break;
-        default:
-          inside = seconds >= startSeconds && seconds <= endSeconds;
-      }
-      if (inside) {
-        values.push(this._values[i]!);
-        index.push(this._index[i]!);
-      }
-    }
-    return new Series(values, { index, name: this.name });
-  }
-
-  /**
-   * Frequency conversion over a sorted numeric index: emits a label at every
-   * `freq` step from the first to the last label; steps without an exact
-   * source label become fill_value (null by default).
-   */
-  asfreq(freq = 1, fill_value: T | null = null): Series<T | null> {
-    if (!(freq > 0)) {
-      throw new Error("asfreq: freq must be a positive number.");
-    }
-    if (!this._index.every((label) => typeof label === "number")) {
-      throw new Error("asfreq: requires a fully numeric index.");
-    }
-    if (this.length === 0) {
-      return new Series<T | null>([], { index: [], name: this.name });
-    }
-    const numbers = this._index as number[];
-    const first = Math.min(...numbers);
-    const last = Math.max(...numbers);
-    const posByLabel = new Map<number, number>();
-    for (let i = 0; i < numbers.length; i += 1) {
-      if (!posByLabel.has(numbers[i]!)) posByLabel.set(numbers[i]!, i);
-    }
-    const values: (T | null)[] = [];
-    const index: IndexLabel[] = [];
-    for (let label = first; label <= last + freq * 1e-9; label += freq) {
-      const pos = posByLabel.get(label);
-      values.push(pos !== undefined ? this._values[pos]! : fill_value);
-      index.push(label);
-    }
-    return new Series(values, { index, name: this.name });
-  }
-
-  /**
-   * Last non-missing value whose (sorted numeric) index label is <= `where`.
-   * Returns null when no such entry exists.
-   */
-  asof(where: number): T | null {
-    if (!Number.isFinite(where)) {
-      throw new Error("asof: where must be a finite number.");
-    }
-    let best: T | null = null;
-    for (let i = 0; i < this._index.length; i += 1) {
-      const label = this._index[i]!;
-      if (typeof label !== "number") continue;
-      if (label <= where && !isMissing(this._values[i])) best = this._values[i]!;
-    }
-    return best;
-  }
-
-  // ---- export strings ----
-
-  private framePair(columnName?: string): { rows: Row[]; column: string } {
-    const column = columnName ?? this.name ?? "0";
+  private view(): import("./internal/series/seriesApi").SeriesHost {
     return {
-      rows: this._values.map((value) => ({ [column]: (value ?? null) as CellValue })),
-      column,
+      valuesSnapshot: () => this._values as unknown as CellValue[],
+      labelsSnapshot: () => this._index,
+      lengthSnapshot: () => this.length,
+      nameSnapshot: () => this.name,
+      reindex: (labels) => this.reindex(labels) as never,
+      copy: () => this.copy(),
+      map: (fn) => this.map(fn as never),
+      kurt: () => this.kurt(),
+      to_dict: () => this.to_dict() as Record<string, CellValue>,
+      to_frame: (name) => this.to_frame(name),
+      iloc: (position) => this.iloc(position),
+      loc: (label) => this.loc(label),
+      hasnans: () => this.hasnans(),
+      sum: () => this.sum(),
+      mean: () => this.mean(),
+      min: () => this.min(),
+      max: () => this.max(),
+      count: () => this.count(),
+      std: (ddof) => this.std(ddof),
+      var: () => this.var(),
+      median: () => this.median(),
+      skew: () => this.skew(),
+      sem: () => this.sem(),
+      prod: () => this.prod(),
     };
   }
 
-  /** Excel-compatible table rendered as an HTML string (Excel opens HTML tables). */
-  to_excel(columnName?: string): string {
-    const { rows, column } = this.framePair(columnName);
-    return toHtmlString(rows, [column], [...this._index]);
+  corr(other: Series<CellValue>): number | null { return seriesApi.corr(this.view(), other); }
+  cov(other: Series<CellValue>): number | null { return seriesApi.cov(this.view(), other); }
+  dot(other: Series<CellValue>): number | null { return seriesApi.dot(this.view(), other); }
+  first_valid_index(): IndexLabel | null { return seriesApi.first_valid_index(this.view()); }
+  last_valid_index(): IndexLabel | null { return seriesApi.last_valid_index(this.view()); }
+  factorize(): [number[], CellValue[]] { return seriesApi.factorize(this.view()); }
+  groupby(by: string | string[]): unknown { return seriesApi.groupby(this.view(), by); }
+  to_numpy(): CellValue[] { return seriesApi.to_numpy(this.view()); }
+  to_string(): string { return seriesApi.to_string(this.view()); }
+  to_csv(): string { return seriesApi.to_csv(this.view()); }
+  to_json(): string { return seriesApi.to_json(this.view()); }
+  info(): string { return seriesApi.info(this.view()); }
+  items(): [IndexLabel, CellValue][] { return seriesApi.items(this.view()); }
+  keys(): IndexLabel[] { return seriesApi.keys(this.view()); }
+  repeat(repeats: number): Series<CellValue> { return seriesApi.repeat(this.view(), repeats) as Series<CellValue>; }
+  rename(name: string): Series<CellValue> { return seriesApi.rename(this.view(), name) as Series<CellValue>; }
+  rename_axis(name: string): Series<CellValue> { return seriesApi.rename_axis(this.view(), name) as Series<CellValue>; }
+  reset_index(drop = false): unknown { return seriesApi.reset_index(this.view(), drop); }
+  set_axis(labels: IndexLabel[]): Series<CellValue> { return seriesApi.set_axis(this.view(), labels) as Series<CellValue>; }
+  squeeze(): CellValue | Series<CellValue> { return seriesApi.squeeze(this.view()) as CellValue | Series<CellValue>; }
+  take(indices: number[]): Series<CellValue> { return seriesApi.take(this.view(), indices); }
+  transform(fn: (s: Series<T>) => Series<T> | CellValue[]): Series<T> { return seriesApi.transform(this.view(), fn as never) as never; }
+  truncate(before?: IndexLabel, after?: IndexLabel): Series<T> { return seriesApi.truncate(this.view(), before, after) as never; }
+  update(other: Series<T>): void { seriesApi.update(this.view(), other as never); }
+  memory_usage(): number { return seriesApi.memory_usage(this.view()); }
+  case_when(conditions: never): unknown { return seriesApi.case_when(this.view(), conditions); }
+  align(other: Series<CellValue>, join: "outer" | "inner" = "outer"): [Series<T>, Series<CellValue>] {
+    return seriesApi.align(this.view(), other as never, join) as never;
   }
+  at_time(time: string): Series<T> { return seriesApi.at_time(this.view(), time) as never; }
+  between_time(start: string, end: string, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<T> {
+    return seriesApi.between_time(this.view(), start, end, inclusive) as never;
+  }
+  ewm(span: number, options: { min_periods?: number } = {}): ReturnType<typeof seriesApi.ewm> {
+    return seriesApi.ewm(this.view(), span, options);
+  }
+  resample(rule: string): ReturnType<typeof seriesApi.resample> {
+    return seriesApi.resample(this.view(), rule);
+  }
+  droplevel(level = 0): Series<T> { return seriesApi.droplevel(this.view(), level) as never; }
+  reorder_levels(...order: number[]): Series<T> { return (seriesApi.reorder_levels(this.view(), ...order)) as never; }
+  swaplevel(): Series<T> { return seriesApi.swaplevel(this.view()) as never; }
+  set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> { return seriesApi.set_flags(this.view(), options) as never; }
+  tz_localize(tz: string): Series<T> { return seriesApi.tz_localize(this.view(), tz) as never; }
+  tz_convert(tz: string): Series<T> { return seriesApi.tz_convert(this.view(), tz) as never; }
+  to_clipboard(sep = "\t"): string { return seriesApi.to_clipboard(this.view(), sep); }
+  to_hdf(): Buffer { return seriesApi.to_hdf(this.view()); }
+  to_pickle(): Buffer { return seriesApi.to_pickle(this.view()); }
+  to_sql(tableName: string): string { return seriesApi.to_sql(this.view(), tableName); }
+  to_timestamp(): Series<T> { return seriesApi.to_timestamp(this.view()) as never; }
+  to_xarray(): Record<string, CellValue> { return seriesApi.to_xarray(this.view()); }
 
-  /** Markdown table representation. */
-  to_markdown(columnName?: string): string {
-    const { rows, column } = this.framePair(columnName);
-    return toMarkdownString(rows, [column], [...this._index]);
-  }
-
-  /** LaTeX tabular representation (pandas to_latex style). */
-  to_latex(columnName?: string): string {
-    const { rows, column } = this.framePair(columnName);
-    const lines: string[] = [
-      "\\begin{tabular}{lr}",
-      "\\toprule",
-      ` & ${latexEscape(column)} \\\\`,
-      "\\midrule",
-    ];
-    for (let i = 0; i < rows.length; i += 1) {
-      const row = rows[i]!;
-      lines.push(`${latexEscape(String(this._index[i]))} & ${latexEscape(cellToText(row[column]!))} \\\\`);
-    }
-    lines.push("\\bottomrule", "\\end{tabular}");
-    return lines.join("\n");
-  }
-
-  // ---- window / time / compat parity ----
-
-  align(
-    other: Series<CellValue>,
-    join: "outer" | "inner" = "outer"
-  ): [Series<T>, Series<CellValue>] {
-    const target = joinedLabels(this._index, other.index as IndexLabel[], join);
-    return [
-      this.reindex(target) as unknown as Series<T>,
-      (other as unknown as Series<T>).reindex(target) as unknown as Series<CellValue>,
-    ];
-  }
-
-  at_time(time: string): Series<T> {
-    const targetSeconds = parseTimeOfDay(time);
-    if (targetSeconds === null) throw new Error(`at_time: invalid time '${time}'.`);
-    const values: T[] = [];
-    const index: IndexLabel[] = [];
-    for (let i = 0; i < this.length; i += 1) {
-      const seconds = secondsOfDaySafe(this._values[i] as unknown as CellValue);
-      if (seconds !== null && seconds === targetSeconds) {
-        values.push(this._values[i]!);
-        index.push(this._index[i]!);
-      }
-    }
-    return new Series(values, { index, name: this.name });
-  }
-
-  /** Exponentially weighted windows (adjust=True). */
-  ewm(span: number, options: { min_periods?: number } = {}): {
-    mean(): Series<number | null>;
-    sum(): Series<number | null>;
-    std(): Series<number | null>;
-  } {
-    if (typeof span !== "number" || span < 1) {
-      throw new Error("ewm: span must be a number >= 1.");
-    }
-    const minPeriods = Math.max(1, options.min_periods ?? 1);
-    const nums = this._values.map((v) =>
-      typeof v === "number" && Number.isFinite(v) ? v : null
-    );
-    const make = (kind: "mean" | "sum" | "std") =>
-      new Series(ewmValues(nums, span, minPeriods, kind), {
-        index: [...this._index],
-        name: this.name,
-      });
-    return { mean: () => make("mean"), sum: () => make("sum"), std: () => make("std") };
-  }
-
-  /** Frequency binning over datetime-like values (pandas resample). */
-  resample(rule: string): {
-    sum(): Series<number | null>;
-    mean(): Series<number | null>;
-    min(): Series<number | null>;
-    max(): Series<number | null>;
-    count(): Series<number>;
-  } {
-    const freqMs = parseFreqMs(rule);
-    const bins = resampleBins(this._values as unknown as CellValue[], freqMs);
-    const labels = bins.map((b) => new Date(b.binStartMs).toISOString());
-    const collect = (b: { positions: number[] }): number[] =>
-      (b.positions.map((p) => this._values[p] as unknown as CellValue)).filter(
-        (v): v is number =>
-          typeof v === "number" && Number.isFinite(v)
-      );
-    const countAll = (b: { positions: number[] }): number =>
-      b.positions.filter((p) => {
-        const v = this._values[p] as unknown as CellValue;
-        if (v === null || v === undefined) return false;
-        if (typeof v === "number" && Number.isNaN(v)) return false;
-        return true;
-      }).length;
-    const reduce = (
-      fn: (nums: number[]) => number,
-      fallback: number | null
-    ): Series<number | null> =>
-      new Series(bins.map((b) => {
-        const nums = collect(b);
-        return nums.length > 0 ? fn(nums) : fallback;
-      }), { index: labels, name: this.name });
-    return {
-      sum: () => reduce((n) => n.reduce((a, b) => a + b, 0), null),
-      mean: () => reduce((n) => n.reduce((a, b) => a + b, 0) / n.length, null),
-      min: () => reduce((n) => Math.min(...n), null),
-      max: () => reduce((n) => Math.max(...n), null),
-      count: () =>
-        new Series(bins.map((b) => countAll(b)), {
-          index: labels,
-          name: this.name,
-        }),
-    };
-  }
-
-  droplevel(level = 0): Series<T> {
-    // Single-level index: honest no-op copy (matches pandas on flat indexes).
-    void level;
-    return this.copy();
-  }
-
-  reorder_levels(..._order: number[]): Series<T> {
-    return this.copy();
-  }
-
-  swaplevel(): Series<T> {
-    return this.copy();
-  }
-
-  set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> {
-    void options.allows_duplicate_labels;
-    return this.copy();
-  }
-
-  tz_localize(tz: string): Series<T> {
-    return this.map((v) => v) .pipe((s) => {
-      void tz; // offsets are carried transparently; Date has no zone field
-      return s;
-    }) as unknown as Series<T>;
-  }
-
-  tz_convert(_tz: string): Series<T> {
-    return this.copy();
-  }
-
-  static from_arrow(records: Record<string, CellValue>[]): DataFrame {
-    return new DataFrame(records);
-  }
-
-  to_clipboard(sep = "\t"): string {
-    const text = this._values.map((v) => cellToText(v as unknown as CellValue)).join(sep);
-    try {
-      const proc = Bun.spawnSync(["pbcopy"], { stdin: Buffer.from(text, "utf8") });
-      if (proc.exitCode !== 0) throw new Error("pbcopy failed");
-    } catch {
-      // No system clipboard: returning the text keeps the call useful.
-    }
-    return text;
-  }
-
-  to_hdf(): Buffer {
-    return Buffer.from(JSON.stringify({ values: this._values, index: this._index }), "utf8");
-  }
-
-  to_pickle(): Buffer {
-    return this.to_hdf();
-  }
-
-  to_sql(tableName: string): string {
-    const name = this.name ?? "value";
-    return this._values
-      .map((v) => `INSERT INTO ${tableName} (${name}) VALUES (${JSON.stringify(v ?? null)});`)
-      .join("\n");
-  }
-
-  to_timestamp(): Series<T> {
-    return this.copy();
-  }
-
-  to_xarray(): Record<string, CellValue> {
-    return this.to_dict();
-  }
-
-  /** Categorical accessor for low-cardinality string series (pandas .cat). */
-  get cat(): ReturnType<typeof buildCategoricalAccessor> | null {
-    const values = this._values as unknown as CellValue[];
-    if (!values.every((v) => typeof v === "string" || v === null)) return null;
-    return buildCategoricalAccessor(values as string[], this.name ?? "categories");
-  }
-
-  get html(): never {
-    throw new NotSupportedError("Series.html is not supported; use to_string() or to_frame().to_html().");
-  }
-  hist(): never {
-    throw new NotSupportedError("Plotting is not supported in bun_panda; use plot with your chart library of choice.");
-  }
-  get sparse(): never {
-    throw new NotSupportedError("Sparse accessor is not supported.");
-  }
-  get struct(): never {
-    throw new NotSupportedError("Struct accessor is not supported.");
-  }
-  get plot(): never {
-    throw new NotSupportedError("Plotting is not supported in bun_panda.");
-  }
+  get cat() { return seriesApi.accessor_cat(this.view()); }
+  hist(): never { return seriesApi.hist(this.view()); }
+  plot(): never { return seriesApi.accessor_plot(this.view()); }
 }
 
 
 /** Renders a cell for text exports ("nan" for missing, ISO for dates). */
-function cellToText(value: CellValue): string {
-  if (isMissing(value) || (typeof value === "number" && Number.isNaN(value))) return "nan";
-  if (value instanceof Date) return value.toISOString();
-  return String(value);
-}
-
 /** Escapes LaTeX special characters in plain text. */
-function latexEscape(text: string): string {
-  return text
-    .replace(/\\/g, "\\textbackslash{}")
-    .replace(/([#$%&_{}])/g, "\\$1")
-    .replace(/~/g, "\\textasciitilde{}")
-    .replace(/\^/g, "\\textasciicircum{}");
-}
-
-function buildCategoricalAccessor(values: string[], name: string) {
-  void name; // accessor identity is positional; name kept for signature parity
-  const { Categorical } = require("./categorical") as {
-    Categorical: new (
-      values: CellValue[],
-      options?: { categories?: CellValue[]; ordered?: boolean }
-    ) => {
-      codes: number[];
-      categories: CellValue[];
-      ordered: boolean;
-      describe: () => DataFrame;
-      map: (fn: (v: CellValue) => CellValue) => unknown;
-    };
-  };
-  const cat = new Categorical(
-    values.map((v) => (v === null ? "" : v)),
-    { categories: [...new Set(values.filter((v): v is string => v !== null))].sort() }
-  );
-  return {
-    get categories(): CellValue[] {
-      return cat.categories;
-    },
-    get codes(): number[] {
-      return values.map((v) => (v === null ? -1 : cat.codes[values.indexOf(v)]!));
-    },
-    get ordered(): boolean {
-      return cat.ordered;
-    },
-    describe(): DataFrame {
-      return cat.describe();
-    },
-    rename_categories(newCategories: CellValue[]): string[] {
-      return values.map((v) => (v === null ? v : String(newCategories[cat.codes[values.indexOf(v)]!] ?? v)));
-    },
-    as_ordered() {
-      return buildCategoricalAccessor(values, name);
-    },
-  };
-}
-
-function secondsOfDaySafe(value: CellValue): number | null {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds();
-  }
-  if (typeof value === "string") {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.getHours() * 3600 + parsed.getMinutes() * 60 + parsed.getSeconds();
-    }
-  }
-  return null;
-}
