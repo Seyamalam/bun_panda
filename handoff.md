@@ -2,6 +2,11 @@
 
 *Written 2026-08-25 after the parity sprint + cleanup session. Everything below is verified against the working tree at commit `b563969`.*
 
+## Location
+
+- **Working directory**: `/Users/seyam/Work/bun_panda` (macOS, user `seyam`)
+- **Local path on the user's machine**: `~/Work/bun_panda`
+
 ## What this repo is
 
 `bun_panda` — a pandas-parity TypeScript library for Bun, with a Rust core compiled to WASM (flat C ABI over linear memory, **no wasm-bindgen/wasm-pack**; loaded via Bun's native `WebAssembly`). Repo: `github.com/Seyamalam/bun_panda`, branch `master`.
