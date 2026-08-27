@@ -19,6 +19,15 @@ The goal is API familiarity first, so JS/TS developers can use dataframe workflo
 
 ## Installation
 
+Project links: [GitHub](https://github.com/Seyamalam/bun_panda) and
+[npm](https://www.npmjs.com/package/bun_panda). Install the public package with:
+
+```bash
+bun add bun_panda
+```
+
+For development and exact artifact reproduction, use the repository checkout:
+
 ```bash
 # clone
 git clone https://github.com/Seyamalam/bun_panda.git && cd bun_panda
@@ -26,15 +35,41 @@ git clone https://github.com/Seyamalam/bun_panda.git && cd bun_panda
 # reproducible install (bun.lock is committed)
 bun install --frozen-lockfile
 
-# (optional) rebuild the 3KB Rust/WASM kernels after pulling Rust changes
+# (optional) rebuild the 7.2 KiB Rust/WASM kernels after pulling Rust changes
 bun run build:wasm
 
 # run the full test + lint + typecheck suite
 bun run check
 
-# WASM is on by default; force the pure-TS groupby path (CI also does this)
+# Adaptive dispatch is the default; force pure TypeScript for verification
 BUN_PANDA_WASM=0 bun test
+
+# Force eligible Wasm paths for differential experiments
+BUN_PANDA_WASM=1 bun test
 ```
+
+## Browser numeric kernels
+
+The full DataFrame API targets Bun. A separate browser-safe entry loads the
+numeric Wasm kernels asynchronously and has no Node or Bun imports:
+
+```ts
+import { BROWSER_AGG_MEAN, createBrowserKernel } from "bun_panda/browser";
+
+const kernel = await createBrowserKernel();
+const order = kernel.stableArgsort(Float64Array.of(3, 1, 2));
+const means = kernel.aggregate(
+  Float64Array.of(2, 4, 10),
+  Int32Array.of(0, 0, 1),
+  2,
+  BROWSER_AGG_MEAN,
+);
+```
+
+The minified browser entry is 2,683 bytes (996 bytes gzip) plus the 7,359-byte
+Wasm asset. The manuscript's Chromium, Firefox, and WebKit measurements are
+macOS-only. Use the cross-platform reproduction runner to collect independent
+Windows or Ubuntu validation without changing that claim scope.
 
 ## Quick Start
 
@@ -100,10 +135,10 @@ bun run lint                 # oxlint (up to 50x faster than eslint)
 bun run typecheck
 bun run check                # lint + typecheck + test
 bun test                     # includes wasm kernel parity tests (src/wasm/*)
-bun test --coverage          # line+function coverage; CI gates at 70%
-BUN_PANDA_WASM=0 bun test    # force the pure-TS groupby path
+bun run test:coverage        # aggregate line coverage with a 70% floor
+BUN_PANDA_WASM=0 bun test    # force pure TypeScript
+BUN_PANDA_WASM=1 bun test    # force eligible Wasm paths
 bun run build:wasm           # rebuild crates/core -> src/wasm/bun_panda_core.wasm
-```
 bun run bench
 bun run bench:io
 bun run bench:gate
@@ -113,10 +148,14 @@ bun run bench:compare:pandas
 bun run bench:gate:pandas
 python -m pip install -r bench/requirements.txt
 python bench/pandas_compare.py
+bun run conformance          # 2,500 pandas differential cases in four modes
+bun run bench:fresh          # 720 fresh processes; about 12 minutes on M5 Pro
+bun run reproduce:platform   # full cross-platform run; returns one JSON report
 ```
 
-Current suite: `86` tests for dataframe ops, merge modes, pivoting, dtypes, compatibility helpers, and CSV/TSV/JSON/Parquet/Excel IO edge cases.
-Benchmark suite: `82` comparative cases against Arquero (`bun run bench`).
+Current suite: run `bun test` for the live count across dataframe, Series,
+GroupBy, top-level APIs, I/O, Wasm, and browser-kernel tests.
+Benchmark suite: `87` comparative cases against Arquero (`bun run bench`).
 
 ## Documentation
 
@@ -124,18 +163,17 @@ Benchmark suite: `82` comparative cases against Arquero (`bun run bench`).
 - `docs/FEATURES.md`: implemented features and parity notes.
 - `docs/TODO.md`: prioritized backlog.
 - `docs/BENCHMARKS.md`: benchmark harness and comparison notes.
+- `docs/CROSS-PLATFORM-REPRODUCTION.md`: one-file macOS, Windows, and Ubuntu reproduction.
 - `SCOPE.md`: v1 product scope.
 - `CONTRIBUTING.md`: contribution workflow.
 - `SECURITY.md`: reporting vulnerabilities.
 - `CHANGELOG.md`: release history.
 
-CI: GitHub Actions workflow at `.github/workflows/ci.yml` runs typecheck/tests plus benchmark + regression gates on push/PR, and can auto-refresh benchmark snapshots on `workflow_dispatch`.
-
 <!-- BENCHMARKS:START -->
 ### Automated Benchmark Snapshot
 
 Generated from benchmark scripts (rows=25000, iterations=8).
-bun_panda vs Arquero: faster or equal in 71/82 cases.
+bun_panda vs Arquero: faster in 78/87 cases.
 bun_panda vs pandas: faster or equal in 5/10 tracked cases.
 
 #### bun_panda vs Arquero (headline cases)
@@ -171,12 +209,13 @@ bun_panda vs pandas: faster or equal in 5/10 tracked cases.
 
 ## Status
 
-This is an early library release (`0.4.0`). The API is intentionally pandas-like; the measurable audit (`bun run parity` → docs/PARITY.md) tracks 99% of the 505-API pandas surface (DataFrame 98%, Series 99%, Top-level 100%, GroupBy 100%); the remaining 5 APIs are plotting-only stubs.
-A Rust/WASM core (`crates/core` → `src/wasm/bun_panda_core.wasm`) powers numeric groupby aggregations and the single-column numeric `sort_values` / `filter` paths; `BUN_PANDA_WASM=0` opts back into pure TS. The columnar store in `src/wasm/columns.ts` (`Float64Array` with NaN = missing) feeds one fused `bp_agg_multi_f64` call per agg spec.
+This is an early library release (`0.4.1`). The measurable audit (`bun run parity` → docs/PARITY.md) tracks all 505 APIs in its pandas reference set. Plotting has ASCII and SVG renderers; styled dataframe rendering remains intentionally unsupported.
+A Rust/WASM core (`crates/core` to `src/wasm/bun_panda_core.wasm`) implements numeric groupby, single-column numeric sorting, and mask compaction kernels. Adaptive dispatch keeps measured regressions in TypeScript. `BUN_PANDA_WASM=0` forces TypeScript and `BUN_PANDA_WASM=1` forces eligible Wasm paths for experiments. The columnar store in `src/wasm/columns.ts` uses `Float64Array` with NaN for missing values and feeds one fused `bp_agg_multi_f64` call per aggregation specification.
 
-### pandas API parity: ~27%
-
-Measured against the official pandas API reference (505 public methods/functions across DataFrame, Series, GroupBy, and top-level functions) — see [docs/PARITY.md](docs/PARITY.md) for the full per-surface breakdown and the exact list of what's missing. Regenerate with `bun run parity`.
+The pandas 3.0.5 differential corpus currently agrees in all 2,500 tested
+observations under its declared merge-order rule. Forced TypeScript, forced eligible Wasm, and adaptive
+dispatch agree in all 2,500. The name census is therefore documented as API
+surface coverage, not pandas behavioral compatibility.
 
 ## License
 

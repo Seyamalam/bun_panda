@@ -1,0 +1,7104 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-26T08:06:34.012Z",
+  "runtime": {
+    "bun": "1.4.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro"
+  },
+  "design": {
+    "systems": [
+      "bun_panda",
+      "arquero",
+      "danfojs",
+      "nodejs_polars",
+      "duckdb_wasm"
+    ],
+    "datasetSource": "uci_bank",
+    "datasetPath": "paper/data/workloads/uci-bank/bank-full.csv",
+    "workloads": [
+      "groupby_sum",
+      "filter_sort_top100",
+      "value_counts",
+      "inner_join"
+    ],
+    "scopes": [
+      "operation",
+      "load_and_operation"
+    ],
+    "sizes": [
+      45211
+    ],
+    "processReplicates": 5,
+    "warmupsPerProcess": 3,
+    "iterationsPerProcess": 10,
+    "baseSeed": 20260826,
+    "taskOrder": "deterministically randomized",
+    "experimentalUnit": "fresh Bun process",
+    "correctness": "all systems must match a pure TypeScript reference SHA-256 digest for each seed",
+    "operationScope": "data structures are built before timing; output materialization is timed",
+    "loadAndOperationScope": "dataset loading and operation are timed; module import and engine initialization are excluded",
+    "memory": "peak process RSS is descriptive because in-process allocators and garbage collectors differ"
+  },
+  "cells": [
+    {
+      "rows": 45211,
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260827": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260828": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260829": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260830": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 31.096237499999994,
+          "medianOfProcessMeansMs": 32.814108399999995,
+          "processMeansMs": [
+            29.6385666,
+            37.070087799999996,
+            33.524458200000005,
+            32.814108399999995,
+            22.433966500000004
+          ],
+          "medianPeakRssBytes": 163332096
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 27.817764160000003,
+          "medianOfProcessMeansMs": 29.964887499999996,
+          "processMeansMs": [
+            31.859004200000005,
+            53.17250839999999,
+            12.008562399999999,
+            12.0838583,
+            29.964887499999996
+          ],
+          "medianPeakRssBytes": 154304512
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 68.92563157999999,
+          "medianOfProcessMeansMs": 65.5383001,
+          "processMeansMs": [
+            151.7866124,
+            16.391458099999998,
+            88.94656660000001,
+            65.5383001,
+            21.9652207
+          ],
+          "medianPeakRssBytes": 322666496
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 10.364612480000002,
+          "medianOfProcessMeansMs": 5.197525099999999,
+          "processMeansMs": [
+            16.3028043,
+            2.1520999000000005,
+            25.359245700000002,
+            5.197525099999999,
+            2.8113874
+          ],
+          "medianPeakRssBytes": 173178880
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 17.31443416,
+          "medianOfProcessMeansMs": 19.240920799999998,
+          "processMeansMs": [
+            6.254666599999999,
+            5.4367000999999995,
+            19.240920799999998,
+            24.2065458,
+            31.4333375
+          ],
+          "medianPeakRssBytes": 635355136
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260827": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260828": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260829": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+        "20260830": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 43.53882076,
+          "medianOfProcessMeansMs": 38.9286874,
+          "processMeansMs": [
+            60.298266699999985,
+            25.309270700000003,
+            34.3803001,
+            38.9286874,
+            58.777578899999995
+          ],
+          "medianPeakRssBytes": 194658304
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 33.5530067,
+          "medianOfProcessMeansMs": 29.549504099999996,
+          "processMeansMs": [
+            9.098420899999999,
+            29.549504099999996,
+            29.419849999999997,
+            30.003920899999997,
+            69.6933376
+          ],
+          "medianPeakRssBytes": 171524096
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 62.581871719999995,
+          "medianOfProcessMeansMs": 66.17645439999998,
+          "processMeansMs": [
+            97.86267910000001,
+            49.537033300000004,
+            66.17645439999998,
+            24.6381333,
+            74.6950585
+          ],
+          "medianPeakRssBytes": 348389376
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 38.959688299999996,
+          "medianOfProcessMeansMs": 14.597791699999998,
+          "processMeansMs": [
+            105.2696791,
+            14.597791699999998,
+            11.909433500000002,
+            48.69570399999999,
+            14.325833200000002
+          ],
+          "medianPeakRssBytes": 211582976
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 340.05352594,
+          "medianOfProcessMeansMs": 356.7122875,
+          "processMeansMs": [
+            355.54487079999996,
+            142.3801709,
+            382.24645449999997,
+            356.7122875,
+            463.383846
+          ],
+          "medianPeakRssBytes": 699924480
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260827": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260828": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260829": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260830": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 5.64475588,
+          "medianOfProcessMeansMs": 5.749162500000001,
+          "processMeansMs": [
+            11.2097084,
+            2.1329584,
+            2.2380669,
+            5.749162500000001,
+            6.893883199999999
+          ],
+          "medianPeakRssBytes": 150487040
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 15.73458832,
+          "medianOfProcessMeansMs": 14.2262791,
+          "processMeansMs": [
+            6.9612377,
+            15.439287400000001,
+            14.2262791,
+            14.0532624,
+            27.992874999999998
+          ],
+          "medianPeakRssBytes": 175243264
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 317.5392159,
+          "medianOfProcessMeansMs": 296.70019179999997,
+          "processMeansMs": [
+            214.82207079999998,
+            380.7919502,
+            410.6186833,
+            284.7631834,
+            296.70019179999997
+          ],
+          "medianPeakRssBytes": 366313472
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 16.815302440000004,
+          "medianOfProcessMeansMs": 2.698479,
+          "processMeansMs": [
+            16.888899900000002,
+            1.7323708,
+            2.698479,
+            60.83884160000001,
+            1.9179209
+          ],
+          "medianPeakRssBytes": 205094912
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 12.912104099999999,
+          "medianOfProcessMeansMs": 10.7054084,
+          "processMeansMs": [
+            3.8568455999999998,
+            5.7937167999999994,
+            10.7054084,
+            22.977570599999996,
+            21.2269791
+          ],
+          "medianPeakRssBytes": 648019968
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260827": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260828": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260829": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+        "20260830": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 34.73466252,
+          "medianOfProcessMeansMs": 38.65228740000001,
+          "processMeansMs": [
+            53.119154200000004,
+            38.65228740000001,
+            5.319887499999999,
+            31.217112599999997,
+            45.36487089999999
+          ],
+          "medianPeakRssBytes": 183959552
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 28.409890939999997,
+          "medianOfProcessMeansMs": 27.157191900000004,
+          "processMeansMs": [
+            38.299574899999996,
+            20.992170899999998,
+            8.349787599999999,
+            47.2507294,
+            27.157191900000004
+          ],
+          "medianPeakRssBytes": 179765248
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 263.33961246,
+          "medianOfProcessMeansMs": 264.999529,
+          "processMeansMs": [
+            245.8345707,
+            348.2787918,
+            369.18064590000006,
+            264.999529,
+            88.40452490000001
+          ],
+          "medianPeakRssBytes": 430129152
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 107.61591168,
+          "medianOfProcessMeansMs": 85.5307041,
+          "processMeansMs": [
+            170.6415333,
+            85.5307041,
+            21.7349209,
+            74.5939001,
+            185.57850000000002
+          ],
+          "medianPeakRssBytes": 231489536
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 551.12024088,
+          "medianOfProcessMeansMs": 446.1578876,
+          "processMeansMs": [
+            446.1578876,
+            419.4146375,
+            392.3289291,
+            802.2831044000001,
+            695.4166458
+          ],
+          "medianPeakRssBytes": 712146944
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "value_counts",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260827": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260828": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260829": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260830": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 10.294684140000001,
+          "medianOfProcessMeansMs": 9.135391900000002,
+          "processMeansMs": [
+            18.2943457,
+            10.7578166,
+            7.559591600000002,
+            5.726274899999999,
+            9.135391900000002
+          ],
+          "medianPeakRssBytes": 137265152
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 30.244223400000003,
+          "medianOfProcessMeansMs": 24.546416699999998,
+          "processMeansMs": [
+            56.032733300000004,
+            42.586266800000004,
+            17.5611417,
+            24.546416699999998,
+            10.4945585
+          ],
+          "medianPeakRssBytes": 156680192
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 80.0045192,
+          "medianOfProcessMeansMs": 79.5248793,
+          "processMeansMs": [
+            54.882016699999994,
+            104.0076582,
+            91.8078585,
+            69.8001833,
+            79.5248793
+          ],
+          "medianPeakRssBytes": 324976640
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 8.937130020000001,
+          "medianOfProcessMeansMs": 6.538050100000001,
+          "processMeansMs": [
+            20.3174083,
+            2.2357001,
+            6.538050100000001,
+            9.590345699999999,
+            6.004145900000001
+          ],
+          "medianPeakRssBytes": 174948352
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 28.50711088,
+          "medianOfProcessMeansMs": 28.675287400000002,
+          "processMeansMs": [
+            49.4173919,
+            6.6342541,
+            27.970420999999995,
+            28.675287400000002,
+            29.8382
+          ],
+          "medianPeakRssBytes": 635207680
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260827": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260828": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260829": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+        "20260830": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 32.97400656,
+          "medianOfProcessMeansMs": 23.4637167,
+          "processMeansMs": [
+            50.172004199999996,
+            13.136024700000002,
+            19.914733199999997,
+            58.183554,
+            23.4637167
+          ],
+          "medianPeakRssBytes": 179535872
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 33.043344180000005,
+          "medianOfProcessMeansMs": 30.576037599999996,
+          "processMeansMs": [
+            44.672504200000006,
+            30.576037599999996,
+            32.4094209,
+            30.2323956,
+            27.326362600000003
+          ],
+          "medianPeakRssBytes": 177897472
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 78.81610660000001,
+          "medianOfProcessMeansMs": 68.5531915,
+          "processMeansMs": [
+            103.0186958,
+            90.6307959,
+            68.5531915,
+            63.42291229999999,
+            68.4549375
+          ],
+          "medianPeakRssBytes": 345653248
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 71.30765665999999,
+          "medianOfProcessMeansMs": 68.1535376,
+          "processMeansMs": [
+            11.9664374,
+            119.3443622,
+            94.767446,
+            68.1535376,
+            62.306500099999994
+          ],
+          "medianPeakRssBytes": 210960384
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 435.10756926000005,
+          "medianOfProcessMeansMs": 490.3802877,
+          "processMeansMs": [
+            538.0817167,
+            490.3802877,
+            422.3414791,
+            571.2803127,
+            153.4540501
+          ],
+          "medianPeakRssBytes": 706183168
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "inner_join",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260827": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260828": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260829": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260830": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 107.40682248,
+          "medianOfProcessMeansMs": 120.0026916,
+          "processMeansMs": [
+            182.84015829999998,
+            151.53615010000001,
+            120.0026916,
+            38.50641660000001,
+            44.148695800000006
+          ],
+          "medianPeakRssBytes": 267468800
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 27.635997480000004,
+          "medianOfProcessMeansMs": 27.7966541,
+          "processMeansMs": [
+            37.0401666,
+            8.364721000000001,
+            44.8037459,
+            20.1746998,
+            27.7966541
+          ],
+          "medianPeakRssBytes": 218152960
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 4480.4001984,
+          "medianOfProcessMeansMs": 4496.540983399999,
+          "processMeansMs": [
+            5675.8064375,
+            3182.6887708000004,
+            2974.5519169000004,
+            6072.412883399999,
+            4496.540983399999
+          ],
+          "medianPeakRssBytes": 372686848
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 70.06519162000001,
+          "medianOfProcessMeansMs": 66.98392489999999,
+          "processMeansMs": [
+            187.5097249,
+            66.98392489999999,
+            68.43616259999999,
+            6.4754707,
+            20.920675000000003
+          ],
+          "medianPeakRssBytes": 220954624
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 26.52721256,
+          "medianOfProcessMeansMs": 29.2996209,
+          "processMeansMs": [
+            29.130737399999997,
+            29.2996209,
+            31.116674999999997,
+            30.427229299999993,
+            12.661800199999998
+          ],
+          "medianPeakRssBytes": 535068672
+        }
+      }
+    },
+    {
+      "rows": 45211,
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 5,
+      "iterationsPerProcess": 10,
+      "digestsBySeed": {
+        "20260826": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260827": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260828": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260829": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+        "20260830": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 177.40218077999998,
+          "medianOfProcessMeansMs": 150.3518,
+          "processMeansMs": [
+            274.68012479999993,
+            196.51900419999998,
+            150.3518,
+            115.4743209,
+            149.985654
+          ],
+          "medianPeakRssBytes": 296075264
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 31.997639119999995,
+          "medianOfProcessMeansMs": 30.640691499999996,
+          "processMeansMs": [
+            35.41808760000001,
+            11.164029200000002,
+            30.640691499999996,
+            29.636324899999998,
+            53.129062399999995
+          ],
+          "medianPeakRssBytes": 221691904
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 4542.81441912,
+          "medianOfProcessMeansMs": 4360.6300083,
+          "processMeansMs": [
+            7893.4542082,
+            4360.6300083,
+            4509.2727209,
+            3579.8491123999993,
+            2370.8660458
+          ],
+          "medianPeakRssBytes": 410353664
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 103.38024499999999,
+          "medianOfProcessMeansMs": 51.952675,
+          "processMeansMs": [
+            273.9731167,
+            153.8880667,
+            51.952675,
+            17.275899900000002,
+            19.811466700000004
+          ],
+          "medianPeakRssBytes": 276430848
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 494.35548574000006,
+          "medianOfProcessMeansMs": 483.12969979999997,
+          "processMeansMs": [
+            483.12969979999997,
+            419.75104170000003,
+            536.1294291,
+            405.3228708,
+            627.4443873
+          ],
+          "medianPeakRssBytes": 735936512
+        }
+      }
+    }
+  ],
+  "raw": [
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        244.263667,
+        147.769833,
+        132.60775,
+        181.000459,
+        90.117291,
+        91.377875,
+        244.675291,
+        68.649167,
+        226.700416,
+        90.704375
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 312295424,
+        "finalRss": 312328192,
+        "maxRssKilobytes": 305008
+      },
+      "processWallMs": 7567.810208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        155.148417,
+        139.593833,
+        208.185834,
+        412.339208,
+        328.571375,
+        265.281875,
+        143.715084,
+        356.070916,
+        373.191708,
+        357.632917
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 280903680,
+        "finalRss": 281739264,
+        "maxRssKilobytes": 275152
+      },
+      "processWallMs": 4925.407666
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        139.251583,
+        45.021458,
+        43.472875,
+        65.845042,
+        30.199208,
+        69.731667,
+        32.141209,
+        27.458,
+        20.004084,
+        28.594916
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 179535872,
+        "finalRss": 179585024,
+        "maxRssKilobytes": 175392
+      },
+      "processWallMs": 2548.809084
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        109.659458,
+        123.049375,
+        40.148625,
+        56.567375,
+        51.29225,
+        23.909833,
+        28.965792,
+        43.025375,
+        29.203542,
+        54.505708
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 160415744,
+        "finalRss": 160530432,
+        "maxRssKilobytes": 156784
+      },
+      "processWallMs": 1994.371542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        23.35775,
+        47.317708,
+        35.922125,
+        34.17225,
+        24.532917,
+        40.975,
+        39.732917,
+        118.618542,
+        84.110958,
+        82.451375
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 183959552,
+        "finalRss": 184008704,
+        "maxRssKilobytes": 179712
+      },
+      "processWallMs": 2501.820667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        18.768167,
+        4.594334,
+        3.270959,
+        2.8095,
+        3.3925,
+        6.3085,
+        14.699875,
+        49.246958,
+        34.517,
+        25.42025
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 165740544,
+        "finalRss": 165806080,
+        "maxRssKilobytes": 161936
+      },
+      "processWallMs": 2227.050916
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        511.934333,
+        239.786667,
+        200.227458,
+        146.615458,
+        236.560458,
+        292.457708,
+        228.773583,
+        197.068083,
+        362.287333,
+        331.090167
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 292356096,
+        "finalRss": 292454400,
+        "maxRssKilobytes": 285616
+      },
+      "processWallMs": 5189.637708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        140.701416,
+        105.436917,
+        308.053375,
+        155.595875,
+        149.460792,
+        215.438042,
+        173.114375,
+        307.870416,
+        152.3805,
+        120.349875
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 267468800,
+        "finalRss": 268042240,
+        "maxRssKilobytes": 261776
+      },
+      "processWallMs": 3482.270875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        7338.4795,
+        6780.287791,
+        6869.635791,
+        7144.762917,
+        7380.778375,
+        10901.368,
+        7980.373042,
+        9303.683,
+        7983.026791,
+        7252.146875
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 410353664,
+        "finalRss": 311689216,
+        "maxRssKilobytes": 421856
+      },
+      "processWallMs": 104892.530958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        88.073375,
+        139.6165,
+        27.809292,
+        59.2055,
+        37.524584,
+        58.91225,
+        32.373625,
+        64.820125,
+        36.465708,
+        58.181708
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 196116480,
+        "finalRss": 196198400,
+        "maxRssKilobytes": 191616
+      },
+      "processWallMs": 2492.840125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        21.140709,
+        41.32775,
+        35.186666,
+        31.213208,
+        31.249666,
+        57.703167,
+        66.265625,
+        41.925958,
+        34.000667,
+        22.982333
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 174358528,
+        "finalRss": 174473216,
+        "maxRssKilobytes": 170400
+      },
+      "processWallMs": 2014.457291
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.28375,
+        68.457792,
+        33.706083,
+        18.407334,
+        12.058833,
+        5.221166,
+        23.81625,
+        19.115125,
+        3.299667,
+        8.808083
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 174948352,
+        "finalRss": 175030272,
+        "maxRssKilobytes": 170944
+      },
+      "processWallMs": 1793.070875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        252.656667,
+        90.030541,
+        183.10075,
+        108.098625,
+        120.114167,
+        212.287333,
+        107.702292,
+        120.99425,
+        138.698875,
+        205.197167
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 251330560,
+        "finalRss": 252198912,
+        "maxRssKilobytes": 246304
+      },
+      "processWallMs": 3294.377
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        232.247792,
+        200.405,
+        300.264291,
+        192.313584,
+        255.769666,
+        226.656833,
+        184.5145,
+        75.765916,
+        134.107833,
+        73.051834
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 221085696,
+        "finalRss": 221724672,
+        "maxRssKilobytes": 216544
+      },
+      "processWallMs": 3901.382042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        208.911333,
+        191.43375,
+        130.937084,
+        102.551583,
+        183.644917,
+        209.252916,
+        200.063083,
+        159.952834,
+        220.590625,
+        99.077208
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 237125632,
+        "finalRss": 237191168,
+        "maxRssKilobytes": 231648
+      },
+      "processWallMs": 3936.348208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        5414.043334,
+        4976.190833,
+        5013.193083,
+        4827.091833,
+        6158.545709,
+        5305.426917,
+        5889.735542,
+        7618.720458,
+        6148.092791,
+        5407.023875
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 438763520,
+        "finalRss": 270286848,
+        "maxRssKilobytes": 428752
+      },
+      "processWallMs": 85109.294667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        12.174459,
+        8.227916,
+        55.866833,
+        7.165125,
+        6.955709,
+        10.205,
+        8.347625,
+        9.143333,
+        56.268916,
+        8.588541
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 144293888,
+        "finalRss": 144359424,
+        "maxRssKilobytes": 140992
+      },
+      "processWallMs": 996.0535
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        113.422084,
+        105.290334,
+        25.330708,
+        53.82175,
+        41.142875,
+        52.459917,
+        81.047084,
+        7.175417,
+        6.523125,
+        7.960625
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 606666752,
+        "finalRss": 606830592,
+        "maxRssKilobytes": 592624
+      },
+      "processWallMs": 6425.491833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        505.003625,
+        509.349333,
+        502.81525,
+        501.326584,
+        678.54625,
+        476.833334,
+        517.633458,
+        500.596458,
+        576.870375,
+        611.8425
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 706183168,
+        "finalRss": 706199552,
+        "maxRssKilobytes": 689664
+      },
+      "processWallMs": 13847.257459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        17.30575,
+        18.806417,
+        15.71475,
+        62.191167,
+        19.842833,
+        20.30875,
+        56.85175,
+        21.991708,
+        167.288334,
+        25.561209
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 155189248,
+        "finalRss": 155254784,
+        "maxRssKilobytes": 151632
+      },
+      "processWallMs": 1633.008208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        401.715625,
+        434.84225,
+        458.072542,
+        429.717625,
+        544.415542,
+        441.951416,
+        443.283334,
+        349.632208,
+        574.720709,
+        383.227625
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 712146944,
+        "finalRss": 712196096,
+        "maxRssKilobytes": 695520
+      },
+      "processWallMs": 12007.573167
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        23.845375,
+        30.399458,
+        29.999625,
+        28.508333,
+        33.327291,
+        29.285584,
+        31.29125,
+        27.847625,
+        35.632958,
+        26.248167
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 164577280,
+        "finalRss": 164626432,
+        "maxRssKilobytes": 160784
+      },
+      "processWallMs": 1293.014583
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        28.73525,
+        104.298958,
+        63.259,
+        92.925083,
+        111.910208,
+        65.947375,
+        227.47475,
+        41.820542,
+        117.097334,
+        199.228291
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 211582976,
+        "finalRss": 211812352,
+        "maxRssKilobytes": 206864
+      },
+      "processWallMs": 2582.591541
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        18.513875,
+        60.414417,
+        21.784417,
+        29.145666,
+        54.818333,
+        28.130125,
+        51.331084,
+        21.18025,
+        22.886458,
+        62.197041
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 217038848,
+        "finalRss": 217153536,
+        "maxRssKilobytes": 212080
+      },
+      "processWallMs": 1927.21225
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        574.151583,
+        479.898958,
+        542.002417,
+        620.41875,
+        552.164667,
+        438.782584,
+        690.89475,
+        385.895792,
+        313.280709,
+        306.312667
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 717062144,
+        "finalRss": 717111296,
+        "maxRssKilobytes": 700320
+      },
+      "processWallMs": 11750.105959
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        51.398416,
+        42.211541,
+        50.215583,
+        32.312666,
+        39.718959,
+        42.3485,
+        43.639042,
+        48.557584,
+        50.55625,
+        118.568209
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 276430848,
+        "finalRss": 276709376,
+        "maxRssKilobytes": 270240
+      },
+      "processWallMs": 1496.658917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        27.653292,
+        31.102583,
+        33.605208,
+        12.658791,
+        4.875375,
+        18.563375,
+        6.314625,
+        7.30625,
+        6.392958,
+        20.416542
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 193232896,
+        "finalRss": 193347584,
+        "maxRssKilobytes": 188832
+      },
+      "processWallMs": 1483.5215
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        288.781292,
+        298.392291,
+        291.20675,
+        528.711,
+        302.791791,
+        370.658083,
+        383.516708,
+        307.534292,
+        341.192334,
+        442.664167
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 715112448,
+        "finalRss": 715145216,
+        "maxRssKilobytes": 698400
+      },
+      "processWallMs": 8746.123708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        437.38225,
+        448.426292,
+        488.655625,
+        376.910416,
+        473.955583,
+        425.764542,
+        330.517292,
+        460.814375,
+        356.439333,
+        424.549083
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 715718656,
+        "finalRss": 715735040,
+        "maxRssKilobytes": 698976
+      },
+      "processWallMs": 9419.535417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        13.007833,
+        8.879333,
+        12.642792,
+        25.427209,
+        7.177167,
+        6.968625,
+        8.180083,
+        7.731666,
+        8.864583,
+        8.698875
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 134447104,
+        "finalRss": 134545408,
+        "maxRssKilobytes": 131408
+      },
+      "processWallMs": 862.775417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        22.957625,
+        23.132875,
+        38.342333,
+        22.246084,
+        28.620875,
+        53.105167,
+        23.23375,
+        38.480583,
+        46.411,
+        22.05975
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 153403392,
+        "finalRss": 153452544,
+        "maxRssKilobytes": 149872
+      },
+      "processWallMs": 1091.709833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        74.545125,
+        68.489958,
+        37.968208,
+        72.576917,
+        93.546959,
+        102.706875,
+        106.379791,
+        98.5945,
+        97.167708,
+        103.331
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 231276544,
+        "finalRss": 231424000,
+        "maxRssKilobytes": 226016
+      },
+      "processWallMs": 2299.938459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        104.83025,
+        40.489125,
+        69.2995,
+        113.86775,
+        156.933041,
+        62.8065,
+        129.597625,
+        146.300375,
+        84.6825,
+        69.820125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 341016576,
+        "finalRss": 341065728,
+        "maxRssKilobytes": 333072
+      },
+      "processWallMs": 4280.252125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        665.180625,
+        691.516875,
+        615.264541,
+        446.784917,
+        570.612459,
+        560.433709,
+        637.059084,
+        537.986042,
+        455.13675,
+        532.828125
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 690536448,
+        "finalRss": 690585600,
+        "maxRssKilobytes": 674416
+      },
+      "processWallMs": 11672.791125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        23.016375,
+        56.828584,
+        24.062584,
+        58.612959,
+        26.426458,
+        24.013334,
+        60.987542,
+        23.565208,
+        22.555917,
+        50.631917
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 162381824,
+        "finalRss": 162447360,
+        "maxRssKilobytes": 158656
+      },
+      "processWallMs": 1527.481583
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        3510.950542,
+        2757.885875,
+        3091.844708,
+        2681.001791,
+        3660.926792,
+        3097.645875,
+        2926.064417,
+        2747.386292,
+        4449.918958,
+        2903.262458
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 372686848,
+        "finalRss": 373211136,
+        "maxRssKilobytes": 364464
+      },
+      "processWallMs": 50281.516708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        14.749625,
+        17.152,
+        17.871417,
+        14.898542,
+        13.009125,
+        14.635083,
+        15.04325,
+        13.687375,
+        13.055959,
+        11.875541
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 210550784,
+        "finalRss": 210698240,
+        "maxRssKilobytes": 205792
+      },
+      "processWallMs": 5064.645917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        11.07025,
+        12.704708,
+        7.86325,
+        6.904709,
+        5.786084,
+        5.819583,
+        7.691167,
+        9.011667,
+        7.080584,
+        9.715208
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 225312768,
+        "finalRss": 225918976,
+        "maxRssKilobytes": 220640
+      },
+      "processWallMs": 318.392709
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.222375,
+        1.705958,
+        1.340542,
+        1.785958,
+        1.611792,
+        2.376875,
+        1.645,
+        1.546292,
+        1.523125,
+        1.565791
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 205897728,
+        "finalRss": 206012416,
+        "maxRssKilobytes": 201200
+      },
+      "processWallMs": 233.507708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.01825,
+        7.5135,
+        5.524083,
+        4.755375,
+        9.0025,
+        5.514208,
+        11.409375,
+        3.013,
+        2.734417,
+        3.061958
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 640073728,
+        "finalRss": 614596608,
+        "maxRssKilobytes": 625152
+      },
+      "processWallMs": 1496.701583
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        7.562041,
+        4.444166,
+        2.534041,
+        3.189208,
+        6.45925,
+        2.846625,
+        6.743083,
+        1.667292,
+        1.610667,
+        1.512083
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 643416064,
+        "finalRss": 643612672,
+        "maxRssKilobytes": 628544
+      },
+      "processWallMs": 1250.232917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        11.41775,
+        14.723875,
+        12.124541,
+        11.425792,
+        12.136,
+        11.588042,
+        11.246625,
+        11.457333,
+        11.940791,
+        11.603625
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 212516864,
+        "finalRss": 212664320,
+        "maxRssKilobytes": 207696
+      },
+      "processWallMs": 340.515167
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        15.560166,
+        17.141916,
+        19.9115,
+        14.72975,
+        15.391208,
+        15.148292,
+        15.425083,
+        15.145125,
+        17.291375,
+        18.170166
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 327647232,
+        "finalRss": 327712768,
+        "maxRssKilobytes": 320032
+      },
+      "processWallMs": 914.951709
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        11.579584,
+        15.592583,
+        11.388708,
+        9.801,
+        11.090959,
+        11.309,
+        12.720417,
+        10.873209,
+        12.034709,
+        12.704166
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 216629248,
+        "finalRss": 216842240,
+        "maxRssKilobytes": 211776
+      },
+      "processWallMs": 345.413208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.19775,
+        1.908333,
+        2.274708,
+        2.392416,
+        2.066959,
+        2.078625,
+        2.109209,
+        2.324958,
+        2.062041,
+        2.106
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 173178880,
+        "finalRss": 173244416,
+        "maxRssKilobytes": 169200
+      },
+      "processWallMs": 236.949417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        8.544417,
+        6.399292,
+        4.594625,
+        3.948875,
+        7.846083,
+        4.258292,
+        10.086042,
+        3.263667,
+        3.010291,
+        2.415417
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 649150464,
+        "finalRss": 649281536,
+        "maxRssKilobytes": 634080
+      },
+      "processWallMs": 1470.816209
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        7.64625,
+        9.1005,
+        6.582125,
+        6.640708,
+        6.556084,
+        6.817042,
+        6.710292,
+        6.479792,
+        6.087459,
+        6.992125
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 175243264,
+        "finalRss": 175423488,
+        "maxRssKilobytes": 171328
+      },
+      "processWallMs": 299.815459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        16.564917,
+        18.167,
+        16.325291,
+        16.358875,
+        16.641625,
+        17.5945,
+        17.19825,
+        16.793916,
+        17.604125,
+        19.5105
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 256770048,
+        "finalRss": 256868352,
+        "maxRssKilobytes": 250864
+      },
+      "processWallMs": 423.141042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        136.250291,
+        144.747792,
+        132.842833,
+        134.413084,
+        132.279625,
+        148.397209,
+        158.648834,
+        141.23,
+        145.367,
+        149.625041
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 694190080,
+        "finalRss": 694206464,
+        "maxRssKilobytes": 677952
+      },
+      "processWallMs": 3106.214917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        21.353125,
+        20.266792,
+        21.650709,
+        21.2825,
+        20.821041,
+        19.620542,
+        26.496625,
+        23.495833,
+        23.221583,
+        19.140459
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 226033664,
+        "finalRss": 226213888,
+        "maxRssKilobytes": 220928
+      },
+      "processWallMs": 944.617084
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        15.952583,
+        14.618916,
+        12.896042,
+        10.537208,
+        11.713625,
+        10.917125,
+        16.230291,
+        10.837,
+        11.652291,
+        16.005166
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 174850048,
+        "finalRss": 174915584,
+        "maxRssKilobytes": 170832
+      },
+      "processWallMs": 488.241417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        405.331041,
+        406.023125,
+        419.0885,
+        414.076667,
+        457.588417,
+        397.390875,
+        491.727667,
+        380.935542,
+        421.541416,
+        400.443125
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 725237760,
+        "finalRss": 725303296,
+        "maxRssKilobytes": 708320
+      },
+      "processWallMs": 7573.539125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        98.662417,
+        92.5895,
+        101.169625,
+        98.3935,
+        248.734917,
+        328.244208,
+        179.032583,
+        103.066583,
+        167.933334,
+        97.534834
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 237240320,
+        "finalRss": 167837696,
+        "maxRssKilobytes": 235024
+      },
+      "processWallMs": 3362.119833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        26.221083,
+        29.347917,
+        16.514666,
+        17.207167,
+        21.7505,
+        19.838625,
+        25.07925,
+        61.539458,
+        24.845666,
+        48.963042
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 535068672,
+        "finalRss": 472383488,
+        "maxRssKilobytes": 522576
+      },
+      "processWallMs": 5101.8335
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        17.15825,
+        21.54825,
+        18.136584,
+        16.132125,
+        20.184125,
+        23.503667,
+        16.620583,
+        13.911958,
+        12.113333,
+        16.302542
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 156680192,
+        "finalRss": 156811264,
+        "maxRssKilobytes": 153152
+      },
+      "processWallMs": 763.608584
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        35.035208,
+        20.169416,
+        20.370833,
+        21.521542,
+        22.216208,
+        24.706042,
+        32.438666,
+        29.813208,
+        25.911417,
+        20.910167
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 194658304,
+        "finalRss": 194707456,
+        "maxRssKilobytes": 190160
+      },
+      "processWallMs": 648.776708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        521.693375,
+        420.49025,
+        517.973084,
+        365.070292,
+        294.912167,
+        314.643167,
+        407.135459,
+        347.918084,
+        338.213167,
+        294.4155
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 710213632,
+        "finalRss": 710262784,
+        "maxRssKilobytes": 693632
+      },
+      "processWallMs": 9860.874417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        13.531375,
+        13.603833,
+        13.386584,
+        14.051375,
+        28.83225,
+        16.955667,
+        13.664458,
+        13.275666,
+        13.364833,
+        13.726833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 170803200,
+        "finalRss": 171032576,
+        "maxRssKilobytes": 167040
+      },
+      "processWallMs": 615.26
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        85.566834,
+        69.695708,
+        78.742583,
+        175.838875,
+        83.712958,
+        159.049709,
+        68.379458,
+        174.742583,
+        73.357875,
+        61.100375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 347979776,
+        "finalRss": 348028928,
+        "maxRssKilobytes": 339872
+      },
+      "processWallMs": 3551.516375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        160.091416,
+        71.266625,
+        58.466291,
+        81.500959,
+        71.34225,
+        79.445166,
+        13.770458,
+        26.7065,
+        27.525417,
+        79.724167
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 213008384,
+        "finalRss": 213155840,
+        "maxRssKilobytes": 208176
+      },
+      "processWallMs": 1838.759208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        20.446375,
+        33.626125,
+        25.407583,
+        16.158292,
+        28.195667,
+        14.687542,
+        28.556292,
+        11.893958,
+        6.754958,
+        6.682416
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 622231552,
+        "finalRss": 622428160,
+        "maxRssKilobytes": 607856
+      },
+      "processWallMs": 7116.692625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        208.080958,
+        200.906333,
+        237.3945,
+        233.197917,
+        123.936459,
+        385.01975,
+        235.477,
+        151.298458,
+        59.770417,
+        130.10825
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 299565056,
+        "finalRss": 299679744,
+        "maxRssKilobytes": 292672
+      },
+      "processWallMs": 3602.786084
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        38.500208,
+        79.294417,
+        43.422375,
+        53.668375,
+        40.002666,
+        63.617458,
+        38.431709,
+        28.326375,
+        29.137709,
+        32.32375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 169033728,
+        "finalRss": 169132032,
+        "maxRssKilobytes": 165184
+      },
+      "processWallMs": 1977.304125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        69.274,
+        130.724208,
+        39.694417,
+        34.860208,
+        36.678709,
+        38.03425,
+        31.868833,
+        34.505,
+        38.564583,
+        41.166125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 285605888,
+        "finalRss": 285949952,
+        "maxRssKilobytes": 279248
+      },
+      "processWallMs": 3705.139667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        16.43075,
+        13.05275,
+        13.50425,
+        29.643042,
+        15.882916,
+        10.219167,
+        9.780333,
+        13.002958,
+        10.636834,
+        10.109791
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 184909824,
+        "finalRss": 185106432,
+        "maxRssKilobytes": 180784
+      },
+      "processWallMs": 682.500292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        208.031291,
+        155.452958,
+        123.118792,
+        85.234375,
+        109.282,
+        109.127333,
+        140.842166,
+        107.405916,
+        84.0815,
+        70.867291
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 201424896,
+        "finalRss": 201637888,
+        "maxRssKilobytes": 196928
+      },
+      "processWallMs": 3033.587375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        387.98675,
+        218.842458,
+        212.390916,
+        208.848166,
+        462.715417,
+        192.993375,
+        143.515625,
+        228.865833,
+        167.471042,
+        234.716125
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 420610048,
+        "finalRss": 420642816,
+        "maxRssKilobytes": 410784
+      },
+      "processWallMs": 7899.324042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        78.89025,
+        105.193834,
+        298.23325,
+        25.814875,
+        23.011292,
+        82.216542,
+        75.241625,
+        75.022417,
+        145.431834,
+        38.618541
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 203980800,
+        "finalRss": 204095488,
+        "maxRssKilobytes": 199328
+      },
+      "processWallMs": 1875.977833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        53.778833,
+        58.843708,
+        60.44875,
+        82.083292,
+        84.934833,
+        68.979,
+        50.931209,
+        90.051084,
+        62.559459,
+        68.925208
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 211206144,
+        "finalRss": 211337216,
+        "maxRssKilobytes": 206400
+      },
+      "processWallMs": 1361.703625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        22.2545,
+        34.391625,
+        19.32925,
+        20.443,
+        15.211333,
+        19.491208,
+        26.372875,
+        18.202959,
+        17.375792,
+        16.849167
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 176668672,
+        "finalRss": 176799744,
+        "maxRssKilobytes": 172672
+      },
+      "processWallMs": 1180.005375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        31.098667,
+        27.341083,
+        19.741166,
+        26.453333,
+        35.057667,
+        52.239167,
+        44.1035,
+        23.793084,
+        20.428958,
+        12.739584
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 457621504,
+        "finalRss": 460292096,
+        "maxRssKilobytes": 480880
+      },
+      "processWallMs": 5764.913292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        84.978167,
+        84.059125,
+        67.066541,
+        51.034333,
+        62.599292,
+        70.164125,
+        66.734542,
+        100.869958,
+        240.739709,
+        78.062167
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 307412992,
+        "finalRss": 195362816,
+        "maxRssKilobytes": 303104
+      },
+      "processWallMs": 3483.495792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        49.864959,
+        64.299667,
+        77.909125,
+        54.107041,
+        54.596,
+        57.917167,
+        61.867541,
+        45.462334,
+        41.410708,
+        41.385625
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 327598080,
+        "finalRss": 327680000,
+        "maxRssKilobytes": 320000
+      },
+      "processWallMs": 2993.892542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        184.3085,
+        37.948625,
+        34.018583,
+        38.181541,
+        59.593041,
+        54.386541,
+        45.93675,
+        35.520834,
+        56.781583,
+        138.855917
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 335118336,
+        "finalRss": 335134720,
+        "maxRssKilobytes": 327280
+      },
+      "processWallMs": 2584.316875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        28.916417,
+        22.597958,
+        18.2945,
+        34.772125,
+        18.171625,
+        17.98825,
+        25.829375,
+        38.090333,
+        18.855792,
+        21.947792
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 159023104,
+        "finalRss": 159154176,
+        "maxRssKilobytes": 155440
+      },
+      "processWallMs": 787.074875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        234.38225,
+        436.758667,
+        286.458292,
+        407.702625,
+        315.407333,
+        443.041625,
+        266.500875,
+        327.021209,
+        427.057167,
+        338.457875
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 430473216,
+        "finalRss": 430522368,
+        "maxRssKilobytes": 420432
+      },
+      "processWallMs": 5829.532959
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        29.847417,
+        48.253459,
+        27.784125,
+        28.811791,
+        103.63425,
+        29.448792,
+        35.059458,
+        33.394125,
+        26.633084,
+        85.170958
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 224509952,
+        "finalRss": 224608256,
+        "maxRssKilobytes": 219360
+      },
+      "processWallMs": 1568.731834
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        9.904209,
+        9.790875,
+        8.789917,
+        10.435958,
+        10.226666,
+        12.503834,
+        11.039084,
+        10.589583,
+        10.339625,
+        11.325834
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 154697728,
+        "finalRss": 154845184,
+        "maxRssKilobytes": 151232
+      },
+      "processWallMs": 1036.975792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        210.437291,
+        286.37575,
+        278.109459,
+        225.798292,
+        190.820583,
+        181.823625,
+        159.52025,
+        249.259125,
+        192.498375,
+        173.577958
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 366313472,
+        "finalRss": 366346240,
+        "maxRssKilobytes": 357760
+      },
+      "processWallMs": 3906.555875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        126.456541,
+        22.884625,
+        2.790875,
+        11.174875,
+        27.06975,
+        14.536708,
+        4.108458,
+        19.956167,
+        19.578542,
+        5.035916
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 173490176,
+        "finalRss": 173654016,
+        "maxRssKilobytes": 169600
+      },
+      "processWallMs": 1776.334708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        4.204209,
+        4.571458,
+        3.709208,
+        3.395834,
+        2.988125,
+        3.660541,
+        6.775834,
+        10.881167,
+        4.82575,
+        6.963125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 174817280,
+        "finalRss": 175013888,
+        "maxRssKilobytes": 170928
+      },
+      "processWallMs": 1236.395459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        13.138375,
+        8.723541,
+        9.196542,
+        8.280166,
+        7.337209,
+        5.795208,
+        4.687542,
+        4.868792,
+        6.664375,
+        6.904166
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 135413760,
+        "finalRss": 135479296,
+        "maxRssKilobytes": 132320
+      },
+      "processWallMs": 1370.407625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.699291,
+        25.320291,
+        14.730333,
+        13.134667,
+        13.983833,
+        15.86425,
+        11.80325,
+        16.170417,
+        23.799375,
+        42.241291
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 218054656,
+        "finalRss": 218218496,
+        "maxRssKilobytes": 213120
+      },
+      "processWallMs": 1195.196125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        842.33775,
+        606.760541,
+        308.166584,
+        402.331125,
+        534.582041,
+        440.815958,
+        711.62925,
+        439.876208,
+        300.627041,
+        244.1705
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 667631616,
+        "finalRss": 375799808,
+        "maxRssKilobytes": 652000
+      },
+      "processWallMs": 10366.676458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        594.067833,
+        670.303167,
+        299.94275,
+        329.628625,
+        255.425917,
+        305.435292,
+        455.426416,
+        353.487042,
+        459.368167,
+        474.425208
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 808435712,
+        "finalRss": 809222144,
+        "maxRssKilobytes": 790272
+      },
+      "processWallMs": 10938.676458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        23.39275,
+        102.915041,
+        73.848458,
+        26.054209,
+        65.861625,
+        27.316708,
+        66.7745,
+        33.775834,
+        73.994084,
+        37.791875
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 149651456,
+        "finalRss": 149749760,
+        "maxRssKilobytes": 146256
+      },
+      "processWallMs": 1267.333916
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        456.9485,
+        281.503792,
+        399.594167,
+        372.79575,
+        200.679917,
+        232.114917,
+        474.68075,
+        518.657958,
+        607.545792,
+        263.397959
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 242892800,
+        "finalRss": 215859200,
+        "maxRssKilobytes": 243168
+      },
+      "processWallMs": 10549.135
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        27.239833,
+        68.963375,
+        15.738458,
+        18.230709,
+        61.295333,
+        19.462459,
+        27.683625,
+        52.311125,
+        9.792375,
+        10.449458
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 707313664,
+        "finalRss": 708788224,
+        "maxRssKilobytes": 692192
+      },
+      "processWallMs": 5260.386333
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        571.573583,
+        973.612583,
+        757.313,
+        438.411875,
+        347.466167,
+        644.062416,
+        647.754833,
+        410.362042,
+        264.168458,
+        306.569334
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 735936512,
+        "finalRss": 477560832,
+        "maxRssKilobytes": 724944
+      },
+      "processWallMs": 12778.20525
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.764334,
+        3.252875,
+        3.344666,
+        2.130125,
+        2.604667,
+        2.793291,
+        1.465875,
+        1.643708,
+        3.446416,
+        3.538833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 205094912,
+        "finalRss": 205209600,
+        "maxRssKilobytes": 200416
+      },
+      "processWallMs": 572.818417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        290.452833,
+        221.964167,
+        281.900875,
+        289.39175,
+        246.853834,
+        374.964167,
+        493.778583,
+        432.816542,
+        553.15025,
+        506.533458
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 382369792,
+        "finalRss": 124928000,
+        "maxRssKilobytes": 384240
+      },
+      "processWallMs": 6632.913292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        15.520209,
+        92.481041,
+        44.1025,
+        13.822833,
+        21.040834,
+        15.780209,
+        59.777209,
+        16.577792,
+        11.756,
+        13.413666
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 473874432,
+        "finalRss": 478281728,
+        "maxRssKilobytes": 500528
+      },
+      "processWallMs": 5404.292958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        50.752333,
+        28.097875,
+        24.933958,
+        53.203917,
+        16.803584,
+        16.43275,
+        22.101083,
+        48.378959,
+        21.896125,
+        23.159792
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 190119936,
+        "finalRss": 190218240,
+        "maxRssKilobytes": 185776
+      },
+      "processWallMs": 994.346375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.082083,
+        21.457042,
+        42.715125,
+        21.141333,
+        30.20325,
+        60.447958,
+        42.435958,
+        45.778291,
+        30.921833,
+        16.061709
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 163332096,
+        "finalRss": 163397632,
+        "maxRssKilobytes": 159584
+      },
+      "processWallMs": 953.780458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        213.107041,
+        104.970166,
+        185.765125,
+        84.627084,
+        92.510333,
+        95.07375,
+        110.078542,
+        118.2045,
+        95.177125,
+        100.51325
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 286048256,
+        "finalRss": 286867456,
+        "maxRssKilobytes": 280432
+      },
+      "processWallMs": 2204.588916
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        318.316084,
+        277.014458,
+        353.356833,
+        360.764208,
+        260.7885,
+        367.495084,
+        448.349166,
+        389.850458,
+        435.145959,
+        356.042125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 581009408,
+        "finalRss": 199720960,
+        "maxRssKilobytes": 626016
+      },
+      "processWallMs": 9738.534667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        260.603333,
+        113.588667,
+        60.761583,
+        65.224417,
+        43.532042,
+        154.244375,
+        55.769416,
+        60.989541,
+        40.807167,
+        33.945125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 286081024,
+        "finalRss": 286261248,
+        "maxRssKilobytes": 279552
+      },
+      "processWallMs": 5319.937458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        4746.638542,
+        5874.812709,
+        3686.161708,
+        4739.393041,
+        4064.673542,
+        4136.53475,
+        4951.74975,
+        3722.100416,
+        2885.24875,
+        4798.986875
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 462864384,
+        "finalRss": 229490688,
+        "maxRssKilobytes": 454992
+      },
+      "processWallMs": 67360.138292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        15.685625,
+        53.798667,
+        31.3875,
+        105.616791,
+        60.28075,
+        18.78775,
+        21.899625,
+        51.9605,
+        14.4125,
+        12.693166
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 187777024,
+        "finalRss": 187842560,
+        "maxRssKilobytes": 183456
+      },
+      "processWallMs": 1641.142417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        31.493667,
+        19.289417,
+        51.1095,
+        26.588583,
+        26.071792,
+        57.483625,
+        21.516666,
+        19.395084,
+        53.31675,
+        21.876
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 169410560,
+        "finalRss": 169492480,
+        "maxRssKilobytes": 165536
+      },
+      "processWallMs": 1697.338292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        34.495917,
+        50.565292,
+        24.79425,
+        25.417958,
+        53.957625,
+        26.398667,
+        29.178917,
+        50.687167,
+        22.747125,
+        25.560083
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 195936256,
+        "finalRss": 196001792,
+        "maxRssKilobytes": 191424
+      },
+      "processWallMs": 1560.51475
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        16.710209,
+        15.029458,
+        42.497166,
+        13.087458,
+        13.200834,
+        14.496083,
+        14.54875,
+        12.722125,
+        40.126916,
+        16.728333
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 187432960,
+        "finalRss": 187498496,
+        "maxRssKilobytes": 183120
+      },
+      "processWallMs": 927.349958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        81.02225,
+        51.111458,
+        28.742,
+        28.735375,
+        57.85575,
+        84.887458,
+        54.536875,
+        47.407541,
+        22.843333,
+        29.815
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 202211328,
+        "finalRss": 202293248,
+        "maxRssKilobytes": 197584
+      },
+      "processWallMs": 1561.220792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        177.598792,
+        31.207709,
+        16.840875,
+        13.930166,
+        147.6235,
+        37.58125,
+        67.699542,
+        84.658166,
+        21.615458,
+        9.632958
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 202407936,
+        "finalRss": 202506240,
+        "maxRssKilobytes": 197776
+      },
+      "processWallMs": 1559.083
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        96.110541,
+        107.314583,
+        204.682208,
+        109.466833,
+        101.420791,
+        113.1215,
+        76.128667,
+        41.598667,
+        94.357833,
+        95.874959
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 315408384,
+        "finalRss": 315473920,
+        "maxRssKilobytes": 308080
+      },
+      "processWallMs": 5263.682542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        73.269542,
+        28.768792,
+        25.016083,
+        57.407042,
+        30.781916,
+        30.042458,
+        39.159291,
+        31.896292,
+        27.188583,
+        45.756875
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 190496768,
+        "finalRss": 190545920,
+        "maxRssKilobytes": 186096
+      },
+      "processWallMs": 1804.81925
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        26.695125,
+        21.450875,
+        37.895041,
+        18.501833,
+        16.926583,
+        16.846208,
+        18.840917,
+        32.23275,
+        18.665666,
+        16.284667
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 162529280,
+        "finalRss": 162611200,
+        "maxRssKilobytes": 158816
+      },
+      "processWallMs": 1013.663416
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        69.648916,
+        70.169083,
+        43.35175,
+        66.559375,
+        45.270791,
+        72.103125,
+        36.519083,
+        67.644458,
+        90.187875,
+        72.774667
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 345653248,
+        "finalRss": 345686016,
+        "maxRssKilobytes": 337584
+      },
+      "processWallMs": 2980.39625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        50.659667,
+        184.635708,
+        106.801459,
+        76.275209,
+        127.735417,
+        76.475708,
+        82.462292,
+        33.660959,
+        68.259166,
+        111.113
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 324009984,
+        "finalRss": 324091904,
+        "maxRssKilobytes": 316496
+      },
+      "processWallMs": 3327.454542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        102.223625,
+        91.536209,
+        111.442667,
+        69.637709,
+        70.057167,
+        50.932167,
+        42.4285,
+        43.37,
+        43.945791,
+        36.190709
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 348389376,
+        "finalRss": 348471296,
+        "maxRssKilobytes": 340304
+      },
+      "processWallMs": 3199.537875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.67725,
+        1.671083,
+        2.405833,
+        2.355167,
+        1.721625,
+        2.299417,
+        2.608209,
+        1.8555,
+        1.5695,
+        3.193417
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 172179456,
+        "finalRss": 172326912,
+        "maxRssKilobytes": 168304
+      },
+      "processWallMs": 1522.539208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        35.083375,
+        39.121792,
+        37.38725,
+        29.704125,
+        31.909792,
+        28.805709,
+        22.733958,
+        39.10025,
+        27.065583,
+        33.182375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 172490752,
+        "finalRss": 172572672,
+        "maxRssKilobytes": 168544
+      },
+      "processWallMs": 899.411167
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        109.54575,
+        89.32525,
+        72.131209,
+        70.460167,
+        87.256916,
+        70.509792,
+        59.501667,
+        47.094167,
+        47.324583,
+        92.7895
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 231489536,
+        "finalRss": 231653376,
+        "maxRssKilobytes": 226240
+      },
+      "processWallMs": 1690.88225
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        31.90675,
+        64.481333,
+        79.168166,
+        30.758084,
+        75.133458,
+        47.596209,
+        90.907417,
+        108.382875,
+        83.335875,
+        86.331666
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 329531392,
+        "finalRss": 329629696,
+        "maxRssKilobytes": 321904
+      },
+      "processWallMs": 3802.323917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        3314.989542,
+        4699.805709,
+        5263.874041,
+        3718.487875,
+        4621.279708,
+        3978.090333,
+        4923.175125,
+        4862.670334,
+        5101.588917,
+        4608.765625
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 340279296,
+        "finalRss": 152256512,
+        "maxRssKilobytes": 363856
+      },
+      "processWallMs": 59524.9065
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        61.862084,
+        58.285584,
+        161.9415,
+        35.657958,
+        58.170541,
+        40.15775,
+        91.769542,
+        157.13325,
+        54.02575,
+        76.244834
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 324976640,
+        "finalRss": 325042176,
+        "maxRssKilobytes": 317424
+      },
+      "processWallMs": 3878.589542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.203,
+        128.807333,
+        140.898625,
+        97.947459,
+        24.610125,
+        30.003625,
+        70.276625,
+        32.545875,
+        47.399042,
+        101.669917
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 219529216,
+        "finalRss": 219807744,
+        "maxRssKilobytes": 214672
+      },
+      "processWallMs": 1982.951792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        8.767959,
+        5.564417,
+        5.218791,
+        5.111916,
+        8.345583,
+        5.944458,
+        14.131583,
+        5.056208,
+        4.031292,
+        4.170334
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 642842624,
+        "finalRss": 643022848,
+        "maxRssKilobytes": 627968
+      },
+      "processWallMs": 5265.158792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        41.916875,
+        162.166667,
+        56.77425,
+        53.687834,
+        45.799,
+        47.539875,
+        47.252083,
+        55.35725,
+        96.261875,
+        48.627292
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 322666496,
+        "finalRss": 322748416,
+        "maxRssKilobytes": 315184
+      },
+      "processWallMs": 3689.197459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.317917,
+        8.611125,
+        8.327167,
+        36.747042,
+        4.806417,
+        8.440417,
+        12.570541,
+        14.776666,
+        3.84425,
+        3.655542
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 145965056,
+        "finalRss": 146014208,
+        "maxRssKilobytes": 142608
+      },
+      "processWallMs": 1380.519459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        263.792125,
+        149.372708,
+        265.471125,
+        532.4585,
+        196.993083,
+        95.157584,
+        64.281625,
+        140.543042,
+        64.607375,
+        83.107833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 231604224,
+        "finalRss": 231702528,
+        "maxRssKilobytes": 226288
+      },
+      "processWallMs": 3853.921958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        294.511125,
+        406.730625,
+        503.846917,
+        323.202083,
+        398.820208,
+        397.474792,
+        480.570125,
+        605.937083,
+        360.167375,
+        334.9265
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 370442240,
+        "finalRss": 370475008,
+        "maxRssKilobytes": 361792
+      },
+      "processWallMs": 7688.914875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        28.239625,
+        49.035959,
+        39.520416,
+        36.148666,
+        23.458625,
+        20.399584,
+        25.253416,
+        24.984708,
+        32.695666,
+        22.587291
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 178208768,
+        "finalRss": 178257920,
+        "maxRssKilobytes": 174096
+      },
+      "processWallMs": 1271.751334
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        22.246083,
+        31.005667,
+        90.225292,
+        18.538333,
+        27.3475,
+        18.824083,
+        14.643333,
+        19.929042,
+        18.314125,
+        16.893083
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 218152960,
+        "finalRss": 219004928,
+        "maxRssKilobytes": 213888
+      },
+      "processWallMs": 1338.29625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        229.322708,
+        313.68875,
+        297.032291,
+        236.675875,
+        354.314208,
+        224.939125,
+        242.501292,
+        250.025208,
+        239.58325,
+        261.912583
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 472809472,
+        "finalRss": 472842240,
+        "maxRssKilobytes": 461760
+      },
+      "processWallMs": 5937.607958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        763.323708,
+        405.487708,
+        328.682708,
+        307.088375,
+        299.707208,
+        321.777917,
+        345.148292,
+        304.52075,
+        407.332542,
+        440.220083
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 320471040,
+        "finalRss": 323223552,
+        "maxRssKilobytes": 501584
+      },
+      "processWallMs": 11896.711291
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        30.005167,
+        29.4145,
+        30.720459,
+        41.744041,
+        28.805209,
+        22.79925,
+        19.956208,
+        19.87575,
+        21.445042,
+        28.498
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 177897472,
+        "finalRss": 177979392,
+        "maxRssKilobytes": 173824
+      },
+      "processWallMs": 1204.84
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        28.571792,
+        24.871709,
+        8.948541,
+        18.427209,
+        106.062959,
+        15.189125,
+        21.981833,
+        7.936042,
+        17.694,
+        30.021
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 621461504,
+        "finalRss": 621625344,
+        "maxRssKilobytes": 607072
+      },
+      "processWallMs": 6097.92625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        29.381875,
+        40.643584,
+        32.729625,
+        22.791542,
+        23.689833,
+        33.704459,
+        36.554458,
+        44.288542,
+        52.563708,
+        37.83325
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 220332032,
+        "finalRss": 220479488,
+        "maxRssKilobytes": 215328
+      },
+      "processWallMs": 1238.572375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        4758.528958,
+        3486.438125,
+        3667.9275,
+        4313.318542,
+        2601.124083,
+        3302.520042,
+        3929.36625,
+        3329.173041,
+        4440.324166,
+        1969.770417
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 357367808,
+        "finalRss": 322895872,
+        "maxRssKilobytes": 353008
+      },
+      "processWallMs": 50183.302709
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        9.457125,
+        10.694334,
+        11.132334,
+        8.825375,
+        8.143041,
+        8.672542,
+        8.324375,
+        8.772583,
+        8.151875,
+        8.810625
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 174391296,
+        "finalRss": 174456832,
+        "maxRssKilobytes": 170384
+      },
+      "processWallMs": 263.561625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.355584,
+        1.913875,
+        1.253167,
+        1.523792,
+        2.108291,
+        1.774458,
+        1.400333,
+        1.568958,
+        1.761792,
+        3.518959
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 210911232,
+        "finalRss": 211091456,
+        "maxRssKilobytes": 206160
+      },
+      "processWallMs": 303.596875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        38.60225,
+        37.90175,
+        41.195917,
+        39.426541,
+        38.146625,
+        37.968208,
+        42.661791,
+        37.496417,
+        33.894958,
+        37.769709
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 253886464,
+        "finalRss": 253984768,
+        "maxRssKilobytes": 248048
+      },
+      "processWallMs": 705.02375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        9.250625,
+        8.4055,
+        7.681625,
+        8.021292,
+        9.588292,
+        9.531583,
+        7.571834,
+        8.16175,
+        8.08375,
+        7.201625
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 195624960,
+        "finalRss": 195739648,
+        "maxRssKilobytes": 191168
+      },
+      "processWallMs": 1114.03275
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        14.726916,
+        14.691584,
+        12.059625,
+        9.558959,
+        10.73075,
+        13.212791,
+        9.21975,
+        9.352459,
+        9.529542,
+        8.557916
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 223559680,
+        "finalRss": 224165888,
+        "maxRssKilobytes": 218928
+      },
+      "processWallMs": 1056.8065
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.260708,
+        2.571333,
+        2.26825,
+        1.893083,
+        2.222459,
+        2.018709,
+        2.288417,
+        2.18525,
+        1.726959,
+        1.894416
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 156975104,
+        "finalRss": 157024256,
+        "maxRssKilobytes": 153360
+      },
+      "processWallMs": 228.882375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        88.890917,
+        97.632292,
+        92.554667,
+        87.866458,
+        87.781417,
+        86.460208,
+        101.728166,
+        79.758041,
+        82.038083,
+        79.335
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 430129152,
+        "finalRss": 430161920,
+        "maxRssKilobytes": 420080
+      },
+      "processWallMs": 2121.556625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        5.439292,
+        5.050292,
+        6.547,
+        4.823416,
+        5.261292,
+        6.058042,
+        6.081041,
+        5.220667,
+        4.195,
+        4.522833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 181649408,
+        "finalRss": 181714944,
+        "maxRssKilobytes": 177472
+      },
+      "processWallMs": 1710.363042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2194.202709,
+        2279.694416,
+        2285.02775,
+        2275.96925,
+        2332.020625,
+        2479.122958,
+        2418.662708,
+        2530.575416,
+        2475.175584,
+        2438.209042
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 411795456,
+        "finalRss": 397246464,
+        "maxRssKilobytes": 403328
+      },
+      "processWallMs": 29128.923
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        12.076167,
+        6.811375,
+        3.925584,
+        5.131459,
+        9.0455,
+        3.7915,
+        9.734167,
+        2.076375,
+        3.422208,
+        1.922833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 657768448,
+        "finalRss": 658456576,
+        "maxRssKilobytes": 643040
+      },
+      "processWallMs": 3479.007083
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        6.767333,
+        6.158666,
+        4.907041,
+        5.239667,
+        4.906375,
+        6.528292,
+        5.894875,
+        6.230083,
+        5.577375,
+        5.053042
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 145997824,
+        "finalRss": 146079744,
+        "maxRssKilobytes": 142672
+      },
+      "processWallMs": 326.272291
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        16.568541,
+        17.110792,
+        10.549417,
+        10.073792,
+        14.244042,
+        10.777209,
+        15.598416,
+        16.490834,
+        7.986917,
+        7.218042
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 671088640,
+        "finalRss": 671940608,
+        "maxRssKilobytes": 656208
+      },
+      "processWallMs": 2280.473542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        166.147292,
+        169.232959,
+        150.572625,
+        148.821833,
+        149.937458,
+        155.100292,
+        154.970666,
+        144.314792,
+        146.425125,
+        149.017459
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 543211520,
+        "finalRss": 540704768,
+        "maxRssKilobytes": 635968
+      },
+      "processWallMs": 3828.004375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        43.977708,
+        44.951917,
+        44.9355,
+        44.264417,
+        49.488458,
+        42.666917,
+        40.682333,
+        42.606041,
+        44.45375,
+        43.459917
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 274726912,
+        "finalRss": 276037632,
+        "maxRssKilobytes": 269584
+      },
+      "processWallMs": 2129.441291
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        22.277417,
+        22.768833,
+        26.56325,
+        19.804042,
+        19.372166,
+        20.77525,
+        26.404583,
+        20.739375,
+        20.614708,
+        20.332583
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 326909952,
+        "finalRss": 326991872,
+        "maxRssKilobytes": 319328
+      },
+      "processWallMs": 1327.468792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        25.791625,
+        30.6535,
+        20.940333,
+        22.078375,
+        23.972708,
+        25.205291,
+        22.580667,
+        24.361209,
+        28.268541,
+        22.529084
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 395001856,
+        "finalRss": 395051008,
+        "maxRssKilobytes": 385792
+      },
+      "processWallMs": 2340.76175
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2.529834,
+        2.387958,
+        2.584375,
+        2.188959,
+        2.492542,
+        2.112792,
+        2.241917,
+        2.084292,
+        1.982625,
+        1.775375
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 163823616,
+        "finalRss": 163872768,
+        "maxRssKilobytes": 160048
+      },
+      "processWallMs": 664.065333
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        19.664625,
+        20.96125,
+        19.590542,
+        22.272625,
+        17.687333,
+        18.208375,
+        20.99625,
+        18.01875,
+        22.115958,
+        18.598959
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 289816576,
+        "finalRss": 290668544,
+        "maxRssKilobytes": 283872
+      },
+      "processWallMs": 537.991
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        16.00675,
+        14.310583,
+        14.487209,
+        15.298541,
+        13.305417,
+        14.803833,
+        15.02375,
+        16.444583,
+        11.501166,
+        12.0765
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 218284032,
+        "finalRss": 218464256,
+        "maxRssKilobytes": 213376
+      },
+      "processWallMs": 1133.647084
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        5.639541,
+        6.446875,
+        7.450375,
+        5.90775,
+        5.334666,
+        6.163666,
+        8.702,
+        5.270834,
+        5.972667,
+        7.866333
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 231604224,
+        "finalRss": 232505344,
+        "maxRssKilobytes": 227072
+      },
+      "processWallMs": 1659.841042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        11.515458,
+        10.721833,
+        12.973,
+        14.538417,
+        11.398958,
+        12.637583,
+        12.017917,
+        11.517125,
+        12.200708,
+        10.564625
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 172310528,
+        "finalRss": 172457984,
+        "maxRssKilobytes": 168432
+      },
+      "processWallMs": 1159.512708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.9125,
+        13.524917,
+        10.588042,
+        11.789958,
+        12.716667,
+        13.532042,
+        16.098958,
+        9.94875,
+        10.720541,
+        11.006208
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 165019648,
+        "finalRss": 165052416,
+        "maxRssKilobytes": 161200
+      },
+      "processWallMs": 361.568958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        2286.220625,
+        2220.284792,
+        2241.746042,
+        1299.874625,
+        1344.439791,
+        1237.839459,
+        1189.125334,
+        1654.890542,
+        8374.893167,
+        7896.204792
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 421101568,
+        "finalRss": 421855232,
+        "maxRssKilobytes": 411968
+      },
+      "processWallMs": 35799.639833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        44.891666,
+        2.416167,
+        2.302958,
+        2.011167,
+        1.787125,
+        2.654,
+        2.498917,
+        1.417167,
+        2.60725,
+        2.794084
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 177537024,
+        "finalRss": 177717248,
+        "maxRssKilobytes": 173568
+      },
+      "processWallMs": 1591.513458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        83.754917,
+        66.198791,
+        20.995917,
+        26.267958,
+        60.041167,
+        24.976084,
+        24.317584,
+        75.726667,
+        25.162459,
+        65.06575
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 179765248,
+        "finalRss": 179847168,
+        "maxRssKilobytes": 175648
+      },
+      "processWallMs": 1692.759667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        111.606084,
+        191.114791,
+        116.947084,
+        123.003458,
+        154.761375,
+        130.278792,
+        112.621958,
+        160.03775,
+        133.3385,
+        269.808208
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 315441152,
+        "finalRss": 315539456,
+        "maxRssKilobytes": 308160
+      },
+      "processWallMs": 3100.801125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        17.613375,
+        57.17875,
+        19.056292,
+        12.401208,
+        19.555792,
+        64.791834,
+        17.912,
+        63.955666,
+        19.302209,
+        20.404
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 181256192,
+        "finalRss": 181305344,
+        "maxRssKilobytes": 177072
+      },
+      "processWallMs": 1223.719458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        63.942167,
+        27.366958,
+        66.905291,
+        23.386416,
+        20.149208,
+        54.585209,
+        133.937041,
+        67.914166,
+        105.619542,
+        18.029542
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 182534144,
+        "finalRss": 182583296,
+        "maxRssKilobytes": 178320
+      },
+      "processWallMs": 1878.683417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        13.116709,
+        36.710125,
+        6.69075,
+        8.345375,
+        11.372833,
+        6.765833,
+        13.381834,
+        3.497917,
+        3.72725,
+        3.445458
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 648019968,
+        "finalRss": 648265728,
+        "maxRssKilobytes": 633088
+      },
+      "processWallMs": 5470.955459
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        717.630709,
+        803.018541,
+        509.510959,
+        309.213083,
+        299.508958,
+        296.73925,
+        294.807292,
+        303.483917,
+        235.915583,
+        283.400416
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 820183040,
+        "finalRss": 821444608,
+        "maxRssKilobytes": 802208
+      },
+      "processWallMs": 10759.109916
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        339.829792,
+        205.575333,
+        201.739542,
+        189.783291,
+        456.92175,
+        396.400625,
+        304.694875,
+        295.243,
+        219.962334,
+        237.481292
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 360398848,
+        "finalRss": 360415232,
+        "maxRssKilobytes": 351968
+      },
+      "processWallMs": 6890.769041
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        4.926708,
+        2.797041,
+        6.42525,
+        1.265042,
+        3.277958,
+        2.543417,
+        1.568542,
+        1.640875,
+        1.495125,
+        2.173916
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 169558016,
+        "finalRss": 169771008,
+        "maxRssKilobytes": 165808
+      },
+      "processWallMs": 1010.007833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        31.874917,
+        2.919916,
+        15.791,
+        7.620458,
+        1.54875,
+        8.083708,
+        12.664625,
+        7.350583,
+        1.9345,
+        6.115
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 173441024,
+        "finalRss": 173588480,
+        "maxRssKilobytes": 169536
+      },
+      "processWallMs": 848.443667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.096958,
+        50.569708,
+        29.548875,
+        39.221625,
+        27.0195,
+        23.010125,
+        21.020542,
+        28.255666,
+        26.014375,
+        26.737667
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 164298752,
+        "finalRss": 164364288,
+        "maxRssKilobytes": 160528
+      },
+      "processWallMs": 811.088042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        25.815208,
+        36.521959,
+        26.08075,
+        21.764334,
+        17.096333,
+        34.722709,
+        29.910334,
+        31.673625,
+        27.689917,
+        20.29675
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 187695104,
+        "finalRss": 187826176,
+        "maxRssKilobytes": 183440
+      },
+      "processWallMs": 965.282208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        27.00875,
+        25.994,
+        33.233333,
+        28.971,
+        31.7435,
+        37.969667,
+        22.290208,
+        30.92675,
+        25.588542,
+        35.923125
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 154304512,
+        "finalRss": 154402816,
+        "maxRssKilobytes": 150800
+      },
+      "processWallMs": 1198.80175
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.425209,
+        18.372083,
+        15.133375,
+        22.28875,
+        8.492167,
+        16.016042,
+        11.764083,
+        7.945666,
+        16.099416,
+        13.995833
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 153747456,
+        "finalRss": 153911296,
+        "maxRssKilobytes": 150320
+      },
+      "processWallMs": 651.616625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.953542,
+        7.207375,
+        8.433417,
+        5.120542,
+        9.348542,
+        2.057125,
+        4.099541,
+        2.197667,
+        3.686208,
+        6.9375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 176291840,
+        "finalRss": 176439296,
+        "maxRssKilobytes": 172320
+      },
+      "processWallMs": 1233.015042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        71.768875,
+        32.770916,
+        54.568125,
+        41.7505,
+        56.220666,
+        197.62625,
+        46.119416,
+        31.958792,
+        29.301666,
+        25.690583
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 194068480,
+        "finalRss": 194166784,
+        "maxRssKilobytes": 189632
+      },
+      "processWallMs": 1626.636292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        7678.008125,
+        6775.065417,
+        6631.81375,
+        8384.115916,
+        8114.570875,
+        4535.588542,
+        6057.086458,
+        4410.765292,
+        3369.9655,
+        4767.148959
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 369393664,
+        "finalRss": 263880704,
+        "maxRssKilobytes": 361776
+      },
+      "processWallMs": 77668.195417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.83075,
+        40.191833,
+        43.808625,
+        25.487208,
+        24.346583,
+        42.21425,
+        18.743833,
+        28.045417,
+        23.881916,
+        34.8565
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 227852288,
+        "finalRss": 228638720,
+        "maxRssKilobytes": 223296
+      },
+      "processWallMs": 1295.731417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        52.112791,
+        32.928583,
+        20.072667,
+        20.974625,
+        35.019125,
+        29.064,
+        21.501416,
+        38.675458,
+        24.174209,
+        21.840375
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 221691904,
+        "finalRss": 222199808,
+        "maxRssKilobytes": 217008
+      },
+      "processWallMs": 985.1855
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        3.601292,
+        23.943459,
+        4.776042,
+        2.290833,
+        2.402458,
+        3.969541,
+        2.407541,
+        3.282459,
+        6.251,
+        4.567
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 150487040,
+        "finalRss": 150552576,
+        "maxRssKilobytes": 147040
+      },
+      "processWallMs": 729.554
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        10.08125,
+        56.829167,
+        13.498875,
+        14.947458,
+        30.898416,
+        37.693792,
+        12.669,
+        9.267333,
+        10.041959,
+        13.2795
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 220954624,
+        "finalRss": 221118464,
+        "maxRssKilobytes": 215952
+      },
+      "processWallMs": 1124.377916
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        108.333208,
+        119.975208,
+        106.388292,
+        98.724916,
+        108.444417,
+        121.697792,
+        181.463,
+        83.721917,
+        115.576875,
+        110.417584
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 296075264,
+        "finalRss": 296648704,
+        "maxRssKilobytes": 289712
+      },
+      "processWallMs": 2426.175666
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        54.034625,
+        67.985958,
+        42.103375,
+        46.6385,
+        35.631042,
+        40.612792,
+        48.685875,
+        36.358,
+        113.205667,
+        137.809167
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 210960384,
+        "finalRss": 211058688,
+        "maxRssKilobytes": 206128
+      },
+      "processWallMs": 1610.297334
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        369.674959,
+        816.89475,
+        427.056833,
+        430.525,
+        792.329667,
+        370.677334,
+        355.44775,
+        521.92925,
+        290.976917,
+        258.326
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 699924480,
+        "finalRss": 699973632,
+        "maxRssKilobytes": 683584
+      },
+      "processWallMs": 9816.153917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        217.019917,
+        206.585959,
+        259.3555,
+        227.752958,
+        352.198084,
+        238.846417,
+        370.405125,
+        319.905916,
+        452.26975,
+        322.662292
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 382730240,
+        "finalRss": 382746624,
+        "maxRssKilobytes": 373776
+      },
+      "processWallMs": 5198.103416
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        103.236958,
+        34.8395,
+        46.824708,
+        67.570417,
+        92.0035,
+        55.509792,
+        30.660791,
+        34.4815,
+        27.857083,
+        38.306375
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 215007232,
+        "finalRss": 215154688,
+        "maxRssKilobytes": 210128
+      },
+      "processWallMs": 1722.905042
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.077083,
+        23.312208,
+        35.029417,
+        81.732083,
+        28.94325,
+        25.758166,
+        30.470834,
+        9.723625,
+        7.351708,
+        20.3545
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 640532480,
+        "finalRss": 640663552,
+        "maxRssKilobytes": 625664
+      },
+      "processWallMs": 4448.314291
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        24.593541,
+        19.652333,
+        19.537083,
+        19.390459,
+        39.326875,
+        10.523292,
+        21.503625,
+        131.685459,
+        7.024,
+        5.145333
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 635207680,
+        "finalRss": 635387904,
+        "maxRssKilobytes": 620512
+      },
+      "processWallMs": 5138.75975
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        36.1195,
+        50.094042,
+        29.847667,
+        29.297958,
+        22.732083,
+        20.663917,
+        18.540291,
+        18.647875,
+        37.457292,
+        30.797875
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 180862976,
+        "finalRss": 180912128,
+        "maxRssKilobytes": 176688
+      },
+      "processWallMs": 803.306542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        28.100875,
+        46.459125,
+        28.557458,
+        35.048709,
+        30.12925,
+        23.341417,
+        27.437125,
+        25.280834,
+        35.61675,
+        20.067666
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 166576128,
+        "finalRss": 166625280,
+        "maxRssKilobytes": 162736
+      },
+      "processWallMs": 778.971542
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        12.499625,
+        8.851292,
+        8.25475,
+        8.8415,
+        8.338792,
+        11.803584,
+        8.513125,
+        8.128459,
+        7.640417,
+        8.482375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 137265152,
+        "finalRss": 137330688,
+        "maxRssKilobytes": 134128
+      },
+      "processWallMs": 650.683417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        99.064083,
+        81.705834,
+        117.659208,
+        56.8585,
+        51.66325,
+        52.596917,
+        47.660292,
+        50.024583,
+        54.306167,
+        73.010541
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 399851520,
+        "finalRss": 399900672,
+        "maxRssKilobytes": 390528
+      },
+      "processWallMs": 3376.117292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        11.02575,
+        14.966167,
+        10.241083,
+        23.856208,
+        45.324708,
+        23.108292,
+        38.906208,
+        38.854834,
+        25.65475,
+        10.127458
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 635355136,
+        "finalRss": 635502592,
+        "maxRssKilobytes": 620624
+      },
+      "processWallMs": 4561.791708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        18.007083,
+        9.733291,
+        10.420834,
+        47.101667,
+        13.73275,
+        7.941333,
+        172.519333,
+        9.607708,
+        11.629167,
+        13.640209
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 633946112,
+        "finalRss": 634175488,
+        "maxRssKilobytes": 619328
+      },
+      "processWallMs": 6041.589417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        34.55675,
+        87.718625,
+        75.891708,
+        48.443167,
+        64.089084,
+        32.307375,
+        74.081625,
+        171.763542,
+        43.624,
+        64.4575
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 171524096,
+        "finalRss": 171606016,
+        "maxRssKilobytes": 167600
+      },
+      "processWallMs": 2523.031792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        114.474041,
+        159.081167,
+        219.41375,
+        120.424833,
+        136.542916,
+        268.008042,
+        150.960833,
+        118.640791,
+        110.521334,
+        101.788833
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 284295168,
+        "finalRss": 284393472,
+        "maxRssKilobytes": 277744
+      },
+      "processWallMs": 3244.628833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        94.093584,
+        48.431875,
+        83.594625,
+        73.435667,
+        52.372542,
+        91.06075,
+        90.672084,
+        86.636917,
+        81.206708,
+        45.445833
+      ],
+      "digest": "1bea12b4872e98d9abad60086737e1e34452bad7cdc8175af620c37bbf08e230",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 349028352,
+        "finalRss": 349110272,
+        "maxRssKilobytes": 340928
+      },
+      "processWallMs": 4162.494667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        998.7375,
+        1145.203667,
+        853.599583,
+        936.913209,
+        665.758667,
+        688.552,
+        709.687459,
+        608.522917,
+        817.046459,
+        598.809583
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 323600384,
+        "finalRss": 326287360,
+        "maxRssKilobytes": 554464
+      },
+      "processWallMs": 16727.399292
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        101.927084,
+        12.423209,
+        44.306542,
+        16.418916,
+        14.914125,
+        9.5505,
+        10.615916,
+        8.360208,
+        47.115416,
+        14.296834
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 184713216,
+        "finalRss": 184844288,
+        "maxRssKilobytes": 180528
+      },
+      "processWallMs": 1278.780125
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260830,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        45.646833,
+        20.513291,
+        19.823792,
+        14.520708,
+        37.75625,
+        7.767375,
+        10.05775,
+        45.207375,
+        24.843166,
+        3.639166
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 639909888,
+        "finalRss": 640188416,
+        "maxRssKilobytes": 625200
+      },
+      "processWallMs": 6105.832584
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260827,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        30.820458,
+        29.156458,
+        30.616708,
+        17.586,
+        20.844625,
+        25.756709,
+        14.299667,
+        18.007,
+        11.305792,
+        36.24375
+      ],
+      "digest": "faf089198848a8bca9d8d2f11c093e5e8f92fbf951c6cde0f91f46470d083fb6",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 178585600,
+        "finalRss": 178634752,
+        "maxRssKilobytes": 174464
+      },
+      "processWallMs": 1007.439041
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        68.164334,
+        46.092125,
+        36.465041,
+        23.933958,
+        28.342917,
+        31.650208,
+        129.828917,
+        32.365167,
+        27.001042,
+        29.805
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 187318272,
+        "finalRss": 187383808,
+        "maxRssKilobytes": 183008
+      },
+      "processWallMs": 1300.793458
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260828,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        3.21475,
+        6.680666,
+        5.566125,
+        3.616583,
+        5.104,
+        10.598458,
+        4.30925,
+        2.826375,
+        5.915042,
+        21.107583
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 145965056,
+        "finalRss": 146014208,
+        "maxRssKilobytes": 142608
+      },
+      "processWallMs": 1367.630083
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        4663.813917,
+        4139.980375,
+        4568.275042,
+        4633.5375,
+        4004.039083,
+        5139.027875,
+        3934.649125,
+        5411.2585,
+        5337.249375,
+        3133.579042
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 317571072,
+        "finalRss": 318849024,
+        "maxRssKilobytes": 337344
+      },
+      "processWallMs": 62776.0505
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        775.987875,
+        809.263916,
+        607.46925,
+        696.724875,
+        508.9985,
+        531.235,
+        578.004708,
+        586.646208,
+        716.267583,
+        463.845958
+      ],
+      "digest": "08c4d830cd3642a92520327b163a47b82e213e6c969a31f4370ae74529675edc",
+      "outputRows": 22606,
+      "memory": {
+        "observedRssPeak": 719912960,
+        "finalRss": 447414272,
+        "maxRssKilobytes": 713296
+      },
+      "processWallMs": 13901.295958
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 45211,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        1075.4905,
+        920.728708,
+        603.744958,
+        892.448458,
+        502.289667,
+        478.884417,
+        692.460125,
+        708.065333,
+        492.836959,
+        587.217333
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 715636736,
+        "finalRss": 715669504,
+        "maxRssKilobytes": 698912
+      },
+      "processWallMs": 14849.934833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 45211,
+      "seed": 20260829,
+      "datasetSource": "uci_bank",
+      "warmups": 3,
+      "iterations": 10,
+      "samplesMs": [
+        8.047708,
+        5.700125,
+        8.023375,
+        5.070042,
+        100.487166,
+        13.522875,
+        11.59125,
+        3.033459,
+        48.315041,
+        8.47875
+      ],
+      "digest": "0cce9d714cf0ed02065a14e9926a61a1c49e6877758154271ddaa356f3580a82",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 653705216,
+        "finalRss": 653901824,
+        "maxRssKilobytes": 638592
+      },
+      "processWallMs": 5896.474542
+    }
+  ]
+}

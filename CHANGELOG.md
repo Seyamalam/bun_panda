@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning.
 
+## [Unreleased]
+
+## [0.4.1] - 2026-08-27
+
+- Corrected the pandas conformance oracle so merge comparisons preserve left-key group order while treating duplicate match pairing as unordered, matching the documented pandas contract. The tested corpus now agrees in 2,500 of 2,500 observations.
+
+### Added
+
+- Added `DataFrame.from_arrow` and `Series.from_arrow` constructors.
+
+### Changed
+
+- Prepared npm publishing with real repository metadata, a `prepublishOnly` check, a smaller package that omits Rust build artifacts, and a packed-package install/import smoke test.
+
+### Fixed
+
+- Restored 23 public Series delegates that were lost when their implementations moved into `src/internal/series/seriesApi.ts`.
+- Fixed delegated `Series.pop` and `Series.update` so they mutate the owning Series through the structural host view.
+- Updated the parity auditor to detect static and async class methods; the verified report is 505/505.
+- Moved the 70% coverage threshold into `bunfig.toml`; the old CLI form treated `70` as a test-file filter on Bun 1.4.
+
 ## [0.4.0] - 2026-08-25
 
 ### Added

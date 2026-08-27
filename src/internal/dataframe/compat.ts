@@ -152,9 +152,15 @@ export function computeRankRows(
 
     const ranks = new Array<number | null>(rowCount).fill(null);
     assignNonMissingRanks(ranks, values, nonMissingPositions, method);
-    applyMissingRanks(ranks, missingPositions, nonMissingPositions.length, naOption);
+    applyMissingRanks(
+      ranks,
+      missingPositions,
+      nonMissingPositions.length,
+      method,
+      naOption
+    );
 
-    const denominator = pct ? calculatePctDenominator(nonMissingPositions.length, naOption) : 1;
+    const denominator = pct ? calculatePctDenominator(ranks, method) : 1;
 
     for (let i = 0; i < rowCount; i += 1) {
       const rank = ranks[i];
@@ -288,6 +294,7 @@ function applyMissingRanks(
   ranks: Array<number | null>,
   missingPositions: number[],
   nonMissingCount: number,
+  method: NonNullable<RankOptions["method"]>,
   naOption: NonNullable<RankOptions["na_option"]>
 ): void {
   if (missingPositions.length === 0 || naOption === "keep") {
@@ -295,29 +302,48 @@ function applyMissingRanks(
   }
 
   if (naOption === "top") {
+    const offset = method === "dense" ? 1 : missingPositions.length;
     for (let i = 0; i < ranks.length; i += 1) {
       if (ranks[i] !== null) {
-        ranks[i] = (ranks[i] as number) + missingPositions.length;
+        ranks[i] = (ranks[i] as number) + offset;
       }
     }
-    for (const position of missingPositions) {
-      ranks[position] = 1;
+    for (let i = 0; i < missingPositions.length; i += 1) {
+      ranks[missingPositions[i]!] = missingRank(method, 0, missingPositions.length, i);
     }
     return;
   }
 
-  const rank = nonMissingCount + 1;
-  for (const position of missingPositions) {
-    ranks[position] = rank;
+  const denseGroups = method === "dense"
+    ? ranks.reduce<number>((max, rank) => rank === null ? max : Math.max(max, rank), 0)
+    : 0;
+  const base = method === "dense" ? denseGroups : nonMissingCount;
+  for (let i = 0; i < missingPositions.length; i += 1) {
+    ranks[missingPositions[i]!] = missingRank(method, base, missingPositions.length, i);
   }
 }
 
-function calculatePctDenominator(
-  nonMissingCount: number,
-  naOption: NonNullable<RankOptions["na_option"]>
+function missingRank(
+  method: NonNullable<RankOptions["method"]>,
+  base: number,
+  missingCount: number,
+  position: number
 ): number {
-  if (naOption === "keep") {
-    return Math.max(nonMissingCount, 1);
+  if (method === "first") return base + position + 1;
+  if (method === "max") return base + missingCount;
+  if (method === "average") return base + (missingCount + 1) / 2;
+  return base + 1;
+}
+
+function calculatePctDenominator(
+  ranks: Array<number | null>,
+  method: NonNullable<RankOptions["method"]>
+): number {
+  if (method === "dense") {
+    return Math.max(
+      ranks.reduce<number>((max, rank) => rank === null ? max : Math.max(max, rank), 0),
+      1
+    );
   }
-  return Math.max(nonMissingCount + 1, 1);
+  return Math.max(ranks.filter((rank) => rank !== null).length, 1);
 }

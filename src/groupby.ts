@@ -1,21 +1,16 @@
 import { DataFrame } from "./dataframe";
 import { Series } from "./series";
 import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
-import {
-  wasmAggregateColumn,
-  wasmAggMultiF64,
-  wasmGroupIds,
-} from "./wasm/kernel";
-import { buildColumnStore } from "./wasm/columns";
+import { hasCachedColumns } from "./wasm/columns";
 import {
   compareKeyValues,
-  fastWasmCodeForName as wasmCodeForName,
   finalizeNamedAggValues,
   hasMissingByValue,
   keyForRow,
   keyForSingleValue,
   shouldTryWasm as shouldTryWasmFast,
   toIndexLabel,
+  tryWasmNamedAgg as tryWasmNamedAggFast,
   updateFastGroupStates,
 } from "./internal/groupby/fastAgg";
 import {
@@ -199,7 +194,7 @@ export class GroupBy {
   }
 
   private fastNamedAgg(namedPlans: NamedAggPlan[], aggColumns: string[]): DataFrame {
-    if (this.shouldTryWasm()) {
+    if (this.shouldTryWasm(namedPlans)) {
       const wasmResult = this.tryWasmNamedAgg(namedPlans, aggColumns);
       if (wasmResult) {
         return wasmResult;
@@ -288,13 +283,18 @@ export class GroupBy {
   /**
    * Whether the wasm groupby path should be attempted for this call.
    *
-   * On by default since the single-pass key packing optimization: the
-   * wasm path measures ~1.1x faster at 25k rows and ~1.25x at 100k rows,
-   * with the gap widening as row counts grow. Set BUN_PANDA_WASM=0 to
-   * force the pure-TS path.
+   * Adaptive mode retains TypeScript until calibration demonstrates a
+   * benefit from typed-column reuse. BUN_PANDA_WASM=1 forces the Wasm
+   * experiment path; BUN_PANDA_WASM=0 forces TypeScript.
    */
-  private shouldTryWasm(): boolean {
-    return shouldTryWasmFast(this.options.dropna ?? true);
+  private shouldTryWasm(namedPlans: NamedAggPlan[]): boolean {
+    const planColumns = [...new Set(namedPlans.map((plan) => plan.column))];
+    return shouldTryWasmFast(
+      this.options.dropna ?? true,
+      this.sourceRows.length,
+      namedPlans.length,
+      hasCachedColumns(this.sourceRows, planColumns)
+    );
   }
 
   /**
@@ -309,141 +309,13 @@ export class GroupBy {
     namedPlans: NamedAggPlan[],
     aggColumns: string[]
   ): DataFrame | null {
-    const grouped = wasmGroupIds(this.sourceRows, this.by);
-    if (!grouped || grouped.groupCount === 0) {
-      return null;
-    }
-
-    // Collect representative key values per group from the first row of
-    // each group id, preserving source order; sort afterwards like the
-    // TS path does when options.sort is on.
-    const firstRowOfGroup = new Int32Array(grouped.groupCount).fill(-1);
-    for (let i = 0; i < grouped.ids.length; i += 1) {
-      const g = grouped.ids[i]!;
-      if (g >= 0 && firstRowOfGroup[g] === -1) {
-        firstRowOfGroup[g] = i;
-      }
-    }
-    if (firstRowOfGroup.some((row) => row === -1)) {
-      return null;
-    }
-
-    interface GroupResult {
-      keyValues: CellValue[];
-      values: (number | null)[];
-    }
-
-    // Columnar fast path: build a typed store once, verify all plan
-    // columns are numeric, then run one fused kernel call for every
-    // aggregation plan instead of per-column marshalling. Duplicate
-    // columns in a spec resolve to the same store entry.
-    const planColumns = [...new Set(namedPlans.map((plan) => plan.column))];
-    const store = buildColumnStore(this.sourceRows, planColumns);
-    const numericColumns: Float64Array[] = [];
-    const wasmCodes: number[] = [];
-    let columnar = true;
-    for (const plan of namedPlans) {
-      const code = wasmCodeForName(plan.name);
-      const col = store.columns.get(plan.column);
-      if (code === null || !col || col.kind !== "f64") {
-        columnar = false;
-        break;
-      }
-      numericColumns.push(col.values);
-      wasmCodes.push(code);
-    }
-
-    if (columnar && numericColumns.length > 0) {
-      const fused = wasmAggMultiF64(
-        numericColumns,
-        wasmCodes,
-        grouped.ids,
-        grouped.groupCount
-      );
-      if (fused) {
-        const groups: GroupResult[] = [];
-        for (let g = 0; g < grouped.groupCount; g += 1) {
-          const sourceRow = this.sourceRows[firstRowOfGroup[g]!]!;
-          const keyValues: CellValue[] = [];
-          for (let i = 0; i < this.by.length; i += 1) {
-            keyValues.push(sourceRow[this.by[i]!]);
-          }
-          const values = namedPlans.map((_, planIndex) => {
-            const raw = fused.results[planIndex * grouped.groupCount + g]!;
-            return Number.isNaN(raw) ? null : raw;
-          });
-          groups.push({ keyValues, values });
-        }
-        return this.materializeOrderedGroups(groups, aggColumns);
-      }
-    }
-
-    const perPlanResults: (Float64Array | null)[] = [];
-
-    for (const plan of namedPlans) {
-      const code = wasmCodeForName(plan.name);
-      if (code === null) {
-        return null;
-      }
-      let allNumeric = true;
-      for (let i = 0; i < this.sourceRows.length; i += 1) {
-        const value = this.sourceRows[i]![plan.column];
-        if (!(value === null || value === undefined || isNumber(value))) {
-          allNumeric = false;
-          break;
-        }
-      }
-      if (!allNumeric) {
-        return null;
-      }
-      perPlanResults.push(
-        wasmAggregateColumn(
-          this.sourceRows,
-          plan.column,
-          grouped.ids,
-          grouped.groupCount,
-          code
-        )
-      );
-    }
-
-    if (perPlanResults.some((result) => result === null)) {
-      return null;
-    }
-
-    const groups: GroupResult[] = [];
-    for (let g = 0; g < grouped.groupCount; g += 1) {
-      const sourceRow = this.sourceRows[firstRowOfGroup[g]!]!;
-      const keyValues: CellValue[] = [];
-      for (let i = 0; i < this.by.length; i += 1) {
-        keyValues.push(sourceRow[this.by[i]!]);
-      }
-      const values = namedPlans.map((_, planIndex) => {
-        const raw = perPlanResults[planIndex]![g]!;
-        return Number.isNaN(raw) ? null : raw;
-      });
-      groups.push({ keyValues, values });
-    }
-
-    const ordered = this.options.sort
-      ? groups.sort((left, right) =>
-          compareKeyValues(left.keyValues, right.keyValues)
-        )
-      : groups;
-
-    const rows: Row[] = [];
-    for (const group of ordered) {
-      const row: Row = {};
-      for (let i = 0; i < this.by.length; i += 1) {
-        row[this.by[i]!] = group.keyValues[i];
-      }
-      namedPlans.forEach((plan, planIndex) => {
-        row[plan.column] = group.values[planIndex];
-      });
-      rows.push(row);
-    }
-
-    return this.materializeGroupedRows(rows, aggColumns);
+    return tryWasmNamedAggFast(
+      this.sourceRows,
+      this.by,
+      namedPlans,
+      aggColumns,
+      (groups, columns) => this.materializeOrderedGroups(groups, columns)
+    );
   }
 
   /** Sorts wasm-path group results and materializes the output frame. */

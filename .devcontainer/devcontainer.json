@@ -1,0 +1,14 @@
+{
+  "name": "bun_panda x86 replication",
+  "build": {
+    "dockerfile": "../paper/artifact/linux/Dockerfile.x86",
+    "context": ".."
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "postCreateCommand": "bun install --frozen-lockfile && python3 -m venv bench/.venv && bench/.venv/bin/pip install -r paper/artifact/linux/requirements.lock",
+  "remoteUser": "bun"
+}

@@ -2,6 +2,8 @@
 // reference docs) against bun_panda's implemented surface.
 import { readFileSync, writeFileSync } from "node:fs";
 
+const outputPath = process.env.BUN_PANDA_PARITY_OUTPUT ?? "docs/PARITY.md";
+
 // Baseline is committed (scripts/pandas-api-baseline.txt) so the audit runs
 // offline; refresh it with scripts/refresh-pandas-baseline.sh.
 const methodLines = readFileSync(
@@ -42,7 +44,7 @@ const topLevel = [
 ];
 
 // ---- Extract bun_panda surface from source ----
-function extractClassMethods(path: string, className: string) {
+function extractClassMethods(path: string, className: string): string[] {
   const src = readFileSync(path, "utf8");
   const classStart = src.indexOf(`class ${className}`);
   if (classStart < 0) return [];
@@ -63,15 +65,15 @@ function extractClassMethods(path: string, className: string) {
   return extractMethodNames(src.slice(classStart));
 }
 
-function extractMethodNames(body: string) {
-  const names = new Set();
-  const re = /^\s{2}([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<[^>]*>)?\(/gm;
+function extractMethodNames(body: string): string[] {
+  const names = new Set<string>();
+  const re = /^\s{2}(?:(?:static|async)\s+)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<[^>]*>)?\(/gm;
   let match;
   while ((match = re.exec(body)) !== null) {
     names.add(match[1]!);
   }
   // getters
-  const getterRe = /^\s{2}(?:get|set)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
+  const getterRe = /^\s{2}(?:(?:static|async)\s+)*(?:get|set)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
   while ((match = getterRe.exec(body)) !== null) {
     names.add(match[1]!);
   }
@@ -176,7 +178,7 @@ for (const s of sections) {
   }
 }
 
-writeFileSync("docs/PARITY.md", `${lines.join("\n")}\n`);
+writeFileSync(outputPath, `${lines.join("\n")}\n`);
 
 console.log(lines.slice(0, 16).join("\n"));
-console.log(`\nFull detail written to docs/PARITY.md`);
+console.log(`\nFull detail written to ${outputPath}`);

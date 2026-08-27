@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { DataFrame } from "../src/index";
 import {
   wasmAggregateColumn,
+  wasmArgsortF64,
+  wasmFilterIndices,
   wasmGroupIds,
   wasmKernel,
 } from "../src/wasm/kernel";
@@ -110,5 +112,23 @@ describe("wasm kernel", () => {
         }
       }
     }
+  });
+
+  test("large sequential kernels do not overwrite module data", () => {
+    if (!wasmKernel()) {
+      return;
+    }
+    const size = 250_000;
+    const values = Float64Array.from({ length: size }, (_, i) => (i * 7919) % size);
+    const sorted = wasmArgsortF64(values, true);
+    expect(sorted).not.toBeNull();
+    expect(sorted!.length).toBe(size);
+
+    const mask = Uint8Array.from({ length: size }, (_, i) => (i % 3 === 0 ? 1 : 0));
+    const indices = wasmFilterIndices(mask);
+    expect(indices).not.toBeNull();
+    expect(indices!.length).toBe(Math.ceil(size / 3));
+    expect(indices![0]).toBe(0);
+    expect(indices![indices!.length - 1]).toBe(249_999);
   });
 });

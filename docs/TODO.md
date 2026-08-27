@@ -36,18 +36,20 @@
 
 ## Completed in v0.3.x–v0.4.0 (parity sprint)
 
-1. Pandas API parity 50% → 99% (255/505 → 500/505); GroupBy and Top-level at 100%.
+1. Pandas API parity 50% → 100% (255/505 → 505/505) across the tracked reference set.
 2. Self-contained parity audit (`bun run parity` — committed baseline, refresh script included).
 3. Categorical dtype support: `Categorical`, `CategoricalDtype`, `.cat` accessor.
 4. Datetime helpers: `resample`, `ewm`, `at_time`, `between_time`, `asof`, `asfreq`, tz shims, `Interval`.
 5. IO expansion: HTML tables, fixed-width, JSON lines, XML, clipboard, pickle/feather/orc/hdf bridges, async SQL family.
+6. Extracted window, time, and export delegates from the DataFrame and Series class files into `src/internal/` modules.
+7. Replaced plotting stubs with ASCII and SVG renderers; only styled dataframe rendering remains intentionally unsupported.
+8. Re-benchmarked after the API expansion: bun_panda wins 78 of 87 Arquero comparisons.
+9. Prepared the npm package with real metadata, a publish gate, restricted contents, and an install/import smoke test.
 
 ## Next Milestone (v0.4.x)
 
-1. Extract the window/time/export method blocks from `dataframe.ts`/`series.ts` back into `src/internal/` modules (class files regressed to 2600/1930 LOC during the sprint).
-2. Replace the five plotting stubs (`plot hist boxplot style sparse`) with text/SVG renderers or a pluggable backend.
-3. Re-benchmark after the API expansion; verify the WASM groupby fast path still wins.
-4. npm publish prep: `prepublishOnly` gates + `npm pack` smoke test.
+1. Raise test coverage past 85%.
+2. Add property-based tests for CSV and JSON parsers.
 
 ## Mid-Term (v0.5.x+)
 
@@ -57,6 +59,4 @@
 
 ## Quality Backlog
 
-1. Raise test coverage past 85%.
-2. Property-based tests for CSV/JSON parsers.
-3. Performance regression checks in CI (benchmark drift gate).
+1. Expand performance regression coverage beyond the existing benchmark drift gate.

@@ -42,6 +42,8 @@ export interface SeriesHost {
   skew(): number | null;
   sem(): number | null;
   prod(): number | null;
+  removeAt(position: number): CellValue;
+  setAt(position: number, value: CellValue): void;
 }
 
 // ---- additional pandas compat (parity gaps) ----
@@ -148,10 +150,7 @@ export function keys(s: SeriesHost): IndexLabel[] { return [...s.labelsSnapshot(
 export function pop(s: SeriesHost, label: IndexLabel): CellValue | undefined {
     const pos = s.labelsSnapshot().findIndex((e) => e === label);
     if (pos < 0) throw new Error(`pop: label '${String(label)}' not found`);
-    const v = s.valuesSnapshot()[pos]!;
-    (s as unknown as { _values: CellValue[] })._values.splice(pos, 1);
-    (s as unknown as { _index: IndexLabel[] })._index.splice(pos, 1);
-    return v as CellValue;
+    return s.removeAt(pos);
   }
 
 export function repeat(s: SeriesHost, repeats: number): Series<CellValue> {
@@ -208,7 +207,7 @@ export function update(s: SeriesHost, other: Series<CellValue>): void {
       const label = other.index[i]!;
       const pos = s.labelsSnapshot().indexOf(label);
       const v = (other.values as CellValue[])[i];
-      if (pos >= 0 && !isMissing(v)) (s as unknown as { _values: CellValue[] })._values[pos] = v;
+      if (pos >= 0 && !isMissing(v)) s.setAt(pos, v as CellValue);
     }
   }
 

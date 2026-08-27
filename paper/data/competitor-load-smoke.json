@@ -1,0 +1,717 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-26T07:00:55.994Z",
+  "runtime": {
+    "bun": "1.4.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro"
+  },
+  "design": {
+    "systems": [
+      "bun_panda",
+      "arquero",
+      "danfojs",
+      "nodejs_polars",
+      "duckdb_wasm"
+    ],
+    "workloads": [
+      "groupby_sum",
+      "filter_sort_top100",
+      "value_counts",
+      "inner_join"
+    ],
+    "scopes": [
+      "load_and_operation"
+    ],
+    "sizes": [
+      1000
+    ],
+    "processReplicates": 1,
+    "warmupsPerProcess": 0,
+    "iterationsPerProcess": 1,
+    "baseSeed": 20260826,
+    "taskOrder": "deterministically randomized",
+    "experimentalUnit": "fresh Bun process",
+    "correctness": "all systems must match a pure TypeScript reference SHA-256 digest for each seed",
+    "operationScope": "data structures are built before timing; output materialization is timed",
+    "loadAndOperationScope": "dataset loading and operation are timed; module import and engine initialization are excluded",
+    "memory": "peak process RSS is descriptive because in-process allocators and garbage collectors differ"
+  },
+  "cells": [
+    {
+      "rows": 1000,
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 4.9965,
+          "medianOfProcessMeansMs": 4.9965,
+          "processMeansMs": [
+            4.9965
+          ],
+          "medianPeakRssBytes": 98484224
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 4.882542,
+          "medianOfProcessMeansMs": 4.882542,
+          "processMeansMs": [
+            4.882542
+          ],
+          "medianPeakRssBytes": 108445696
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 1.864834,
+          "medianOfProcessMeansMs": 1.864834,
+          "processMeansMs": [
+            1.864834
+          ],
+          "medianPeakRssBytes": 212566016
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 29.715084,
+          "medianOfProcessMeansMs": 29.715084,
+          "processMeansMs": [
+            29.715084
+          ],
+          "medianPeakRssBytes": 130957312
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 142.596083,
+          "medianOfProcessMeansMs": 142.596083,
+          "processMeansMs": [
+            142.596083
+          ],
+          "medianPeakRssBytes": 546324480
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 2.532166,
+          "medianOfProcessMeansMs": 2.532166,
+          "processMeansMs": [
+            2.532166
+          ],
+          "medianPeakRssBytes": 85000192
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 5.365666,
+          "medianOfProcessMeansMs": 5.365666,
+          "processMeansMs": [
+            5.365666
+          ],
+          "medianPeakRssBytes": 100745216
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 3.690417,
+          "medianOfProcessMeansMs": 3.690417,
+          "processMeansMs": [
+            3.690417
+          ],
+          "medianPeakRssBytes": 211681280
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 46.546167,
+          "medianOfProcessMeansMs": 46.546167,
+          "processMeansMs": [
+            46.546167
+          ],
+          "medianPeakRssBytes": 114114560
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 117.410875,
+          "medianOfProcessMeansMs": 117.410875,
+          "processMeansMs": [
+            117.410875
+          ],
+          "medianPeakRssBytes": 522371072
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 1.740375,
+          "medianOfProcessMeansMs": 1.740375,
+          "processMeansMs": [
+            1.740375
+          ],
+          "medianPeakRssBytes": 105136128
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 3.576667,
+          "medianOfProcessMeansMs": 3.576667,
+          "processMeansMs": [
+            3.576667
+          ],
+          "medianPeakRssBytes": 102498304
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 2.419833,
+          "medianOfProcessMeansMs": 2.419833,
+          "processMeansMs": [
+            2.419833
+          ],
+          "medianPeakRssBytes": 216727552
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 5.129292,
+          "medianOfProcessMeansMs": 5.129292,
+          "processMeansMs": [
+            5.129292
+          ],
+          "medianPeakRssBytes": 136183808
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 126.096333,
+          "medianOfProcessMeansMs": 126.096333,
+          "processMeansMs": [
+            126.096333
+          ],
+          "medianPeakRssBytes": 528465920
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 3.22125,
+          "medianOfProcessMeansMs": 3.22125,
+          "processMeansMs": [
+            3.22125
+          ],
+          "medianPeakRssBytes": 96845824
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 5.566083,
+          "medianOfProcessMeansMs": 5.566083,
+          "processMeansMs": [
+            5.566083
+          ],
+          "medianPeakRssBytes": 111771648
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 3.650834,
+          "medianOfProcessMeansMs": 3.650834,
+          "processMeansMs": [
+            3.650834
+          ],
+          "medianPeakRssBytes": 211927040
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 9.83475,
+          "medianOfProcessMeansMs": 9.83475,
+          "processMeansMs": [
+            9.83475
+          ],
+          "medianPeakRssBytes": 130613248
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 212.731042,
+          "medianOfProcessMeansMs": 212.731042,
+          "processMeansMs": [
+            212.731042
+          ],
+          "medianPeakRssBytes": 515637248
+        }
+      }
+    }
+  ],
+  "raw": [
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        212.731042
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 515637248,
+        "finalRss": 515751936,
+        "maxRssKilobytes": 503680
+      },
+      "processWallMs": 1336.447084
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        3.22125
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 96845824,
+        "finalRss": 96976896,
+        "maxRssKilobytes": 94720
+      },
+      "processWallMs": 331.665083
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.740375
+      ],
+      "digest": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 105136128,
+        "finalRss": 105283584,
+        "maxRssKilobytes": 102832
+      },
+      "processWallMs": 353.418834
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        5.566083
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 111771648,
+        "finalRss": 111951872,
+        "maxRssKilobytes": 109344
+      },
+      "processWallMs": 1791.054417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        3.576667
+      ],
+      "digest": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 102498304,
+        "finalRss": 102629376,
+        "maxRssKilobytes": 100240
+      },
+      "processWallMs": 944.119584
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        5.365666
+      ],
+      "digest": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 100745216,
+        "finalRss": 100892672,
+        "maxRssKilobytes": 98544
+      },
+      "processWallMs": 312.373625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        4.9965
+      ],
+      "digest": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 98484224,
+        "finalRss": 98697216,
+        "maxRssKilobytes": 96400
+      },
+      "processWallMs": 118.549625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        4.882542
+      ],
+      "digest": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 108445696,
+        "finalRss": 108642304,
+        "maxRssKilobytes": 106112
+      },
+      "processWallMs": 198.198708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        46.546167
+      ],
+      "digest": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 114114560,
+        "finalRss": 114311168,
+        "maxRssKilobytes": 111648
+      },
+      "processWallMs": 468.9935
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.864834
+      ],
+      "digest": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 212566016,
+        "finalRss": 212664320,
+        "maxRssKilobytes": 207680
+      },
+      "processWallMs": 2454.187917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        2.419833
+      ],
+      "digest": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 216727552,
+        "finalRss": 216793088,
+        "maxRssKilobytes": 211712
+      },
+      "processWallMs": 5318.038625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        29.715084
+      ],
+      "digest": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 130957312,
+        "finalRss": 131137536,
+        "maxRssKilobytes": 128080
+      },
+      "processWallMs": 127.120666
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        126.096333
+      ],
+      "digest": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 528465920,
+        "finalRss": 528531456,
+        "maxRssKilobytes": 516160
+      },
+      "processWallMs": 1056.543833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        9.83475
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 130613248,
+        "finalRss": 130777088,
+        "maxRssKilobytes": 127728
+      },
+      "processWallMs": 1816.605541
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        2.532166
+      ],
+      "digest": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 85000192,
+        "finalRss": 85180416,
+        "maxRssKilobytes": 83200
+      },
+      "processWallMs": 1783.423334
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        142.596083
+      ],
+      "digest": "a55eac48a23ba25da4ea3379ac0d43259d8032abbd9e65673dcfd83d9c4dda42",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 546324480,
+        "finalRss": 546390016,
+        "maxRssKilobytes": 533600
+      },
+      "processWallMs": 1200.769417
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        5.129292
+      ],
+      "digest": "7082e378ca0c4570cbafbc0ca838bb4e11305ee02a2a8ad49bdb2f24b9460505",
+      "outputRows": 8,
+      "memory": {
+        "observedRssPeak": 136183808,
+        "finalRss": 136331264,
+        "maxRssKilobytes": 133152
+      },
+      "processWallMs": 3293.324041
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        3.650834
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 211927040,
+        "finalRss": 212008960,
+        "maxRssKilobytes": 207040
+      },
+      "processWallMs": 2340.296041
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        117.410875
+      ],
+      "digest": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 522371072,
+        "finalRss": 522436608,
+        "maxRssKilobytes": 510208
+      },
+      "processWallMs": 1383.777
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "load_and_operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        3.690417
+      ],
+      "digest": "65415ebbd46d2f1c6843b4c9951c1b9880cf43965a12b7f5006ab3fcb9ead0dd",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 211681280,
+        "finalRss": 211845120,
+        "maxRssKilobytes": 206880
+      },
+      "processWallMs": 1505.326541
+    }
+  ]
+}

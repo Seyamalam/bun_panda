@@ -8,9 +8,12 @@
 
 ```bash
 bun run check
+bun run parity
+bun run pack:smoke
 ```
 
 4. Validate API docs reflect current exports.
+5. Confirm `git status --short` is clean.
 
 ## Versioning
 
@@ -26,4 +29,4 @@ Use semantic versioning:
 bun publish
 ```
 
-Before running publish, ensure package metadata URLs are set to real repository locations.
+The package publishes as the unscoped npm name `bun_panda`. The `prepublishOnly` script runs `bun run check` again before the registry upload.

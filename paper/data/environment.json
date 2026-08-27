@@ -1,0 +1,28 @@
+{
+  "capturedAt": "2026-08-26T04:36:52.992Z",
+  "machine": {
+    "platform": "darwin",
+    "release": "25.5.0",
+    "architecture": "arm64",
+    "cpuModel": "Apple M5 Pro",
+    "logicalCores": 18,
+    "memoryBytes": 51539607552,
+    "macOS": "ProductName:\t\tmacOS\nProductVersion:\t\t26.5\nBuildVersion:\t\t25F71"
+  },
+  "runtimes": {
+    "bun": "1.4.0",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+    "python": "Python 3.13.13",
+    "pandas": "3.0.5",
+    "typescript": "Version 5.9.3",
+    "arquero": "8.0.3"
+  },
+  "experiment": {
+    "powerMode": "not programmatically controlled",
+    "backgroundLoad": "best-effort quiescent interactive workstation",
+    "processIsolation": "single benchmark process per comparison suite",
+    "repositoryCommit": "0eb86dd9c123d9db667e1a411b2c9b65a2e3f1ec",
+    "dirtyWorkingTree": true
+  }
+}

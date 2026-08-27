@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { DataFrame, Series } from "../src";
+import type { CellValue } from "../src";
 
 describe("Series align / time filters", () => {
   test("align outer unions labels and reindexes both sides", () => {
@@ -93,11 +94,51 @@ describe("Series cat accessor + from_arrow", () => {
     expect(accessor!.categories.sort()).toEqual(["a", "b"]);
   });
 
-  test("from_arrow builds a frame from record arrays", () => {
+  test("from_arrow constructors build their matching containers", () => {
     const records = [{ a: 1 }, { a: 2 }];
-    const df = DataFrame.from_records(records);
+    const df = DataFrame.from_arrow(records);
     expect(df.columns).toEqual(["a"]);
     expect(df.to_records()).toHaveLength(2);
-    void records;
+    expect(Series.from_arrow([1, 2]).to_list()).toEqual([1, 2]);
+  });
+});
+
+describe("Series extracted API delegates", () => {
+  test("metadata, selection, conversion, and export delegates remain public", () => {
+    const series = new Series<CellValue>(["1", null, "3"], { index: ["a", "b", "c"], name: "value" });
+
+    expect(series.at.a).toBe("1");
+    expect(series.iat[2]).toBe("3");
+    expect(series.array).toEqual(["1", null, "3"]);
+    expect(series.list).toEqual(["1", null, "3"]);
+    expect(series.flags.allows_duplicate_labels).toBe(true);
+    expect(series.infer_objects().to_list()).toEqual([1, null, 3]);
+    expect(series.to_markdown()).toContain("value");
+    expect(series.to_latex()).toContain("\\begin{tabular}");
+    expect(series.to_excel()).toContain("<table");
+    expect(series.html).toContain("<table");
+  });
+
+  test("mutating delegates update the owning Series", () => {
+    const series = new Series<CellValue>([1, 2], { index: ["a", "b"] });
+    expect(series.pop("a")).toBe(1);
+    expect(series.to_list()).toEqual([2]);
+
+    series.update(new Series<CellValue>([9], { index: ["b"] }));
+    expect(series.to_list()).toEqual([9]);
+  });
+
+  test("combine, reshape, and frequency delegates remain callable", () => {
+    const left = new Series<CellValue>([1, null], { index: [0, 2], name: "value" });
+    const right = new Series<CellValue>([10, 20], { index: [0, 1], name: "other" });
+
+    expect(left.combine_first(right).to_list()).toEqual([1, 20]);
+    expect(left.combine(right, (a, b) => Number(a ?? 0) + Number(b ?? 0)).to_list()).toEqual([11, 20]);
+    expect(left.compare(new Series<CellValue>([1, 3])).to_records()).toEqual([{ self: null, other: 3 }]);
+    expect(left.reindex_like(right).index).toEqual([0, 1]);
+    expect(left.asfreq(1).to_list()).toEqual([1, null, null]);
+    expect(left.asof(2)).toBe(1);
+    expect(left.unstack().columns).toEqual(["value"]);
+    expect(left.xs(0)).toBe(1);
   });
 });

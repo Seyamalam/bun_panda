@@ -6,6 +6,7 @@ import {
   wasmGroupIds,
 } from "../../wasm/kernel";
 import { buildColumnStore } from "../../wasm/columns";
+import { chooseExecutionPath } from "../../wasm/dispatch";
 import type { AggName, CellValue, IndexLabel, Row } from "../../types";
 import {
   compareCellValues,
@@ -136,10 +137,19 @@ export function updateFastGroupStates(
   }
 }
 
-export function shouldTryWasm(dropna: boolean): boolean {
-  if (!dropna) return false;
-  const env = (process as unknown as { env?: Record<string, string> }).env;
-  return env?.BUN_PANDA_WASM !== "0";
+export function shouldTryWasm(
+  dropna: boolean,
+  rowCount: number,
+  planCount: number,
+  typedColumnsReused = false
+): boolean {
+  return chooseExecutionPath({
+    operation: "groupby-fused",
+    rowCount,
+    planCount,
+    dropna,
+    typedColumnsReused,
+  }).path === "wasm";
 }
 
 export function tryWasmNamedAgg(

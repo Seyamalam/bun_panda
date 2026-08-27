@@ -1,0 +1,501 @@
+{
+  "schemaVersion": "2.0.0",
+  "generatedAt": "2026-08-26T05:42:57.030Z",
+  "runtime": {
+    "bun": "1.4.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro"
+  },
+  "design": {
+    "baseSeed": 20260826,
+    "sizes": [
+      1000
+    ],
+    "workloads": [
+      "groupby_fused_4",
+      "sort_numeric_full"
+    ],
+    "modes": [
+      "typescript",
+      "wasm",
+      "adaptive"
+    ],
+    "processReplicates": 2,
+    "warmupsPerProcess": 1,
+    "iterationsPerProcess": 2,
+    "taskOrder": "deterministically randomized across workload, scale, mode, and replicate",
+    "experimentalUnit": "fresh Bun process",
+    "primaryEffect": "ratio of iteration means, TypeScript divided by candidate",
+    "uncertainty": "95% hierarchical percentile bootstrap, resampling processes then iterations",
+    "correctness": "SHA-256 digest of fully materialized final output; all modes must match",
+    "construction": "excluded from operation samples; process wall and before/after construction memory retained in raw records",
+    "memoryCaveat": "macOS runtime diagnostics are not used for cross-runtime memory claims; Linux cgroup v2 run required"
+  },
+  "cells": [
+    {
+      "workload": "groupby_fused_4",
+      "rows": 1000,
+      "equivalent": true,
+      "digestBySeed": {
+        "20260826": "07ac22f63927ec4946a2b3c98b715e4509eeadcc6cdfe914cebca1c2d5584aa3",
+        "20260827": "cd66bb873dcf5061fffa8923f376eba20c2eb536f8ca0373db4992368df0aba6"
+      },
+      "processReplicates": 2,
+      "iterationsPerProcess": 2,
+      "modes": {
+        "typescript": {
+          "meanOfProcessMeansMs": 0.343927,
+          "medianOfProcessMeansMs": 0.343927,
+          "processMeansMs": [
+            0.295646,
+            0.392208
+          ]
+        },
+        "wasm": {
+          "meanOfProcessMeansMs": 0.568948,
+          "medianOfProcessMeansMs": 0.568948,
+          "processMeansMs": [
+            0.5584585,
+            0.5794375
+          ]
+        },
+        "adaptive": {
+          "meanOfProcessMeansMs": 0.488885,
+          "medianOfProcessMeansMs": 0.488885,
+          "processMeansMs": [
+            0.545562,
+            0.432208
+          ]
+        }
+      },
+      "speedupVsTypescript": {
+        "wasm": {
+          "estimate": 0.6044963687366859,
+          "lower95": 0.39471387462372376,
+          "upper95": 0.8602144156656955,
+          "bootstrapReplicates": 100
+        },
+        "adaptive": {
+          "estimate": 0.7034926414187385,
+          "lower95": 0.4965601080063756,
+          "upper95": 0.9739888659886426,
+          "bootstrapReplicates": 100
+        }
+      }
+    },
+    {
+      "workload": "sort_numeric_full",
+      "rows": 1000,
+      "equivalent": true,
+      "digestBySeed": {
+        "20260826": "2a6ef19313c2caa03a9b0541013f78c1cead284baa53dda94ee099b1ae3e6f4c",
+        "20260827": "d6f642568f2cd4924fdd65e39be841195ccb3d7aba16344faf9ae20acbdcbe2b"
+      },
+      "processReplicates": 2,
+      "iterationsPerProcess": 2,
+      "modes": {
+        "typescript": {
+          "meanOfProcessMeansMs": 0.6914895,
+          "medianOfProcessMeansMs": 0.6914895,
+          "processMeansMs": [
+            0.598625,
+            0.784354
+          ]
+        },
+        "wasm": {
+          "meanOfProcessMeansMs": 0.6946147500000001,
+          "medianOfProcessMeansMs": 0.6946147500000001,
+          "processMeansMs": [
+            0.46858350000000004,
+            0.9206460000000001
+          ]
+        },
+        "adaptive": {
+          "meanOfProcessMeansMs": 0.5306565,
+          "medianOfProcessMeansMs": 0.5306565,
+          "processMeansMs": [
+            0.4994795,
+            0.5618335
+          ]
+        }
+      },
+      "speedupVsTypescript": {
+        "wasm": {
+          "estimate": 0.9955007433976892,
+          "lower95": 0.47908189437069115,
+          "upper95": 1.798720028627609,
+          "bootstrapReplicates": 100
+        },
+        "adaptive": {
+          "estimate": 1.3030830678602827,
+          "lower95": 0.7996383743112856,
+          "upper95": 2.0819157125653747,
+          "bootstrapReplicates": 100
+        }
+      }
+    }
+  ],
+  "raw": [
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "typescript",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.772958,
+        0.424292
+      ],
+      "digest": "2a6ef19313c2caa03a9b0541013f78c1cead284baa53dda94ee099b1ae3e6f4c",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 95977472,
+        "rssAfterConstruction": 96747520,
+        "observedRssPeak": 97583104,
+        "maxRssKilobytes": 95312,
+        "heapUsedAfter": 13383592,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 150.440667
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "typescript",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.343625,
+        0.247667
+      ],
+      "digest": "07ac22f63927ec4946a2b3c98b715e4509eeadcc6cdfe914cebca1c2d5584aa3",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 102334464,
+        "rssAfterConstruction": 103022592,
+        "observedRssPeak": 104415232,
+        "maxRssKilobytes": 101984,
+        "heapUsedAfter": 12735311,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 146.718792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "adaptive",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.6205,
+        0.378459
+      ],
+      "digest": "2a6ef19313c2caa03a9b0541013f78c1cead284baa53dda94ee099b1ae3e6f4c",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 99057664,
+        "rssAfterConstruction": 99794944,
+        "observedRssPeak": 100302848,
+        "maxRssKilobytes": 97968,
+        "heapUsedAfter": 13380771,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 148.586917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "adaptive",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.724125,
+        0.399542
+      ],
+      "digest": "d6f642568f2cd4924fdd65e39be841195ccb3d7aba16344faf9ae20acbdcbe2b",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 97910784,
+        "rssAfterConstruction": 98664448,
+        "observedRssPeak": 99172352,
+        "maxRssKilobytes": 96864,
+        "heapUsedAfter": 12856589,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 149.888708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "typescript",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.469958,
+        0.314458
+      ],
+      "digest": "cd66bb873dcf5061fffa8923f376eba20c2eb536f8ca0373db4992368df0aba6",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 95502336,
+        "rssAfterConstruction": 96288768,
+        "observedRssPeak": 97746944,
+        "maxRssKilobytes": 95472,
+        "heapUsedAfter": 12856797,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 296.073625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "wasm",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.760625,
+        0.356292
+      ],
+      "digest": "cd66bb873dcf5061fffa8923f376eba20c2eb536f8ca0373db4992368df0aba6",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 102547456,
+        "rssAfterConstruction": 103284736,
+        "observedRssPeak": 108380160,
+        "maxRssKilobytes": 105856,
+        "heapUsedAfter": 12531572,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 1172.076083
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "wasm",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.495833,
+        0.441334
+      ],
+      "digest": "2a6ef19313c2caa03a9b0541013f78c1cead284baa53dda94ee099b1ae3e6f4c",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 91766784,
+        "rssAfterConstruction": 92553216,
+        "observedRssPeak": 95977472,
+        "maxRssKilobytes": 93744,
+        "heapUsedAfter": 12853337,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 748.466666
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "wasm",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.525125,
+        0.63375
+      ],
+      "digest": "07ac22f63927ec4946a2b3c98b715e4509eeadcc6cdfe914cebca1c2d5584aa3",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 98123776,
+        "rssAfterConstruction": 98844672,
+        "observedRssPeak": 102875136,
+        "maxRssKilobytes": 100480,
+        "heapUsedAfter": 12859922,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 340.696208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "typescript",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        1.05575,
+        0.512958
+      ],
+      "digest": "d6f642568f2cd4924fdd65e39be841195ccb3d7aba16344faf9ae20acbdcbe2b",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 91602944,
+        "rssAfterConstruction": 92045312,
+        "observedRssPeak": 93405184,
+        "maxRssKilobytes": 91232,
+        "heapUsedAfter": 12866585,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 258.420791
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "sort_numeric_full",
+      "mode": "wasm",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        1.199125,
+        0.642167
+      ],
+      "digest": "d6f642568f2cd4924fdd65e39be841195ccb3d7aba16344faf9ae20acbdcbe2b",
+      "outputShape": [
+        1000,
+        7
+      ],
+      "memory": {
+        "rssBeforeConstruction": 91668480,
+        "rssAfterConstruction": 92274688,
+        "observedRssPeak": 96043008,
+        "maxRssKilobytes": 93808,
+        "heapUsedAfter": 14027697,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 245.475
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "adaptive",
+      "rows": 1000,
+      "seed": 20260827,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.656083,
+        0.435041
+      ],
+      "digest": "cd66bb873dcf5061fffa8923f376eba20c2eb536f8ca0373db4992368df0aba6",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 96698368,
+        "rssAfterConstruction": 97353728,
+        "observedRssPeak": 98729984,
+        "maxRssKilobytes": 96432,
+        "heapUsedAfter": 13386016,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 271.446
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "workload": "groupby_fused_4",
+      "mode": "adaptive",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 1,
+      "iterations": 2,
+      "samplesMs": [
+        0.473041,
+        0.391375
+      ],
+      "digest": "07ac22f63927ec4946a2b3c98b715e4509eeadcc6cdfe914cebca1c2d5584aa3",
+      "outputShape": [
+        64,
+        5
+      ],
+      "memory": {
+        "rssBeforeConstruction": 103645184,
+        "rssAfterConstruction": 104349696,
+        "observedRssPeak": 105725952,
+        "maxRssKilobytes": 103264,
+        "heapUsedAfter": 12848833,
+        "cgroupCurrentBeforeConstruction": null,
+        "cgroupCurrentAfterConstruction": null,
+        "cgroupPeak": null,
+        "scope": "runtime diagnostics only; comparable cgroup study requires Linux"
+      },
+      "processWallMs": 325.244
+    }
+  ]
+}

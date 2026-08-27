@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "runs": [
+    {
+      "date": "2026-08-26",
+      "study": "competitor-uci-bank",
+      "status": "rejected-before-completion",
+      "completedProcesses": 10,
+      "plannedProcesses": 200,
+      "reason": "Unrelated native-versus-JavaScript benchmark processes were consuming CPU on the shared workstation.",
+      "action": "The controller was interrupted. No result file was written and no timing is used in the manuscript."
+    },
+    {
+      "date": "2026-08-26",
+      "study": "local-linux-amd64-container-build",
+      "status": "diagnostic-only",
+      "reason": "Apple-hosted x86 emulation exposed no AVX support, and Bun 1.4.0 exited during dependency installation.",
+      "action": "No performance result was collected. The publication runner requires a real x86_64 Linux VM."
+    }
+  ]
+}

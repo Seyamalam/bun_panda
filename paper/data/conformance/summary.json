@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-27T04:26:25.823Z",
+  "tolerance": {
+    "absolute": 1e-9,
+    "relative": 1e-9
+  },
+  "nativeDtypes": "retained as diagnostics; cross-system comparison uses broad dtype families",
+  "mergeOrdering": "join-key sequence must match; rows within each contiguous equal-key group compare as a multiset because pandas specifies left-key order, not duplicate-pair order",
+  "comparisons": [
+    {
+      "reference": "pandas",
+      "referenceVersion": "3.0.5",
+      "candidate": "bun_panda-adaptive",
+      "candidateVersion": "0.4.0",
+      "total": 2500,
+      "passed": 2500,
+      "mismatched": 0,
+      "agreement": 1,
+      "families": {
+        "sort_values": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "dropna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "fillna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "drop_duplicates": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "shift": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "diff": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "rank": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "groupby_agg": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "value_counts": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "merge": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        }
+      }
+    },
+    {
+      "reference": "bun_panda-typescript",
+      "referenceVersion": "0.4.0",
+      "candidate": "bun_panda-wasm",
+      "candidateVersion": "0.4.0",
+      "total": 2500,
+      "passed": 2500,
+      "mismatched": 0,
+      "agreement": 1,
+      "families": {
+        "sort_values": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "dropna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "fillna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "drop_duplicates": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "shift": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "diff": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "rank": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "groupby_agg": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "value_counts": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "merge": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        }
+      }
+    },
+    {
+      "reference": "bun_panda-typescript",
+      "referenceVersion": "0.4.0",
+      "candidate": "bun_panda-adaptive",
+      "candidateVersion": "0.4.0",
+      "total": 2500,
+      "passed": 2500,
+      "mismatched": 0,
+      "agreement": 1,
+      "families": {
+        "sort_values": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "dropna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "fillna": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "drop_duplicates": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "shift": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "diff": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "rank": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "groupby_agg": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "value_counts": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        },
+        "merge": {
+          "total": 250,
+          "passed": 250,
+          "valid": 200,
+          "boundary": 50,
+          "mismatched": 0,
+          "agreement": 1
+        }
+      }
+    }
+  ],
+  "mismatchLedgerEntries": 0
+}

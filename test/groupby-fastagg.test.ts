@@ -7,10 +7,12 @@ describe("GroupBy fastAgg (split module)", () => {
     const prev = process.env.BUN_PANDA_WASM;
     try {
       process.env.BUN_PANDA_WASM = "0";
-      expect(shouldTryWasm(true)).toBe(false);
+      expect(shouldTryWasm(true, 100_000, 1)).toBe(false);
+      process.env.BUN_PANDA_WASM = "1";
+      expect(shouldTryWasm(true, 100_000, 1)).toBe(true);
       delete process.env.BUN_PANDA_WASM;
-      expect(shouldTryWasm(true)).toBe(true);
-      expect(shouldTryWasm(false)).toBe(false);
+      expect(shouldTryWasm(true, 100_000, 1)).toBe(false);
+      expect(shouldTryWasm(false, 100_000, 1)).toBe(false);
     } finally {
       if (prev === undefined) delete process.env.BUN_PANDA_WASM;
       else process.env.BUN_PANDA_WASM = prev;

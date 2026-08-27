@@ -1,97 +1,103 @@
-# bun_panda — Agent Handoff
+# bun_panda agent handoff
 
-*Written 2026-08-25 after the parity sprint + cleanup session. Everything below is verified against the working tree at commit `b563969`.*
+Updated 27 August 2026 for the `v0.4.1` release candidate after the semantic, comparator, browser, public-workload, cross-platform-runner, manuscript, and full local-reproduction work.
 
-## Location
+## Repository
 
-- **Working directory**: `/Users/seyam/Work/bun_panda` (macOS, user `seyam`)
-- **Local path on the user's machine**: `~/Work/bun_panda`
+- Working directory: `/Users/seyam/Work/bun_panda`
+- Public source: `https://github.com/Seyamalam/bun_panda`
+- Package version: `0.4.1`
+- npm: `https://www.npmjs.com/package/bun_panda`
+- Immutable source release: `https://github.com/Seyamalam/bun_panda/releases/tag/v0.4.1`
+- CI: `.github/workflows/ci.yml` is intentionally deleted. Depot and GitHub Actions are not used.
 
-## What this repo is
+## Verified local state
 
-`bun_panda` — a pandas-parity TypeScript library for Bun, with a Rust core compiled to WASM (flat C ABI over linear memory, **no wasm-bindgen/wasm-pack**; loaded via Bun's native `WebAssembly`). Repo: `github.com/Seyamalam/bun_panda`, branch `master`.
+- `bun run check`: clean
+- Tests: 376 pass, 0 fail, 813 expectations across 27 files
+- `bun run pack:smoke`: clean, 77-file consumer tarball
+- API census: 505/505 tracked names. This is name coverage, not blanket compatibility.
+- Differential oracle: 2,500/2,500 against pandas 3.0.5 under the declared merge-order rule. The comparator preserves join-key group order and treats duplicate pair order within one equal-key group as unspecified.
+- Backend equality: TypeScript, eligible Wasm, and adaptive execution agree in 2,500/2,500 oracle cases.
+- Current Wasm binary: 7,359 bytes.
 
-## Current state (all pushed)
+## Paper and evidence
 
-| Item | Value |
-|---|---|
-| Version | **0.4.0** (package.json + crates/core/Cargo.toml), tag `v0.4.0` pushed |
-| Parity | **505/505 tracked APIs (100%)** per `docs/PARITY.md` — plotting now real (ASCII/SVG), only `style` remains an intentional `NotSupportedError` |
-| Tests | 352 pass / 744 expects / 22 files; tsc clean; oxlint clean (`--deny-warnings`); coverage ~81% vs 70% gate |
-| LOC | dataframe.ts 2415 · series.ts 1282 · groupby.ts 1353 — rest in `src/internal/**` pure modules |
+The target is **The VLDB Journal** using Springer's subscription route, which currently has no APC. Planning material should say **SJR 2025 Q1**, not JCR Q1 and not that the paper itself is Q1.
 
-## Gates (run before every "done")
+The manuscript is `paper/manuscript/main.tex`. The compiled and visually checked 20-page PDF is `paper/build/main.pdf`.
 
-```bash
-bunx tsc --noEmit
-./node_modules/.bin/oxlint src test --deny-warnings
-bun test
-bun run scripts/parity-audit.ts   # needs nothing external anymore
+Paper Amigo project `ab09cc57-095b-4342-a8a8-48e6da9c60b8` contains the
+current PDF. After every successful PDF build, run `bun run paper:amigo:sync`.
+It replaces `main.pdf` only when the hash changed, verifies the remote result,
+and updates `paper/paper-amigo-project.json`. Never create a duplicate project
+for a new revision.
+
+Accepted local evidence:
+
+- Wasm ablation: 720 fresh processes and 14,400 timed calls with hierarchical intervals.
+- Synthetic five-system study: 400 fresh processes and 4,000 timed calls across bun_panda, Arquero, Danfo.js, nodejs-polars, and DuckDB-Wasm.
+- UCI Bank Marketing study: checksum-pinned 45,211-row input, 200 fresh processes, and 2,000 timed calls.
+- Browser study: 180 isolated Chromium, Firefox, and WebKit worker contexts and 10,800 timed calls, with 30 contexts per engine and scale.
+- Every accepted comparator and browser cell passes its canonical output hash.
+- Distribution analysis: 130.7 KiB npm tarball, 546.1 KiB unpacked, 180.2 KiB minified core, 51.6 KiB core gzip, 2,683-byte browser entry, and 7,359-byte Wasm asset.
+- Full author-run reproduction: `paper/data/reproduction-macos-arm64.json`, status `completed`, with 14 passed stages and no failed or skipped stage. It is local validation, not independent reproduction.
+
+The public workload changes the synthetic ranking. bun_panda has no operation-only win on the four UCI cells and retains a large join deficit. The 30-context browser medians also reverse by engine: stable argsort is 1.78x in Chromium, 1.28x in WebKit, and 0.47x in Firefox. Do not smooth these results into one library-wide speedup.
+
+## Reproduction commands
+
+The supported clean-clone route on macOS, Windows, and Linux is:
+
+```sh
+bun run reproduce:platform --profile full --tester "Reproducer name"
 ```
 
-## Key architecture facts
+It returns one dated JSON report and keeps generated study data outside the
+checked-in `paper/data` directory. Platform-specific launchers and prerequisites
+are documented in `docs/CROSS-PLATFORM-REPRODUCTION.md`.
 
-- **Delegation pattern**: class files hold thin methods that call pure functions in `src/internal/{dataframe,series,groupby,shared}/`. Two delegate modules use a *structural host-view interface* pattern: `internal/dataframe/windowApi.ts` (HostView) and `internal/series/seriesApi.ts` (SeriesHost) receive snapshot accessors + method closures from a private `view()` adapter on the class. Follow this pattern for any future extraction.
-- **WASM**: 7176 bytes at `src/wasm/bun_panda_core.wasm`; rebuild with `bun run build:wasm` (Rust 1.96, wasm32-unknown-unknown installed). Default-on for numeric groupby aggs/sorts; `BUN_PANDA_WASM=0` env opts out.
-- **Parity audit is self-contained**: baseline committed at `scripts/pandas-api-baseline.txt` (397 scraped pandas methods). Refresh offline-free via `scripts/refresh-pandas-baseline.sh`. The old `/tmp/pd-methods.txt` dependency is gone.
+The underlying commands remain:
 
-## Recent history (this session)
-
-1. Parity climbed 255 → 500 → 505 APIs across v0.3.x–v0.4.0 (commits `584d79e`, `0a4e4ba`, `3bbfe08`, `f8a4d44`, `711a224`, `453d95b`). Releases: `v0.3.0` (`cbfc202`) and `v0.4.0` (`fe390d1`).
-2. Post-release cleanup: docs rewritten (`2041d00`), DataFrame/Series window+export blocks extracted back into internal modules (`4b47410`, `b3ccc60`), plotting stubs replaced with real renderers (`453d95b`).
-
-## Known traps (do not rediscover these)
-
-- **Subagent delegation dies on HTTP 429** for multi-file API batches on this repo. Do API implementation batches inline; subagents are fine for single-file or read-only tasks.
-- **`patch`/`write_file` refuse JSONC files** (tsconfig.json) — edit via terminal python.
-- **Hermes memory tool `new_text` alias silently drops content** — always use `content` field.
-- **Bare `T` generics**: when moving Series methods out of the generic class, replace `T` with `CellValue` and cast returns (`as never` at the delegate call site is acceptable).
-- **Private-field access from delegate modules**: route through snapshot accessors on the HostView/SeriesHost interface, not `df._rows`.
-- **`.depot/` directory** appears occasionally as a CI-migration artifact from some external tool — delete it if it shows up untracked or committed (`git rm -r .depot`).
-- **pandas semantics traps already encoded in tests**: `ewm(adjust=True)` seeds mean with first observation; `resample().count()` counts non-missing entries of any type; Interval `overlaps` respects closed sides (closed=right excludes left point); `combine` aligns both frames onto the index **union**.
-
-## Benchmarks (verified this session)
-
-`bun run bench/compare.js` vs Arquero at 25k rows: **bun_panda faster in 78/87 cases** (~90%), including all three groupby_mean variants (0.57–0.66x = meaningfully faster). Arquero wins only 9 niche cases. No regression from the API expansion.
-
-## Open work (from docs/TODO.md, in priority order)
-
-1. **npm publish prep** — `prepublishOnly` gates wired to `bun run check`, verify `files` array in package.json covers new dirs (`src/internal/shared/` etc.), run `npm pack` smoke test, decide scoped name (`@seyamalam/bun-panda`?).
-2. **Coverage push past 85%** — current 81%; the delegate `view()` adapters and exotic-format IO bridges are the big uncovered areas.
-3. **Real binary Arrow/Feather IPC** — current `to_feather`/`read_feather` are JSON-buffer bridges; an actual Arrow IPC layer is the last honest gap in the IO story.
-4. **Property-based tests** for CSV/JSON parsers (docs/TODO.md Quality Backlog).
-5. **Docs site with runnable examples** (mid-term).
-
-## File map (where things live)
-
-```
-src/
-  dataframe.ts          # DataFrame class, thin delegates
-  series.ts             # Series class, thin delegates
-  groupby.ts            # GroupBy + WASM fast path wiring
-  top-level.ts          # options registry, Timestamp/Timedelta/Index types, range builders
-  top-level-io.ts       # read_html/fwf/json_lines/xml/clipboard/pickle/sql family
-  top-level-meta.ts     # show_versions, test
-  categorical.ts        # Categorical/CategoricalDtype/CategoricalAccessor
-  datetime.ts reshape.ts io.ts errors.ts index.ts
-  internal/
-    dataframe/          # stats arith selection ordering deltas shape missing join merge reshape rolling fill extended combine evalExpr explode frameOps windowApi io windowTime apply where valueCounts pivotTable keys core merge fastpath...
-    series/             # stringMethods datetimeMethods stats cumulative rank compat seriesApi
-    groupby/fastAgg.ts  # WASM fast path helpers
-    shared/             # time windows plotting index  ← cross-cutting engines
-scripts/
-  parity-audit.ts               # bun run parity
-  pandas-api-baseline.txt       # committed scrape
-  refresh-pandas-baseline.sh    # curl re-scrape
-test/                           # 22 files, mirrors src families
-bench/                          # compare.js (Arquero), pandas_compare.py, results/
-crates/core/                    # Rust source + Cargo.toml (version-synced with package.json)
+```sh
+bun install --frozen-lockfile
+bun run check
+bun run pack:smoke
+bun run parity
+bun run conformance
+bun run bench:fresh
+bun run bench:competitors
+bun run workload:public
+bun run bench:competitors:uci
+bun run bench:browser
+bun run paper/artifact/analyze-package-size.ts
+bun run paper/artifact/summarize-study.ts
+bun run paper/artifact/summarize-expanded-study.ts
+bun run artifact:checksums
 ```
 
-## Release checklist (for v0.4.1+)
+The LaTeX plugin's bundled Tectonic compiler succeeds. TeX Live is not installed locally.
 
-1. Bump version in **both** package.json and crates/core/Cargo.toml (keep in sync).
-2. Add CHANGELOG.md entry dated today.
-3. Update README status line (parity % + version).
-4. Run full gates above + `bun run build:wasm`.
-5. Commit `chore(release): x.y.z …`, tag annotated `vx.y.z`, `git push origin master vX.Y.Z`.
+## Remaining external tasks and optional validation
+
+1. Obtain an independent clean-checkout reproduction using `docs/CROSS-PLATFORM-REPRODUCTION.md`. The runner supports macOS, Windows, and Linux and returns one JSON report.
+2. Deposit an archival DOI and request a Software Heritage snapshot. Follow `paper/RELEASE-CHECKLIST.md`.
+3. If resources become available, run the frozen candidate on native x86-64 Linux and execute the cgroup-v2 capacity protocol. These are useful validation studies, not current manuscript result requirements. Apple QEMU faulted because the emulated CPU exposed no AVX, so its timing remains rejected.
+
+The manuscript now reports macOS performance only. Do not claim native x86 timing, controlled capacity, independent reproduction, or a DOI until those artifacts exist, and do not pool returned cross-platform timings into the macOS tables without a new multi-host protocol.
+
+## Important files
+
+- `paper/SUBMISSION-READINESS.md`: status of the original eight gaps
+- `paper/CLAIM-EVIDENCE.md`: claim-to-artifact map
+- `paper/HUMANIZER-AUDIT.md`: humanizer and unslop audit
+- `paper/journal-target.md`: venue and publication-route evidence
+- `paper/artifact/competitors/`: five-system adapters and runner
+- `paper/artifact/browser/`: real-browser worker study
+- `paper/artifact/linux/`: native x86 and cgroup runners
+- `paper/workloads/`: public-workload manifest and preparation
+- `paper/data/rejected-runs.json`: rejected contamination and emulation attempts
+
+## Release discipline
+
+The release candidate is `v0.4.1`. Keep later paper revisions synchronized to the existing Paper Amigo project with `bun run paper:amigo:sync`; do not create duplicate projects. Regenerate summaries, checksums, and the PDF before any later archival deposit.

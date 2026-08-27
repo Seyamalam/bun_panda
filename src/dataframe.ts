@@ -161,6 +161,7 @@ import {
   isNumber,
   range,
 } from "./utils";
+import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
 
 export interface DataFrameOptions {
   index?: IndexLabel[];
@@ -263,6 +264,8 @@ export class DataFrame {
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
+  /** Dtype fallback used only when an output column has no present values. */
+  private readonly _dtypeHints: Partial<Record<string, InferredDType>>;
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
   private _attrs: Record<string, unknown> = {};
 
@@ -274,20 +277,33 @@ export class DataFrame {
     this._rows = normalized.rows;
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
+    this._dtypeHints = {};
 
     assertRowsShape(this._rows, this._index);
   }
 
-  static createInternal(rows: Row[], columns: string[], index: IndexLabel[]): DataFrame {
+  static createInternal(
+    rows: Row[],
+    columns: string[],
+    index: IndexLabel[],
+    dtypeHints: Partial<Record<string, InferredDType>> = {}
+  ): DataFrame {
     assertRowsShape(rows, index);
     const frame = Object.create(DataFrame.prototype) as DataFrame;
     (frame as unknown as { _rows: Row[] })._rows = rows;
     (frame as unknown as { _columns: string[] })._columns = columns;
     (frame as unknown as { _index: IndexLabel[] })._index = index;
+    (frame as unknown as { _dtypeHints: Partial<Record<string, InferredDType>> })._dtypeHints = {
+      ...dtypeHints,
+    };
     return frame;
   }
 
   static from_records(records: Row[], options: DataFrameOptions = {}): DataFrame {
+    return new DataFrame(records, options);
+  }
+
+  static from_arrow(records: Row[], options: DataFrameOptions = {}): DataFrame {
     return new DataFrame(records, options);
   }
 
@@ -344,7 +360,9 @@ export class DataFrame {
       }
     }
 
-    return new DataFrame(rows, options);
+    const frame = new DataFrame(rows, options);
+    primeNumericColumns(frame._rows, data);
+    return frame;
   }
 
   get columns(): string[] {
@@ -452,7 +470,10 @@ export class DataFrame {
   dtypes(): Record<string, InferredDType> {
     const out: Record<string, InferredDType> = {};
     for (const column of this._columns) {
-      out[column] = inferColumnDType(this._rows.map((row) => row[column]));
+      const inferred = inferColumnDType(this._rows.map((row) => row[column]));
+      out[column] = inferred === "unknown"
+        ? this._dtypeHints[column] ?? inferred
+        : inferred;
     }
     return out;
   }
@@ -1099,6 +1120,7 @@ export class DataFrame {
    * this frame's cells in place.
    */
   update(other: DataFrame): void {
+    invalidateColumnStore(this._rows);
     applyUpdateOverwrite(
       this._rows,
       this._index,
@@ -1179,18 +1201,42 @@ export class DataFrame {
    * (introducing nulls at the top), matching pandas.
    */
   shift(periods = 1): DataFrame {
+    if (!Number.isInteger(periods)) {
+      throw new Error("periods must be an integer.");
+    }
     const rows = shiftRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
   }
 
   /** First discrete difference of numeric columns. */
   diff(periods = 1): DataFrame {
+    if (!Number.isInteger(periods)) {
+      throw new Error("periods must be an integer.");
+    }
+    if (this._rows.length > Math.abs(periods)) {
+      for (const column of this._columns) {
+        if (inferColumnDType(this._rows.map((row) => row[column])) === "unknown") {
+          throw new TypeError(`Column '${column}' must contain subtractable numeric values.`);
+        }
+      }
+    }
     const rows = diffRows(this._rows, this._columns, periods);
-    return this.withRows(rows, [...this._index], this._columns, true);
+    const numericHints = Object.fromEntries(
+      this._columns.map((column) => [
+        column,
+        inferColumnDType(this._rows.map((row) => row[column])) === "number"
+          ? "number" as const
+          : "unknown" as const,
+      ])
+    );
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], numericHints);
   }
 
   /** Percentage change between the current and prior row (numeric columns). */
   pct_change(periods = 1): DataFrame {
+    if (!Number.isInteger(periods)) {
+      throw new Error("periods must be an integer.");
+    }
     const rows = pctChangeRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
   }
@@ -1552,6 +1598,14 @@ export class DataFrame {
   }
 
   rank(options: RankOptions = {}): DataFrame {
+    const method = options.method ?? "average";
+    const naOption = options.na_option ?? "keep";
+    if (!["average", "min", "max", "first", "dense"].includes(method)) {
+      throw new Error("rank method must be average, min, max, first, or dense.");
+    }
+    if (!["keep", "top", "bottom"].includes(naOption)) {
+      throw new Error("rank na_option must be keep, top, or bottom.");
+    }
     const rows = computeRankRows(this._rows, this._columns, options);
     return this.withRows(rows, this._index, this._columns, true);
   }
@@ -1571,14 +1625,19 @@ export class DataFrame {
     }
 
     const ascendingPerColumn = normalizeSortAscending(columns.length, ascending);
-    // Single-column numeric sort: delegate to the wasm argsort kernel
-    // (NaN-last by default, stable, ~2x faster at 25k rows).
+    // Single-column numeric sort: the adaptive policy uses Wasm only in
+    // measured call shapes. The TypeScript path remains the fallback.
     if (
       columns.length === 1 &&
       na_position === "last" &&
       isNumericColumn(this._rows, columns[0]!)
     ) {
-      const wasmPos = computeWasmSortPositions(this._rows, columns[0]!, ascendingPerColumn[0]!);
+      const wasmPos = computeWasmSortPositions(
+        this._rows,
+        columns[0]!,
+        ascendingPerColumn[0]!,
+        limit
+      );
       if (wasmPos) {
         const sliced =
           limit !== undefined
@@ -1640,7 +1699,9 @@ export class DataFrame {
     keep: DropDuplicatesKeep = "first",
     ignore_index = false
   ): DataFrame {
-    const include = computeDuplicateKeepFlags(this._rows, subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns, keep);
+    const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
+    for (const column of columns) this.assertColumnExists(column);
+    const include = computeDuplicateKeepFlags(this._rows, columns, keep);
 
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
@@ -1695,7 +1756,26 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
 
-    return this.filter((row) => columns.every((column) => !isMissing(row[column])));
+    const result = this.filter((row) => columns.every((column) => !isMissing(row[column])));
+    const sourceDtypes = this.dtypes();
+    const dtypeHints = Object.fromEntries(
+      this._columns.flatMap((column) => {
+        const dtype = sourceDtypes[column] ?? "unknown";
+        if (
+          result._rows.length === 0 ||
+          dtype === "number" || dtype === "string" || dtype === "date"
+        ) {
+          return [[column, dtype] as const];
+        }
+        return [];
+      })
+    );
+    return DataFrame.createInternal(
+      result._rows,
+      result._columns,
+      result._index,
+      dtypeHints
+    );
   }
 
   fillna(value: CellValue | Record<string, CellValue>): DataFrame {
@@ -1931,7 +2011,65 @@ export class DataFrame {
       suffixes: options.suffixes ?? ["_x", "_y"],
     });
 
-    return new DataFrame(result.rows, { columns: result.columns });
+    const leftDtypes = this.dtypes();
+    const rightDtypes = right.dtypes();
+    const suffixes = options.suffixes ?? ["_x", "_y"];
+    const duplicateNonKeys = new Set(
+      this._columns.filter((column) => !keys.includes(column) && right._columns.includes(column))
+    );
+    const dtypeHints: Partial<Record<string, InferredDType>> = {};
+    const mayPreserve = (
+      rows: Row[],
+      column: string,
+      dtype: InferredDType,
+      isKey: boolean
+    ): boolean => {
+      if (dtype === "unknown") return false;
+      if (result.rows.length > 0) {
+        return !isKey && (dtype === "number" || dtype === "string" || dtype === "date");
+      }
+      if (dtype === "boolean") {
+        return !rows.some((row) => isMissing(row[column]));
+      }
+      return true;
+    };
+
+    for (const column of this._columns) {
+      const output = duplicateNonKeys.has(column) ? `${column}${suffixes[0]}` : column;
+      const dtype = leftDtypes[column] ?? "unknown";
+      if (mayPreserve(this._rows, column, dtype, keys.includes(column))) {
+        dtypeHints[output] = dtype;
+      }
+    }
+    for (const column of right._columns) {
+      if (keys.includes(column)) {
+        // pandas' merge key dtype is led by the left key. If the left key is
+        // object-like and an inner result is empty, a typed right key does not
+        // make the empty output string-typed.
+        continue;
+      }
+      const output = duplicateNonKeys.has(column) ? `${column}${suffixes[1]}` : column;
+      const dtype = rightDtypes[column] ?? "unknown";
+      if (mayPreserve(right._rows, column, dtype, false)) dtypeHints[output] = dtype;
+    }
+    for (const key of keys) {
+      const sourceDtype = (options.how ?? "inner") === "right"
+        ? rightDtypes[key] ?? "unknown"
+        : leftDtypes[key] ?? "unknown";
+      if (
+        sourceDtype !== "unknown" &&
+        result.rows.every((row) => isMissing(row[key]))
+      ) {
+        dtypeHints[key] = sourceDtype;
+      }
+    }
+
+    return DataFrame.createInternal(
+      result.rows,
+      result.columns,
+      range(result.rows.length),
+      dtypeHints
+    );
   }
 
   /**
@@ -2429,4 +2567,3 @@ export class DataFrame {
     return svgLine(this._rows.map((r) => r[column] as CellValue), height);
   }
 }
-

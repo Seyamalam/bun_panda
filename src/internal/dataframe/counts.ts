@@ -1,5 +1,4 @@
 import type { CellValue } from "../../types";
-import { compareCellValues, isMissing } from "../../utils";
 
 export interface CountEntry {
   values: CellValue[];
@@ -72,47 +71,14 @@ function compareCountEntriesDescending(left: CountEntry, right: CountEntry): num
   if (left.count !== right.count) {
     return right.count - left.count;
   }
-  return compareCountTieValues(left.values, right.values);
+  // Array.sort is stable: equal counts retain first-observed order, matching
+  // pandas value_counts rather than imposing a lexical secondary key.
+  return 0;
 }
 
 function compareCountEntriesAscending(left: CountEntry, right: CountEntry): number {
   if (left.count !== right.count) {
     return left.count - right.count;
   }
-  return compareCountTieValues(left.values, right.values);
-}
-
-function compareCountTieValues(leftValues: CellValue[], rightValues: CellValue[]): number {
-  for (let i = 0; i < leftValues.length; i += 1) {
-    const compared = compareCountTieValue(leftValues[i], rightValues[i]);
-    if (compared !== 0) {
-      return compared;
-    }
-  }
   return 0;
-}
-
-function compareCountTieValue(left: CellValue, right: CellValue): number {
-  if (left === right) {
-    return 0;
-  }
-  if (isMissing(left)) {
-    return 1;
-  }
-  if (isMissing(right)) {
-    return -1;
-  }
-  if (typeof left === "number" && typeof right === "number") {
-    return left - right;
-  }
-  if (typeof left === "string" && typeof right === "string") {
-    return left < right ? -1 : 1;
-  }
-  if (typeof left === "boolean" && typeof right === "boolean") {
-    return (left ? 1 : 0) - (right ? 1 : 0);
-  }
-  if (left instanceof Date && right instanceof Date) {
-    return left.getTime() - right.getTime();
-  }
-  return compareCellValues(left, right);
 }

@@ -466,7 +466,7 @@ describe("indexing and dedup operations", () => {
     ]);
   });
 
-  test("value_counts sorts ties deterministically", () => {
+  test("value_counts preserves first-observed order for ties", () => {
     const df = new DataFrame([
       { code: "b" },
       { code: "a" },
@@ -475,8 +475,8 @@ describe("indexing and dedup operations", () => {
     ]);
 
     expect(df.value_counts({ subset: ["code"] }).to_records()).toEqual([
-      { code: "a", count: 2 },
       { code: "b", count: 2 },
+      { code: "a", count: 2 },
     ]);
   });
 
@@ -493,7 +493,7 @@ describe("indexing and dedup operations", () => {
 
     expect(df.value_counts({ subset: "code", limit: 2 }).to_records()).toEqual([
       { code: "b", count: 3 },
-      { code: "a", count: 2 },
+      { code: "c", count: 2 },
     ]);
   });
 

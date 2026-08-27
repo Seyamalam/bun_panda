@@ -65,22 +65,56 @@ export function computeRank(
   const method = options.method ?? "average";
   const ascending = options.ascending !== false;
   const naOption = options.na_option ?? "keep";
+  if (!["average", "min", "max", "first", "dense"].includes(method)) {
+    throw new Error("rank method must be average, min, max, first, or dense.");
+  }
+  if (!["keep", "top", "bottom"].includes(naOption)) {
+    throw new Error("rank na_option must be keep, top, or bottom.");
+  }
 
   const scored: ScoredEntry[] = [];
+  const missingPositions: number[] = [];
   values.forEach((value, position) => {
     const num = Number(value);
     if (!isMissing(value) && Number.isFinite(num)) {
       scored.push({ position, num });
+    } else {
+      missingPositions.push(position);
     }
   });
   scored.sort((a, b) => (ascending ? a.num - b.num : b.num - a.num));
 
   const ranks: (number | null)[] = new Array(values.length).fill(null);
+  assignRanks(scored, ranks, method, 0);
+  if (missingPositions.length === 0 || naOption === "keep") return ranks;
+
   if (naOption === "top") {
-    // Non-null values start after all null positions.
-    assignRanks(scored, ranks, method, values.length - scored.length);
-  } else {
-    assignRanks(scored, ranks, method, 0);
+    const offset = method === "dense" ? 1 : missingPositions.length;
+    for (const entry of scored) ranks[entry.position] = (ranks[entry.position] as number) + offset;
+    for (let i = 0; i < missingPositions.length; i += 1) {
+      ranks[missingPositions[i]!] = missingRank(method, 0, missingPositions.length, i);
+    }
+    return ranks;
+  }
+
+  const denseGroups = method === "dense"
+    ? ranks.reduce<number>((max, rank) => rank === null ? max : Math.max(max, rank), 0)
+    : 0;
+  const base = method === "dense" ? denseGroups : scored.length;
+  for (let i = 0; i < missingPositions.length; i += 1) {
+    ranks[missingPositions[i]!] = missingRank(method, base, missingPositions.length, i);
   }
   return ranks;
+}
+
+function missingRank(
+  method: "average" | "min" | "max" | "first" | "dense",
+  base: number,
+  missingCount: number,
+  position: number
+): number {
+  if (method === "first") return base + position + 1;
+  if (method === "max") return base + missingCount;
+  if (method === "average") return base + (missingCount + 1) / 2;
+  return base + 1;
 }

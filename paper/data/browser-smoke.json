@@ -1,0 +1,250 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-26T07:06:16.398Z",
+  "design": {
+    "browsers": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "sizes": [
+      1000
+    ],
+    "replicates": 1,
+    "warmups": 0,
+    "iterations": 1,
+    "baseSeed": 20260826,
+    "execution": "dedicated module worker under cross-origin isolation",
+    "coldMetric": "Wasm fetch, compile, instantiate, and export validation inside a fresh worker",
+    "warmMetrics": "kernel calls include copies into and out of Wasm linear memory",
+    "baseline": "equivalent handwritten JavaScript over the same typed arrays",
+    "correctness": "SHA-256 digest equality for every JavaScript and Wasm output"
+  },
+  "raw": [
+    {
+      "browser": "chromium",
+      "browserVersion": "151.0.7922.34",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "replicate": 0,
+      "pageToResultMs": 31.263167,
+      "schemaVersion": "1.0.0",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "wasmInitMs": 8.140000000596046,
+      "workerElapsedMs": 17.494999999180436,
+      "wasmMemoryBytes": 1114112,
+      "capabilities": {
+        "webAssembly": true,
+        "instantiateStreaming": true,
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 18,
+        "features": {
+          "simd": true,
+          "relaxedSimd": true,
+          "threads": true,
+          "bulkMemory": true,
+          "exceptions": true,
+          "multiValue": true,
+          "referenceTypes": true,
+          "tailCall": true
+        }
+      },
+      "checks": {
+        "stable_argsort": {
+          "js": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "wasm": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "equivalent": true
+        },
+        "filter_indices": {
+          "js": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "wasm": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "equivalent": true
+        },
+        "grouped_sum": {
+          "js": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "wasm": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "equivalent": true
+        }
+      },
+      "results": {
+        "stable_argsort": {
+          "jsSamplesMs": [
+            1.0050000008195639
+          ],
+          "wasmSamplesMs": [
+            0.8849999997764826
+          ]
+        },
+        "filter_indices": {
+          "jsSamplesMs": [
+            0.10000000149011612
+          ],
+          "wasmSamplesMs": [
+            0.05999999865889549
+          ]
+        },
+        "grouped_sum": {
+          "jsSamplesMs": [
+            0.08499999903142452
+          ],
+          "wasmSamplesMs": [
+            0.5849999990314245
+          ]
+        }
+      }
+    },
+    {
+      "browser": "firefox",
+      "browserVersion": "153.0",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0",
+      "replicate": 0,
+      "pageToResultMs": 123.268583,
+      "schemaVersion": "1.0.0",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "wasmInitMs": 12.420000000000002,
+      "workerElapsedMs": 17.959999999999994,
+      "wasmMemoryBytes": 1114112,
+      "capabilities": {
+        "webAssembly": true,
+        "instantiateStreaming": true,
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 18,
+        "features": {
+          "simd": true,
+          "relaxedSimd": true,
+          "threads": true,
+          "bulkMemory": true,
+          "exceptions": true,
+          "multiValue": true,
+          "referenceTypes": true,
+          "tailCall": true
+        }
+      },
+      "checks": {
+        "stable_argsort": {
+          "js": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "wasm": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "equivalent": true
+        },
+        "filter_indices": {
+          "js": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "wasm": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "equivalent": true
+        },
+        "grouped_sum": {
+          "js": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "wasm": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "equivalent": true
+        }
+      },
+      "results": {
+        "stable_argsort": {
+          "jsSamplesMs": [
+            0.5999999999999943
+          ],
+          "wasmSamplesMs": [
+            0.46000000000000796
+          ]
+        },
+        "filter_indices": {
+          "jsSamplesMs": [
+            0.14000000000000057
+          ],
+          "wasmSamplesMs": [
+            0.060000000000002274
+          ]
+        },
+        "grouped_sum": {
+          "jsSamplesMs": [
+            0.09999999999999432
+          ],
+          "wasmSamplesMs": [
+            0.10000000000000853
+          ]
+        }
+      }
+    },
+    {
+      "browser": "webkit",
+      "browserVersion": "26.5",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+      "replicate": 0,
+      "pageToResultMs": 23.184041,
+      "schemaVersion": "1.0.0",
+      "rows": 1000,
+      "seed": 20260826,
+      "warmups": 0,
+      "iterations": 1,
+      "wasmInitMs": 4.180000000000001,
+      "workerElapsedMs": 10.34,
+      "wasmMemoryBytes": 1114112,
+      "capabilities": {
+        "webAssembly": true,
+        "instantiateStreaming": true,
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 8,
+        "features": {
+          "simd": true,
+          "relaxedSimd": false,
+          "threads": true,
+          "bulkMemory": true,
+          "exceptions": true,
+          "multiValue": true,
+          "referenceTypes": true,
+          "tailCall": true
+        }
+      },
+      "checks": {
+        "stable_argsort": {
+          "js": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "wasm": "50a20fa3133561e2064131db2b8f72465233c83c1a7e758eb210f83260f45cd9",
+          "equivalent": true
+        },
+        "filter_indices": {
+          "js": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "wasm": "83d4128b06bda5137907ded1ca059eaa77fc9353528c4f237c08ef95ebad8ed6",
+          "equivalent": true
+        },
+        "grouped_sum": {
+          "js": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "wasm": "cb6b96342e865094c470e240c407e83bbe16bd8377081c77b462a8e4afbd723f",
+          "equivalent": true
+        }
+      },
+      "results": {
+        "stable_argsort": {
+          "jsSamplesMs": [
+            0.8200000000000003
+          ],
+          "wasmSamplesMs": [
+            0.9400000000000013
+          ]
+        },
+        "filter_indices": {
+          "jsSamplesMs": [
+            0.2400000000000002
+          ],
+          "wasmSamplesMs": [
+            0.1399999999999988
+          ]
+        },
+        "grouped_sum": {
+          "jsSamplesMs": [
+            0.1800000000000015
+          ],
+          "wasmSamplesMs": [
+            0.14000000000000057
+          ]
+        }
+      }
+    }
+  ]
+}

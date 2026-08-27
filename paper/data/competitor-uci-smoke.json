@@ -1,0 +1,739 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-26T07:10:41.287Z",
+  "runtime": {
+    "bun": "1.4.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro"
+  },
+  "design": {
+    "systems": [
+      "bun_panda",
+      "arquero",
+      "danfojs",
+      "nodejs_polars",
+      "duckdb_wasm"
+    ],
+    "datasetSource": "uci_bank",
+    "datasetPath": "paper/data/workloads/uci-bank/bank-full.csv",
+    "workloads": [
+      "groupby_sum",
+      "filter_sort_top100",
+      "value_counts",
+      "inner_join"
+    ],
+    "scopes": [
+      "operation"
+    ],
+    "sizes": [
+      1000
+    ],
+    "processReplicates": 1,
+    "warmupsPerProcess": 0,
+    "iterationsPerProcess": 1,
+    "baseSeed": 20260826,
+    "taskOrder": "deterministically randomized",
+    "experimentalUnit": "fresh Bun process",
+    "correctness": "all systems must match a pure TypeScript reference SHA-256 digest for each seed",
+    "operationScope": "data structures are built before timing; output materialization is timed",
+    "loadAndOperationScope": "dataset loading and operation are timed; module import and engine initialization are excluded",
+    "memory": "peak process RSS is descriptive because in-process allocators and garbage collectors differ"
+  },
+  "cells": [
+    {
+      "rows": 1000,
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 1.446375,
+          "medianOfProcessMeansMs": 1.446375,
+          "processMeansMs": [
+            1.446375
+          ],
+          "medianPeakRssBytes": 116113408
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 4.692458,
+          "medianOfProcessMeansMs": 4.692458,
+          "processMeansMs": [
+            4.692458
+          ],
+          "medianPeakRssBytes": 113672192
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 16.944875,
+          "medianOfProcessMeansMs": 16.944875,
+          "processMeansMs": [
+            16.944875
+          ],
+          "medianPeakRssBytes": 214188032
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 36.97375,
+          "medianOfProcessMeansMs": 36.97375,
+          "processMeansMs": [
+            36.97375
+          ],
+          "medianPeakRssBytes": 138231808
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 13.581708,
+          "medianOfProcessMeansMs": 13.581708,
+          "processMeansMs": [
+            13.581708
+          ],
+          "medianPeakRssBytes": 530055168
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 1.375125,
+          "medianOfProcessMeansMs": 1.375125,
+          "processMeansMs": [
+            1.375125
+          ],
+          "medianPeakRssBytes": 101367808
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 4.687917,
+          "medianOfProcessMeansMs": 4.687917,
+          "processMeansMs": [
+            4.687917
+          ],
+          "medianPeakRssBytes": 111738880
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 1.987583,
+          "medianOfProcessMeansMs": 1.987583,
+          "processMeansMs": [
+            1.987583
+          ],
+          "medianPeakRssBytes": 221773824
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 40.0685,
+          "medianOfProcessMeansMs": 40.0685,
+          "processMeansMs": [
+            40.0685
+          ],
+          "medianPeakRssBytes": 127238144
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 18.026209,
+          "medianOfProcessMeansMs": 18.026209,
+          "processMeansMs": [
+            18.026209
+          ],
+          "medianPeakRssBytes": 518881280
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "value_counts",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 0.838083,
+          "medianOfProcessMeansMs": 0.838083,
+          "processMeansMs": [
+            0.838083
+          ],
+          "medianPeakRssBytes": 106905600
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 3.961625,
+          "medianOfProcessMeansMs": 3.961625,
+          "processMeansMs": [
+            3.961625
+          ],
+          "medianPeakRssBytes": 107708416
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 1.396208,
+          "medianOfProcessMeansMs": 1.396208,
+          "processMeansMs": [
+            1.396208
+          ],
+          "medianPeakRssBytes": 217792512
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 10.140292,
+          "medianOfProcessMeansMs": 10.140292,
+          "processMeansMs": [
+            10.140292
+          ],
+          "medianPeakRssBytes": 138215424
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 18.454959,
+          "medianOfProcessMeansMs": 18.454959,
+          "processMeansMs": [
+            18.454959
+          ],
+          "medianPeakRssBytes": 548618240
+        }
+      }
+    },
+    {
+      "rows": 1000,
+      "workload": "inner_join",
+      "scope": "operation",
+      "equivalent": true,
+      "processReplicates": 1,
+      "iterationsPerProcess": 1,
+      "digestsBySeed": {
+        "20260826": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733"
+      },
+      "systems": {
+        "bun_panda": {
+          "version": "0.4.0",
+          "meanOfProcessMeansMs": 2.40175,
+          "medianOfProcessMeansMs": 2.40175,
+          "processMeansMs": [
+            2.40175
+          ],
+          "medianPeakRssBytes": 101679104
+        },
+        "arquero": {
+          "version": "8.0.3",
+          "meanOfProcessMeansMs": 4.496125,
+          "medianOfProcessMeansMs": 4.496125,
+          "processMeansMs": [
+            4.496125
+          ],
+          "medianPeakRssBytes": 118882304
+        },
+        "danfojs": {
+          "version": "1.2.0",
+          "meanOfProcessMeansMs": 2.43425,
+          "medianOfProcessMeansMs": 2.43425,
+          "processMeansMs": [
+            2.43425
+          ],
+          "medianPeakRssBytes": 210337792
+        },
+        "nodejs_polars": {
+          "version": "0.26.0",
+          "meanOfProcessMeansMs": 13.255291,
+          "medianOfProcessMeansMs": 13.255291,
+          "processMeansMs": [
+            13.255291
+          ],
+          "medianPeakRssBytes": 138821632
+        },
+        "duckdb_wasm": {
+          "version": "v1.5.4",
+          "meanOfProcessMeansMs": 38.506542,
+          "medianOfProcessMeansMs": 38.506542,
+          "processMeansMs": [
+            38.506542
+          ],
+          "medianPeakRssBytes": 551485440
+        }
+      }
+    }
+  ],
+  "raw": [
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        38.506542
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 551485440,
+        "finalRss": 551993344,
+        "maxRssKilobytes": 539072
+      },
+      "processWallMs": 1475.248625
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        2.40175
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 101679104,
+        "finalRss": 101761024,
+        "maxRssKilobytes": 99392
+      },
+      "processWallMs": 310.024584
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        0.838083
+      ],
+      "digest": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 106905600,
+        "finalRss": 106954752,
+        "maxRssKilobytes": 104464
+      },
+      "processWallMs": 1618.695708
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        4.496125
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 118882304,
+        "finalRss": 119029760,
+        "maxRssKilobytes": 116256
+      },
+      "processWallMs": 3231.541375
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        3.961625
+      ],
+      "digest": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 107708416,
+        "finalRss": 107773952,
+        "maxRssKilobytes": 105264
+      },
+      "processWallMs": 2532.914
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        4.687917
+      ],
+      "digest": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 111738880,
+        "finalRss": 111853568,
+        "maxRssKilobytes": 109248
+      },
+      "processWallMs": 178.048833
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.446375
+      ],
+      "digest": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 116113408,
+        "finalRss": 116178944,
+        "maxRssKilobytes": 113472
+      },
+      "processWallMs": 123.646208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "arquero",
+      "systemVersion": "8.0.3",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        4.692458
+      ],
+      "digest": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 113672192,
+        "finalRss": 113786880,
+        "maxRssKilobytes": 111136
+      },
+      "processWallMs": 139.912792
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        40.0685
+      ],
+      "digest": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 127238144,
+        "finalRss": 127336448,
+        "maxRssKilobytes": 124368
+      },
+      "processWallMs": 229.459333
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        16.944875
+      ],
+      "digest": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 214188032,
+        "finalRss": 214253568,
+        "maxRssKilobytes": 209232
+      },
+      "processWallMs": 1066.7115
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.396208
+      ],
+      "digest": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 217792512,
+        "finalRss": 217907200,
+        "maxRssKilobytes": 212800
+      },
+      "processWallMs": 5403.902583
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        36.97375
+      ],
+      "digest": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 138231808,
+        "finalRss": 138297344,
+        "maxRssKilobytes": 135072
+      },
+      "processWallMs": 3883.587
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        18.454959
+      ],
+      "digest": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 548618240,
+        "finalRss": 550567936,
+        "maxRssKilobytes": 537680
+      },
+      "processWallMs": 1788.609875
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        13.255291
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 138821632,
+        "finalRss": 138887168,
+        "maxRssKilobytes": 135648
+      },
+      "processWallMs": 1358.192333
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "bun_panda",
+      "systemVersion": "0.4.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.375125
+      ],
+      "digest": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 101367808,
+        "finalRss": 101466112,
+        "maxRssKilobytes": 99104
+      },
+      "processWallMs": 5933.031
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "groupby_sum",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        13.581708
+      ],
+      "digest": "7d83ba0f3150ec7ff34742a19716b71c2970733838357489ad23d82689286fd5",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 530055168,
+        "finalRss": 530726912,
+        "maxRssKilobytes": 518304
+      },
+      "processWallMs": 2630.622208
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "nodejs_polars",
+      "systemVersion": "0.26.0",
+      "workload": "value_counts",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        10.140292
+      ],
+      "digest": "497507316fd2e2f63508d68c94205d28f989c8769f8c2ce15e39826bf1efa01a",
+      "outputRows": 12,
+      "memory": {
+        "observedRssPeak": 138215424,
+        "finalRss": 138330112,
+        "maxRssKilobytes": 135104
+      },
+      "processWallMs": 1702.093917
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "inner_join",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        2.43425
+      ],
+      "digest": "156d9027514e734420df72eb0e1228f0016b8605de7d823d7afed871acb62733",
+      "outputRows": 500,
+      "memory": {
+        "observedRssPeak": 210337792,
+        "finalRss": 210403328,
+        "maxRssKilobytes": 205472
+      },
+      "processWallMs": 3747.621791
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "duckdb_wasm",
+      "systemVersion": "v1.5.4",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        18.026209
+      ],
+      "digest": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 518881280,
+        "finalRss": 522452992,
+        "maxRssKilobytes": 510224
+      },
+      "processWallMs": 3816.81575
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "system": "danfojs",
+      "systemVersion": "1.2.0",
+      "workload": "filter_sort_top100",
+      "scope": "operation",
+      "rows": 1000,
+      "seed": 20260826,
+      "datasetSource": "uci_bank",
+      "warmups": 0,
+      "iterations": 1,
+      "samplesMs": [
+        1.987583
+      ],
+      "digest": "cfb4d4e52fb768eff83c5ed15bd3746f007daf95491f3983593937c68c063f7d",
+      "outputRows": 100,
+      "memory": {
+        "observedRssPeak": 221773824,
+        "finalRss": 221806592,
+        "maxRssKilobytes": 216608
+      },
+      "processWallMs": 2715.066834
+    }
+  ]
+}

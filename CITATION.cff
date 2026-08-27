@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use bun_panda or its evaluation artifact, cite this software and the accompanying manuscript."
+title: "bun_panda: pandas-inspired dataframe analytics for Bun with selective WebAssembly kernels"
+type: software
+authors:
+  - family-names: Seyam
+    given-names: Touhidul Alam
+    orcid: "https://orcid.org/0009-0007-7512-1893"
+    affiliation: "Department of Computer Science & Engineering, BGC Trust University Bangladesh"
+version: 0.4.1
+repository-code: "https://github.com/Seyamalam/bun_panda"
+url: "https://github.com/Seyamalam/bun_panda"
+license: MIT
+keywords:
+  - dataframe
+  - TypeScript
+  - Bun
+  - WebAssembly
+  - pandas compatibility
+contact:
+  - family-names: Seyam
+    given-names: Touhidul Alam
+    email: touhidulalam@bgctub.ac.bd
+preferred-citation:
+  type: article
+  title: "bun_panda: Compatibility-Guided Dataframe Analytics for Bun with Selective WebAssembly Kernels"
+  authors:
+    - family-names: Seyam
+      given-names: Touhidul Alam
+      orcid: "https://orcid.org/0009-0007-7512-1893"
+  year: 2026
+  notes: "Preprint DOI and archival software DOI pending."

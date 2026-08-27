@@ -45,6 +45,49 @@ export function computeMergeRows(options: ComputeMergeOptions): MergeResult {
     }
   }
 
+  if (how === "right") {
+    const leftGroups = new Map<string, Row[]>();
+    for (const row of leftRows) {
+      const key = keyForColumns(row, keys);
+      const current = leftGroups.get(key);
+      if (current) current.push(row);
+      else leftGroups.set(key, [row]);
+    }
+
+    const rows: Row[] = [];
+    for (const rightRow of rightRows) {
+      const matches = leftGroups.get(keyForColumns(rightRow, keys));
+      if (!matches || matches.length === 0) {
+        rows.push(
+          buildMergedRow(
+            undefined,
+            rightRow,
+            leftColumns,
+            leftColumnsOut,
+            rightColumnsSource,
+            rightColumnsOut,
+            keys
+          )
+        );
+        continue;
+      }
+      for (const leftRow of matches) {
+        rows.push(
+          buildMergedRow(
+            leftRow,
+            rightRow,
+            leftColumns,
+            leftColumnsOut,
+            rightColumnsSource,
+            rightColumnsOut,
+            keys
+          )
+        );
+      }
+    }
+    return { rows, columns: [...leftColumnsOut, ...rightColumnsOut] };
+  }
+
   const matchedRightRows = new Set<number>();
   const rows: Row[] = [];
 
@@ -85,7 +128,7 @@ export function computeMergeRows(options: ComputeMergeOptions): MergeResult {
     }
   }
 
-  if (how === "right" || how === "outer") {
+  if (how === "outer") {
     for (let i = 0; i < rightRows.length; i += 1) {
       if (matchedRightRows.has(i)) {
         continue;

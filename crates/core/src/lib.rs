@@ -37,7 +37,14 @@ struct Cell<T>(UnsafeCell<T>);
 unsafe impl<T> Sync for Cell<T> {}
 
 static LAST_GROUP_COUNT: Cell<usize> = Cell(UnsafeCell::new(0));
-static HEAP_CURSOR: Cell<usize> = Cell(UnsafeCell::new(8));
+// `wasm-ld` defines this at the first byte after the module's static data.
+// Starting the arena below it corrupts globals once an allocation crosses
+// the data segment (large sorts exposed this at roughly 125k f64 values).
+unsafe extern "C" {
+    static __heap_base: u8;
+}
+
+static HEAP_CURSOR: Cell<usize> = Cell(UnsafeCell::new(0));
 
 /// Bump allocator over fresh linear-memory pages. All allocations live
 /// until [`bp_free_all`]; individual frees only rewind the cursor when
@@ -78,7 +85,7 @@ pub unsafe extern "C" fn bp_free(ptr: *mut u8, len: usize) {
 /// previously returned buffer is still readable.
 #[unsafe(no_mangle)]
 pub extern "C" fn bp_free_all() {
-    set_heap_cursor(8);
+    set_heap_cursor(heap_start());
 }
 
 /// Number of distinct groups produced by the most recent
@@ -502,9 +509,14 @@ fn last_group_count() -> usize {
 }
 
 fn heap_cursor() -> usize {
-    unsafe { HEAP_CURSOR.0.get().read() }
+    let cursor = unsafe { HEAP_CURSOR.0.get().read() };
+    if cursor == 0 { heap_start() } else { cursor }
 }
 
 fn set_heap_cursor(value: usize) {
     unsafe { HEAP_CURSOR.0.get().write(value) }
+}
+
+fn heap_start() -> usize {
+    core::ptr::addr_of!(__heap_base) as usize
 }

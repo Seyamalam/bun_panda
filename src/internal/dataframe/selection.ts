@@ -2,6 +2,7 @@
 // DataFrame's ordering methods. Pure functions over (rows, columns).
 import { keyForColumns } from "./keys";
 import { buildColumnStore } from "../../wasm/columns";
+import { chooseExecutionPath } from "../../wasm/dispatch";
 import { wasmArgsortF64, wasmFilterIndices } from "../../wasm/kernel";
 import type { Row } from "../../types";
 
@@ -61,18 +62,19 @@ export function isNumericColumn(rows: Row[], column: string): boolean {
   return true;
 }
 
-function wasmEnabled(): boolean {
-  const env = (process as unknown as { env?: Record<string, string> }).env;
-  return env?.BUN_PANDA_WASM !== "0";
-}
-
 /** Stable argsort positions for a numeric column, or null when unsupported. */
 export function wasmSortPositions(
   rows: Row[],
   column: string,
-  ascending: boolean
+  ascending: boolean,
+  limit?: number
 ): Int32Array | null {
-  if (!wasmEnabled()) return null;
+  const decision = chooseExecutionPath({
+    operation: "sort",
+    rowCount: rows.length,
+    limit,
+  });
+  if (decision.path === "typescript") return null;
   const store = buildColumnStore(rows, [column]);
   const entry = store.columns.get(column);
   if (!entry || entry.kind !== "f64") return null;
@@ -81,7 +83,11 @@ export function wasmSortPositions(
 
 /** Positions kept by a boolean mask, or null when the kernel is unavailable. */
 export function wasmFilterPositions(mask: boolean[]): Int32Array | null {
-  if (!wasmEnabled()) return null;
+  const decision = chooseExecutionPath({
+    operation: "filter-mask",
+    rowCount: mask.length,
+  });
+  if (decision.path === "typescript") return null;
   const bytes = Uint8Array.from(mask, (value) => (value ? 1 : 0));
   return wasmFilterIndices(bytes);
 }

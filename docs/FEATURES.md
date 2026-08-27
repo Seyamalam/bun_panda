@@ -42,7 +42,7 @@
 
 ### GroupBy
 
-Complete audited API: named aggs, cumulative, windowed (`rolling`), statistical (`skew kurt sem corr cov ohlc`), positional (`rank idxmax idxmin shift diff pct_change cumprod`), plus `filter/apply/pipe/transform/describe/value_counts`. WASM fast path for numeric named aggs (default-on; `BUN_PANDA_WASM=0` opts out).
+Complete audited API: named aggs, cumulative, windowed (`rolling`), statistical (`skew kurt sem corr cov ohlc`), positional (`rank idxmax idxmin shift diff pct_change cumprod`), plus `filter/apply/pipe/transform/describe/value_counts`. Adaptive dispatch uses Wasm only for calibrated call shapes. `BUN_PANDA_WASM=0` forces TypeScript and `BUN_PANDA_WASM=1` forces eligible Wasm paths for experiments.
 
 ### Top-level
 
@@ -56,4 +56,4 @@ Complete audited API: named aggs, cumulative, windowed (`rolling`), statistical 
 
 - Rust/WASM core for numeric hot paths (groupby aggregation, argsort), flat C ABI over linear memory, no wasm-bindgen; pure-TS fallback always available
 - Typed errors: `BunPandaValidationError`, `NotSupportedError`
-- Gates: typecheck + oxlint + 352-test suite + 70% coverage floor in CI
+- Local release gates: typecheck + oxlint + test suite + 70% coverage floor

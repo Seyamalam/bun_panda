@@ -39,6 +39,8 @@ export interface ColumnStore {
   rowCount: number;
 }
 
+const storesByRows = new WeakMap<Row[], ColumnStore>();
+
 /** True when every defined value in the column is a finite number. */
 function isNumericColumn(rows: Row[], column: string): boolean {
   for (let i = 0; i < rows.length; i += 1) {
@@ -64,53 +66,98 @@ function isTextColumn(rows: Row[], column: string): boolean {
   return true;
 }
 
-/**
- * Builds a ColumnStore from row-major records. Numeric detection scans
- * once per column; mixed-type columns keep their original values.
- */
-export function buildColumnStore(rows: Row[], columns: string[]): ColumnStore {
-  const out = new Map<string, AnyColumn>();
+function buildColumn(rows: Row[], column: string): AnyColumn {
   const n = rows.length;
 
-  for (const column of columns) {
-    if (isNumericColumn(rows, column)) {
-      let nonNull = 0;
-      const values = new Float64Array(n);
-      for (let i = 0; i < n; i += 1) {
-        const value = rows[i]![column];
-        if (value === null || value === undefined) {
-          values[i] = NaN;
-        } else {
-          values[i] = value as number;
-          nonNull += 1;
-        }
-      }
-      out.set(column, { kind: "f64", values, nonNull });
-      continue;
-    }
-
-    if (isTextColumn(rows, column)) {
-      const values = new Array<string>(n);
-      const missing: number[] = [];
-      for (let i = 0; i < n; i += 1) {
-        const value = rows[i]![column];
-        if (value === null || value === undefined) {
-          values[i] = "";
-          missing.push(i);
-        } else {
-          values[i] = value as string;
-        }
-      }
-      out.set(column, { kind: "str", values, missing: Int32Array.from(missing) });
-      continue;
-    }
-
-    const values = new Array<CellValue>(n);
+  if (isNumericColumn(rows, column)) {
+    let nonNull = 0;
+    const values = new Float64Array(n);
     for (let i = 0; i < n; i += 1) {
-      values[i] = rows[i]![column];
+      const value = rows[i]![column];
+      if (value === null || value === undefined) {
+        values[i] = NaN;
+      } else {
+        values[i] = value as number;
+        nonNull += 1;
+      }
     }
-    out.set(column, { kind: "mixed", values });
+    return { kind: "f64", values, nonNull };
   }
 
-  return { columns: out, rowCount: n };
+  if (isTextColumn(rows, column)) {
+    const values = new Array<string>(n);
+    const missing: number[] = [];
+    for (let i = 0; i < n; i += 1) {
+      const value = rows[i]![column];
+      if (value === null || value === undefined) {
+        values[i] = "";
+        missing.push(i);
+      } else {
+        values[i] = value as string;
+      }
+    }
+    return { kind: "str", values, missing: Int32Array.from(missing) };
+  }
+
+  const values = new Array<CellValue>(n);
+  for (let i = 0; i < n; i += 1) {
+    values[i] = rows[i]![column];
+  }
+  return { kind: "mixed", values };
+}
+
+/**
+ * Returns the store for one immutable row snapshot and builds only the
+ * requested columns that are not already present.
+ */
+export function buildColumnStore(rows: Row[], columns: string[]): ColumnStore {
+  let store = storesByRows.get(rows);
+  if (!store || store.rowCount !== rows.length) {
+    store = { columns: new Map<string, AnyColumn>(), rowCount: rows.length };
+    storesByRows.set(rows, store);
+  }
+
+  for (const column of columns) {
+    if (!store.columns.has(column)) {
+      store.columns.set(column, buildColumn(rows, column));
+    }
+  }
+
+  return store;
+}
+
+/** True when every requested column has already been materialized. */
+export function hasCachedColumns(rows: Row[], columns: string[]): boolean {
+  const store = storesByRows.get(rows);
+  return Boolean(store && columns.every((column) => store.columns.has(column)));
+}
+
+/**
+ * Seeds numeric columns supplied by a typed reader. Values are copied so
+ * later mutation of caller-owned arrays cannot change the DataFrame.
+ */
+export function primeNumericColumns(
+  rows: Row[],
+  data: Record<string, CellValue[] | Float64Array>
+): void {
+  let store = storesByRows.get(rows);
+  if (!store || store.rowCount !== rows.length) {
+    store = { columns: new Map<string, AnyColumn>(), rowCount: rows.length };
+    storesByRows.set(rows, store);
+  }
+
+  for (const [column, source] of Object.entries(data)) {
+    if (!(source instanceof Float64Array) || source.length !== rows.length) continue;
+    const values = new Float64Array(source);
+    let nonNull = 0;
+    for (let i = 0; i < values.length; i += 1) {
+      if (!Number.isNaN(values[i]!)) nonNull += 1;
+    }
+    store.columns.set(column, { kind: "f64", values, nonNull });
+  }
+}
+
+/** Invalidates typed columns before an in-place row mutation. */
+export function invalidateColumnStore(rows: Row[]): void {
+  storesByRows.delete(rows);
 }

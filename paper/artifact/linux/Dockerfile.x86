@@ -1,0 +1,15 @@
+FROM oven/bun:1.4.0@sha256:5ff609364c049b54eb0ff560ec96319729a972078ef2c755d758f0c6ef89c2d6
+
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git jq procps python3 python3-pip python3-venv unzip util-linux \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspaces/bun_panda
+COPY . .
+RUN bun install --frozen-lockfile \
+    && python3 -m venv bench/.venv \
+    && bench/.venv/bin/pip install --no-cache-dir -r paper/artifact/linux/requirements.lock
+
+USER bun
+CMD ["bash"]

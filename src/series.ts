@@ -78,6 +78,10 @@ export class Series<T extends CellValue = CellValue> {
     }
   }
 
+  static from_arrow<T extends CellValue = CellValue>(values: T[], options: SeriesOptions = {}): Series<T> {
+    return new Series(values, options);
+  }
+
   get values(): T[] {
     return [...this._values];
   }
@@ -1226,6 +1230,13 @@ export class Series<T extends CellValue = CellValue> {
       skew: () => this.skew(),
       sem: () => this.sem(),
       prod: () => this.prod(),
+      removeAt: (position) => {
+        this._index.splice(position, 1);
+        return this._values.splice(position, 1)[0] as CellValue;
+      },
+      setAt: (position, value) => {
+        this._values[position] = value as T;
+      },
     };
   }
 
@@ -1235,14 +1246,17 @@ export class Series<T extends CellValue = CellValue> {
   first_valid_index(): IndexLabel | null { return seriesApi.first_valid_index(this.view()); }
   last_valid_index(): IndexLabel | null { return seriesApi.last_valid_index(this.view()); }
   factorize(): [number[], CellValue[]] { return seriesApi.factorize(this.view()); }
+  explode(): Series<CellValue> { return seriesApi.explode(this.view()); }
   groupby(by: string | string[]): unknown { return seriesApi.groupby(this.view(), by); }
   to_numpy(): CellValue[] { return seriesApi.to_numpy(this.view()); }
   to_string(): string { return seriesApi.to_string(this.view()); }
   to_csv(): string { return seriesApi.to_csv(this.view()); }
   to_json(): string { return seriesApi.to_json(this.view()); }
+  to_period(): Series<T> { return seriesApi.to_period(this.view()) as never; }
   info(): string { return seriesApi.info(this.view()); }
   items(): [IndexLabel, CellValue][] { return seriesApi.items(this.view()); }
   keys(): IndexLabel[] { return seriesApi.keys(this.view()); }
+  pop(label: IndexLabel): CellValue | undefined { return seriesApi.pop(this.view(), label); }
   repeat(repeats: number): Series<CellValue> { return seriesApi.repeat(this.view(), repeats) as Series<CellValue>; }
   rename(name: string): Series<CellValue> { return seriesApi.rename(this.view(), name) as Series<CellValue>; }
   rename_axis(name: string): Series<CellValue> { return seriesApi.rename_axis(this.view(), name) as Series<CellValue>; }
@@ -1254,7 +1268,27 @@ export class Series<T extends CellValue = CellValue> {
   truncate(before?: IndexLabel, after?: IndexLabel): Series<T> { return seriesApi.truncate(this.view(), before, after) as never; }
   update(other: Series<T>): void { seriesApi.update(this.view(), other as never); }
   memory_usage(): number { return seriesApi.memory_usage(this.view()); }
+  get at(): Record<string, unknown> { return seriesApi.accessor_at(this.view()); }
+  get iat(): Record<number, unknown> { return seriesApi.accessor_iat(this.view()); }
+  get array(): CellValue[] { return seriesApi.accessor_array(this.view()); }
+  get list(): CellValue[] { return seriesApi.accessor_list(this.view()); }
+  get attrs(): Record<string, CellValue> { return seriesApi.accessor_attrs(this.view()); }
+  get flags(): { allows_duplicate_labels: boolean } { return seriesApi.accessor_flags(this.view()); }
   case_when(conditions: never): unknown { return seriesApi.case_when(this.view(), conditions); }
+  compare(other: Series<CellValue>, keepShape = false): DataFrame {
+    return seriesApi.compare(this.view(), other, keepShape);
+  }
+  combine(other: Series<CellValue>, fn: (left: CellValue | null, right: CellValue | null) => CellValue): Series<CellValue> {
+    return seriesApi.combine(this.view(), other, fn);
+  }
+  combine_first(other: Series<CellValue>): Series<CellValue> { return seriesApi.combine_first(this.view(), other); }
+  convert_dtypes(): Series<CellValue> { return seriesApi.convert_dtypes(this.view()); }
+  infer_objects(): Series<CellValue> { return seriesApi.infer_objects(this.view()); }
+  reindex_like(other: Series<CellValue>, fill_value: CellValue | null = null): Series<CellValue> {
+    return seriesApi.reindex_like(this.view(), other, fill_value);
+  }
+  unstack(columnName?: string): DataFrame { return seriesApi.unstack(this.view(), columnName); }
+  xs(key: IndexLabel): CellValue | undefined | Series<CellValue> { return seriesApi.xs(this.view(), key); }
   align(other: Series<CellValue>, join: "outer" | "inner" = "outer"): [Series<T>, Series<CellValue>] {
     return seriesApi.align(this.view(), other as never, join) as never;
   }
@@ -1262,6 +1296,10 @@ export class Series<T extends CellValue = CellValue> {
   between_time(start: string, end: string, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<T> {
     return seriesApi.between_time(this.view(), start, end, inclusive) as never;
   }
+  asfreq(freq = 1, fill_value: CellValue | null = null): Series<CellValue | null> {
+    return seriesApi.asfreq(this.view(), freq, fill_value);
+  }
+  asof(where: number): CellValue | null { return seriesApi.asof(this.view(), where); }
   ewm(span: number, options: { min_periods?: number } = {}): ReturnType<typeof seriesApi.ewm> {
     return seriesApi.ewm(this.view(), span, options);
   }
@@ -1280,8 +1318,12 @@ export class Series<T extends CellValue = CellValue> {
   to_sql(tableName: string): string { return seriesApi.to_sql(this.view(), tableName); }
   to_timestamp(): Series<T> { return seriesApi.to_timestamp(this.view()) as never; }
   to_xarray(): Record<string, CellValue> { return seriesApi.to_xarray(this.view()); }
+  to_excel(columnName?: string): string { return seriesApi.to_excel(this.view(), columnName); }
+  to_markdown(columnName?: string): string { return seriesApi.to_markdown(this.view(), columnName); }
+  to_latex(columnName?: string): string { return seriesApi.to_latex(this.view(), columnName); }
 
   get cat() { return seriesApi.accessor_cat(this.view()); }
+  get html(): string { return this.to_frame().to_html(); }
   /** ASCII histogram of the numeric values. */
   hist(bins = 10): string { return asciiHistogram(this._values as unknown as CellValue[], bins); }
   /** SVG line plot over positions. */

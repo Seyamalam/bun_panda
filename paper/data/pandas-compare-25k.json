@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-08-26T04:35:48.427Z",
+  "rows": 25000,
+  "iterations": 8,
+  "cases": 10,
+  "results": [
+    {
+      "case": "groupby_mean",
+      "dataset": "base",
+      "bunAvgMs": 4.665828000000012,
+      "pandasAvgMs": 3.7799478749889204,
+      "deltaMs": 0.8858801250110915,
+      "ratio": 1.2343630532242955
+    },
+    {
+      "case": "filter_sort_top100",
+      "dataset": "base",
+      "bunAvgMs": 1.4190884999999867,
+      "pandasAvgMs": 2.9873803749183026,
+      "deltaMs": -1.568291874918316,
+      "ratio": 0.47502772392645015
+    },
+    {
+      "case": "sort_top1000",
+      "dataset": "base",
+      "bunAvgMs": 5.067156249999698,
+      "pandasAvgMs": 2.1749949999616547,
+      "deltaMs": 2.8921612500380434,
+      "ratio": 2.3297323672417787
+    },
+    {
+      "case": "sort_multicol_top800",
+      "dataset": "base",
+      "bunAvgMs": 10.435088500000347,
+      "pandasAvgMs": 10.425776000033693,
+      "deltaMs": 0.009312499966654286,
+      "ratio": 1.0008932188804578
+    },
+    {
+      "case": "value_counts_city",
+      "dataset": "base",
+      "bunAvgMs": 0.7364583750004385,
+      "pandasAvgMs": 3.20062499991991,
+      "deltaMs": -2.4641666249194714,
+      "ratio": 0.23009830111895868
+    },
+    {
+      "case": "value_counts_group_city_top10",
+      "dataset": "base",
+      "bunAvgMs": 2.502702875000523,
+      "pandasAvgMs": 5.888171750029869,
+      "deltaMs": -3.3854688750293462,
+      "ratio": 0.4250390411909821
+    },
+    {
+      "case": "value_counts_missing_city_dropna_false",
+      "dataset": "missing",
+      "bunAvgMs": 0.9139999999993051,
+      "pandasAvgMs": 1.3909584999964864,
+      "deltaMs": -0.4769584999971812,
+      "ratio": 0.657100840896126
+    },
+    {
+      "case": "groupby_missing_city_mean",
+      "dataset": "missing",
+      "bunAvgMs": 2.7096352500000194,
+      "pandasAvgMs": 3.164958625006875,
+      "deltaMs": -0.4553233750068557,
+      "ratio": 0.8561360734989493
+    },
+    {
+      "case": "value_counts_high_card_city_top20",
+      "dataset": "high_card",
+      "bunAvgMs": 20.041224124999644,
+      "pandasAvgMs": 15.177463249983703,
+      "deltaMs": 4.863760875015942,
+      "ratio": 1.3204594071424396
+    },
+    {
+      "case": "value_counts_high_card_user_top100",
+      "dataset": "high_card",
+      "bunAvgMs": 9.083687749999626,
+      "pandasAvgMs": 33.90066150001303,
+      "deltaMs": -24.816973750013403,
+      "ratio": 0.26795016227031837
+    }
+  ]
+}

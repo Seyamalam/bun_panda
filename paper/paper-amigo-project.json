@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "projectId": "ab09cc57-095b-4342-a8a8-48e6da9c60b8",
+  "title": "Semantic-Guided Adaptive Dataframe Execution across TypeScript and WebAssembly",
+  "pdfPath": "paper/build/main.pdf",
+  "uploadedSha256": "bea1dac11682805b0ccfa3be2908ce638091b68124eda32dbe49462eb58f8908",
+  "file": {
+    "key": "QMVxAv8DZmlKpYeZ7Dfw8adc2e7P3SvyosrqAJRCnkEDb16x",
+    "hash": "bea1dac11682805b0ccfa3be2908ce638091b68124eda32dbe49462eb58f8908",
+    "name": "main.pdf",
+    "size": 165288,
+    "uploadedAt": "2026-08-27T04:49:16.000Z",
+    "url": "https://yzy16yxaqa.ufs.sh/f/QMVxAv8DZmlKpYeZ7Dfw8adc2e7P3SvyosrqAJRCnkEDb16x"
+  },
+  "syncPolicy": {
+    "replaceInPlace": true,
+    "allowDuplicateProject": false,
+    "checkAfterPdfBuild": true,
+    "syncCommand": "bun run paper:amigo:sync"
+  }
+}

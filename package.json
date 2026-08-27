@@ -1,15 +1,15 @@
 {
   "name": "bun_panda",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Pandas-inspired DataFrame and Series utilities for Bun/TypeScript.",
   "license": "MIT",
-  "homepage": "https://github.com/your-org/bun_panda#readme",
+  "homepage": "https://github.com/Seyamalam/bun_panda#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/bun_panda.git"
+    "url": "git+https://github.com/Seyamalam/bun_panda.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/bun_panda/issues"
+    "url": "https://github.com/Seyamalam/bun_panda/issues"
   },
   "keywords": [
     "dataframe",
@@ -21,13 +21,15 @@
   ],
   "module": "index.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./browser": "./src/browser.ts",
+    "./wasm": "./src/wasm/bun_panda_core.wasm"
   },
   "files": [
     "index.ts",
     "src",
-    "crates",
     "README.md",
+    "CITATION.cff",
     "LICENSE",
     "CHANGELOG.md"
   ],
@@ -38,7 +40,9 @@
     "typecheck:src": "bunx tsc --noEmit src/index.ts",
     "build:wasm": "(cd crates/core && cargo build --target wasm32-unknown-unknown --release && cp target/wasm32-unknown-unknown/release/bun_panda_core.wasm ../../src/wasm/) && echo \"wasm: $(wc -c < src/wasm/bun_panda_core.wasm) bytes\"",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "test:coverage": "bun test --coverage",
+    "pack:smoke": "bun run scripts/pack-smoke.ts",
+    "prepublishOnly": "bun run check",
+    "test:coverage": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov && bun run scripts/coverage-gate.ts",
     "lint": "oxlint src test --deny-warnings",
     "parity": "bun run scripts/parity-audit.ts",
     "bench": "bun run bench:arquero",
@@ -51,12 +55,32 @@
     "bench:gate:pandas": "bun run bench/assert-pandas-regression.js",
     "bench:drift": "bun run bench/report-drift.js",
     "bench:refresh-readme": "bun run bench/update-readme.js",
-    "bench:ci": "bun run bench:arquero && bun run bench:gate && bun run bench:drift && bun run bench:io && bun run bench:gate:io && bun run bench:pandas && bun run bench:compare:pandas && bun run bench:gate:pandas && bun run bench:refresh-readme"
+    "bench:ci": "bun run bench:arquero && bun run bench:gate && bun run bench:drift && bun run bench:io && bun run bench:gate:io && bun run bench:pandas && bun run bench:compare:pandas && bun run bench:gate:pandas && bun run bench:refresh-readme",
+    "conformance": "bun run paper/artifact/conformance/run-study.ts",
+    "conformance:generate": "bun run paper/artifact/conformance/generate-cases.ts",
+    "conformance:compare": "bun run paper/artifact/conformance/compare.ts",
+    "bench:fresh": "bun run paper/artifact/run-fresh-process-ablation.ts",
+    "bench:competitors": "bun run paper/artifact/competitors/run-study.ts",
+    "bench:competitors:uci": "BUN_PANDA_COMPETITOR_DATASET=uci_bank BUN_PANDA_COMPETITOR_SIZES=45211 BUN_PANDA_COMPETITOR_OUTPUT=paper/data/competitor-uci-bank.json bun run paper/artifact/competitors/run-study.ts",
+    "bench:browser": "bun run paper/artifact/browser/run-study.ts",
+    "paper:amigo:check": "bun run scripts/check-paper-amigo.ts",
+    "paper:amigo:sync": "bun run scripts/sync-paper-amigo.ts",
+    "reproduce:platform": "bun run scripts/reproduce-platform.ts",
+    "reproduce:quick": "bun run scripts/reproduce-platform.ts --profile quick",
+    "workload:public": "bun run paper/workloads/prepare-public.ts",
+    "bench:linux": "bash paper/artifact/linux/run-linux-suite.sh",
+    "bench:cgroup": "bash paper/artifact/linux/run-cgroup-study.sh",
+    "artifact:checksums": "bun run paper/artifact/write-checksums.ts"
   },
   "devDependencies": {
+    "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
+    "@playwright/test": "1.62.1",
     "@types/bun": "latest",
     "arquero": "^8.0.3",
-    "oxlint": "^1.79.0"
+    "danfojs": "1.2.0",
+    "nodejs-polars": "0.26.0",
+    "oxlint": "^1.79.0",
+    "wasm-feature-detect": "1.9.0"
   },
   "peerDependencies": {
     "typescript": "^5"
