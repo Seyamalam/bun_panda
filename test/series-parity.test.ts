@@ -169,7 +169,7 @@ describe("DataFrame shift/diff/pct_change", () => {
   test("shift moves values down, filling nulls", () => {
     const shifted = df.shift(1);
     expect(shifted.to_records()).toEqual([
-      { v: null, tag: null },
+      { v: NaN, tag: NaN },
       { v: 10, tag: "a" },
       { v: 20, tag: "b" },
     ]);
@@ -180,13 +180,13 @@ describe("DataFrame shift/diff/pct_change", () => {
     expect(df.shift(-1).to_records()).toEqual([
       { v: 20, tag: "b" },
       { v: 40, tag: "c" },
-      { v: null, tag: null },
+      { v: NaN, tag: NaN },
     ]);
   });
 
   test("diff computes row deltas on numeric columns only", () => {
     expect(df.diff().to_records()).toEqual([
-      { v: null, tag: null },
+      { v: NaN, tag: null },
       { v: 10, tag: null },
       { v: 20, tag: null },
     ]);
@@ -194,7 +194,7 @@ describe("DataFrame shift/diff/pct_change", () => {
 
   test("pct_change computes relative deltas", () => {
     expect(df.pct_change().to_records()).toEqual([
-      { v: null, tag: null },
+      { v: NaN, tag: null },
       { v: 1, tag: null },
       { v: 1, tag: null },
     ]);
@@ -203,6 +203,6 @@ describe("DataFrame shift/diff/pct_change", () => {
   test("diff respects periods", () => {
     expect(
       new DataFrame([{ v: 1 }, { v: 4 }, { v: 9 }]).diff(2).to_records()
-    ).toEqual([{ v: null }, { v: null }, { v: 8 }]);
+    ).toEqual([{ v: NaN }, { v: NaN }, { v: 8 }]);
   });
 });

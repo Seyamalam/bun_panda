@@ -10,7 +10,7 @@ describe("DataFrame numeric contracts", () => {
     expect(frame.interpolate().get("label").to_list()).toEqual([NaN, "a", NaN, "b", NaN, NaN]);
     expect(frame.ffill().index).toEqual(frame.index);
     expect(frame.get("x").to_list()).toEqual([NaN, 2, NaN, NaN, 8, NaN]);
-    expect(new DataFrame({ x: [null, 1, null], y: [null, null, null] }).interpolate().values()).toEqual([[null, null], [1, null], [null, null]]);
+    expect(new DataFrame({ x: [null, 1, null], y: [null, null, null] }).interpolate().values()).toEqual([[NaN, null], [1, null], [NaN, null]]);
   });
 
   const arithmetic = [
@@ -71,7 +71,7 @@ describe("DataFrame numeric contracts", () => {
   test("modes include ties in first-seen order and pad shorter columns", () => {
     const date = new Date("2026-01-01T00:00:00Z");
     expect(new DataFrame({ x: [2, 1, 2, 1], y: ["a", "a", "a", "b"], z: [null, null, null, null], d: [date, date, null, null] }).mode().to_records()).toEqual([
-      { x: 2, y: "a", z: null, d: date }, { x: 1, y: null, z: null, d: null },
+      { x: 2, y: "a", z: null, d: date }, { x: 1, y: NaN, z: null, d: null },
     ]);
     expect(new DataFrame({ x: [null] }).mode().shape).toEqual([0, 1]);
   });
@@ -92,7 +92,7 @@ describe("DataFrame numeric contracts", () => {
 
   test("reindex fills new labels and columns while preserving existing nulls", () => {
     const frame = new DataFrame({ x: [1, null], y: [4, 5] }, { index: ["a", "b"] });
-    expect(frame.reindex({ index: ["b", "c", "a"], columns: ["x", "z"], fill_value: -1 }).to_records()).toEqual([{ x: null, z: -1 }, { x: -1, z: -1 }, { x: 1, z: -1 }]);
+    expect(frame.reindex({ index: ["b", "c", "a"], columns: ["x", "z"], fill_value: -1 }).to_records()).toEqual([{ x: NaN, z: -1 }, { x: -1, z: -1 }, { x: 1, z: -1 }]);
     expect(frame.reindex().equals(frame)).toBe(true);
     expect(frame.shape).toEqual([2, 2]);
   });
@@ -129,7 +129,7 @@ describe("DataFrame numeric contracts", () => {
     expect(frame.memory_usage()).toEqual({ '<x>': 16, d: 16, Index: 16 });
     expect(new DataFrame({ empty: [null] }).info()).toContain("unknown");
     expect(new DataFrame([]).info()).toContain("0 entries");
-    expect(frame.to_numpy()).toEqual([['<&"', date], [null, null]]);
+    expect(frame.to_numpy()).toEqual([['<&"', date], [NaN, null]]);
     expect(frame.to_string(1)).toContain("1 more rows");
   });
 });

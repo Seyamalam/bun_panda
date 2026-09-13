@@ -19,7 +19,7 @@ describe("DataFrame align / isetitem", () => {
     const [ll, rr] = left.align(right);
     expect(ll.index).toEqual(["x", "y", "z"]);
     expect(rr.index).toEqual(["x", "y", "z"]);
-    expect(rr.to_records()[0]).toEqual({ b: null });
+    expect(rr.to_records()[0]).toEqual({ b: NaN });
   });
 
   test("isetitem replaces one column positionally", () => {

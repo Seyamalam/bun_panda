@@ -21,7 +21,7 @@ export function crosstab(
   for (const row of rows) {
     const i = row[index];
     const c = row[columns];
-    if (i === null || i === undefined || c === null || c === undefined) {
+    if (isAbsent(i) || isAbsent(c)) {
       continue;
     }
     const iKey = String(i);

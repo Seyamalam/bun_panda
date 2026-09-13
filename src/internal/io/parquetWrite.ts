@@ -1,3 +1,5 @@
+import { dtypeFamily } from "../../dtypes";
+import { isMissingScalar } from "../../missing";
 import type { ToParquetOptions } from "../../dataframe";
 import type { CellValue, InferredDType, Row } from "../../types";
 import type { FrameLike } from "./frameLike";
@@ -41,10 +43,10 @@ function buildSchema(
 }
 
 function parquetTypeForDType(dtype: InferredDType): string {
-  if (dtype === "number") {
+  if (dtypeFamily(dtype) === "number") {
     return "DOUBLE";
   }
-  if (dtype === "boolean") {
+  if (dtypeFamily(dtype) === "boolean") {
     return "BOOLEAN";
   }
   if (dtype === "date") {
@@ -66,15 +68,15 @@ function serializeRecord(
 }
 
 function serializeCellForParquet(value: CellValue, dtype: InferredDType): unknown {
-  if (value === null || value === undefined) {
+  if (isMissingScalar(value)) {
     return undefined;
   }
 
-  if (dtype === "number") {
+  if (dtypeFamily(dtype) === "number") {
     return typeof value === "number" ? value : Number(value);
   }
 
-  if (dtype === "boolean") {
+  if (dtypeFamily(dtype) === "boolean") {
     return typeof value === "boolean" ? value : Boolean(value);
   }
 

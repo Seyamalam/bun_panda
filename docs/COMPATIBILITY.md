@@ -9,9 +9,9 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
-| `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | Fails; exact compatibility is not established |
+| `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 1,778/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
 
 [API-COVERAGE.json](API-COVERAGE.json) lists every tracked name separately.
 `partial` means that some contracts have tests; `unverified` means that neither
@@ -48,13 +48,11 @@ names and values, preserving `NA` and `NaN` separately. It covers constructors
 casts and inference for numeric widths, nullable numeric types, `bool`, `boolean`,
 `string`, and `object`. Error cases currently assert rejection, not exact error
 classes/messages. Integers outside JavaScript's safe range are rejected until
-exact bigint storage is implemented. Default Series inference now selects common pandas scalar dtypes. DataFrame
-default inference, datetime storage, and propagation through all operations
-remain incomplete. Selection, sorting, copying, renaming,
+exact bigint storage is implemented. Default Series and DataFrame inference now select common pandas scalar dtypes. Datetime storage and propagation through all operations remain incomplete. Selection, sorting, copying, renaming,
 and conversions between a Series and a single-column DataFrame preserve explicit
 dtypes. Shift, reindex, conditional replacement and fill operations implement
 promotion or nullable-type validation for explicitly typed columns. Arithmetic,
-DataFrame default inference and the remaining alignment operations still need work. `number` and `date` remain legacy
+assignment and the remaining alignment operations still need work. `number` and `date` remain legacy
 conversion aliases.
 
 `infer_objects()` and `convert_dtypes()` share scalar-type inference. They keep
@@ -71,7 +69,7 @@ including its transitional object/str selection warning, are not yet reproduced.
 
 The pandas-oracle tests required changes to earlier library contracts:
 
-- Series constructors infer common pandas dtypes by default. Numeric columns
+- Series and DataFrame constructors infer common pandas dtypes by default. Numeric columns
   containing missing values use float64/NaN; inferred strings use str/NaN.
   Object columns retain their null and extension missing representations.
   Explicit float dtypes preserve float identity and negative zero through round.

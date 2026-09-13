@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { DataFrame } from "../index";
+import { DataFrame, Series } from "../index";
 
 function parityFrame(): DataFrame {
   return new DataFrame([
@@ -18,7 +18,7 @@ describe("groupby agg parity names", () => {
     expect(result.to_records()).toEqual([
       { team: "A", points: 20 },
       { team: "B", points: 45 },
-      { team: "C", points: null },
+      { team: "C", points: NaN },
     ]);
   });
 
@@ -30,8 +30,8 @@ describe("groupby agg parity names", () => {
     expect(stdRows[0]!.points).toBeCloseTo(10, 10);
     expect(varRows[0]!.points).toBeCloseTo(100, 10);
     expect(stdRows[1]!.points).toBeCloseTo(Math.sqrt(50), 10);
-    expect(stdRows[2]!.points).toBeNull();
-    expect(varRows[2]!.points).toBeNull();
+    expect(stdRows[2]!.points).toBeNaN();
+    expect(varRows[2]!.points).toBeNaN();
   });
 
   test("first and last skip missing values", () => {
@@ -41,7 +41,7 @@ describe("groupby agg parity names", () => {
     expect(result.to_records()).toEqual([
       { team: "A", points: 10, assists: 2 },
       { team: "B", points: 40, assists: 4 },
-      { team: "C", points: null, assists: 6 },
+      { team: "C", points: NaN, assists: 6 },
     ]);
   });
 
@@ -93,7 +93,7 @@ describe("groupby agg parity names", () => {
     expect(fastOnly.to_records()).toEqual([
       { team: "A", points: 60, assists: 2 },
       { team: "B", points: 90, assists: 2 },
-      { team: "C", points: null, assists: 1 },
+      { team: "C", points: NaN, assists: 1 },
     ]);
 
     const mixed = df
@@ -102,7 +102,7 @@ describe("groupby agg parity names", () => {
     expect(mixed.to_records()).toEqual([
       { team: "A", points: 60, assists: 2, player: "x" },
       { team: "B", points: 90, assists: 2, player: "w" },
-      { team: "C", points: null, assists: 1, player: "u" },
+      { team: "C", points: NaN, assists: 1, player: "u" },
     ]);
   });
 
@@ -130,13 +130,13 @@ describe("groupby agg parity names", () => {
       .agg({ points: "median" });
     expect(result.columns).toEqual(["points"]);
     expect(result.index).toEqual(["A", "B", "C"]);
-    expect(result.to_records()).toEqual([{ points: 20 }, { points: 45 }, { points: null }]);
+    expect(result.to_records()).toEqual([{ points: 20 }, { points: 45 }, { points: NaN }]);
   });
 
   test("custom functions still work alongside named plans", () => {
     const result = parityFrame()
       .groupby("team")
-      .agg({ points: (values) => values.filter((v) => v !== null).length });
+      .agg({ points: (values) => new Series(values).count() });
     expect(result.to_records()).toEqual([
       { team: "A", points: 3 },
       { team: "B", points: 2 },
@@ -158,7 +158,7 @@ describe("groupby transform", () => {
       { points: 20 },
       { points: 45 },
       { points: 45 },
-      { points: null },
+      { points: NaN },
     ]);
   });
 
@@ -177,7 +177,7 @@ describe("groupby transform", () => {
       { points: 30 },
       { points: 50 },
       { points: 50 },
-      { points: null },
+      { points: NaN },
     ]);
   });
 
@@ -191,7 +191,7 @@ describe("groupby transform", () => {
     const result = df.groupby("g").transform({ v: "mean" });
     expect(result.columns).toEqual(["v"]);
     expect(result.index).toEqual(df.index);
-    expect(result.to_records()).toEqual([{ v: 2 }, { v: null }, { v: 2 }, { v: 7 }]);
+    expect(result.to_records()).toEqual([{ v: 2 }, { v: NaN }, { v: 2 }, { v: 7 }]);
   });
 
   test("function mode scalar broadcast per group across all non-key columns", () => {
@@ -263,12 +263,12 @@ describe("groupby convenience methods", () => {
     expect(grouped.min().to_records()).toEqual([
       { team: "A", points: 10, assists: 2 },
       { team: "B", points: 40, assists: 4 },
-      { team: "C", points: null, assists: 6 },
+      { team: "C", points: NaN, assists: 6 },
     ]);
     expect(grouped.max().to_records()).toEqual([
       { team: "A", points: 30, assists: 5 },
       { team: "B", points: 50, assists: 8 },
-      { team: "C", points: null, assists: 6 },
+      { team: "C", points: NaN, assists: 6 },
     ]);
   });
 
@@ -277,7 +277,7 @@ describe("groupby convenience methods", () => {
     expect(grouped.median().to_records()).toEqual([
       { team: "A", points: 20, assists: 3.5 },
       { team: "B", points: 45, assists: 6 },
-      { team: "C", points: null, assists: 6 },
+      { team: "C", points: NaN, assists: 6 },
     ]);
     const stdRows = grouped.std().to_records();
     expect(stdRows[0]!.points).toBeCloseTo(10, 10);
@@ -291,12 +291,12 @@ describe("groupby convenience methods", () => {
     expect(grouped.first().to_records()).toEqual([
       { team: "A", player: "x", points: 10, assists: 5 },
       { team: "B", player: "w", points: 40, assists: 8 },
-      { team: "C", player: "u", points: null, assists: 6 },
+      { team: "C", player: "u", points: NaN, assists: 6 },
     ]);
     expect(grouped.last().to_records()).toEqual([
       { team: "A", player: "z", points: 30, assists: 2 },
       { team: "B", player: "v", points: 50, assists: 4 },
-      { team: "C", player: "u", points: null, assists: 6 },
+      { team: "C", player: "u", points: NaN, assists: 6 },
     ]);
     expect(grouped.nunique().to_records()).toEqual([
       { team: "A", player: 3, points: 3, assists: 2 },

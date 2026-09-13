@@ -170,3 +170,12 @@ export function dtypeSelector(include?: DTypeSelector | DTypeSelector[], exclude
   };
   return dtype => (included.length === 0 || included.some(selector => matches(dtype, selector))) && !excluded.some(selector => matches(dtype, selector));
 }
+
+/** Broad scalar family for consumers that do not distinguish numeric widths. */
+export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "datetime" | "unknown" | "mixed" {
+  if (dtype === "number" || /^(u?int|float)/i.test(dtype)) return "number";
+  if (dtype === "bool" || dtype === "boolean") return "boolean";
+  if (dtype === "str" || dtype === "string") return "string";
+  if (dtype === "date") return "datetime";
+  return dtype === "unknown" ? "unknown" : "mixed";
+}

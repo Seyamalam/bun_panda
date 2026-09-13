@@ -72,11 +72,11 @@ describe("dtypes and astype", () => {
     ]);
 
     expect(df.dtypes()).toEqual({
-      a: "number",
-      b: "string",
-      c: "boolean",
-      d: "unknown",
-      e: "mixed",
+      a: "int64",
+      b: "str",
+      c: "bool",
+      d: "object",
+      e: "object",
     });
   });
 
@@ -172,7 +172,7 @@ describe("groupby + merge + concat", () => {
     expect(includeMissing).toEqual([
       { city: "A", value: 3 },
       { city: "B", value: 2 },
-      { city: null, value: 5 },
+      { city: NaN, value: 5 },
     ]);
 
     const preserveOrder = df
@@ -235,7 +235,7 @@ describe("groupby + merge + concat", () => {
     const joined = merge(left, right, { on: "id", how: "right" }).sort_values("id");
     expect(joined.to_records()).toEqual([
       { id: 2, name: "Grace", score: 95 },
-      { id: 3, name: undefined, score: 99 },
+      { id: 3, name: NaN, score: 99 },
     ]);
   });
 
@@ -251,9 +251,9 @@ describe("groupby + merge + concat", () => {
 
     const joined = merge(left, right, { on: "id", how: "outer" }).sort_values("id");
     expect(joined.to_records()).toEqual([
-      { id: 1, name: "Ada", score: undefined },
+      { id: 1, name: "Ada", score: NaN },
       { id: 2, name: "Grace", score: 95 },
-      { id: 4, name: undefined, score: 88 },
+      { id: 4, name: NaN, score: 88 },
     ]);
   });
 
@@ -461,7 +461,7 @@ describe("indexing and dedup operations", () => {
       { team: "B", city: "Austin", count: 1 },
     ]);
     expect(df.value_counts({ subset: ["team", "city"], dropna: false }).to_records()).toEqual([
-      { team: "A", city: null, count: 2 },
+      { team: "A", city: NaN, count: 2 },
       { team: "B", city: "Austin", count: 1 },
     ]);
   });
@@ -666,10 +666,10 @@ describe("pivot table", () => {
       dropna: false,
     });
 
-    expect(table.columns).toEqual(["team", "Q1", "null"]);
+    expect(table.columns).toEqual(["team", "Q1", "NaN"]);
     expect(table.sort_values("team").to_records()).toEqual([
-      { team: "A", Q1: 5, null: 10 },
-      { team: "B", Q1: 0, null: 2 },
+      { team: "A", Q1: 5, NaN: 10 },
+      { team: "B", Q1: 0, NaN: 2 },
     ]);
   });
 
@@ -799,8 +799,8 @@ describe("pandas-style compatibility helpers", () => {
       { city: "Seattle", value: 3 },
     ]);
 
-    expect(df.sort_values("city", true, undefined, "first").to_records()[0]?.city).toBeNull();
-    expect(df.sort_values("city", true, undefined, "last").to_records()[2]?.city).toBeNull();
+    expect(df.sort_values("city", true, undefined, "first").to_records()[0]?.city).toBeNaN();
+    expect(df.sort_values("city", true, undefined, "last").to_records()[2]?.city).toBeNaN();
   });
 });
 
@@ -823,8 +823,8 @@ describe("CSV IO", () => {
     const csv = "\uFEFFid,value\n1,NA\n2,null\n3,Real";
     const df = parse_csv(csv);
     expect(df.to_records()).toEqual([
-      { id: 1, value: null },
-      { id: 2, value: null },
+      { id: 1, value: NaN },
+      { id: 2, value: NaN },
       { id: 3, value: "Real" },
     ]);
   });

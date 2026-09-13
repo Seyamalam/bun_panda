@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Infer pandas scalar dtypes in DataFrame columns and normalize missing values before storage. Preserve dtypes through selections, update Parquet dtype handling, and exclude all missing sentinels from Wasm grouping and crosstab keys. Add 105 pandas-generated frame inference/selection contracts.
+
 - Infer common pandas dtypes in Series constructors, including float/NaN and str/NaN defaults. Preserve float dtype and negative zero during rounding, honor object-rounding behavior, and retain declared input dtypes in pandas oracle adapters.
 
 - Make equality dtype-aware and distinguish NA/NaT from object nulls. Add numeric-family and exclusion support to select_dtypes, validated by 93 pandas query contracts.

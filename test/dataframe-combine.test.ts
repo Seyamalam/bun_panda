@@ -31,11 +31,11 @@ describe("DataFrame combine/compare", () => {
     const merged = left.combine_first(right);
     expect(merged.to_records()).toEqual([
       { a: 1, b: 8 },
-      { a: null, b: 4 },
+      { a: NaN, b: 4 },
     ]);
     // right-only index labels are appended
     const rightOnly = new DataFrame([{ a: 5 }], { index: ["z"] });
-    expect(left.combine_first(rightOnly).to_records().at(-1)).toEqual({ a: 5, b: null });
+    expect(left.combine_first(rightOnly).to_records().at(-1)).toEqual({ a: 5, b: NaN });
   });
 
   test("compare returns only differing rows with _other pairs", () => {
@@ -94,7 +94,7 @@ describe("DataFrame corrwith / reindex_like", () => {
     expect(reindexed.keys()).toEqual(["a", "z"]);
     expect(reindexed.to_records()).toEqual([
       { a: 2, z: null },
-      { a: null, z: null },
+      { a: NaN, z: null },
     ]);
   });
 });

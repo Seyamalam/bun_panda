@@ -62,3 +62,11 @@ describe("typed-column cache", () => {
     expect(frame.sort_values("value").to_records().map((row) => row.id)).toEqual([0, 1]);
   });
 });
+
+test("Wasm grouping excludes normalized NaN keys just like TypeScript", () => {
+  const frame = new DataFrame({ group: ["a", null, "a", "b"], value: [1, 50, 2, 4] });
+  for (const mode of ["0", "1"]) {
+    process.env.BUN_PANDA_WASM = mode;
+    expect(frame.groupby("group").agg({ value: "sum" }).to_records()).toEqual([{ group: "a", value: 3 }, { group: "b", value: 4 }]);
+  }
+});

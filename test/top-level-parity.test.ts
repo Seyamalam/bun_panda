@@ -94,7 +94,7 @@ describe("reshape wrappers", () => {
       { id: 2, x1: "c", x2: null },
     ]);
     const long = lreshape(wide, { x: ["x1", "x2"] });
-    const values = long.to_records().map((r) => r.x).filter((v) => v != null);
+    const values = long.to_records().map((r) => r.x).filter((v) => typeof v === "string");
     expect(values.sort()).toEqual(["a", "b", "c"]);
   });
 
@@ -114,7 +114,7 @@ describe("ordered merges", () => {
     const left = new DataFrame([{ t: 1, v: 1 }, { t: 2, v: 2 }]);
     const right = new DataFrame([{ t: 2, w: 99 }, { t: 3, w: 100 }]);
     const merged = merge_asof(left, right, "t");
-    expect(merged.to_records()[0]).toEqual({ t: 1, v: 1 });
+    expect(merged.to_records()[0]).toEqual({ t: 1, v: 1, w: NaN });
     expect(merged.to_records()[1]).toEqual({ t: 2, v: 2, w: 99 });
   });
 

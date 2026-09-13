@@ -32,7 +32,7 @@ describe("text format contracts", () => {
 
   test("HTML selects a matching table, decodes entities and pads missing cells", () => {
     const html = '<table><tr><td>other</td></tr></table><table><tr><th>name</th><th>value</th></tr><tr><td><b>A&amp;B</b></td><td>2</td></tr><tr><td>&#65;&#x42;&quot;&apos;&nbsp;&unknown;</td></tr></table>';
-    expect(read_html(html, { match: "name" }).to_records()).toEqual([{ name: "A&B", value: 2 }, { name: 'AB"\' &unknown;', value: null }]);
+    expect(read_html(html, { match: "name" }).to_records()).toEqual([{ name: "A&B", value: 2 }, { name: 'AB"\' &unknown;', value: NaN }]);
     expect(read_html('<table><tr><td>true</td><td>false</td></tr><tr><td>NaN</td></tr></table>', { header: false }).to_records()).toEqual([{ col_0: true, col_1: false }, { col_0: null, col_1: null }]);
     expect(read_html('<table><tr><th></th></tr><tr><td>1</td></tr></table>').columns).toEqual(["col_0"]);
     expect(() => read_html("plain")).toThrow("No <table>");
@@ -44,7 +44,7 @@ describe("text format contracts", () => {
     const xml = '<root><!-- ignore --><entry id="a&amp;b"><x>2</x><name><b>first</b></name></entry><entry id="c"><x>null</x><flag>true</flag></entry></root>';
     expect(read_xml(xml, { xpath: "/root/entry" }).to_records()).toEqual([
       { "@id": "a&b", x: 2, name: "first", flag: undefined },
-      { "@id": "c", x: null, name: undefined, flag: true },
+      { "@id": "c", x: NaN, name: NaN, flag: true },
     ]);
     expect(() => read_xml("plain")).toThrow("No XML");
     expect(() => read_xml(xml, { xpath: "/missing" })).toThrow("No <missing>");
@@ -62,8 +62,8 @@ describe("JSON-backed binary bridges", () => {
       expect(read(bytes, { index_col: 0 }).get("value").to_list()).toEqual([2, 4]);
       const padded = Buffer.concat([Buffer.from("prefix"), bytes, Buffer.from("suffix")]);
       expect(read(new Uint8Array(padded.buffer, padded.byteOffset + 6, bytes.byteLength)).to_records()).toEqual(records);
-      expect(read(Buffer.from('{"columns":["id","value"],"data":[["a",2],["b"]]}')).to_records()).toEqual([{ id: "a", value: 2 }, { id: "b", value: null }]);
-      expect(read(Buffer.from('{"id":["a","b"],"value":[2]}')).to_records()).toEqual([{ id: "a", value: 2 }, { id: "b", value: null }]);
+      expect(read(Buffer.from('{"columns":["id","value"],"data":[["a",2],["b"]]}')).to_records()).toEqual([{ id: "a", value: 2 }, { id: "b", value: NaN }]);
+      expect(read(Buffer.from('{"id":["a","b"],"value":[2]}')).to_records()).toEqual([{ id: "a", value: 2 }, { id: "b", value: NaN }]);
       const path = join(directory, `${name}.json`);
       writeFileSync(path, bytes);
       expect(read(path).to_records()).toEqual(records);
@@ -82,7 +82,7 @@ describe("SQL adapters", () => {
       expect(params).toEqual([7]);
       return [{ id: 7 }, { id: 8, value: "x" }];
     };
-    expect((await read_sql_query("SELECT * FROM items WHERE id = ?", query, [7])).to_records()).toEqual([{ id: 7, value: undefined }, { id: 8, value: "x" }]);
+    expect((await read_sql_query("SELECT * FROM items WHERE id = ?", query, [7])).to_records()).toEqual([{ id: 7, value: NaN }, { id: 8, value: "x" }]);
   });
 
   test("connection methods retain this and table names are dispatched", async () => {

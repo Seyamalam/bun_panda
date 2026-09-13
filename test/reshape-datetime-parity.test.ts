@@ -49,7 +49,7 @@ describe("DataFrame pivot", () => {
     const wide = long.pivot("day", "fruit", "sold");
     expect(wide.to_records()).toEqual([
       { day: "Mon", apple: 3, kiwi: 5 },
-      { day: "Tue", apple: 7, kiwi: null },
+      { day: "Tue", apple: 7, kiwi: NaN },
     ]);
   });
 
@@ -198,7 +198,7 @@ describe("DataFrame.join", () => {
     const joined = left.join(right, { on: "k", how: "left" });
     expect(joined.to_records()).toEqual([
       { k: "x", v: 1, w: 99 },
-      { k: "y", v: 2, w: undefined },
+      { k: "y", v: 2, w: NaN },
     ]);
   });
 

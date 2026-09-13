@@ -20,8 +20,8 @@ describe("GroupBy extras", () => {
 
   test("shift within groups", () => {
     expect(df.groupby("g").shift(1).to_records()).toEqual([
-      { g: "a", x: null },
-      { g: "b", x: null },
+      { g: "a", x: NaN },
+      { g: "b", x: NaN },
       { g: "a", x: 1 },
       { g: "b", x: 2 },
     ]);
@@ -29,8 +29,8 @@ describe("GroupBy extras", () => {
 
   test("diff within groups", () => {
     expect(df.groupby("g").diff().to_records()).toEqual([
-      { g: "a", x: null },
-      { g: "b", x: null },
+      { g: "a", x: NaN },
+      { g: "b", x: NaN },
       { g: "a", x: 2 },
       { g: "b", x: 2 },
     ]);

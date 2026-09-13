@@ -1,5 +1,5 @@
 import { scalarEquals } from "./internal/shared/valueSemantics";
-import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector } from "./dtypes";
+import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, dtypeFamily } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -261,7 +261,7 @@ export interface DataFrameFlagsOptions {
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
 
 export class DataFrame {
-  private readonly _explicitDtypes: Partial<Record<string, DType>>;
+  private readonly _dtypes: Partial<Record<string, DType>>;
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
@@ -275,19 +275,14 @@ export class DataFrame {
       ? normalizeRecords(data, options.columns)
       : normalizeColumnar(data);
 
-    this._rows = normalized.rows;
+    const prepared = DataFrame.prepareColumns(normalized.rows, normalized.columns,
+      Object.fromEntries(normalized.columns.flatMap(column => options.dtype ? [[column, options.dtype]] : !Array.isArray(data) && data[column]?.length === 0 ? [[column, "float64" as DType]] : [])));
+    if (options.dtype) assertDType(options.dtype);
+    this._rows = prepared.rows;
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
     this._dtypeHints = {};
-    this._explicitDtypes = {};
-    if (options.dtype) {
-      assertDType(options.dtype);
-      for (const column of this._columns) {
-        const values = castColumn(this._rows.map(row => row[column]), options.dtype);
-        this._rows.forEach((row, i) => { row[column] = values[i]; });
-        this._explicitDtypes[column] = options.dtype;
-      }
-    }
+    this._dtypes = prepared.dtypes;
 
     assertRowsShape(this._rows, this._index);
   }
@@ -297,19 +292,37 @@ export class DataFrame {
     columns: string[],
     index: IndexLabel[],
     dtypeHints: Partial<Record<string, InferredDType>> = {},
-    explicitDtypes: Partial<Record<string, DType>> = {}
+    dtypes: Partial<Record<string, DType>> = {}
   ): DataFrame {
     assertRowsShape(rows, index);
+    const prepared = DataFrame.prepareColumns(rows, columns, dtypes, dtypeHints);
     const frame = Object.create(DataFrame.prototype) as DataFrame;
-    (frame as unknown as { _rows: Row[] })._rows = rows;
+    (frame as unknown as { _rows: Row[] })._rows = prepared.rows;
     (frame as unknown as { _columns: string[] })._columns = columns;
     (frame as unknown as { _index: IndexLabel[] })._index = index;
     (frame as unknown as { _dtypeHints: Partial<Record<string, InferredDType>> })._dtypeHints = {
       ...dtypeHints,
     };
-    (frame as unknown as { _explicitDtypes: Partial<Record<string, DType>> })._explicitDtypes = { ...explicitDtypes };
+    (frame as unknown as { _dtypes: Partial<Record<string, DType>> })._dtypes = prepared.dtypes;
     frame._attrs = {};
     return frame;
+  }
+
+  /** Establish physical missing values and dtype metadata together, before exposing a frame. */
+  private static prepareColumns(rows: Row[], columns: string[], declared: Partial<Record<string, DType>>, hints: Partial<Record<string, InferredDType>> = {}): { rows: Row[]; dtypes: Record<string, DType> } {
+    const result = rows.map(row => cloneRow(row, columns));
+    const dtypes: Record<string, DType> = {};
+    for (const column of columns) {
+      const values = rows.map(row => row[column]);
+      const inferred = convertedDType(values, undefined, false);
+      const hint = hints[column];
+      const fallback = hint && hint !== "unknown" && hint !== "mixed" ? replacementDType(hint === "number" ? "float64" : hint, values) : undefined;
+      const dtype = declared[column] ?? (values.every(isMissing) ? fallback ?? inferred : inferred);
+      const cast = castColumn(values, dtype);
+      result.forEach((row, i) => { row[column] = cast[i]; });
+      dtypes[column] = dtype;
+    }
+    return { rows: result, dtypes };
   }
 
   static from_records(records: Row[], options: DataFrameOptions = {}): DataFrame {
@@ -466,7 +479,7 @@ export class DataFrame {
   }
 
   copy(): DataFrame {
-    return DataFrame.createInternal(this.to_records(), [...this._columns], [...this._index], this._dtypeHints, this._explicitDtypes);
+    return DataFrame.createInternal(this.to_records(), [...this._columns], [...this._index], this._dtypeHints, this._dtypes);
   }
 
   to_records(): Row[] {
@@ -478,14 +491,7 @@ export class DataFrame {
   }
 
   dtypes(): Record<string, InferredDType> {
-    const out: Record<string, InferredDType> = {};
-    for (const column of this._columns) {
-      const inferred = inferColumnDType(this._rows.map((row) => row[column]));
-      out[column] = this._explicitDtypes[column] ?? (inferred === "unknown"
-        ? this._dtypeHints[column] ?? inferred
-        : inferred);
-    }
-    return out;
+    return Object.fromEntries(this._columns.map(column => [column, this._dtypes[column]!]));
   }
 
   nunique(dropna = true): Record<string, number> {
@@ -524,7 +530,7 @@ export class DataFrame {
       rows.forEach((row, i) => { row[column] = values[i]; });
     }
     if (typeof dtype === "string") assertDType(dtype);
-    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, { ...this._explicitDtypes, ...castMap });
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, { ...this._dtypes, ...castMap });
   }
 
   to_dict(orient: "records" | "list" = "records"): Row[] | Record<string, CellValue[]> {
@@ -581,7 +587,7 @@ export class DataFrame {
     this.assertColumnExists(column);
     return new Series(this._rows.map((row) => row[column]), {
       name: column,
-      dtype: this._explicitDtypes[column],
+      dtype: this._dtypes[column],
       index: this._index,
     });
   }
@@ -689,7 +695,7 @@ export class DataFrame {
   pop(column: string): Series<CellValue> {
     this.assertColumnExists(column);
     const values = this._rows.map((row) => row[column]);
-    const series = new Series(values, { name: column, index: this._index, dtype: this._explicitDtypes[column] });
+    const series = new Series(values, { name: column, index: this._index, dtype: this._dtypes[column] });
 
     const nextColumns = this._columns.filter((entry) => entry !== column);
     (this as unknown as { _rows: Row[] })._rows = this._rows.map((row) =>
@@ -734,13 +740,8 @@ export class DataFrame {
       return next;
     });
 
-    const result = this.withRows(nextRows, this._index, renamedColumns, true);
-    for (const column of this._columns) {
-      const renamed = columns[column] ?? column;
-      if (this._explicitDtypes[column]) result._explicitDtypes[renamed] = this._explicitDtypes[column];
-      if (this._dtypeHints[column]) result._dtypeHints[renamed] = this._dtypeHints[column];
-    }
-    return result;
+    const dtypes = Object.fromEntries(this._columns.map(column => [columns[column] ?? column, this._dtypes[column]]));
+    return DataFrame.createInternal(nextRows, renamedColumns, [...this._index], {}, dtypes);
   }
 
   /** Renames the axis (index) labels via a mapper or new label list. */
@@ -768,13 +769,8 @@ export class DataFrame {
         });
         return next;
       });
-      const result = this.withRows(nextRows, this._index, [...labels] as string[], true);
-      this._columns.forEach((column, i) => {
-        const target = String(labels[i]);
-        if (this._explicitDtypes[column]) result._explicitDtypes[target] = this._explicitDtypes[column];
-        if (this._dtypeHints[column]) result._dtypeHints[target] = this._dtypeHints[column];
-      });
-      return result;
+      const dtypes = Object.fromEntries(this._columns.map((column, i) => [String(labels[i]), this._dtypes[column]]));
+      return DataFrame.createInternal(nextRows, labels.map(String), [...this._index], {}, dtypes);
     }
     if (labels.length !== this._index.length) {
       throw new Error("set_axis length must match index length.");
@@ -1211,6 +1207,7 @@ export class DataFrame {
       {
         index: [...this._index],
         name: column,
+        dtype: this._dtypes[column],
       }
     );
   }
@@ -1227,13 +1224,13 @@ export class DataFrame {
     }
     const rows = shiftRows(this._rows, this._columns, periods);
     for (const column of this._columns) {
-      if (this._explicitDtypes[column] === "bool") for (const row of rows) if (row[column] === null) row[column] = NaN;
+      if (this._dtypes[column] === "bool") for (const row of rows) if (row[column] === null) row[column] = NaN;
     }
     const result = this.withReplacement(rows, [...this._index], this._columns, true);
     if (periods !== 0 && rows.length === 0) {
       for (const column of this._columns) {
-        const dtype = replacementDType(this._explicitDtypes[column], [NaN]);
-        if (dtype) result._explicitDtypes[column] = dtype;
+        const dtype = replacementDType(this._dtypes[column], [NaN]);
+        if (dtype) result._dtypes[column] = dtype;
       }
     }
     return result;
@@ -1487,7 +1484,7 @@ export class DataFrame {
   /** Select columns by stored dtype, numeric family, and optional exclusions. */
   select_dtypes(include?: DTypeSelector | DTypeSelector[], exclude?: DTypeSelector | DTypeSelector[]): DataFrame {
     const matches = dtypeSelector(include, exclude);
-    const keep = this._columns.filter(column => matches(this._explicitDtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false)));
+    const keep = this._columns.filter(column => matches(this._dtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false)));
     return this.withSelection(projectColumns(this._rows, keep), [...this._index], keep, true);
   }
 
@@ -1535,13 +1532,13 @@ export class DataFrame {
   }
 
   where(cond: WhereCondition, other?: WhereOther): DataFrame {
-    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : other, false);
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._dtypes).length ? NaN : null) : other, false);
     return this.withReplacement(rows, this._index, this._columns, true);
   }
 
   mask(cond: WhereCondition, other?: WhereOther): DataFrame {
     if (Array.isArray(cond) && cond.length === 0 && this._rows.length === 0) throw new TypeError("Cannot invert an empty untyped condition array");
-    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : other, true);
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._dtypes).length ? NaN : null) : other, true);
     return this.withReplacement(rows, this._index, this._columns, true);
   }
 
@@ -1802,7 +1799,7 @@ export class DataFrame {
       result._columns,
       result._index,
       dtypeHints,
-      this._explicitDtypes
+      this._dtypes
     );
   }
 
@@ -1909,7 +1906,7 @@ export class DataFrame {
     const rows = this._rows.map((row) => {
       const next = cloneRow(row, this._columns);
       for (const column of this._columns) {
-        if (this._explicitDtypes[column] === "object") continue;
+        if (this._dtypes[column] === "object") continue;
         const value = next[column];
         if (isNumber(value)) {
           next[column] = roundToEven(value, decimals);
@@ -1957,8 +1954,8 @@ export class DataFrame {
 
   equals(other: DataFrame): boolean {
     for (const column of this._columns) {
-      const mine = this._explicitDtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false);
-      const theirs = other._explicitDtypes[column] ?? convertedDType(other._rows.map(row => row[column]), undefined, false);
+      const mine = this._dtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false);
+      const theirs = other._dtypes[column] ?? convertedDType(other._rows.map(row => row[column]), undefined, false);
       if (mine !== theirs) return false;
     }
     if (JSON.stringify(this._columns) !== JSON.stringify(other._columns)) {
@@ -2058,9 +2055,9 @@ export class DataFrame {
     ): boolean => {
       if (dtype === "unknown") return false;
       if (result.rows.length > 0) {
-        return !isKey && (dtype === "number" || dtype === "string" || dtype === "date");
+        return !isKey && ["number", "string", "datetime"].includes(dtypeFamily(dtype));
       }
-      if (dtype === "boolean") {
+      if (dtypeFamily(dtype) === "boolean") {
         return !rows.some((row) => isMissing(row[column]));
       }
       return true;
@@ -2214,7 +2211,7 @@ export class DataFrame {
   squeeze(): DataFrame | Series<CellValue> | CellValue | null {
     const result = squeezeResult(this._rows, this._columns, this._index);
     if (result.kind === "scalar") return result.value;
-    if (result.kind === "column") return new Series(result.values, { index: result.index, name: result.name, dtype: this._explicitDtypes[result.name] });
+    if (result.kind === "column") return new Series(result.values, { index: result.index, name: result.name, dtype: this._dtypes[result.name] });
     if (result.kind === "row") return new Series(result.values, { index: result.index });
     return this.withRows(result.rows, result.index, result.columns, true);
   }
@@ -2251,7 +2248,7 @@ export class DataFrame {
       this._index,
       options.index,
       options.columns,
-      options.fill_value === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : options.fill_value
+      options.fill_value === undefined ? (Object.keys(this._dtypes).length ? NaN : null) : options.fill_value
     );
     return this.withReplacement(result.rows, result.index, result.columns, true);
   }
@@ -2312,28 +2309,15 @@ export class DataFrame {
     }
   }
 
-  private withReplacement(rows: Row[], index?: IndexLabel[], columns?: string[], normalized = false): DataFrame {
-    const result = this.withRows(rows, index, columns, normalized);
-    for (const column of result._columns) {
-      const values = result._rows.map(row => row[column]);
-      const dtype = replacementDType(this._explicitDtypes[column], values);
-      if (dtype) {
-        const cast = castColumn(values, dtype);
-        result._rows.forEach((row, i) => { row[column] = cast[i]; });
-        result._explicitDtypes[column] = dtype;
-      }
-    }
-    return result;
+  private withReplacement(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
+    const nextColumns = columns ?? this._columns;
+    const dtypes = Object.fromEntries(nextColumns.map(column => [column, replacementDType(this._dtypes[column], rows.map(row => row[column]))]));
+    return DataFrame.createInternal(rows, [...nextColumns], index ? [...index] : range(rows.length), this._dtypeHints, dtypes);
   }
 
-  /** Row/column selection preserves each retained column's declared dtype. */
-  private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], normalized = false): DataFrame {
-    const result = this.withRows(rows, index, columns, normalized);
-    for (const column of result._columns) {
-      if (this._explicitDtypes[column]) result._explicitDtypes[column] = this._explicitDtypes[column];
-      if (this._dtypeHints[column]) result._dtypeHints[column] = this._dtypeHints[column];
-    }
-    return result;
+  /** Row/column selection preserves each retained column's dtype before casting. */
+  private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
+    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes);
   }
 
   private withRows(
@@ -2418,7 +2402,7 @@ export class DataFrame {
 
   private convertColumnDtypes(nullable: boolean): DataFrame {
     const targets = Object.fromEntries(this._columns.map(column => [column,
-      convertedDType(this._rows.map(row => row[column]), this._explicitDtypes[column], nullable),
+      convertedDType(this._rows.map(row => row[column]), this._dtypes[column], nullable),
     ]));
     return this.astype(targets);
   }

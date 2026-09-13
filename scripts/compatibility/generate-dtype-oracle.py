@@ -116,3 +116,13 @@ Path('test/fixtures/pandas-dtype-queries.json').write_text(json.dumps({'pandasVe
 print(f'wrote {len(queries)} dtype query contracts')
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(cases)} dtype contracts')
+
+frame_cases=[]
+for values in inputs+[[1,True],[1,'1'],['001','false',None]]:
+    source=pd.DataFrame({'v':values},index=[f'row-{i}' for i in range(len(values))])
+    for operation,args in [('copy',[]),('head',[0]),('tail',[-1]),('dropna',[]),('rename',[{'v':'renamed'}])]:
+        result=source.rename(columns=args[0]) if operation=='rename' else getattr(source,operation)(*args)
+        frame_cases.append({'values':[encode(x) for x in values], 'operation':operation,'args':args,
+            'expected':{'dtypes':{str(c):str(t) for c,t in result.dtypes.items()},'columns':result.columns.tolist(), 'index':result.index.tolist(),'values':[[encode(v) for v in row] for row in result.itertuples(index=False,name=None)]}})
+Path('test/fixtures/pandas-frame-dtypes.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':frame_cases},indent=2,allow_nan=False)+'\n')
+print(f'wrote {len(frame_cases)} frame inference contracts')

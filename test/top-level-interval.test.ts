@@ -115,8 +115,8 @@ describe("align helper", () => {
     const [rl, rr] = align(left, right, "outer");
     expect([...rl.columns].sort()).toEqual(["a", "b", "c"]);
     expect([...rr.columns].sort()).toEqual(["a", "b", "c"]);
-    expect(rr.at(0, "b")).toBeNull();
-    expect(rl.at(0, "c")).toBeNull();
+    expect(rr.at(0, "b")).toBeNaN();
+    expect(rl.at(0, "c")).toBeNaN();
   });
 
   test("mismatched operand kinds throw", () => {

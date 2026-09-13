@@ -58,7 +58,7 @@ describe("DataFrame rolling/expanding", () => {
     const out = tagged.rolling(2).mean();
     expect(out.columns).toEqual(["v"]);
     expect(out.to_records()).toEqual([
-      { v: null },
+      { v: NaN },
       { v: 1.5 },
       { v: 2.5 },
     ]);
@@ -66,7 +66,7 @@ describe("DataFrame rolling/expanding", () => {
 
   test("multi-column rolling keeps columns independent", () => {
     expect(df.rolling(2).sum().to_records()).toEqual([
-      { x: null, y: null },
+      { x: NaN, y: NaN },
       { x: 3, y: 30 },
       { x: 5, y: 50 },
     ]);

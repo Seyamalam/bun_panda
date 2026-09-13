@@ -1,3 +1,5 @@
+import { inferColumnDType } from "../../../src/utils";
+import { dtypeFamily } from "../../../src/dtypes";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import packageInfo from "../../../package.json";
@@ -70,14 +72,6 @@ function frameFromSpec(spec: FrameSpec): DataFrame {
   return new DataFrame(rows, { columns: spec.columns, index: spec.index });
 }
 
-function dtypeFamily(dtype: string): string {
-  if (dtype === "number") return "number";
-  if (dtype === "boolean") return "boolean";
-  if (dtype === "string") return "string";
-  if (dtype === "date") return "datetime";
-  if (dtype === "unknown") return "unknown";
-  return "mixed";
-}
 
 function canonicalFrame(frame: DataFrame): Record<string, unknown> {
   const columns = frame.columns;
@@ -89,7 +83,7 @@ function canonicalFrame(frame: DataFrame): Record<string, unknown> {
     data: frame.to_records().map((row) =>
       columns.map((column) => encodeCell(row[column]))
     ),
-    dtypeFamilies: columns.map((column) => dtypeFamily(nativeDtypes[column] ?? "unknown")),
+    dtypeFamilies: columns.map((column) => dtypeFamily(nativeDtypes[column] === "object" ? inferColumnDType(frame.to_records().map(row => row[column])) : nativeDtypes[column] ?? "unknown")),
     nativeDtypes: columns.map((column) => nativeDtypes[column] ?? "unknown"),
   };
 }

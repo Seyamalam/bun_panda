@@ -12,7 +12,7 @@ describe("DataFrame where/mask", () => {
   test("where with predicate fn keeps values where cond holds", () => {
     const df = base().where((row) => (row.a as number) > 1);
     expect(df.to_records()).toEqual([
-      { a: null, b: null },
+      { a: NaN, b: NaN },
       { a: 2, b: 20 },
       { a: 3, b: 30 },
     ]);

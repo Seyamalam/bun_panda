@@ -1,0 +1,2913 @@
+{
+  "pandasVersion": "3.0.5",
+  "cases": [
+    {
+      "values": [],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        null,
+        null
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            null
+          ],
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        null,
+        null
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        null,
+        null
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        null,
+        null
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        null,
+        null
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            null
+          ],
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        null
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1.0
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        null
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        1,
+        null
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        null
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0"
+        ],
+        "values": [
+          [
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        null
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1.0
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        true,
+        null
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            true
+          ],
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        true,
+        null
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        true,
+        null
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        true,
+        null
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0"
+        ],
+        "values": [
+          [
+            true
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        true,
+        null
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            true
+          ],
+          [
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "1",
+        "2"
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "1"
+          ],
+          [
+            "2"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "1",
+        "2"
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        "1",
+        "2"
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            "2"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "1",
+        "2"
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "1"
+          ],
+          [
+            "2"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "1",
+        "2"
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "str"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "1"
+          ],
+          [
+            "2"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1.2,
+        2.8
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1.2
+          ],
+          [
+            2.8
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1.2,
+        2.8
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        1.2,
+        2.8
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            2.8
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1.2,
+        2.8
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1.2
+          ],
+          [
+            2.8
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1.2,
+        2.8
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1.2
+          ],
+          [
+            2.8
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0,
+        1
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0,
+        1
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        0,
+        1
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0,
+        1
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0,
+        1
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "int64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        -1,
+        2
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            -1
+          ],
+          [
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        -1,
+        2
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        -1,
+        2
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        -1,
+        2
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "int64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            -1
+          ],
+          [
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        -1,
+        2
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "int64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            -1
+          ],
+          [
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "true",
+        "false"
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "true"
+          ],
+          [
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "true",
+        "false"
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        "true",
+        "false"
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "true",
+        "false"
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "true"
+          ],
+          [
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "true",
+        "false"
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "str"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "true"
+          ],
+          [
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "bad",
+        ""
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "bad"
+          ],
+          [
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "bad",
+        ""
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        "bad",
+        ""
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "bad",
+        ""
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "bad"
+          ],
+          [
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "bad",
+        ""
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "str"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "bad"
+          ],
+          [
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0.1
+          ],
+          [
+            {
+              "$number": "-0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$number": "-0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0.1
+          ],
+          [
+            {
+              "$number": "-0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            0.1
+          ],
+          [
+            {
+              "$number": "-0"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NA"
+            }
+          ],
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NA"
+            }
+          ],
+          [
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NA"
+            }
+          ],
+          [
+            {
+              "$missing": "NA"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NA"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NA"
+            }
+          ],
+          [
+            {
+              "$missing": "NA"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "a"
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0"
+        ],
+        "values": [
+          [
+            "a"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "str"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "a"
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$number": "Infinity"
+            }
+          ],
+          [
+            {
+              "$number": "-Infinity"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$number": "-Infinity"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "float64"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$number": "Infinity"
+            }
+          ],
+          [
+            {
+              "$number": "-Infinity"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "float64"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            {
+              "$number": "Infinity"
+            }
+          ],
+          [
+            {
+              "$number": "-Infinity"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        true
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            true
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        true
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        1,
+        true
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            true
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        true
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            true
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        true
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            true
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        "1"
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        "1"
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        1,
+        "1"
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1"
+        ],
+        "values": [
+          [
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        "1"
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "object"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        1,
+        "1"
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "object"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            1
+          ],
+          [
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "operation": "copy",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "values": [
+          [
+            "001"
+          ],
+          [
+            "false"
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "operation": "head",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [],
+        "values": []
+      }
+    },
+    {
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "operation": "tail",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-1",
+          "row-2"
+        ],
+        "values": [
+          [
+            "false"
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "operation": "dropna",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "v": "str"
+        },
+        "columns": [
+          "v"
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "values": [
+          [
+            "001"
+          ],
+          [
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "operation": "rename",
+      "args": [
+        {
+          "v": "renamed"
+        }
+      ],
+      "expected": {
+        "dtypes": {
+          "renamed": "str"
+        },
+        "columns": [
+          "renamed"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "values": [
+          [
+            "001"
+          ],
+          [
+            "false"
+          ],
+          [
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

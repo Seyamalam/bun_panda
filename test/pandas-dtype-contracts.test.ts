@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { DataFrame, NA, Series } from "../src/index";
 import type { CellValue, DType } from "../src/types";
+import frameFixture from "./fixtures/pandas-frame-dtypes.json";
 import fixture from "./fixtures/pandas-dtype-contracts.json";
 
 function encode(value: CellValue): unknown {
@@ -112,3 +113,14 @@ test("column and index selection retain dtypes by column name", () => {
   expect((frame.get("a").reset_index() as DataFrame).dtypes().a).toBe("Int16");
   expect(frame.pop("b").dtype).toBe("float32");
 });
+
+for (const [i, entry] of frameFixture.cases.entries()) {
+  test(`pandas inferred frame ${i}: ${entry.operation}`, () => {
+    const values = entry.values.map(decode);
+    const source = new DataFrame({ v: values }, { index: values.map((_, i) => `row-${i}`) });
+    const operation: unknown = Reflect.get(source, entry.operation);
+    if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+    const result = operation.apply(source, entry.args) as DataFrame;
+    expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, index: result.index, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
+  });
+}

@@ -7,6 +7,7 @@
  * failure to load the module makes every `wasmAvailable()` check false
  * so callers transparently keep the pure-TS path.
  */
+import { isMissingScalar } from "../missing";
 import { keyFragment } from "../internal/dataframe/keys";
 import type { Row } from "../types";
 
@@ -141,7 +142,7 @@ export function wasmGroupIds(rows: Row[], by: string[]): WasmGroupAggResult | nu
       let missing = false;
       for (let c = 0; c < by.length; c += 1) {
         const value = row[by[c]!];
-        if (value === null || value === undefined) {
+        if (isMissingScalar(value)) {
           missing = true;
           break;
         }

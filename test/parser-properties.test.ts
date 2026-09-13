@@ -31,7 +31,7 @@ describe("parser properties", () => {
   test("ragged CSV rows expand columns and pad missing values", () => {
     fc.assert(fc.property(fc.array(fc.array(fc.integer(), { minLength: 1, maxLength: 6 }), { minLength: 1, maxLength: 20 }), (rows) => {
       const width = Math.max(...rows.map((row) => row.length));
-      const expected = rows.map((row) => Object.fromEntries(Array.from({ length: width }, (_, i) => [`col_${i}`, row[i] ?? null])));
+      const expected = rows.map((row) => Object.fromEntries(Array.from({ length: width }, (_, i) => [`col_${i}`, row[i] ?? NaN])));
       for (const quoted of [false, true]) {
         const csv = rows.map((row) => row.map((v) => quoted ? `"${v}"` : String(v)).join(",")).join("\n");
         expect(parse_csv(csv, { header: false }).to_records()).toEqual(expected);
@@ -41,12 +41,12 @@ describe("parser properties", () => {
 
   test("JSON records, columns and lines preserve primitive cells", () => {
     fc.assert(fc.property(records, (rows) => {
-      expect(parse_json(JSON.stringify(rows)).to_records()).toEqual(rows);
+      expect(parse_json(JSON.stringify(rows)).to_records()).toEqual(new DataFrame(rows).to_records());
       const columnar = Object.fromEntries(["a", "b", "c"].map((key) => [key, rows.map((row) => row[key as keyof typeof row])]));
-      expect(parse_json(JSON.stringify(columnar), { orient: "list" }).to_records()).toEqual(rows);
+      expect(parse_json(JSON.stringify(columnar), { orient: "list" }).to_records()).toEqual(new DataFrame(rows).to_records());
       const lines = `\uFEFF\n${rows.map((row) => JSON.stringify(row)).join("\r\n\n")}\n`;
-      expect(parse_json(lines, { lines: true }).to_records()).toEqual(rows);
-      expect(parse_json(new DataFrame(rows).to_json()).to_records()).toEqual(rows);
+      expect(parse_json(lines, { lines: true }).to_records()).toEqual(new DataFrame(rows).to_records());
+      expect(parse_json(new DataFrame(rows).to_json()).to_records()).toEqual(new DataFrame(rows).to_records());
     }), runs);
   });
 
@@ -56,7 +56,7 @@ describe("parser properties", () => {
       const indexed = rows.map((row, id) => ({ id, ...row }));
       const frame = parse_json(JSON.stringify(indexed), { index_col: "id" });
       expect(frame.index).toEqual(rows.map((_, i) => i));
-      expect(frame.to_records()).toEqual(rows);
+      expect(frame.to_records()).toEqual(new DataFrame(rows).to_records());
     }), runs);
   });
 

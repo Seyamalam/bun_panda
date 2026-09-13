@@ -27,8 +27,8 @@ describe("typed parquet ingest", () => {
     expect(back.shape).toEqual([3, 4]);
     expect(back.sort_values("id").to_records()).toEqual([
       { id: 1, city: "Austin", score: 10.5, active: true },
-      { id: 2, city: null, score: 8.25, active: false },
-      { id: 3, city: "Denver", score: null, active: true },
+      { id: 2, city: NaN, score: 8.25, active: false },
+      { id: 3, city: "Denver", score: NaN, active: true },
     ]);
   });
 
