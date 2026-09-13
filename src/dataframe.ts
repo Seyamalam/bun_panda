@@ -652,19 +652,25 @@ export class DataFrame {
   assign(assignments: Record<string, AssignmentValue>): DataFrame {
     const rows = this.to_records();
     const columns = [...this._columns];
-    const rowCount = this._rows.length;
-
+    const dtypes = { ...this._dtypes };
     for (const [column, value] of Object.entries(assignments)) {
-      const values = this.resolveAssignment(column, value, rowCount);
-      for (let i = 0; i < rowCount; i += 1) {
-        rows[i]![column] = values[i];
-      }
-      if (!columns.includes(column)) {
-        columns.push(column);
-      }
+      const resolved = this.assignmentColumn(column, value);
+      rows.forEach((row, i) => { row[column] = resolved.values[i]; });
+      dtypes[column] = resolved.dtype;
+      if (!columns.includes(column)) columns.push(column);
     }
+    return DataFrame.createInternal(rows, columns, [...this._index], {}, dtypes);
+  }
 
-    return this.withRows(rows, this._index, columns, true);
+  private assignmentColumn(column: string, value: AssignmentValue): { values: CellValue[]; dtype: DType } {
+    if (value instanceof Series) {
+      const aligned = value.reindex(this._index);
+      return { values: aligned.to_list(), dtype: aligned.dtype };
+    }
+    const values = this.resolveAssignment(column, value, this._rows.length);
+    // Empty arrays in pandas DataFrame assignment carry the float64 default.
+    const dtype = values.length === 0 && Array.isArray(value) ? "float64" : convertedDType(values.length ? values : [value as CellValue], undefined, false);
+    return { values, dtype };
   }
 
   insert(
@@ -676,7 +682,8 @@ export class DataFrame {
       throw new Error(`Column '${column}' already exists.`);
     }
     const position = Math.min(Math.max(loc, 0), this._columns.length);
-    const values = this.resolveAssignment(column, value, this._rows.length);
+    const assigned = this.assignmentColumn(column, value);
+    const values = assigned.values;
 
     const nextColumns = [...this._columns];
     nextColumns.splice(position, 0, column);
@@ -689,7 +696,7 @@ export class DataFrame {
       return next;
     });
 
-    return this.withRows(rows, this._index, nextColumns, true);
+    return DataFrame.createInternal(rows, nextColumns, [...this._index], {}, { ...this._dtypes, [column]: assigned.dtype });
   }
 
   pop(column: string): Series<CellValue> {
@@ -2536,7 +2543,9 @@ export class DataFrame {
     return windowApi.swaplevel(this.view());
   }
   isetitem(position: number, value: CellValue[] | Series<CellValue>): DataFrame {
-    return windowApi.isetitem(this.view(), position, value);
+    const resolved = resolvePosition(position, this._columns.length);
+    if (resolved === undefined) throw new Error(`isetitem: position ${String(position)} out of bounds.`);
+    return this.assign({ [this._columns[resolved]!]: value });
   }
   tz_localize(tz: string): DataFrame {
     return windowApi.tz_localize(this.view(), tz);

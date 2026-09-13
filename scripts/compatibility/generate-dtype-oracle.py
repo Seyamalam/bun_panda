@@ -126,3 +126,22 @@ for values in inputs+[[1,True],[1,'1'],['001','false',None]]:
             'expected':{'dtypes':{str(c):str(t) for c,t in result.dtypes.items()},'columns':result.columns.tolist(), 'index':result.index.tolist(),'values':[[encode(v) for v in row] for row in result.itertuples(index=False,name=None)]}})
 Path('test/fixtures/pandas-frame-dtypes.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':frame_cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(frame_cases)} frame inference contracts')
+
+assignment_cases=[]
+for dtype in ['int16','Int16','float32','Float32','bool','boolean','str','string','object']:
+    for values in [[1,0],[1,None],['a',None],[None,None]]:
+        try: source=pd.DataFrame({'v':pd.Series(values,dtype=dtype),'keep':pd.Series([None,None],dtype='object')},index=[0,1])
+        except Exception: continue
+        for incoming in [[3,4],[3,None],['x',None],[True,False]]:
+            for input_dtype in [None,'object','Int16','Float32','string']:
+                try: value=incoming if input_dtype is None else pd.Series(incoming,index=[1,0],dtype=input_dtype)
+                except Exception: continue
+                for operation in ['assign','insert','isetitem']:
+                    result=source.copy()
+                    if operation=='assign': result=result.assign(v=value)
+                    elif operation=='insert': result.insert(1,'new',value)
+                    else: result.isetitem(0,value)
+                    assignment_cases.append({'dtype':dtype,'values':[encode(x) for x in values],'incoming':[encode(x) for x in incoming],'inputDtype':input_dtype,'operation':operation,
+                      'expected':{'dtypes':{str(c):str(t) for c,t in result.dtypes.items()},'columns':result.columns.tolist(),'values':[[encode(v) for v in row] for row in result.itertuples(index=False,name=None)]}})
+Path('test/fixtures/pandas-frame-assignment.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':assignment_cases},indent=2,allow_nan=False)+'\n')
+print(f'wrote {len(assignment_cases)} frame assignment contracts')

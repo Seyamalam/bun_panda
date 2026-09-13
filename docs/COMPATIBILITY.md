@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 1,778/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
 
@@ -52,7 +52,7 @@ exact bigint storage is implemented. Default Series and DataFrame inference now 
 and conversions between a Series and a single-column DataFrame preserve explicit
 dtypes. Shift, reindex, conditional replacement and fill operations implement
 promotion or nullable-type validation for explicitly typed columns. Arithmetic,
-assignment and the remaining alignment operations still need work. `number` and `date` remain legacy
+in-place updates and the remaining alignment operations still need work. `number` and `date` remain legacy
 conversion aliases.
 
 `infer_objects()` and `convert_dtypes()` share scalar-type inference. They keep
@@ -60,6 +60,11 @@ numeric-looking strings as strings, preserve explicit widths where pandas does,
 and distinguish object nulls, NaN, and NA during inference. JavaScript does not
 retain whether an integral number was written as Python `1` or `1.0`; an explicit
 float dtype is needed to preserve that distinction.
+
+DataFrame assignment contracts check `assign`, `insert` and `isetitem` column
+values and dtypes, including aligned Series inputs and untouched object columns.
+`insert` and `isetitem` still return a new frame in this library; these contracts
+do not establish pandas mutation/return-value parity.
 
 Dtype query cases compare `select_dtypes` include/exclude rules and Series/frame
 equality across explicit dtypes and missing sentinels. pandas warning categories,

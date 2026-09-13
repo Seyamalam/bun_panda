@@ -1,3 +1,4 @@
+import assignmentFixture from "./fixtures/pandas-frame-assignment.json";
 import { expect, test } from "bun:test";
 import { DataFrame, NA, Series } from "../src/index";
 import type { CellValue, DType } from "../src/types";
@@ -122,5 +123,15 @@ for (const [i, entry] of frameFixture.cases.entries()) {
     if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
     const result = operation.apply(source, entry.args) as DataFrame;
     expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, index: result.index, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
+  });
+}
+
+for (const [i, entry] of assignmentFixture.cases.entries()) {
+  test(`pandas frame assignment ${i}: ${entry.operation}`, () => {
+    const source = new DataFrame({ v: entry.values.map(decode), keep: [null, null] }, { dtype: "object" }).astype({ v: entry.dtype as DType });
+    const incoming = entry.incoming.map(decode);
+    const value = entry.inputDtype ? new Series<CellValue>(incoming, { dtype: entry.inputDtype as DType, index: [1, 0] }) : incoming;
+    const result = entry.operation === "assign" ? source.assign({ v: value }) : entry.operation === "insert" ? source.insert(1, "new", value) : source.isetitem(0, value);
+    expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
   });
 }

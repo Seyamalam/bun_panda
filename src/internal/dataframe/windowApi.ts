@@ -8,7 +8,6 @@ import {
   timeFilterPositions,
 } from "../shared";
 import { DataFrame } from "../../dataframe";
-import { Series } from "../../series";
 import { dataFrameToCsv } from "./io";
 import type { CellValue, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
@@ -217,24 +216,6 @@ export function reorder_levels(df: HostView, ..._order: number[]): DataFrame {
 
 export function swaplevel(df: HostView, ): DataFrame {
     return df.copy();
-  }
-
-export function isetitem(df: HostView, position: number, value: CellValue[] | Series<CellValue>): DataFrame {
-    if (position < 0 || position >= df.columnsSnapshot().length) {
-      throw new Error(`isetitem: position ${String(position)} out of bounds.`);
-    }
-    const column = df.columnsSnapshot()[position]!;
-    const values =
-      value instanceof Series ? value.to_list() : value;
-    if (values.length !== df.rowsSnapshot().length) {
-      throw new Error("isetitem: value length must match row count.");
-    }
-    const rows = df.rowsSnapshot().map((row, i) => {
-      const next = { ...row };
-      next[column] = (values as CellValue[])[i] ?? null;
-      return next;
-    });
-    return df.withRows(rows, [...df.labels()], [...df.columnsSnapshot()], true);
   }
 
 export function tz_localize(df: HostView, tz: string): DataFrame {
