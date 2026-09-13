@@ -1,3 +1,4 @@
+import { isMissingScalar } from "./missing";
 import type { CellValue, DType, InferredDType, Row } from "./types";
 
 export function range(count: number): number[] {
@@ -15,9 +16,7 @@ export function cloneRow(row: Row, columns?: string[]): Row {
   return next;
 }
 
-export function isMissing(value: CellValue): value is null | undefined {
-  return value === null || value === undefined;
-}
+export const isMissing = isMissingScalar;
 
 export function isNumber(value: CellValue): value is number {
   return typeof value === "number" && Number.isFinite(value);

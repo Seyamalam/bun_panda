@@ -1,6 +1,8 @@
+import type { MissingScalar } from "./missing";
+
 export type IndexLabel = string | number;
 
-export type CellValue = string | number | boolean | null | undefined | Date;
+export type CellValue = string | number | boolean | MissingScalar | Date;
 
 export type Row = Record<string, CellValue>;
 

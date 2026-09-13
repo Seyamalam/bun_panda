@@ -1,7 +1,8 @@
+import { isMissingScalar } from "../../missing";
 import type { CellValue } from "../../types";
 
 export function isAbsent(value: CellValue): boolean {
-  return value == null || (typeof value === "number" && Number.isNaN(value));
+  return isMissingScalar(value);
 }
 
 /** pandas object equality joins boolean and numeric keys, but preserves strings. */

@@ -29,6 +29,9 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ### Fixed
 
+- Recognize exported `NA`/`NaT`, floating NaN, null/undefined and invalid dates
+  consistently as missing, including typed-column preparation and key encoding.
+
 - Quote carriage returns in CSV fields so exported records round-trip.
 - Correct the sample-size normalization of skewness and the unbiased Fisher
   correction for excess kurtosis.

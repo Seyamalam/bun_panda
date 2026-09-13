@@ -72,7 +72,8 @@ behavior and measurements.
 
 ## Remaining work for full parity
 
-1. **Dtypes and missing scalars.** Replace the four-type dtype vocabulary with
+1. **Dtypes and missing scalars.** Shared missing detection and typed NA/NaT
+   sentinels are implemented. Replace the four-type dtype vocabulary with
    explicit logical and physical dtype metadata, inference/promotion rules,
    nullable masks, and exact integer support. Distinguish NaN, NA, NaT, and
    Python object null where required. Preserve metadata through every operation.

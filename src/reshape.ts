@@ -125,7 +125,7 @@ export function get_dummies(
     let categories = sortedCategories(records.map(record => record[column]));
     if (options.dummy_na) categories.push(null);
     if (options.drop_first) categories = categories.slice(1);
-    return categories.map(value => ({ column, value, name: `${column}${sep}${value === null ? "nan" : typeof value === "boolean" ? (value ? "True" : "False") : String(value)}` }));
+    return categories.map<{column: string; value: CellValue; name: string}>(value => ({ column, value, name: `${column}${sep}${value === null ? "nan" : typeof value === "boolean" ? (value ? "True" : "False") : String(value)}` }));
   });
   const outRows = records.map(record => {
     const row: Row = {};

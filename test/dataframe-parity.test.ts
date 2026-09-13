@@ -39,7 +39,7 @@ describe("DataFrame where/mask", () => {
   test("where with fn other receives value and coordinates", () => {
     const df = base().where(
       (row) => (row.a as number) > 1,
-      (value, column) => (column === "a" ? `missing:${value}` : value)
+      (value, column) => (column === "a" ? `missing:${String(value)}` : value)
     );
     expect(df.to_records()).toEqual([
       { a: "missing:1", b: 10 },

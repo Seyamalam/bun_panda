@@ -1,6 +1,6 @@
 // pandas-style Categorical / CategoricalDtype.
 import { DataFrame } from "./dataframe";
-import type { CellValue } from "./types";
+import type { CellValue, Row } from "./types";
 import { isAbsent, scalarKey, sortedCategories } from "./internal/shared/valueSemantics";
 
 /**
@@ -111,7 +111,7 @@ export class Categorical {
       if (code >= 0) counts[code]! += 1;
     }
     const total = counts.reduce((sum, count) => sum + count, 0);
-    const rows = this.dtype.categories.map((category, i) => ({
+    const rows: Row[] = this.dtype.categories.map((category, i) => ({
       categories: category,
       counts: counts[i]!,
       freqs: total > 0 ? counts[i]! / total : 0,

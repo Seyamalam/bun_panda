@@ -73,9 +73,9 @@ export function option_context(
 // ---------------------------------------------------------------------------
 
 /** Singleton NA marker (pandas pd.NA). */
-export const NA = Symbol.for("bun_panda.NA");
+export { NA } from "./missing";
 /** Singleton NaT marker (pandas pd.NaT). */
-export const NaT = Symbol.for("bun_panda.NaT");
+export { NaT } from "./missing";
 
 // ---------------------------------------------------------------------------
 // Minimal scalar / index types

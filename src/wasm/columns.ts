@@ -1,3 +1,4 @@
+import { isMissingScalar } from "../missing";
 /**
  * Columnar typed-array store for bun_panda DataFrames.
  *
@@ -46,8 +47,7 @@ function isNumericColumn(rows: Row[], column: string): boolean {
   for (let i = 0; i < rows.length; i += 1) {
     const value = rows[i]![column];
     if (
-      value !== null &&
-      value !== undefined &&
+      !isMissingScalar(value) &&
       (typeof value !== "number" || !Number.isFinite(value))
     ) {
       return false;
@@ -59,7 +59,7 @@ function isNumericColumn(rows: Row[], column: string): boolean {
 function isTextColumn(rows: Row[], column: string): boolean {
   for (let i = 0; i < rows.length; i += 1) {
     const value = rows[i]![column];
-    if (value !== null && value !== undefined && typeof value !== "string") {
+    if (!isMissingScalar(value) && typeof value !== "string") {
       return false;
     }
   }
@@ -74,7 +74,7 @@ function buildColumn(rows: Row[], column: string): AnyColumn {
     const values = new Float64Array(n);
     for (let i = 0; i < n; i += 1) {
       const value = rows[i]![column];
-      if (value === null || value === undefined) {
+      if (isMissingScalar(value)) {
         values[i] = NaN;
       } else {
         values[i] = value as number;
@@ -89,7 +89,7 @@ function buildColumn(rows: Row[], column: string): AnyColumn {
     const missing: number[] = [];
     for (let i = 0; i < n; i += 1) {
       const value = rows[i]![column];
-      if (value === null || value === undefined) {
+      if (isMissingScalar(value)) {
         values[i] = "";
         missing.push(i);
       } else {

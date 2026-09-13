@@ -1,8 +1,10 @@
+import { isMissingScalar } from "../../missing";
 import type { CellValue, Row } from "../../types";
 
 export type NormalizedKey = string | number | boolean | null;
 
 export function normalizeKeyCell(value: CellValue): NormalizedKey {
+  if (isMissingScalar(value)) return null;
   if (value instanceof Date) {
     return value.toISOString();
   }

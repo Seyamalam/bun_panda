@@ -1,3 +1,4 @@
+import { isMissingScalar } from "./missing";
 import type { CellValue } from "./types";
 import { Series } from "./series";
 
@@ -143,7 +144,7 @@ function coerceDate(value: Date | string): Date | null {
 
 /** True for each null/undefined/NaN entry (pandas isna). */
 export function isna(values: CellValue[]): boolean[] {
-  return values.map((v) => v === null || v === undefined || (typeof v === "number" && Number.isNaN(v)));
+  return values.map(isMissingScalar);
 }
 
 /** Inverse of `isna`. */
@@ -172,7 +173,7 @@ export function value_counts<T extends CellValue>(
 ): Series<number> {
   const counts = new Map<string, { value: T; count: number }>();
   for (const value of values) {
-    if ((options.dropna ?? true) && (value === null || value === undefined)) {
+    if ((options.dropna ?? true) && isMissingScalar(value)) {
       continue;
     }
     const key = String(value);
