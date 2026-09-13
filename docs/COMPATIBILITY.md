@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases and 232 in-place update cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 1,778/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
 
@@ -52,7 +52,7 @@ exact bigint storage is implemented. Default Series and DataFrame inference now 
 and conversions between a Series and a single-column DataFrame preserve explicit
 dtypes. Shift, reindex, conditional replacement and fill operations implement
 promotion or nullable-type validation for explicitly typed columns. Arithmetic,
-in-place updates and the remaining alignment operations still need work. `number` and `date` remain legacy
+the remaining alignment operations still need work. `number` and `date` remain legacy
 conversion aliases.
 
 `infer_objects()` and `convert_dtypes()` share scalar-type inference. They keep
@@ -63,6 +63,10 @@ float dtype is needed to preserve that distinction.
 
 DataFrame assignment contracts check `assign`, `insert` and `isetitem` column
 values and dtypes, including aligned Series inputs and untouched object columns.
+In-place `update` validates replacement values and float32 precision before
+writing the new column storage; numeric-width promotion follows the incoming
+dtype for the tested cases. Duplicate-label rules and all update options remain
+unverified.
 `insert` and `isetitem` still return a new frame in this library; these contracts
 do not establish pandas mutation/return-value parity.
 

@@ -1,5 +1,5 @@
 import { scalarEquals } from "./internal/shared/valueSemantics";
-import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, dtypeFamily } from "./dtypes";
+import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, dtypeFamily, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -1144,15 +1144,18 @@ export class DataFrame {
    * this frame's cells in place.
    */
   update(other: DataFrame): void {
+    const rows = this.to_records();
+    const changed = applyUpdateOverwrite(rows, this._index, this._columns, other._rows, other._index, other._columns);
+    if (!changed) return;
+    const dtypes = { ...this._dtypes };
+    for (const column of this._columns) {
+      if (!other._columns.includes(column)) continue;
+      dtypes[column] = updatedDType(this._dtypes[column]!, other._dtypes[column]!, rows.map(row => row[column]));
+    }
+    const prepared = DataFrame.prepareColumns(rows, this._columns, dtypes);
     invalidateColumnStore(this._rows);
-    applyUpdateOverwrite(
-      this._rows,
-      this._index,
-      this._columns,
-      other._rows,
-      other._index,
-      other._columns
-    );
+    (this as unknown as { _rows: Row[] })._rows = prepared.rows;
+    Object.assign(this._dtypes, prepared.dtypes);
   }
 
   /**

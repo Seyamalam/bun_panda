@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Validate in-place DataFrame updates against stored dtypes, including float32 precision, nullable casts and numeric-width promotion. Add 232 pandas update contracts.
+
 - Preserve untouched column dtypes during assignment and align assigned Series by label while retaining their dtype. Validate assign/insert/isetitem values and dtypes against 1,566 pandas cases.
 
 - Infer pandas scalar dtypes in DataFrame columns and normalize missing values before storage. Preserve dtypes through selections, update Parquet dtype handling, and exclude all missing sentinels from Wasm grouping and crosstab keys. Add 105 pandas-generated frame inference/selection contracts.

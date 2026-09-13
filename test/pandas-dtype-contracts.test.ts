@@ -1,3 +1,4 @@
+import updateFixture from "./fixtures/pandas-frame-update.json";
 import assignmentFixture from "./fixtures/pandas-frame-assignment.json";
 import { expect, test } from "bun:test";
 import { DataFrame, NA, Series } from "../src/index";
@@ -135,3 +136,24 @@ for (const [i, entry] of assignmentFixture.cases.entries()) {
     expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
   });
 }
+
+for (const [i, entry] of updateFixture.cases.entries()) {
+  test(`pandas frame update ${i}: ${entry.dtype}`, () => {
+    const source = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType });
+    const incoming = new DataFrame({ v: entry.incoming.map(decode) });
+    const run = () => source.update(incoming);
+    if (entry.error) expect(run).toThrow();
+    else {
+      expect(run()).toBeUndefined();
+      expect<unknown>({ dtype: source.dtypes().v, values: source.get("v").to_list().map(encode) }).toEqual(entry.expected);
+    }
+  });
+}
+
+test("rejected updates leave stored values and dtypes consistent", () => {
+  const frame = new DataFrame({ n: [1, 2] }, { dtype: "int16" });
+  const original = frame.copy();
+  expect(() => frame.update(new DataFrame({ n: [1.5, null] }))).toThrow();
+  expect(frame.equals(original)).toBe(true);
+  expect(frame.get("n").to_list()).toEqual([1, 2]);
+});

@@ -179,3 +179,27 @@ export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "d
   if (dtype === "date") return "datetime";
   return dtype === "unknown" ? "unknown" : "mixed";
 }
+
+/** Validate in-place updates without the permissive coercion of an explicit astype. */
+export function updatedDType(dtype: DType, incoming: DType, values: readonly CellValue[]): DType {
+  const present = values.filter(value => !isMissingScalar(value));
+  const invalid = () => { throw new TypeError(`Invalid value for dtype '${dtype}'`); };
+  if (dtype === "str" || dtype === "string") {
+    if (present.some(value => typeof value !== "string")) invalid();
+  } else if (dtype === "bool") {
+    if (present.some(value => typeof value !== "boolean")) invalid();
+  } else if (/^(u?int|float)/.test(dtype)) {
+    if (present.some(value => typeof value !== "number")) invalid();
+    if (/^u?int/.test(dtype)) {
+      if (present.some(value => !Number.isInteger(value))) invalid();
+      const bits = Number(dtype.match(/\d+/)![0]);
+      const unsigned = dtype.startsWith("u");
+      const min = unsigned ? 0 : -(2 ** (bits - 1));
+      const max = unsigned ? 2 ** bits - 1 : 2 ** (bits - 1) - 1;
+      if (present.some(value => (value as number) < min || (value as number) > max)) {
+        return incoming.startsWith("float") ? incoming : "int64";
+      }
+    } else if (dtype === "float32" && present.some(value => !Object.is(Math.fround(value as number), value))) invalid();
+  }
+  return dtype;
+}

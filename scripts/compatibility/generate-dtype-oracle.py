@@ -145,3 +145,19 @@ for dtype in ['int16','Int16','float32','Float32','bool','boolean','str','string
                       'expected':{'dtypes':{str(c):str(t) for c,t in result.dtypes.items()},'columns':result.columns.tolist(),'values':[[encode(v) for v in row] for row in result.itertuples(index=False,name=None)]}})
 Path('test/fixtures/pandas-frame-assignment.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':assignment_cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(assignment_cases)} frame assignment contracts')
+
+update_cases=[]
+for dtype in ['int16','Int16','float32','Float32','bool','boolean','str','string','object']:
+    for values in [[1,0],[1,None],['a',None],[None,None]]:
+        try: source=pd.DataFrame({'v':pd.Series(values,dtype=dtype)})
+        except Exception: continue
+        for incoming in [[3,None],[1.5,None],[0.1,None],['x',None],['3',None],[True,None],[None,None],[32768,None]]:
+            result=source.copy()
+            entry={'dtype':dtype,'values':[encode(x) for x in values],'incoming':[encode(x) for x in incoming]}
+            try:
+                result.update(pd.DataFrame({'v':incoming}))
+                entry['expected']={'dtype':str(result.dtypes.v),'values':[encode(x) for x in result.v.tolist()]}
+            except Exception as e: entry['error']=type(e).__name__
+            update_cases.append(entry)
+Path('test/fixtures/pandas-frame-update.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':update_cases},indent=2,allow_nan=False)+'\n')
+print(f'wrote {len(update_cases)} frame update contracts')
