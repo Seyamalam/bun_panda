@@ -27,7 +27,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     const values = entry.values.map(decode);
     const run = () => {
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
-      const source = new Series<CellValue>(values, { dtype, ...(entry.mode === "selection" ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}) });
+      const source = new Series<CellValue>(values, { dtype, ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}) });
       if ("operation" in entry) {
         const operation: unknown = Reflect.get(source, entry.operation!);
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
@@ -40,7 +40,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     if (entry.error) expect(run).toThrow();
     else {
       const result = run();
-      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(entry.mode === "selection" ? { index: result.index, name: result.name } : {}) }).toEqual(entry.expected!);
+      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: result.index, name: result.name } : {}) }).toEqual(entry.expected!);
       expect(result.copy().dtype).toBe(entry.expected!.dtype);
       expect(result.head(0).dtype).toBe(entry.expected!.dtype);
     }
@@ -87,7 +87,12 @@ for (const entry of fixture.cases) {
     const frame = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType, index: entry.values.map((_: unknown, i: number) => `row-${i}`) });
     const operation: unknown = Reflect.get(frame, entry.operation!);
     if (typeof operation !== "function") throw new Error(`Missing frame operation ${entry.operation}`);
-    const result = operation.apply(frame, entry.operation === "sort_values" ? ["v"] : entry.args) as DataFrame;
+    let args = entry.args;
+    if (entry.operation === "sort_values") args = ["v"];
+    if (entry.operation === "reindex") args = [{ index: entry.args![0] }];
+    const run = () => operation.apply(frame, args) as DataFrame;
+    if (entry.error) { expect(run).toThrow(); return; }
+    const result = run();
     expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index, name: "v" }).toEqual(entry.expected!);
   });
 }

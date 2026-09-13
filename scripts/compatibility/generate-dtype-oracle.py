@@ -59,5 +59,23 @@ for dtype in ['Int16','UInt8','Float32','float64','boolean','string','object']:
             result=getattr(source,operation)(*args)
             cases.append({'mode':'selection','dtype':dtype,'values':[encode(x) for x in values],'operation':operation,'args':args,
                 'expected':{'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}})
+for dtype in ['int16','Int16','float32','Float32','bool','boolean','string','str','object']:
+    for values in [[1,2,1],[1,None,1],[None,None,None],[]]:
+        try:
+            source=pd.Series(values,dtype=dtype,index=[f'row-{i}' for i in range(len(values))],name='v')
+        except Exception:
+            continue
+        mask=[i%2==0 for i in range(len(values))]
+        operations=[('shift',[p]) for p in [-1,0,1]]+[('ffill',[]),('bfill',[]),('reindex',[source.index.tolist()+['new']])]
+        operations += [('fillna',[v]) for v in [0,1.5,'x',True]]
+        operations += [('where',[mask]),('mask',[mask]),('where',[mask,'x'])]
+        for operation,args in operations:
+            entry={'mode':'replacement','dtype':dtype,'values':[encode(x) for x in values],'operation':operation,'args':args}
+            try:
+                result=getattr(source,operation)(*args)
+                entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}
+            except Exception as e:
+                entry['error']=type(e).__name__
+            cases.append(entry)
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(cases)} dtype contracts')

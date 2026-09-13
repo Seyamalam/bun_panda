@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Preserve or promote explicit dtypes in shift, reindex, where/mask and fill operations. Reject incompatible nullable replacements and expand dtype contracts to 1,808 pandas cases.
+
 - Preserve explicit dtypes through row/column selection, sorting, copying and renaming. Correct DataFrame negative head/tail counts and tail(0); extend pandas dtype/selection contracts to 1,379 cases.
 
 - Correct Series/DataFrame dtype inference: preserve numeric-looking strings, select nullable types from scalar values, and distinguish object nulls, NA and NaN. Expand pinned dtype contracts to 1,106 cases.

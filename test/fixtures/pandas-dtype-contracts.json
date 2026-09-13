@@ -22651,6 +22651,10833 @@
         "index": [],
         "name": "v"
       }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          2.0,
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          2.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "int16",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          1,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          },
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          2,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          },
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          1,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          1,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          },
+          1,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          },
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          0,
+          0,
+          0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          2.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.0,
+          "x",
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          },
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          0.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          1.5,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.0,
+          "x",
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.0,
+          true,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.0,
+          "x",
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "x",
+          "x",
+          "x"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "x",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "float32",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          2.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          },
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          0.0,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          1.5,
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          true,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          {
+            "$missing": "NaN"
+          },
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          true,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          "x",
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          false,
+          true,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          true,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          false,
+          true,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          {
+            "$missing": "NaN"
+          },
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          false,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          "x",
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          false,
+          false,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          false,
+          false,
+          false,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          false,
+          {
+            "$missing": "NaN"
+          },
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          false,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          false,
+          "x",
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "bool",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          },
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          },
+          true,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          },
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "2",
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1",
+          "2"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "2",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          },
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          0,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          1.5,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          true,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0,
+          0,
+          0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "x",
+          "x",
+          "x"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "x",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "string",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "2",
+          "1",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "1",
+          "2"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          {
+            "$missing": "NaN"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "2",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "1",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          {
+            "$missing": "NaN"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "1",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          {
+            "$missing": "NaN"
+          },
+          "1",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          0,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          1.5,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          true,
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          {
+            "$missing": "NaN"
+          },
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "x",
+          "1"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0,
+          0,
+          0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "x",
+          "x",
+          "x"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          "x",
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "str",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          2,
+          1,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          2,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          {
+            "$missing": "NaN"
+          },
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          2,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          1,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          null,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          1,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          1,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          1,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          null,
+          1,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          1.5,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          true,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          {
+            "$missing": "NaN"
+          },
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          null,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        1,
+        null,
+        1
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "reindex",
+      "args": [
+        [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null,
+          null,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2",
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0,
+          0,
+          0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "x",
+          "x",
+          "x"
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          true,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          {
+            "$missing": "NaN"
+          },
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "mask",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          null,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "operation": "where",
+      "args": [
+        [
+          true,
+          false,
+          true
+        ],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          "x",
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        -1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "shift",
+      "args": [
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "ffill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "bfill",
+      "args": [],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "reindex",
+      "args": [
+        [
+          "new"
+        ]
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "index": [
+          "new"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        1.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "fillna",
+      "args": [
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "where",
+      "args": [
+        []
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "mask",
+      "args": [
+        []
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "replacement",
+      "dtype": "object",
+      "values": [],
+      "operation": "where",
+      "args": [
+        [],
+        "x"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
     }
   ]
 }

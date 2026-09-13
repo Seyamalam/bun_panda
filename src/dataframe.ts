@@ -1,4 +1,4 @@
-import { assertDType, castColumn, convertedDType } from "./dtypes";
+import { assertDType, castColumn, convertedDType, replacementDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -1226,7 +1226,17 @@ export class DataFrame {
       throw new Error("periods must be an integer.");
     }
     const rows = shiftRows(this._rows, this._columns, periods);
-    return this.withRows(rows, [...this._index], this._columns, true);
+    for (const column of this._columns) {
+      if (this._explicitDtypes[column] === "bool") for (const row of rows) if (row[column] === null) row[column] = NaN;
+    }
+    const result = this.withReplacement(rows, [...this._index], this._columns, true);
+    if (periods !== 0 && rows.length === 0) {
+      for (const column of this._columns) {
+        const dtype = replacementDType(this._explicitDtypes[column], [NaN]);
+        if (dtype) result._explicitDtypes[column] = dtype;
+      }
+    }
+    return result;
   }
 
   /** First discrete difference of numeric columns. */
@@ -1529,14 +1539,15 @@ export class DataFrame {
     return this.applymap(fn);
   }
 
-  where(cond: WhereCondition, other: WhereOther = null): DataFrame {
-    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other, false);
-    return this.withRows(rows, this._index, this._columns, true);
+  where(cond: WhereCondition, other?: WhereOther): DataFrame {
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : other, false);
+    return this.withReplacement(rows, this._index, this._columns, true);
   }
 
-  mask(cond: WhereCondition, other: WhereOther = null): DataFrame {
-    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other, true);
-    return this.withRows(rows, this._index, this._columns, true);
+  mask(cond: WhereCondition, other?: WhereOther): DataFrame {
+    if (Array.isArray(cond) && cond.length === 0 && this._rows.length === 0) throw new TypeError("Cannot invert an empty untyped condition array");
+    const rows = computeWhereRows(this._rows, this._columns, this._index, cond, other === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : other, true);
+    return this.withReplacement(rows, this._index, this._columns, true);
   }
 
   transform(input: TransformInput): DataFrame {
@@ -1801,7 +1812,7 @@ export class DataFrame {
   }
 
   fillna(value: CellValue | Record<string, CellValue>): DataFrame {
-    return this.withRows(fillnaRows(this._rows, this._columns, value), this._index, this._columns, true);
+    return this.withReplacement(fillnaRows(this._rows, this._columns, value), this._index, this._columns, true);
   }
 
   set_index(column: string, drop = true): DataFrame {
@@ -2140,11 +2151,11 @@ export class DataFrame {
 
   // ---- missing-data fills ----
   ffill(): DataFrame {
-    return this.withRows(ffillRows(this._rows, this._columns), [...this._index], this._columns, true);
+    return this.withReplacement(ffillRows(this._rows, this._columns), [...this._index], this._columns, true);
   }
 
   bfill(): DataFrame {
-    return this.withRows(bfillRows(this._rows, this._columns), [...this._index], this._columns, true);
+    return this.withReplacement(bfillRows(this._rows, this._columns), [...this._index], this._columns, true);
   }
 
   interpolate(method = "linear"): DataFrame {
@@ -2240,9 +2251,9 @@ export class DataFrame {
       this._index,
       options.index,
       options.columns,
-      options.fill_value ?? null
+      options.fill_value === undefined ? (Object.keys(this._explicitDtypes).length ? NaN : null) : options.fill_value
     );
-    return this.withRows(result.rows, result.index, result.columns, true);
+    return this.withReplacement(result.rows, result.index, result.columns, true);
   }
 
   info(): string {
@@ -2299,6 +2310,20 @@ export class DataFrame {
     if (!this._columns.includes(column)) {
       throw new Error(`Column '${column}' does not exist.`);
     }
+  }
+
+  private withReplacement(rows: Row[], index?: IndexLabel[], columns?: string[], normalized = false): DataFrame {
+    const result = this.withRows(rows, index, columns, normalized);
+    for (const column of result._columns) {
+      const values = result._rows.map(row => row[column]);
+      const dtype = replacementDType(this._explicitDtypes[column], values);
+      if (dtype) {
+        const cast = castColumn(values, dtype);
+        result._rows.forEach((row, i) => { row[column] = cast[i]; });
+        result._explicitDtypes[column] = dtype;
+      }
+    }
+    return result;
   }
 
   /** Row/column selection preserves each retained column's declared dtype. */

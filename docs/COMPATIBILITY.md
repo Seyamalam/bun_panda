@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,379 dtype/cast/inference/selection cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,808 dtype/cast/inference/selection/replacement cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | Fails; exact compatibility is not established |
 
@@ -51,7 +51,9 @@ classes/messages. Integers outside JavaScript's safe range are rejected until
 exact bigint storage is implemented. Default dtype inference and propagation
 through all operations remain incomplete. Selection, sorting, copying, renaming,
 and conversions between a Series and a single-column DataFrame preserve explicit
-dtypes; arithmetic and alignment promotion still need work. `number` and `date` remain legacy
+dtypes. Shift, reindex, conditional replacement and fill operations implement
+promotion or nullable-type validation for explicitly typed columns. Arithmetic,
+default inference and the remaining alignment operations still need work. `number` and `date` remain legacy
 conversion aliases.
 
 `infer_objects()` and `convert_dtypes()` share scalar-type inference. They keep

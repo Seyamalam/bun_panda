@@ -122,3 +122,23 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
   if (present.every(value => value instanceof Date)) return "date";
   return "object";
 }
+
+/** Select the result dtype after replacement, without coercing incompatible values. */
+export function replacementDType(dtype: DType | undefined, values: readonly CellValue[]): DType | undefined {
+  if (!dtype || dtype === "number" || dtype === "date" || dtype === "object") return dtype;
+  const present = values.filter(value => !isMissingScalar(value));
+  if (dtype === "string" || dtype === "str") return present.every(value => typeof value === "string") ? dtype : "object";
+  if (dtype === "boolean") {
+    if (present.some(value => typeof value !== "boolean")) throw new TypeError("Invalid value for dtype 'boolean'");
+    return dtype;
+  }
+  if (dtype === "bool") return present.length === values.length && present.every(value => typeof value === "boolean") ? dtype : "object";
+  const numeric = present.every(value => typeof value === "number");
+  if (/^(U?Int|Float)/.test(dtype)) {
+    if (!numeric) throw new TypeError(`Invalid value for dtype '${dtype}'`);
+    return dtype; // castColumn enforces exact integer/range requirements.
+  }
+  if (!numeric) return "object";
+  if (/^u?int/.test(dtype) && (present.length !== values.length || present.some(value => !Number.isInteger(value)))) return "float64";
+  return dtype;
+}

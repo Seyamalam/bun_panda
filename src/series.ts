@@ -1,4 +1,4 @@
-import { castColumn, convertedDType } from "./dtypes";
+import { castColumn, convertedDType, replacementDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
@@ -187,7 +187,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   fillna(value: T): Series<T> {
-    return this.map((entry) => (isMissing(entry) ? value : entry) as T);
+    return this.withReplacement(this._values.map(entry => isMissing(entry) ? value : entry));
   }
 
   /** Forward-fill: replaces missing values with the last seen value. */
@@ -200,7 +200,7 @@ export class Series<T extends CellValue = CellValue> {
       last = value;
       return value;
     });
-    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+    return this.withReplacement(out as T[]);
   }
 
   /** Backward-fill: replaces missing values with the next seen value. */
@@ -216,7 +216,7 @@ export class Series<T extends CellValue = CellValue> {
         out[i] = next;
       }
     }
-    return new Series(out as unknown as T[], { index: this._index, name: this.name });
+    return this.withReplacement(out as T[]);
   }
 
   isna(): Series<boolean> {
@@ -1049,22 +1049,25 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  where(cond: boolean[] | ((value: T, label: IndexLabel, position: number) => boolean), other: T | null = null): Series<T> {
+  where(cond: boolean[] | ((value: T, label: IndexLabel, position: number) => boolean), other?: T | null): Series<T> {
+    const replacement = other === undefined ? (this._dtype ? NaN : null) : other;
     const decision = this.resolveWhereCond(cond);
     const out = this._values.map((value, i) => {
       const label = this._index[i]!;
-      return decision(value, label, i) ? value : (other as T);
+      return decision(value, label, i) ? value : (replacement as T);
     });
-    return new Series(out, { index: [...this._index], name: this.name });
+    return this.withReplacement(out);
   }
 
-  mask(cond: boolean[] | ((value: T, label: IndexLabel, position: number) => boolean), other: T | null = null): Series<T> {
+  mask(cond: boolean[] | ((value: T, label: IndexLabel, position: number) => boolean), other?: T | null): Series<T> {
+    if (Array.isArray(cond) && cond.length === 0 && this.length === 0) throw new TypeError("Cannot invert an empty untyped condition array");
+    const replacement = other === undefined ? (this._dtype ? NaN : null) : other;
     const decision = this.resolveWhereCond(cond);
     const out = this._values.map((value, i) => {
       const label = this._index[i]!;
-      return decision(value, label, i) ? (other as T) : value;
+      return decision(value, label, i) ? (replacement as T) : value;
     });
-    return new Series(out, { index: [...this._index], name: this.name });
+    return this.withReplacement(out);
   }
 
   private resolveWhereCond(
@@ -1097,7 +1100,8 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(values as unknown as T[], { index, name: this.name, dtype: this._dtype });
   }
 
-  reindex(newIndex: IndexLabel[], fill_value: T | null = null): Series<T> {
+  reindex(newIndex: IndexLabel[], fill_value?: T | null): Series<T> {
+    const fill = fill_value === undefined ? (this._dtype ? NaN : null) : fill_value;
     const posByLabel = new Map<IndexLabel, number>();
     for (let i = 0; i < this._index.length; i += 1) {
       // keep first occurrence, matching pandas
@@ -1105,19 +1109,20 @@ export class Series<T extends CellValue = CellValue> {
     }
     const values = newIndex.map((label) => {
       const pos = posByLabel.get(label);
-      return pos !== undefined ? this._values[pos]! : (fill_value as T);
+      return pos !== undefined ? this._values[pos]! : (fill as T);
     });
-    return new Series(values, { index: [...newIndex], name: this.name });
+    return this.withReplacement(values, newIndex);
   }
 
   shift(periods = 1): Series<T | null> {
+    if (!Number.isInteger(periods)) throw new TypeError("periods must be an integer");
     const out: (T | null)[] = new Array(this.length).fill(null);
     for (let i = 0; i < this.length; i += 1) {
       const src = i - periods;
       if (src >= 0 && src < this.length) out[i] = this._values[src]! as unknown as T | null;
-      else out[i] = null;
+      else out[i] = (this._dtype === "bool" ? NaN : null) as T | null;
     }
-    return new Series(out as unknown as T[], { index: [...this._index], name: this.name }) as unknown as Series<T | null>;
+    return this.withReplacement(out as T[], this._index, periods !== 0 && this.length === 0 ? replacementDType(this._dtype, [NaN]) : this._dtype) as Series<T | null>;
   }
 
   diff(periods = 1): Series<number | null> {
@@ -1207,6 +1212,11 @@ export class Series<T extends CellValue = CellValue> {
     return `${typeof value}:${String(value)}`;
   }
   // ---- compat / window / export parity (delegates to internal/series/seriesApi) ----
+
+  private withReplacement(values: T[], index = this._index, sourceDType = this._dtype): Series<T> {
+    const dtype = replacementDType(sourceDType, values);
+    return new Series(values, { index, name: this.name, dtype });
+  }
 
   private view(): import("./internal/series/seriesApi").SeriesHost {
     return {
