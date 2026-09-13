@@ -27,7 +27,12 @@ for (const [i, entry] of fixture.cases.entries()) {
     const values = entry.values.map(decode);
     const run = () => {
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
-      const source = new Series<CellValue>(values, { dtype });
+      const source = new Series<CellValue>(values, { dtype, ...(entry.mode === "selection" ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}) });
+      if ("operation" in entry) {
+        const operation: unknown = Reflect.get(source, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(source, entry.args) as Series<CellValue>;
+      }
       if (entry.mode === "infer_objects") return source.infer_objects();
       if (entry.mode === "convert_dtypes") return source.convert_dtypes();
       return source;
@@ -35,7 +40,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     if (entry.error) expect(run).toThrow();
     else {
       const result = run();
-      expect({ dtype: result.dtype, values: result.to_list().map(encode) }).toEqual(entry.expected!);
+      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(entry.mode === "selection" ? { index: result.index, name: result.name } : {}) }).toEqual(entry.expected!);
       expect(result.copy().dtype).toBe(entry.expected!.dtype);
       expect(result.head(0).dtype).toBe(entry.expected!.dtype);
     }
@@ -74,4 +79,30 @@ test("frame inference preserves text and labels while selecting nullable dtypes"
   expect(result.index).toEqual(["a", "b"]);
   expect(frame.infer_objects().dtypes()).toEqual({ code: "str", qty: "float64", active: "object", mixed: "object" });
   expect(frame.get("qty").to_list()).toEqual([1, null]);
+});
+
+for (const entry of fixture.cases) {
+  if (!("operation" in entry) || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
+  test(`frame selection preserves ${entry.dtype}: ${entry.operation} ${JSON.stringify(entry.args)} ${JSON.stringify(entry.values)}`, () => {
+    const frame = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType, index: entry.values.map((_: unknown, i: number) => `row-${i}`) });
+    const operation: unknown = Reflect.get(frame, entry.operation!);
+    if (typeof operation !== "function") throw new Error(`Missing frame operation ${entry.operation}`);
+    const result = operation.apply(frame, entry.operation === "sort_values" ? ["v"] : entry.args) as DataFrame;
+    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index, name: "v" }).toEqual(entry.expected!);
+  });
+}
+
+test("column and index selection retain dtypes by column name", () => {
+  const frame = new DataFrame({ a: [1, 2], b: [3, 4] }).astype({ a: "Int16", b: "float32" });
+  expect(frame.select(["b"]).dtypes()).toEqual({ b: "float32" });
+  expect(frame.drop("b").dtypes()).toEqual({ a: "Int16" });
+  expect(frame.filter([false, false]).dtypes()).toEqual(frame.dtypes());
+  expect(frame.iloc([1, 0])).toBeInstanceOf(DataFrame);
+  expect((frame.iloc([1, 0]) as DataFrame).dtypes()).toEqual(frame.dtypes());
+  expect((frame.loc([1]) as DataFrame).dtypes()).toEqual(frame.dtypes());
+  expect(frame.rename({ a: "id" }).dtypes()).toEqual({ id: "Int16", b: "float32" });
+  expect(frame.get("a").to_frame().dtypes()).toEqual({ a: "Int16" });
+  expect(frame.set_axis(["id", "score"], "columns").dtypes()).toEqual({ id: "Int16", score: "float32" });
+  expect((frame.get("a").reset_index() as DataFrame).dtypes().a).toBe("Int16");
+  expect(frame.pop("b").dtype).toBe("float32");
 });

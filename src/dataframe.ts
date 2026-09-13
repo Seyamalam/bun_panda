@@ -558,8 +558,8 @@ export class DataFrame {
   }
 
   head(n = 5): DataFrame {
-    const count = Math.max(0, n);
-    return this.withRows(
+    const count = n < 0 ? Math.max(0, this._rows.length + n) : n;
+    return this.withSelection(
       this._rows.slice(0, count),
       this._index.slice(0, count),
       this._columns,
@@ -568,10 +568,10 @@ export class DataFrame {
   }
 
   tail(n = 5): DataFrame {
-    const count = Math.max(0, n);
-    return this.withRows(
-      this._rows.slice(-count),
-      this._index.slice(-count),
+    const start = n === 0 ? this._rows.length : n < 0 ? Math.min(-n, this._rows.length) : Math.max(0, this._rows.length - n);
+    return this.withSelection(
+      this._rows.slice(start),
+      this._index.slice(start),
       this._columns,
       true
     );
@@ -618,7 +618,7 @@ export class DataFrame {
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
     }
-    return this.withRows(rows, index, this._columns, true);
+    return this.withSelection(rows, index, this._columns, true);
   }
 
   loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame | undefined {
@@ -640,7 +640,7 @@ export class DataFrame {
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
     }
-    return this.withRows(rows, index, this._columns, true);
+    return this.withSelection(rows, index, this._columns, true);
   }
 
   assign(assignments: Record<string, AssignmentValue>): DataFrame {
@@ -689,7 +689,7 @@ export class DataFrame {
   pop(column: string): Series<CellValue> {
     this.assertColumnExists(column);
     const values = this._rows.map((row) => row[column]);
-    const series = new Series(values, { name: column, index: this._index });
+    const series = new Series(values, { name: column, index: this._index, dtype: this._explicitDtypes[column] });
 
     const nextColumns = this._columns.filter((entry) => entry !== column);
     (this as unknown as { _rows: Row[] })._rows = this._rows.map((row) =>
@@ -705,7 +705,7 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
     const rows = this._rows.map((row) => cloneRow(row, columns));
-    return this.withRows(rows, this._index, columns, true);
+    return this.withSelection(rows, this._index, columns, true);
   }
 
   drop(columns: string | string[]): DataFrame {
@@ -716,7 +716,7 @@ export class DataFrame {
 
     const nextColumns = this._columns.filter((column) => !removed.has(column));
     const nextRows = this._rows.map((row) => cloneRow(row, nextColumns));
-    return this.withRows(nextRows, this._index, nextColumns, true);
+    return this.withSelection(nextRows, this._index, nextColumns, true);
   }
 
   rename(columns: Record<string, string>): DataFrame {
@@ -734,7 +734,13 @@ export class DataFrame {
       return next;
     });
 
-    return this.withRows(nextRows, this._index, renamedColumns, true);
+    const result = this.withRows(nextRows, this._index, renamedColumns, true);
+    for (const column of this._columns) {
+      const renamed = columns[column] ?? column;
+      if (this._explicitDtypes[column]) result._explicitDtypes[renamed] = this._explicitDtypes[column];
+      if (this._dtypeHints[column]) result._dtypeHints[renamed] = this._dtypeHints[column];
+    }
+    return result;
   }
 
   /** Renames the axis (index) labels via a mapper or new label list. */
@@ -762,7 +768,13 @@ export class DataFrame {
         });
         return next;
       });
-      return this.withRows(nextRows, this._index, [...labels] as string[], true);
+      const result = this.withRows(nextRows, this._index, [...labels] as string[], true);
+      this._columns.forEach((column, i) => {
+        const target = String(labels[i]);
+        if (this._explicitDtypes[column]) result._explicitDtypes[target] = this._explicitDtypes[column];
+        if (this._dtypeHints[column]) result._dtypeHints[target] = this._dtypeHints[column];
+      });
+      return result;
     }
     if (labels.length !== this._index.length) {
       throw new Error("set_axis length must match index length.");
@@ -840,7 +852,7 @@ export class DataFrame {
       }
       return 0;
     });
-    return this.withRows(
+    return this.withSelection(
       positions.map((position) => this._rows[position]!),
       positions.map((position) => this._index[position]!),
       this._columns,
@@ -982,7 +994,7 @@ export class DataFrame {
           rows[i] = this._rows[pos]!;
           index[i] = this._index[pos]!;
         }
-        return this.withRows(rows, index, this._columns, true);
+        return this.withSelection(rows, index, this._columns, true);
       }
       const rows: Row[] = [];
       const index: IndexLabel[] = [];
@@ -992,7 +1004,7 @@ export class DataFrame {
           index.push(this._index[i]!);
         }
       }
-      return this.withRows(rows, index, this._columns, true);
+      return this.withSelection(rows, index, this._columns, true);
     }
 
     {
@@ -1006,7 +1018,7 @@ export class DataFrame {
           index.push(label);
         }
       }
-      return this.withRows(rows, index, this._columns, true);
+      return this.withSelection(rows, index, this._columns, true);
     }
   }
 
@@ -1598,7 +1610,7 @@ export class DataFrame {
       replace,
       options.random_state
     );
-    return this.withRows(
+    return this.withSelection(
       positions.map((position) => this._rows[position]!),
       ignoreIndex ? undefined : positions.map((position) => this._index[position]!),
       this._columns,
@@ -1656,9 +1668,9 @@ export class DataFrame {
               )
             : wasmPos;
         if (sliced.length === 0) {
-          return this.withRows([], [], this._columns, true);
+          return this.withSelection([], [], this._columns, true);
         }
-        return this.withRows(
+        return this.withSelection(
           Array.from(sliced, (position) => this._rows[position as number]!),
           Array.from(sliced, (position) => this._index[position as number]!),
           this._columns,
@@ -1672,7 +1684,7 @@ export class DataFrame {
     );
     const normalizedLimit = normalizeSortLimit(limit, this._rows.length);
     if (normalizedLimit === 0) {
-      return this.withRows([], [], this._columns, true);
+      return this.withSelection([], [], this._columns, true);
     }
 
     const positions =
@@ -1680,7 +1692,7 @@ export class DataFrame {
         ? selectTopKPositions(this._rows, comparers, normalizedLimit)
         : fullSortPositions(this._rows, comparers);
 
-    return this.withRows(
+    return this.withSelection(
       positions.map((position) => this._rows[position]!),
       positions.map((position) => this._index[position]!),
       this._columns,
@@ -1695,7 +1707,7 @@ export class DataFrame {
       return ascending ? compared : -compared;
     });
 
-    return this.withRows(
+    return this.withSelection(
       positions.map((position) => this._rows[position]!),
       positions.map((position) => this._index[position]!),
       this._columns,
@@ -1722,7 +1734,7 @@ export class DataFrame {
       index.push(this._index[i]!);
     }
 
-    return this.withRows(rows, ignore_index ? undefined : index, this._columns, true);
+    return this.withSelection(rows, ignore_index ? undefined : index, this._columns, true);
   }
 
   duplicated(subset?: string | string[], keep: DropDuplicatesKeep = "first"): Series<boolean> {
@@ -1783,7 +1795,8 @@ export class DataFrame {
       result._rows,
       result._columns,
       result._index,
-      dtypeHints
+      dtypeHints,
+      this._explicitDtypes
     );
   }
 
@@ -2190,14 +2203,14 @@ export class DataFrame {
   squeeze(): DataFrame | Series<CellValue> | CellValue | null {
     const result = squeezeResult(this._rows, this._columns, this._index);
     if (result.kind === "scalar") return result.value;
-    if (result.kind === "column") return new Series(result.values, { index: result.index, name: result.name });
+    if (result.kind === "column") return new Series(result.values, { index: result.index, name: result.name, dtype: this._explicitDtypes[result.name] });
     if (result.kind === "row") return new Series(result.values, { index: result.index });
     return this.withRows(result.rows, result.index, result.columns, true);
   }
 
   take(indices: number[]): DataFrame {
     const result = takeRowsWithIndex(this._rows, this._columns, this._index, indices);
-    return this.withRows(result.rows, result.index, this._columns, true);
+    return this.withSelection(result.rows, result.index, this._columns, true);
   }
 
   truncate(beforeOrOptions?: IndexLabel | { before?: IndexLabel; after?: IndexLabel }, after?: IndexLabel): DataFrame {
@@ -2217,7 +2230,7 @@ export class DataFrame {
       afterLabel = after;
     }
     const result = truncateRows(this._rows, this._columns, this._index, before, afterLabel);
-    return this.withRows(result.rows, result.index, this._columns, true);
+    return this.withSelection(result.rows, result.index, this._columns, true);
   }
 
   reindex(options: { index?: IndexLabel[]; columns?: string[]; fill_value?: CellValue } = {}): DataFrame {
@@ -2288,6 +2301,16 @@ export class DataFrame {
     }
   }
 
+  /** Row/column selection preserves each retained column's declared dtype. */
+  private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], normalized = false): DataFrame {
+    const result = this.withRows(rows, index, columns, normalized);
+    for (const column of result._columns) {
+      if (this._explicitDtypes[column]) result._explicitDtypes[column] = this._explicitDtypes[column];
+      if (this._dtypeHints[column]) result._dtypeHints[column] = this._dtypeHints[column];
+    }
+    return result;
+  }
+
   private withRows(
     rows: Row[],
     index?: IndexLabel[],
@@ -2303,7 +2326,7 @@ export class DataFrame {
   }
 
   private withIndex(index: IndexLabel[]): DataFrame {
-    return this.withRows(this.to_records(), index, this._columns, true);
+    return this.withSelection(this.to_records(), index, this._columns, true);
   }
 
   // ---- combine / compare / dtype conversion ----

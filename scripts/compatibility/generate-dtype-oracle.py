@@ -50,5 +50,14 @@ for mode in ['infer_objects','convert_dtypes']:
             except Exception as e:
                 entry['error']=type(e).__name__
             cases.append(entry)
+for dtype in ['Int16','UInt8','Float32','float64','boolean','string','object']:
+    for values in [[1,None,1],[None,None,None],[]]:
+        source=pd.Series(values,dtype=dtype,index=[f'row-{i}' for i in range(len(values))],name='v')
+        operations=[('head',[-1]),('head',[0]),('tail',[-1]),('tail',[0]),('copy',[]),('dropna',[]),('drop_duplicates',[]),('sort_values',[]),('sort_index',[]),('repeat',[2]),('rename',['renamed']),('set_axis',[list(range(len(values)))])]
+        operations.append(('take',[[0,-1] if len(values) else []]))
+        for operation,args in operations:
+            result=getattr(source,operation)(*args)
+            cases.append({'mode':'selection','dtype':dtype,'values':[encode(x) for x in values],'operation':operation,'args':args,
+                'expected':{'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}})
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(cases)} dtype contracts')

@@ -10,7 +10,7 @@ import {
   parseTimeOfDay,
   resampleBins,
 } from "../shared";
-import type { CellValue, IndexLabel, Row } from "../../types";
+import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
 import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
@@ -22,6 +22,7 @@ export interface SeriesHost {
   labelsSnapshot(): IndexLabel[];
   lengthSnapshot(): number;
   nameSnapshot(): string | undefined;
+  dtypeSnapshot(): DType | undefined;
   reindex(labels: IndexLabel[]): SeriesHost;
   copy(): unknown;
   map(fn: (v: never, i: IndexLabel, p: number) => unknown): unknown;
@@ -153,25 +154,26 @@ export function repeat(s: SeriesHost, repeats: number): Series<CellValue> {
     for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
       for (let r = 0; r < repeats; r += 1) { vals.push(s.valuesSnapshot()[i]!); idx.push(s.labelsSnapshot()[i]!); }
     }
-    return new Series(vals, { index: idx, name: s.nameSnapshot() });
+    return new Series(vals, { index: idx, name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
-export function rename(s: SeriesHost, name: string): Series<CellValue> { return new Series([...s.valuesSnapshot()], { index: [...s.labelsSnapshot()], name }); }
+export function rename(s: SeriesHost, name: string): Series<CellValue> { return new Series([...s.valuesSnapshot()], { index: [...s.labelsSnapshot()], name, dtype: s.dtypeSnapshot() }); }
 
 export function rename_axis(s: SeriesHost, name: string): unknown { return rename(s, name); }
 
 export function reset_index(s: SeriesHost, drop = false): DataFrame | Series<CellValue> {
-    if (drop) return new Series([...s.valuesSnapshot()], { index: range(s.valuesSnapshot().length), name: s.nameSnapshot() });
+    if (drop) return new Series([...s.valuesSnapshot()], { index: range(s.valuesSnapshot().length), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
     const df = new DataFrame(
       s.valuesSnapshot().map((v, i) => ({ index: s.labelsSnapshot()[i]!, [String(s.nameSnapshot() ?? "0")]: v })),
       { columns: ["index", String(s.nameSnapshot() ?? "0")] }
     );
-    return df;
+    const dtype = s.dtypeSnapshot();
+    return dtype ? df.astype({ [String(s.nameSnapshot() ?? "0")]: dtype }) : df;
   }
 
 export function set_axis(s: SeriesHost, labels: IndexLabel[]): Series<CellValue> {
     if (labels.length !== s.valuesSnapshot().length) throw new Error("set_axis: length mismatch");
-    return new Series([...s.valuesSnapshot()], { index: [...labels], name: s.nameSnapshot() });
+    return new Series([...s.valuesSnapshot()], { index: [...labels], name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function squeeze(s: SeriesHost): CellValue | SeriesHost { return s.lengthSnapshot() === 1 ? (s.valuesSnapshot()[0] as CellValue) : s; }
@@ -181,7 +183,7 @@ export function take(s: SeriesHost, indices: number[]): Series<CellValue> {
       const pos = i < 0 ? s.valuesSnapshot().length + i : i;
       if (pos < 0 || pos >= s.valuesSnapshot().length) throw new Error(`take: index ${String(i)} out of bounds`);
       return s.valuesSnapshot()[pos]!;
-    }) as unknown as CellValue[]), { index: indices.map((i) => { const p = i < 0 ? s.labelsSnapshot().length + i : i; return s.labelsSnapshot()[p]!; }), name: s.nameSnapshot() });
+    }) as unknown as CellValue[]), { index: indices.map((i) => { const p = i < 0 ? s.labelsSnapshot().length + i : i; return s.labelsSnapshot()[p]!; }), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function transform(s: SeriesHost, fn: (s: Series<CellValue>) => Series<CellValue> | CellValue[]): Series<CellValue> {
@@ -193,7 +195,7 @@ export function truncate(s: SeriesHost, before?: IndexLabel, after?: IndexLabel)
     let start = 0, end = s.valuesSnapshot().length;
     if (before !== undefined) { const p = s.labelsSnapshot().indexOf(before); if (p >= 0) start = p; }
     if (after !== undefined) { const p = s.labelsSnapshot().indexOf(after); if (p >= 0) end = p + 1; }
-    return new Series(s.valuesSnapshot().slice(start, end), { index: s.labelsSnapshot().slice(start, end), name: s.nameSnapshot() });
+    return new Series(s.valuesSnapshot().slice(start, end), { index: s.labelsSnapshot().slice(start, end), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function update(s: SeriesHost, other: Series<CellValue>): void {

@@ -183,7 +183,7 @@ export class Series<T extends CellValue = CellValue> {
       }
     }
 
-    return new Series(values, { index, name: this.name });
+    return new Series(values, { index, name: this.name, dtype: this._dtype });
   }
 
   fillna(value: T): Series<T> {
@@ -430,7 +430,7 @@ export class Series<T extends CellValue = CellValue> {
   to_frame(name?: string): DataFrame {
     return new DataFrame(
       this._values.map((value) => ({ [name ?? this.name ?? "0"]: value })),
-      { columns: [name ?? this.name ?? "0"], index: [...this._index] }
+      { columns: [name ?? this.name ?? "0"], index: [...this._index], dtype: this._dtype }
     );
   }
 
@@ -1012,7 +1012,7 @@ export class Series<T extends CellValue = CellValue> {
       index.push(this._index[i]!);
     }
     // Mirror pandas: if no label matched, return copy unchanged
-    return new Series(values, { index, name: this.name });
+    return new Series(values, { index, name: this.name, dtype: this._dtype });
   }
 
   sort_values(options: { ascending?: boolean; na_position?: "first" | "last" } | boolean = true): Series<T> {
@@ -1033,7 +1033,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name,
+      name: this.name, dtype: this._dtype,
     });
   }
 
@@ -1045,7 +1045,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name,
+      name: this.name, dtype: this._dtype,
     });
   }
 
@@ -1094,7 +1094,7 @@ export class Series<T extends CellValue = CellValue> {
     const positions = samplePositions(this.length, sampleSize, replace, options.random_state);
     const values = positions.map((p) => this._values[p]!);
     const index = ignoreIndex ? range(values.length) : positions.map((p) => this._index[p]!);
-    return new Series(values as unknown as T[], { index, name: this.name });
+    return new Series(values as unknown as T[], { index, name: this.name, dtype: this._dtype });
   }
 
   reindex(newIndex: IndexLabel[], fill_value: T | null = null): Series<T> {
@@ -1161,7 +1161,7 @@ export class Series<T extends CellValue = CellValue> {
       values.push(this._values[i]!);
       index.push(this._index[i]!);
     }
-    return new Series(values, { index, name: this.name });
+    return new Series(values, { index, name: this.name, dtype: this._dtype });
   }
 
   duplicated(keep: "first" | "last" | false = "first"): Series<boolean> {
@@ -1214,6 +1214,7 @@ export class Series<T extends CellValue = CellValue> {
       labelsSnapshot: () => this._index,
       lengthSnapshot: () => this.length,
       nameSnapshot: () => this.name,
+      dtypeSnapshot: () => this._dtype,
       reindex: (labels) => this.reindex(labels) as never,
       copy: () => this.copy(),
       map: (fn) => this.map(fn as never),
