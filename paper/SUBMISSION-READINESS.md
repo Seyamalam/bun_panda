@@ -2,7 +2,7 @@
 
 ## Current assessment
 
-The manuscript is now a substantially stronger data-management systems submission candidate. It has a semantic oracle, a fresh-process backend ablation, a correctness-gated five-system comparison, a real three-browser worker study, bundle analysis, a public workload manifest, cross-platform reproduction tooling, and versioned npm and GitHub releases. Independent reproduction and a persistent archival identifier remain before submission.
+The manuscript is now a substantially stronger data-management systems submission candidate. It has a semantic oracle, a fresh-process backend ablation, a correctness-gated five-system comparison, a real three-browser worker study, bundle analysis, a public workload manifest, cross-platform reproduction tooling, and versioned npm and GitHub releases. Independent reproduction remains before submission. Software Heritage has archived the v0.4.1 release; the verified release SWHID is recorded in `archival/software-heritage-v0.4.1.json`.
 
 The intended venue is **The VLDB Journal**, a Springer Nature hybrid journal ranked **SJR 2025 Q1** in Hardware and Architecture and Information Systems. The intended subscription route has no APC. Journal rank does not predict acceptance, and the paper should not be described as "Q1 worthy."
 
@@ -17,12 +17,17 @@ The intended venue is **The VLDB Journal**, a Springer Nature hybrid journal ran
 | Workload breadth | Substantially addressed | The synthetic factorial inputs remain deterministic. UCI Bank Marketing is checksum-pinned and adds 200 fresh processes with matched hashes. The paper does not yet contain a TPC-H study or largest-scale capacity result. |
 | Semantic depth | Corpus clean under declared rules | pandas agreement is 2,500/2,500. Merge comparison preserves join-key group order and compares duplicate matches as a row multiset because pandas does not specify duplicate-pair order. All TypeScript, Wasm, and adaptive outputs agree in 2,500/2,500 cases. |
 | Independent reproduction | One-file protocol complete, sign-off pending | `docs/CROSS-PLATFORM-REPRODUCTION.md` gives macOS, Windows, and Ubuntu commands that return one JSON report. A person who did not develop the artifact must execute and confirm it. |
-| Release and venue | Package and source release complete; archive pending | The VLDB Journal is selected. Version 0.4.1 is published on npm and as an immutable GitHub release. An archive DOI and Software Heritage identifier remain pending. |
+| Release and venue | Package, source release, and Software Heritage archive complete | The VLDB Journal is selected. Version 0.4.1 is published on npm and as an immutable GitHub release. The release SWHID is verified; Software Heritage is the selected permanent archive. |
 
 ## Actual blockers and optional strengthening
 
 1. **Independent reproduction.** The author cannot truthfully manufacture an independent reproducer record. A clean-clone tester must return the generated JSON report.
-2. **Persistent archival identifier.** The npm and GitHub releases are public, but an archive DOI and Software Heritage identifier still require deposition.
+
+Software Heritage preservation and persistent release identification are complete. No Zenodo deposit is planned.
+
+The 13 September manuscript PDF is rebuilt and visually checked. Paper Amigo
+synchronization remains pending after the CLI failed to retrieve the existing
+project; the recorded remote hash still describes the previous PDF.
 
 Native x86-64 timing and a controlled cgroup capacity study would strengthen
 external validity, especially for a selective systems journal, but they are now
@@ -33,5 +38,5 @@ optional follow-up studies rather than claims promised by the current paper.
 1. Finish local tests, regenerate summaries and checksums, compile the PDF, and create one clean release-candidate commit.
 2. Ask an independent tester to run the full one-file protocol from the frozen commit and return the JSON report.
 3. Review the report's environment, correctness gates, logs, and artifact digests. Keep non-macOS timing separate from the manuscript tables.
-4. Archive the release, update the persistent identifiers, and perform the final venue-format check.
+4. Verify the Software Heritage release identifier and perform the final venue-format check.
 5. If native Linux resources later become available, run the x86 and cgroup protocols as a separate extension rather than silently mixing their values with the macOS study.

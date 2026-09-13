@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-13",
+  "origin": "https://github.com/Seyamalam/bun_panda",
+  "request_id": 2473580,
+  "request_url": "https://archive.softwareheritage.org/api/1/origin/save/2473580/",
+  "save_task_status": "succeeded",
+  "visit_status": "full",
+  "snapshot_swhid": "swh:1:snp:c62a9c8b80850d0231d12dcfd7c2027472eba60d",
+  "snapshot_url": "https://archive.softwareheritage.org/api/1/snapshot/c62a9c8b80850d0231d12dcfd7c2027472eba60d/",
+  "release_tag": "v0.4.1",
+  "release_swhid": "swh:1:rel:a2e89f64f97deb08f9d8702ede3829acc719e92f",
+  "revision_swhid": "swh:1:rev:d35161cd74e6d8f6f54fd8d564470794184b56a7"
+}

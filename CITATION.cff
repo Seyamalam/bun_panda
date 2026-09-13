@@ -8,6 +8,10 @@ authors:
     orcid: "https://orcid.org/0009-0007-7512-1893"
     affiliation: "Department of Computer Science & Engineering, BGC Trust University Bangladesh"
 version: 0.4.1
+identifiers:
+  - type: swh
+    value: "swh:1:rel:a2e89f64f97deb08f9d8702ede3829acc719e92f"
+    description: "Immutable v0.4.1 release archived by Software Heritage"
 repository-code: "https://github.com/Seyamalam/bun_panda"
 url: "https://github.com/Seyamalam/bun_panda"
 license: MIT
@@ -29,4 +33,4 @@ preferred-citation:
       given-names: Touhidul Alam
       orcid: "https://orcid.org/0009-0007-7512-1893"
   year: 2026
-  notes: "Preprint DOI and archival software DOI pending."
+  notes: "Manuscript accompanying the v0.4.1 software release; the software's persistent Software Heritage identifier is listed above."

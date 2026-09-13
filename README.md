@@ -71,6 +71,26 @@ Wasm asset. The manuscript's Chromium, Firefox, and WebKit measurements are
 macOS-only. Use the cross-platform reproduction runner to collect independent
 Windows or Ubuntu validation without changing that claim scope.
 
+### Archived release
+
+Version 0.4.1 is preserved in [Software Heritage](https://archive.softwareheritage.org/swh:1:rel:a2e89f64f97deb08f9d8702ede3829acc719e92f).
+The release identifier is `swh:1:rel:a2e89f64f97deb08f9d8702ede3829acc719e92f`.
+See [archival status](paper/archival/README.md) for verified provenance.
+
+### Interactive Wasm showcase
+
+The [Wasm Analytics Studio](examples/wasm-analytics-studio/README.md) is a
+full browser application that compares TypeScript and Rust/Wasm across stable
+sorting, mask compaction, grouped reduction, and a composed analytics pipeline.
+It includes a Web Worker execution model, deterministic dataset controls,
+correctness digests, capability detection, adaptive-dispatch explanations,
+bundle telemetry, run history, and downloadable JSON reports.
+
+```bash
+bun run example:wasm
+# open http://localhost:4173
+```
+
 ## Quick Start
 
 ```bash

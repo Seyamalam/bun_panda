@@ -81,7 +81,7 @@ The LaTeX plugin's bundled Tectonic compiler succeeds. TeX Live is not installed
 ## Remaining external tasks and optional validation
 
 1. Obtain an independent clean-checkout reproduction using `docs/CROSS-PLATFORM-REPRODUCTION.md`. The runner supports macOS, Windows, and Linux and returns one JSON report.
-2. Deposit an archival DOI and request a Software Heritage snapshot. Follow `paper/RELEASE-CHECKLIST.md`.
+2. Software Heritage archival is complete. The author explicitly declined Zenodo on 13 September 2026; do not request a token or prepare a Zenodo deposit. See `paper/archival/README.md`.
 3. If resources become available, run the frozen candidate on native x86-64 Linux and execute the cgroup-v2 capacity protocol. These are useful validation studies, not current manuscript result requirements. Apple QEMU faulted because the emulated CPU exposed no AVX, so its timing remains rejected.
 
 The manuscript now reports macOS performance only. Do not claim native x86 timing, controlled capacity, independent reproduction, or a DOI until those artifacts exist, and do not pool returned cross-platform timings into the macOS tables without a new multi-host protocol.
@@ -101,3 +101,15 @@ The manuscript now reports macOS performance only. Do not claim native x86 timin
 ## Release discipline
 
 The release candidate is `v0.4.1`. Keep later paper revisions synchronized to the existing Paper Amigo project with `bun run paper:amigo:sync`; do not create duplicate projects. Regenerate summaries, checksums, and the PDF before any later archival deposit.
+
+## Post-release work, 13 September 2026
+
+- Added and browser-validated the Wasm Analytics Studio example.
+- Added 1,800 seeded parser property cases and broader library contract tests.
+- Local validation: 460 tests pass; aggregate line coverage 85.59%, with an 85% gate.
+- Fixed CSV carriage-return quoting, sample skewness/kurtosis, dummy `drop_first`, NaN factorization, and millisecond durations. These changes are after the frozen v0.4.1 release.
+- The 2,500-case conformance study still passes; this run is local validation, not independent reproduction.
+- Software Heritage release: `swh:1:rel:a2e89f64f97deb08f9d8702ede3829acc719e92f`.
+- Software Heritage is the selected permanent archive. The author declined Zenodo; no DOI is claimed. An exact-tag source ZIP is prepared locally. Independent tester sign-off is still pending.
+- The archive revision compiles to 20 pages and its code-availability page was visually checked. The Paper Amigo project-list request failed before replacement; retry `bun run paper:amigo:sync` when the service responds. The existing remote-hash record was deliberately retained.
+- Tester instructions: `paper/INDEPENDENT-REPRODUCTION-HANDOFF.md`.
