@@ -70,7 +70,10 @@
     "workload:public": "bun run paper/workloads/prepare-public.ts",
     "bench:linux": "bash paper/artifact/linux/run-linux-suite.sh",
     "bench:cgroup": "bash paper/artifact/linux/run-cgroup-study.sh",
-    "artifact:checksums": "bun run paper/artifact/write-checksums.ts"
+    "artifact:checksums": "bun run paper/artifact/write-checksums.ts",
+    "example:wasm": "bun run examples/wasm-analytics-studio/server.ts",
+    "example:wasm:build": "bun run examples/wasm-analytics-studio/build.ts",
+    "example:wasm:test": "bun test examples/wasm-analytics-studio/test && bunx tsc -p examples/wasm-analytics-studio/tsconfig.json"
   },
   "devDependencies": {
     "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
@@ -78,6 +81,7 @@
     "@types/bun": "latest",
     "arquero": "^8.0.3",
     "danfojs": "1.2.0",
+    "fast-check": "^4.10.0",
     "nodejs-polars": "0.26.0",
     "oxlint": "^1.79.0",
     "wasm-feature-detect": "1.9.0"

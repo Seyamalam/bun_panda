@@ -91,7 +91,7 @@ export function escapeCsvValue(value: CellValue, sep: string): string {
     return "";
   }
   const text = value instanceof Date ? value.toISOString() : String(value);
-  const needsQuoting = text.includes(sep) || text.includes("\n") || text.includes('"');
+  const needsQuoting = text.includes(sep) || text.includes("\n") || text.includes("\r") || text.includes('"');
   if (!needsQuoting) {
     return text;
   }

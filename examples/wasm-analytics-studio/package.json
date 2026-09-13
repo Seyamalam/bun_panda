@@ -1,0 +1,12 @@
+{
+  "name": "bun-panda-wasm-analytics-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts",
+    "dev": "bun run server.ts",
+    "start": "bun run server.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc -p tsconfig.json"
+  }
+}

@@ -25,6 +25,7 @@ benchmark.txt
 .env.local
 
 # caches
+.DS_Store
 .eslintcache
 .cache
 *.tsbuildinfo

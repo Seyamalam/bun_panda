@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-const THRESHOLD = 0.7;
+const THRESHOLD = 0.85;
 const lcovPath = "coverage/lcov.info";
 const lcov = readFileSync(lcovPath, "utf8");
 

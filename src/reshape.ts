@@ -118,7 +118,6 @@ export function get_dummies(
   const cols = Array.isArray(columns) ? columns : [columns];
   const sep = options.prefix_sep ?? "_";
   const records = frame.to_records();
-  const dummyColumns: string[] = [];
 
   const uniquesByColumn = new Map<string, string[]>();
   for (const column of cols) {
@@ -129,9 +128,8 @@ export function get_dummies(
         seen.add(String(value));
       }
     }
-    const uniques = [...seen];
+    const uniques = options.drop_first ? [...seen].slice(1) : [...seen];
     uniquesByColumn.set(column, uniques);
-    dummyColumns.push(...uniques.map((u) => `${column}${sep}${u}`));
   }
 
   const outRows: Row[] = records.map((record) => {
@@ -151,9 +149,6 @@ export function get_dummies(
     return next;
   });
 
-  void dummyColumns;
-  void options.drop_first;
-
   return new DataFrame(outRows, { columns: Object.keys(outRows[0] ?? {}) });
 }
 
@@ -167,7 +162,7 @@ export function factorize<T extends CellValue>(
   const uniques: T[] = [];
   const seen = new Map<string, number>();
   const codes = values.map((value) => {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || (typeof value === "number" && Number.isNaN(value))) {
       return -1;
     }
     const key =

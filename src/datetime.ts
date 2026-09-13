@@ -247,7 +247,7 @@ export function to_timedelta(values: (number | string)[]): number[] {
       return value * 1000;
     }
     let totalMs = 0;
-    const regex = /(\d+(?:\.\d+)?)\s*(d|h|m|s|ms)/g;
+    const regex = /(\d+(?:\.\d+)?)\s*(ms|d|h|m|s)/g;
     let match: RegExpExecArray | null;
     while ((match = regex.exec(value)) !== null) {
       const amount = Number(match[1]);

@@ -46,10 +46,11 @@
 8. Re-benchmarked after the API expansion: bun_panda wins 78 of 87 Arquero comparisons.
 9. Prepared the npm package with real metadata, a publish gate, restricted contents, and an install/import smoke test.
 
-## Next Milestone (v0.4.x)
+## Completed after v0.4.1
 
-1. Raise test coverage past 85%.
-2. Add property-based tests for CSV and JSON parsers.
+1. Raised aggregate line coverage past 85% and raised the coverage gate to 85%.
+2. Added 1,800 seeded property cases for CSV and JSON parsing, with shrinking and replayable counterexamples.
+3. Added numeric, IO, categorical, reshape, and datetime contract tests. Fixed CSV carriage-return quoting, sample skewness/kurtosis, dummy encoding's `drop_first`, NaN factorization, and millisecond duration parsing.
 
 ## Mid-Term (v0.5.x+)
 

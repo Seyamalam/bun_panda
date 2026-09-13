@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="An interactive browser laboratory for bun_panda's Rust and WebAssembly numeric kernels." />
+    <title>bun_panda · Wasm Analytics Studio</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script type="module" src="/assets/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#results">Skip to experiment results</a>
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/Seyamalam/bun_panda" aria-label="bun_panda on GitHub">
+        <span class="wordmark-mark" aria-hidden="true">bp</span>
+        <span>bun_panda</span>
+      </a>
+      <div class="masthead-title">
+        <span>Browser systems exhibit</span>
+        <strong>Wasm Analytics Studio</strong>
+      </div>
+      <nav aria-label="Project links">
+        <a href="https://www.npmjs.com/package/bun_panda">npm ↗</a>
+        <a href="https://github.com/Seyamalam/bun_panda">source ↗</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">LIVE / ISOLATED WORKER / DETERMINISTIC INPUT</p>
+          <h1 id="hero-title">Watch an analytics engine choose its lane.</h1>
+          <p>
+            Generate typed columns in your browser, run identical operations through TypeScript and
+            Rust/Wasm, and inspect the evidence behind bun_panda’s adaptive dispatch policy.
+          </p>
+        </div>
+        <div class="hero-diagram" aria-label="TypeScript and Wasm execution paths converge at adaptive dispatch">
+          <div class="trace trace-ts"><span>TYPE<br />SCRIPT</span><i></i></div>
+          <div class="trace trace-wasm"><span>RUST<br />WASM</span><i></i></div>
+          <div class="decision-node">
+            <small>CALIBRATED</small>
+            <strong>ADAPTIVE<br />DISPATCH</strong>
+            <span id="hero-decision">awaiting run</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="studio-shell">
+        <aside class="control-rack" aria-labelledby="controls-title">
+          <div class="section-heading">
+            <span>01</span>
+            <div><p>INPUT DECK</p><h2 id="controls-title">Experiment controls</h2></div>
+          </div>
+
+          <form id="experiment-form">
+            <label>
+              <span>Rows <output id="rows-output" for="rows">100,000</output></span>
+              <input id="rows" name="rows" type="range" min="10000" max="250000" step="10000" value="100000" />
+            </label>
+
+            <div class="field-pair">
+              <label>
+                <span>Groups</span>
+                <select id="groups" name="groups">
+                  <option value="16">16</option>
+                  <option value="64" selected>64</option>
+                  <option value="256">256</option>
+                  <option value="1024">1,024</option>
+                </select>
+              </label>
+              <label>
+                <span>Shape</span>
+                <select id="shape" name="shape">
+                  <option value="uniform">Uniform</option>
+                  <option value="skewed">Skewed</option>
+                  <option value="nearly-sorted">Nearly sorted</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              <span>Selectivity <output id="selectivity-output" for="selectivity">50%</output></span>
+              <input id="selectivity" name="selectivity" type="range" min="5" max="95" step="5" value="50" />
+            </label>
+
+            <div class="field-pair">
+              <label>
+                <span>Measured runs</span>
+                <select id="iterations" name="iterations">
+                  <option value="5">5</option>
+                  <option value="10" selected>10</option>
+                  <option value="20">20</option>
+                </select>
+              </label>
+              <label>
+                <span>Seed</span>
+                <input id="seed" name="seed" type="number" min="1" max="4294967295" value="20260827" />
+              </label>
+            </div>
+
+            <div class="preset-row" aria-label="Experiment presets">
+              <button type="button" class="preset" data-preset="quick">Quick</button>
+              <button type="button" class="preset" data-preset="stress">Stress</button>
+              <button type="button" class="preset" data-preset="skew">Heavy skew</button>
+            </div>
+
+            <button class="run-button" id="run-button" type="submit">
+              <span>Run comparison</span><span aria-hidden="true">→</span>
+            </button>
+            <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel active run</button>
+          </form>
+
+          <div class="worker-note">
+            <span class="status-light" id="worker-light"></span>
+            <p><strong id="worker-state">Worker booting</strong><br /><span>The UI thread remains responsive.</span></p>
+          </div>
+        </aside>
+
+        <div class="results-deck" id="results">
+          <section class="telemetry" aria-labelledby="telemetry-title">
+            <div class="section-heading">
+              <span>02</span>
+              <div><p>FLIGHT RECORDER</p><h2 id="telemetry-title">Runtime telemetry</h2></div>
+            </div>
+            <div class="telemetry-grid">
+              <article><small>WASM ASSET</small><strong id="wasm-size">—</strong><span>compiled Rust core</span></article>
+              <article><small>INPUT COLUMNS</small><strong id="input-size">—</strong><span>typed-array footprint</span></article>
+              <article><small>WASM STARTUP</small><strong id="wasm-init">—</strong><span>compile + instantiate</span></article>
+              <article><small>INTEGRITY</small><strong id="integrity">—</strong><span>SHA-256 parity</span></article>
+            </div>
+            <div class="progress-panel" id="progress-panel" aria-live="polite">
+              <div><span id="progress-stage">Ready for an experiment</span><output id="progress-value">0%</output></div>
+              <progress id="progress" max="100" value="0">0%</progress>
+            </div>
+          </section>
+
+          <section class="workload-section" aria-labelledby="workloads-title">
+            <div class="section-heading compact">
+              <span>03</span>
+              <div><p>PARALLEL TRACES</p><h2 id="workloads-title">Kernel comparison</h2></div>
+            </div>
+            <div id="empty-state" class="empty-state">
+              <div class="empty-glyph" aria-hidden="true"><i></i><i></i><i></i></div>
+              <p>No trace captured yet.</p>
+              <span>Run the default 100k-row experiment to populate all four kernels.</span>
+            </div>
+            <div id="workload-grid" class="workload-grid" hidden></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="lower-deck">
+        <article class="capability-panel">
+          <div class="section-heading compact">
+            <span>04</span>
+            <div><p>HOST PROFILE</p><h2>Wasm capabilities</h2></div>
+          </div>
+          <div id="capabilities" class="capability-grid">
+            <span class="capability pending">Run to inspect this browser</span>
+          </div>
+        </article>
+        <article class="artifact-panel">
+          <div class="section-heading compact">
+            <span>05</span>
+            <div><p>SHIPMENT</p><h2>Bundle ledger</h2></div>
+          </div>
+          <div id="bundle-ledger" class="bundle-ledger"><p>Reading build manifest…</p></div>
+          <button id="download-button" class="text-button" type="button" disabled>Download latest run JSON ↓</button>
+        </article>
+      </section>
+
+      <section class="history-panel" aria-labelledby="history-title">
+        <div class="section-heading compact">
+          <span>06</span>
+          <div><p>LOCAL LOGBOOK</p><h2 id="history-title">Recent runs</h2></div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Time</th><th>Rows</th><th>Shape</th><th>Wasm wins</th><th>Fastest gain</th><th>Parity</th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="6">No runs stored in this browser.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Measurements describe this browser, device, and run—not universal performance.</p>
+      <p>Data never leaves the worker. <span id="isolation-note">Checking isolation…</span></p>
+    </footer>
+  </body>
+</html>

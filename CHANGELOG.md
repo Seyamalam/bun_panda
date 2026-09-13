@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Added the browser-based Wasm Analytics Studio example with deterministic
+  workload generation, TypeScript/Wasm comparisons, Web Worker execution,
+  SHA-256 correctness checks, adaptive-dispatch explanations, capability and
+  bundle telemetry, local run history, and downloadable JSON reports.
+- Added seeded CSV/JSON property tests and numeric, IO, reshape, categorical,
+  and datetime contract tests. Raised the line-coverage gate from 70% to 85%.
+
+### Fixed
+
+- Quote carriage returns in CSV fields so exported records round-trip.
+- Correct the sample-size normalization of skewness and the unbiased Fisher
+  correction for excess kurtosis.
+- Honor `get_dummies({ drop_first: true })` and use the missing-value code for
+  `NaN` in top-level `factorize`.
+- Parse `ms` duration tokens as milliseconds rather than minutes.
+- Recover from malformed browser run history and keep completed showcase runs
+  usable when browser storage is unavailable.
+
 ## [0.4.1] - 2026-08-27
 
 - Corrected the pandas conformance oracle so merge comparisons preserve left-key group order while treating duplicate match pairing as unordered, matching the documented pandas contract. The tested corpus now agrees in 2,500 of 2,500 observations.
