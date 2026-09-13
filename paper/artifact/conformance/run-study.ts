@@ -1,4 +1,5 @@
-const root = process.env.BUN_PANDA_CONFORMANCE_DIR ?? "paper/data/conformance";
+const strict = process.argv.includes("--strict");
+const root = process.env.BUN_PANDA_CONFORMANCE_DIR ?? (strict ? "out/strict-conformance" : "out/conformance");
 const cases = `${root}/cases.json`;
 const python = process.env.BUN_PANDA_PYTHON;
 
@@ -40,6 +41,6 @@ for (const mode of ["typescript", "wasm", "adaptive"] as const) {
     "--out", `${root}/${mode}.json`,
   ]);
 }
-run(["bun", "run", "paper/artifact/conformance/compare.ts"], {
+run(["bun", "run", "paper/artifact/conformance/compare.ts", ...(strict ? ["--strict"] : []), ...(process.argv.includes("--report-only") ? ["--report-only"] : [])], {
   BUN_PANDA_CONFORMANCE_DIR: root,
 });

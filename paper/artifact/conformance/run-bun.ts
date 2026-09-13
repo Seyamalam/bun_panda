@@ -1,10 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import packageInfo from "../../../package.json";
 import { DataFrame } from "../../../src/dataframe";
 import type { CellValue, Row } from "../../../src/types";
 
 type Mode = "typescript" | "wasm" | "adaptive";
-type TaggedNumber = { $number: "NaN" | "Infinity" | "-Infinity" };
+type TaggedNumber = { $number: "NaN" | "Infinity" | "-Infinity" | "-0" };
 type EncodedCell = CellValue | TaggedNumber;
 
 interface FrameSpec {
@@ -42,6 +43,7 @@ function decodeCell(value: unknown): CellValue {
   if (value && typeof value === "object" && "$number" in value) {
     const tag = (value as TaggedNumber).$number;
     if (tag === "NaN") return Number.NaN;
+    if (tag === "-0") return -0;
     if (tag === "Infinity") return Number.POSITIVE_INFINITY;
     return Number.NEGATIVE_INFINITY;
   }
@@ -53,7 +55,7 @@ function encodeCell(value: CellValue): EncodedCell {
     if (Number.isNaN(value)) return { $number: "NaN" };
     if (value === Number.POSITIVE_INFINITY) return { $number: "Infinity" };
     if (value === Number.NEGATIVE_INFINITY) return { $number: "-Infinity" };
-    if (Object.is(value, -0)) return 0;
+    if (Object.is(value, -0)) return { $number: "-0" };
   }
   if (value instanceof Date) return value.toISOString();
   return value ?? null;
@@ -199,7 +201,7 @@ const results = corpus.cases.map((testCase) => {
 const payload = {
   schemaVersion: "1.0.0",
   implementation: "bun_panda",
-  version: "0.4.0",
+  version: packageInfo.version,
   runtime: `Bun ${Bun.version}`,
   mode,
   startedAt,

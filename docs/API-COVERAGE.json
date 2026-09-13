@@ -1,0 +1,4047 @@
+{
+  "pandasVersion": "3.0.5",
+  "trackedNames": 505,
+  "note": "Counts describe test coverage, not a proof of all signatures or exact pandas output compatibility.",
+  "apis": [
+    {
+      "api": "DataFrame.abs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.add",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.add_prefix",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.add_suffix",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.agg",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.aggregate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.align",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.all",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.any",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.apply",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.asfreq",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.asof",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.assign",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.astype",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.at",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.at_time",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.attrs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.axes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.between_time",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.bfill",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.boxplot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.clip",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.columns",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.combine",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.combine_first",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.compare",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.convert_dtypes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.copy",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.corr",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.corrwith",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.count",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.cov",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.cummax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.cummin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.cumprod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.cumsum",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.describe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.diff",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.div",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.dot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.drop",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.drop_duplicates",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.droplevel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.dropna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.dtypes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.duplicated",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.empty",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.eq",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.equals",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.eval",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.ewm",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.expanding",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.explode",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.ffill",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.fillna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.filter",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.first_valid_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.floordiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.from_arrow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.from_dict",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.from_records",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.ge",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.get",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.groupby",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.gt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.head",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.hist",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.html",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.iat",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.idxmax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.idxmin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.iloc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.infer_objects",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.info",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.insert",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.interpolate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.isetitem",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.isin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.isna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.isnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.items",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.iterrows",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.itertuples",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.join",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.keys",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.kurt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.kurtosis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.last_valid_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.le",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.loc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.lt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.map",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.mask",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.max",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.mean",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.median",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.melt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.memory_usage",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.merge",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.min",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.mod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.mode",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.mul",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.ndim",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.ne",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.nlargest",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.notna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.notnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.nsmallest",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.nunique",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pct_change",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pipe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pivot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pivot_table",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.plot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pop",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.pow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.prod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.product",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.quantile",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.query",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.radd",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rank",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rdiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.reindex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.reindex_like",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rename",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rename_axis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.reorder_levels",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.replace",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.resample",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.reset_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rfloordiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rmod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rmul",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rolling",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.round",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rpow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rsub",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.rtruediv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sample",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.select_dtypes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sem",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.set_axis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.set_flags",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.set_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.shape",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.shift",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.size",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.skew",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sort_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sort_values",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sparse",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.squeeze",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.stack",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.std",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.style",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sub",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.sum",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.swaplevel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.tail",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.take",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_clipboard",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_csv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_dict",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_excel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_feather",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_hdf",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_html",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_json",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_latex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_markdown",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_numpy",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_orc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_parquet",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_period",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_pickle",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_records",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_sql",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_stata",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_string",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_timestamp",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.to_xarray",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.transform",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.transpose",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.truediv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.truncate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.tz_convert",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.tz_localize",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.unstack",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.update",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.value_counts",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.values",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.var",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.where",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame.xs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.abs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.add",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.add_prefix",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.add_suffix",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.agg",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.aggregate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.align",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.all",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.any",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.apply",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.argmax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.argmin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.argsort",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.array",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.asfreq",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.asof",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.astype",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.at",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.at_time",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.attrs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.autocorr",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.between",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.between_time",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.bfill",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.case_when",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cat",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.clip",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.combine",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.combine_first",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.compare",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.convert_dtypes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.copy",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.corr",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.count",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cov",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cummax",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cummin",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cumprod",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.cumsum",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.describe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.diff",
+      "namePresent": true,
+      "valueContractCases": 27,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.div",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.dot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.drop",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.drop_duplicates",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.droplevel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.dropna",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.dt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.dtype",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.dtypes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.duplicated",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.empty",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.eq",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.equals",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.ewm",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.expanding",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.explode",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.factorize",
+      "namePresent": true,
+      "valueContractCases": 8,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.ffill",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.fillna",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.filter",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.first_valid_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.flags",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.floordiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.from_arrow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.ge",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.get",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.groupby",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.gt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.hasnans",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.head",
+      "namePresent": true,
+      "valueContractCases": 27,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.hist",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.html",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.iat",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.idxmax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.idxmin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.iloc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.infer_objects",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.info",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.interpolate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.is_monotonic_decreasing",
+      "namePresent": true,
+      "valueContractCases": 17,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.is_monotonic_increasing",
+      "namePresent": true,
+      "valueContractCases": 17,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.is_unique",
+      "namePresent": true,
+      "valueContractCases": 17,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.isin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.isna",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.isnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.item",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.items",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.keys",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.kurt",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.kurtosis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.last_valid_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.le",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.list",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.loc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.lt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.map",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.mask",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.max",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.mean",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.median",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.memory_usage",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.min",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.mod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.mode",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.mul",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.name",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.nbytes",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.ndim",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.ne",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.nlargest",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.notna",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.notnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.nsmallest",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.nunique",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.pct_change",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.pipe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.plot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.pop",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.pow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.prod",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.product",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.quantile",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.radd",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rank",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rdiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.reindex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.reindex_like",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rename",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rename_axis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.reorder_levels",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.repeat",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.replace",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.resample",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.reset_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rfloordiv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rmod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rmul",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rolling",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.round",
+      "namePresent": true,
+      "valueContractCases": 36,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rpow",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rsub",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.rtruediv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sample",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.searchsorted",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sem",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.set_axis",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.set_flags",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.shape",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.shift",
+      "namePresent": true,
+      "valueContractCases": 27,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.size",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.skew",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sort_index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sort_values",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sparse",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.squeeze",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.std",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.str",
+      "namePresent": true,
+      "valueContractCases": 70,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.struct",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sub",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.sum",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.swaplevel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.tail",
+      "namePresent": true,
+      "valueContractCases": 27,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.take",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_clipboard",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_csv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_dict",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_excel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_frame",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_hdf",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_json",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_latex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_list",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_markdown",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_numpy",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_period",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_pickle",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_sql",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_string",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_timestamp",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.to_xarray",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.transform",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.truediv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.truncate",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.tz_convert",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.tz_localize",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.unique",
+      "namePresent": true,
+      "valueContractCases": 9,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.unstack",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.update",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.value_counts",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.values",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.var",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.where",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series.xs",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_csv",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_table",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_fwf",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_clipboard",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_excel",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_feather",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_gbq",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_hdf",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_html",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_json",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_json_lines",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_orc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_parquet",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_pickle",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_sas",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_spss",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_sql",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_sql_query",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_sql_table",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_stata",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "read_xml",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DataFrame",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Series",
+      "namePresent": true,
+      "valueContractCases": 480,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "to_datetime",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "to_timedelta",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "to_numeric",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "date_range",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "bdate_range",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "period_range",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "timedelta_range",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "interval_range",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Index",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "MultiIndex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Categorical",
+      "namePresent": true,
+      "valueContractCases": 14,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "CategoricalDtype",
+      "namePresent": true,
+      "valueContractCases": 2,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Interval",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Timestamp",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "DatetimeIndex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Timedelta",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "TimedeltaIndex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "Period",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "PeriodIndex",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "NaT",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "NA",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "isna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "isnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "notna",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "notnull",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "concat",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "merge",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "merge_ordered",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "merge_asof",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "pivot",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "pivot_table",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "crosstab",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "cut",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "qcut",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "get_dummies",
+      "namePresent": true,
+      "valueContractCases": 20,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "melt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "lreshape",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "wide_to_long",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "factorize",
+      "namePresent": true,
+      "valueContractCases": 8,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "unique",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "value_counts",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "isin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "map",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "align",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "array",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "test",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "describe_option",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "reset_option",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "get_option",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "set_option",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "option_context",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "show_versions",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.agg",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 250,
+      "behavioralCoverage": "partial",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.transform",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.filter",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.apply",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.size",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.count",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.sum",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.mean",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.median",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.std",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.var",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.min",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.max",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.first",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.last",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.nunique",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.value_counts",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.rolling",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.resample",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.pipe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.idxmin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.idxmax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.skew",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.kurt",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.sem",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.quantile",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.cumsum",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.cumprod",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.cummin",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.cummax",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.shift",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.diff",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.pct_change",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.rank",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.corr",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.cov",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.describe",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    },
+    {
+      "api": "GroupBy.ohlc",
+      "namePresent": true,
+      "valueContractCases": 0,
+      "semanticCorpusCases": 0,
+      "behavioralCoverage": "unverified",
+      "exactPandasParity": "not-established"
+    }
+  ]
+}

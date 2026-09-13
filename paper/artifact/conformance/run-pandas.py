@@ -21,6 +21,8 @@ def decode_cell(value: Any) -> Any:
         tag = value["$number"]
         if tag == "NaN":
             return float("nan")
+        if tag == "-0":
+            return -0.0
         if tag == "Infinity":
             return float("inf")
         return float("-inf")
@@ -37,8 +39,8 @@ def encode_cell(value: Any) -> Any:
             return {"$number": "NaN"}
         if math.isinf(value):
             return {"$number": "Infinity" if value > 0 else "-Infinity"}
-        if value == 0:
-            return 0
+        if value == 0 and math.copysign(1, value) < 0:
+            return {"$number": "-0"}
     if isinstance(value, (pd.Timestamp, datetime, date)):
         return value.isoformat()
     if isinstance(value, (bool, int, float, str)):

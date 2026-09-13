@@ -1,6 +1,11 @@
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
 
+function titleCharacter(value: string): string {
+  const upper = value.toUpperCase();
+  return upper.charAt(0) + upper.slice(1).toLowerCase();
+}
+
 function padBoth(s: string, width: number, fillChar: string): string {
   const total = width - s.length;
   if (total <= 0) {
@@ -13,9 +18,8 @@ function padBoth(s: string, width: number, fillChar: string): string {
 
 /**
  * pandas-style `.str` accessor for Series: applies string methods
- * element-wise. Missing values propagate as null; non-string values
- * are converted with String() first, matching pandas' loose behavior
- * for object columns.
+ * element-wise. Missing and non-string values propagate as null for
+ * string operations on object columns.
  */
 export class StringMethods {
   private readonly values: CellValue[];
@@ -26,19 +30,15 @@ export class StringMethods {
 
   private mapStrings(fn: (s: string) => string): CellValue[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return fn(String(value));
+      if (typeof value !== "string") return null;
+      return fn(value);
     });
   }
 
   private mapBooleans(fn: (s: string) => boolean): CellValue[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return fn(String(value));
+      if (typeof value !== "string") return null;
+      return fn(value);
     });
   }
 
@@ -51,12 +51,12 @@ export class StringMethods {
   }
 
   capitalize(): CellValue[] {
-    return this.mapStrings((s) => s.charAt(0).toUpperCase() + s.slice(1));
+    return this.mapStrings((s) => titleCharacter([...s][0] ?? "") + [...s].slice(1).join("").toLowerCase());
   }
 
   title(): CellValue[] {
     return this.mapStrings((s) =>
-      s.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      s.replace(/\p{L}+/gu, word => titleCharacter([...word][0] ?? "") + [...word].slice(1).join("").toLowerCase())
     );
   }
 
@@ -73,7 +73,10 @@ export class StringMethods {
   }
 
   zfill(width: number): CellValue[] {
-    return this.mapStrings((s) => s.padStart(width, "0"));
+    return this.mapStrings(s => {
+      const zeros = "0".repeat(Math.max(0,width-[...s].length));
+      return /^[+-]/.test(s) ? s[0] + zeros + s.slice(1) : zeros + s;
+    });
   }
 
   pad(width: number, side: "left" | "right" | "both" = "left", fillChar = " "): CellValue[] {
@@ -89,14 +92,7 @@ export class StringMethods {
   }
 
   slice(start?: number, stop?: number): CellValue[] {
-    return this.mapStrings((s) => {
-      const from = start ?? 0;
-      if (stop === undefined) {
-        return s.slice(from);
-      }
-      const to = stop < 0 ? s.length + stop : stop;
-      return s.slice(from, to);
-    });
+    return this.mapStrings(s => [...s].slice(start,stop).join(""));
   }
 
   replace(pat: string | RegExp, repl: string, regex = false): CellValue[] {
@@ -108,7 +104,7 @@ export class StringMethods {
     });
   }
 
-  contains(pat: string | RegExp, regex = false): CellValue[] {
+  contains(pat: string | RegExp, regex = true): CellValue[] {
     return this.mapBooleans((s) => {
       if (regex || pat instanceof RegExp) {
         return new RegExp(pat as string | RegExp).test(s);
@@ -127,7 +123,7 @@ export class StringMethods {
 
   match(pat: string | RegExp): CellValue[] {
     const re = pat instanceof RegExp ? pat : new RegExp(pat);
-    return this.mapBooleans((s) => re.test(s));
+    return this.mapBooleans((s) => { re.lastIndex = 0; return re.exec(s)?.index === 0; });
   }
 
   find(pat: string): CellValue[] {
@@ -140,32 +136,16 @@ export class StringMethods {
   }
 
   len(): CellValue[] {
-    return this.values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return String(value).length;
-    });
+    return this.values.map(value => typeof value === "string" ? [...value].length : null);
   }
 
   get(position: number): CellValue[] {
-    return this.values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      const s = String(value);
-      const index = position < 0 ? s.length + position : position;
-      return index >= 0 && index < s.length ? s[index]! : "";
-    });
+    return this.values.map(value => typeof value === "string" ? [...value].at(position) ?? null : null);
   }
 
   count(pat: string): CellValue[] {
-    return this.values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return String(value).split(pat).length - 1;
-    });
+    const regex = new RegExp(pat,"gu");
+    return this.values.map(value => typeof value === "string" ? [...value.matchAll(regex)].length : null);
   }
 
   /** Returns arrays of components; with expand=false returns them per cell. */

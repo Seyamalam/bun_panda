@@ -116,7 +116,7 @@ function auditSection(pandasNames: string[], ours: string[], label: string) {
   const have = pandasNames.filter((name: string) => hasAny(ours, name));
   const missing = pandasNames.filter((name: string) => !hasAny(ours, name));
   const pct = pandasNames.length ? Math.round((have.length / pandasNames.length) * 100) : 0;
-  return { label, total: pandasNames.length, have: have.length, missing, pct };
+  return { label, total: pandasNames.length, have: have.length, names: pandasNames, missing, pct };
 }
 
 const sections = [
@@ -137,12 +137,29 @@ const sections = [
 const totalPandas = sections.reduce((sum, s) => sum + s.total, 0);
 const totalHave = sections.reduce((sum, s) => sum + s.have, 0);
 
+const fixture = JSON.parse(readFileSync("test/fixtures/pandas-value-contracts.json", "utf8")) as { cases: { api: string }[] };
+const corpus = JSON.parse(readFileSync("paper/data/conformance/cases.json", "utf8")) as { cases: { family: string }[] };
+const inventory = sections.flatMap(section => section.names.map(name => {
+  const api = section.label === "Top-level" ? name : `${section.label}.${name}`;
+  const valueCases = fixture.cases.filter(entry => entry.api === api || entry.api.startsWith(`${api}.`)).length;
+  const semanticCases = corpus.cases.filter(entry =>
+    api === `DataFrame.${entry.family}` || (entry.family === "groupby_agg" && ["DataFrame.groupby", "GroupBy.agg"].includes(api))
+  ).length;
+  return { api, namePresent: !section.missing.includes(name), valueContractCases: valueCases,
+    semanticCorpusCases: semanticCases, behavioralCoverage: valueCases + semanticCases > 0 ? "partial" : "unverified",
+    exactPandasParity: "not-established" };
+}));
+writeFileSync("docs/API-COVERAGE.json", `${JSON.stringify({ pandasVersion: "3.0.5", trackedNames: inventory.length,
+  note: "Counts describe test coverage, not a proof of all signatures or exact pandas output compatibility.", apis: inventory }, null, 2)}\n`);
+
 const lines: string[] = [];
-lines.push("# pandas API Parity Audit");
+lines.push("# pandas API-name coverage audit");
 lines.push("");
 lines.push(`Generated ${new Date().toISOString().slice(0, 10)} — pandas methods scraped from the official API reference (frame.html, series.html), bun_panda surface extracted from \`src/\`.`);
 lines.push("");
-lines.push("| Surface | pandas API | bun_panda | Parity |");
+lines.push("This census checks names only. It does not verify signatures, defaults, dtypes, return types, or output equality. See [behavioral compatibility](COMPATIBILITY.md) for tested contracts and remaining gaps.");
+lines.push("");
+lines.push("| Surface | Tracked API names | Names present | Name coverage |");
 lines.push("| --- | ---: | ---: | ---: |");
 for (const s of sections) {
   lines.push(`| ${s.label} | ${s.total} | ${s.have} | ${s.pct}% |`);

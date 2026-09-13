@@ -25,14 +25,14 @@ describe("reshape helpers", () => {
   test("dummy encoding retains nonencoded data and can drop the first category", () => {
     const frame = new DataFrame({ id: [1, 2, 3], color: ["red", "blue", null], size: ["s", "m", "s"] });
     expect(get_dummies(frame, "color").to_records()).toEqual([
-      { id: 1, size: "s", color_red: 1, color_blue: 0 },
-      { id: 2, size: "m", color_red: 0, color_blue: 1 },
-      { id: 3, size: "s", color_red: 0, color_blue: 0 },
+      { id: 1, size: "s", color_red: true, color_blue: false },
+      { id: 2, size: "m", color_red: false, color_blue: true },
+      { id: 3, size: "s", color_red: false, color_blue: false },
     ]);
     expect(get_dummies(frame, ["color", "size"], { drop_first: true, prefix_sep: ":" }).to_records()).toEqual([
-      { id: 1, "color:blue": 0, "size:m": 0 },
-      { id: 2, "color:blue": 1, "size:m": 1 },
-      { id: 3, "color:blue": 0, "size:m": 0 },
+      { id: 1, "color:red": true, "size:s": true },
+      { id: 2, "color:red": false, "size:s": false },
+      { id: 3, "color:red": false, "size:s": true },
     ]);
     expect(frame.columns).toEqual(["id", "color", "size"]);
   });
@@ -45,7 +45,8 @@ describe("reshape helpers", () => {
 
 describe("categorical contracts", () => {
   test("explicit dtypes encode unknowns, compare order and return defensive snapshots", () => {
-    const dtype = new CategoricalDtype(["b", "a", "b"], true);
+    expect(() => new CategoricalDtype(["b", "a", "b"], true)).toThrow("unique");
+    const dtype = new CategoricalDtype(["b", "a"], true);
     expect(dtype.categories).toEqual(["b", "a"]);
     expect(dtype.equals(new CategoricalDtype(["b", "a"], true))).toBe(true);
     expect(dtype.equals(new CategoricalDtype(["b", "a"]))).toBe(false);

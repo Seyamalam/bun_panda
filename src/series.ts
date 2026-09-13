@@ -1,3 +1,4 @@
+import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
 import {
@@ -132,7 +133,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   head(n = 5): Series<T> {
-    const count = Math.max(0, n);
+    const count = n < 0 ? Math.max(0,this.length + n) : n;
     return new Series(this._values.slice(0, count), {
       index: this._index.slice(0, count),
       name: this.name,
@@ -140,9 +141,9 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   tail(n = 5): Series<T> {
-    const count = Math.max(0, n);
-    return new Series(this._values.slice(-count), {
-      index: this._index.slice(-count),
+    const start = n === 0 ? this.length : n < 0 ? Math.min(-n,this.length) : Math.max(0,this.length-n);
+    return new Series(this._values.slice(start), {
+      index: this._index.slice(start),
       name: this.name,
     });
   }
@@ -329,28 +330,29 @@ export class Series<T extends CellValue = CellValue> {
     return low;
   }
 
-  /** True when the numeric values are in non-decreasing order. */
-  is_monotonic_increasing(): boolean {
-    const numbers = numericValues(this._values);
-    return numbers.every((value, i) => i === 0 || numbers[i - 1]! <= value);
+  private isMonotonic(increasing: boolean): boolean {
+    if (this._values.some(isAbsent)) return false;
+    for (let i = 1; i < this._values.length; i += 1) {
+      const a = this._values[i-1]; const b = this._values[i];
+      const numeric = (typeof a === "number" || typeof a === "boolean") && (typeof b === "number" || typeof b === "boolean");
+      const strings = typeof a === "string" && typeof b === "string";
+      const dates = a instanceof Date && b instanceof Date;
+      if (!numeric && !strings && !dates) return false;
+      const cmp = numeric ? Number(a) - Number(b) : strings ? (a < b ? -1 : a > b ? 1 : 0) : compareCellValues(a,b);
+      if (increasing ? cmp > 0 : cmp < 0) return false;
+    }
+    return true;
   }
 
-  /** True when the numeric values are in non-increasing order. */
-  is_monotonic_decreasing(): boolean {
-    const numbers = numericValues(this._values);
-    return numbers.every((value, i) => i === 0 || numbers[i - 1]! >= value);
-  }
+  is_monotonic_increasing(): boolean { return this.isMonotonic(true); }
+  is_monotonic_decreasing(): boolean { return this.isMonotonic(false); }
 
-  /** True when every non-missing value occurs exactly once. */
+  /** Missing values participate in uniqueness. */
   is_unique(): boolean {
-    return new Set(this.dropna().to_list().map(this.valueKey, this)).size ===
-      this.dropna().length;
+    return new Set(this._values.map(scalarKey)).size === this._values.length;
   }
 
-  /** True when the series contains any missing value. */
-  hasnans(): boolean {
-    return this._values.some((value) => isMissing(value));
-  }
+  hasnans(): boolean { return this._values.some(isAbsent); }
 
   /** Number of non-missing values (pandas count). */
   count(): number {
@@ -398,7 +400,7 @@ export class Series<T extends CellValue = CellValue> {
   between(lower: number, upper: number, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<boolean> {
     const out = this._values.map((value): boolean | null => {
       if (isMissing(value) || typeof value !== "number") {
-        return null;
+        return false;
       }
       switch (inclusive) {
         case "neither":
@@ -433,9 +435,6 @@ export class Series<T extends CellValue = CellValue> {
 
   sum(): number | null {
     const numbers = numericValues(this._values);
-    if (numbers.length === 0) {
-      return null;
-    }
     return numbers.reduce((acc, value) => acc + value, 0);
   }
 
@@ -653,13 +652,12 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   round(decimals = 0): Series<CellValue> {
-    const factor = 10 ** decimals;
     const out: CellValue[] = this._values.map((value) => {
       if (isMissing(value)) {
         return null;
       }
       const n = typeof value === "number" ? value : Number(value as CellValue);
-      return Math.round(n * factor) / factor;
+      return roundToEven(n, decimals);
     });
     return new Series(out as unknown as CellValue[], { index: this._index, name: this.name }) as unknown as Series<CellValue>;
   }
@@ -1164,7 +1162,7 @@ export class Series<T extends CellValue = CellValue> {
     const keepFlags = this.duplicateKeepFlags(keep);
     return new Series(keepFlags.map((f) => !f) as unknown as boolean[], {
       index: [...this._index],
-      name: "duplicated",
+      name: this.name,
     });
   }
 

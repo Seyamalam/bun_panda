@@ -1,8 +1,10 @@
-# pandas API Parity Audit
+# pandas API-name coverage audit
 
 Generated 2026-09-13 — pandas methods scraped from the official API reference (frame.html, series.html), bun_panda surface extracted from `src/`.
 
-| Surface | pandas API | bun_panda | Parity |
+This census checks names only. It does not verify signatures, defaults, dtypes, return types, or output equality. See [behavioral compatibility](COMPATIBILITY.md) for tested contracts and remaining gaps.
+
+| Surface | Tracked API names | Names present | Name coverage |
 | --- | ---: | ---: | ---: |
 | DataFrame | 197 | 197 | 100% |
 | Series | 195 | 195 | 100% |

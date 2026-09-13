@@ -13,7 +13,6 @@ export function seriesVariance(values: number[]): number | null {
 }
 
 export function seriesProd(values: number[]): number | null {
-  if (values.length === 0) return null;
   return values.reduce((acc, value) => acc * value, 1);
 }
 
@@ -24,11 +23,8 @@ export function adjustedSkew(numbers: number[]): number | null {
   const mean = numbers.reduce((s, v) => s + v, 0) / n;
   const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
   const m3 = numbers.reduce((s, v) => s + (v - mean) ** 3, 0);
-  const popStd = Math.sqrt(m2 / n);
-  if (popStd === 0) return null;
-  const g1 = (m3 / n) / popStd ** 3;
-  // Sample-corrected skewness G1.
-  return (Math.sqrt(n * (n - 1)) / (n - 2)) * g1;
+  if (m2 === 0) return 0;
+  return (n * Math.sqrt(n - 1) / (n - 2)) * (m3 / m2 ** 1.5);
 }
 
 /** Unbiased excess kurtosis (Fisher definition; normal distribution = 0). */
@@ -38,9 +34,9 @@ export function excessKurtosis(numbers: number[]): number | null {
   const mean = numbers.reduce((s, v) => s + v, 0) / n;
   const m2 = numbers.reduce((s, v) => s + (v - mean) ** 2, 0);
   const m4 = numbers.reduce((s, v) => s + (v - mean) ** 4, 0);
-  if (m2 === 0) return null;
+  if (m2 === 0) return 0;
   const correction = (n - 2) * (n - 3);
-  return (n * (n + 1) * (n - 1) * m4 / (m2 * m2) - 3 * (n - 1) ** 2) / correction;
+  return (n * (n + 1) * (n - 1) * m4) / (correction * m2 ** 2) - (3 * (n - 1) ** 2) / correction;
 }
 
 /** Standard error of the mean (sample std / sqrt(n)). */

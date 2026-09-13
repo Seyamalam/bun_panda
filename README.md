@@ -237,6 +237,11 @@ observations under its declared merge-order rule. Forced TypeScript, forced elig
 dispatch agree in all 2,500. The name census is therefore documented as API
 surface coverage, not pandas behavioral compatibility.
 
+The current working tree also has 524 pandas-derived value and metadata cases.
+The strict comparison still fails on native dtype, missing-value, and diagnostic
+differences. See [compatibility status](docs/COMPATIBILITY.md) and the
+[per-API inventory](docs/API-COVERAGE.json) before relying on pandas equivalence.
+
 ## License
 
 MIT. See `LICENSE`.

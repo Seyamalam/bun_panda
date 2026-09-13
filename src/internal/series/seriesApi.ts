@@ -1,3 +1,4 @@
+import { factorize as factorizeValues } from "../../reshape";
 // Series compat/window/export parity methods as delegate functions over a
 // structural host view.
 import { NotSupportedError } from "../../errors";
@@ -15,7 +16,6 @@ import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
 import { Categorical } from "../../categorical";
 import { Series } from "../../series";
-import { normalizeKeyCell } from "../dataframe/keys";
 
 export interface SeriesHost {
   valuesSnapshot(): CellValue[];
@@ -106,14 +106,8 @@ export function last_valid_index(s: SeriesHost, ): IndexLabel | null {
   }
 
 export function factorize(s: SeriesHost, ): [number[], CellValue[]] {
-    const uniq: CellValue[] = []; const idx = new Map<string, number>();
-    const codes: number[] = [];
-    for (const v of s.valuesSnapshot()) {
-      const k = JSON.stringify(normalizeKeyCell(v as CellValue));
-      if (!idx.has(k)) { idx.set(k, uniq.length); uniq.push(v as CellValue); }
-      codes.push(idx.get(k)!);
-    }
-    return [codes, uniq];
+    const result = factorizeValues(s.valuesSnapshot());
+    return [result.codes, result.uniques];
   }
 
 export function explode(s: SeriesHost, ): Series<CellValue> {

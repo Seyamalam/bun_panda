@@ -1,3 +1,4 @@
+import { isAbsent, scalarKey, sortedCategories } from "./internal/shared/valueSemantics";
 import { DataFrame } from "./dataframe";
 import type { CellValue, Row } from "./types";
 
@@ -108,48 +109,34 @@ export function qcut(values: number[], bins: number): number[] {
 
 /**
  * pandas-style `get_dummies`: one-hot encodes the given column(s),
- * producing 0/1 columns named `<column>_<value>`.
+ * producing boolean columns named `<column>_<value>`.
  */
 export function get_dummies(
   frame: DataFrame,
   columns: string | string[],
-  options: { drop_first?: boolean; prefix_sep?: string } = {}
+  options: { drop_first?: boolean; prefix_sep?: string; dummy_na?: boolean; dtype?: "bool" | "number" } = {}
 ): DataFrame {
   const cols = Array.isArray(columns) ? columns : [columns];
+  for (const column of cols) if (!frame.columns.includes(column)) throw new Error(`Column '${column}' does not exist`);
   const sep = options.prefix_sep ?? "_";
   const records = frame.to_records();
-
-  const uniquesByColumn = new Map<string, string[]>();
-  for (const column of cols) {
-    const seen = new Set<string>();
-    for (const record of records) {
-      const value = record[column];
-      if (value !== null && value !== undefined) {
-        seen.add(String(value));
-      }
-    }
-    const uniques = options.drop_first ? [...seen].slice(1) : [...seen];
-    uniquesByColumn.set(column, uniques);
-  }
-
-  const outRows: Row[] = records.map((record) => {
-    const next: Row = {};
-    // Non-encoded columns pass through first.
-    for (const [key, value] of Object.entries(record)) {
-      if (!cols.includes(key)) {
-        next[key] = value;
-      }
-    }
-    for (const column of cols) {
-      const value = record[column];
-      for (const unique of uniquesByColumn.get(column)!) {
-        next[`${column}${sep}${unique}`] = String(value) === unique ? 1 : 0;
-      }
-    }
-    return next;
+  const retained = frame.columns.filter(column => !cols.includes(column));
+  const encoded = cols.flatMap(column => {
+    let categories = sortedCategories(records.map(record => record[column]));
+    if (options.dummy_na) categories.push(null);
+    if (options.drop_first) categories = categories.slice(1);
+    return categories.map(value => ({ column, value, name: `${column}${sep}${value === null ? "nan" : typeof value === "boolean" ? (value ? "True" : "False") : String(value)}` }));
   });
-
-  return new DataFrame(outRows, { columns: Object.keys(outRows[0] ?? {}) });
+  const outRows = records.map(record => {
+    const row: Row = {};
+    for (const column of retained) row[column] = record[column];
+    for (const {column,value,name} of encoded) {
+      const match = scalarKey(record[column]) === scalarKey(value);
+      row[name] = options.dtype === "number" ? Number(match) : match;
+    }
+    return row;
+  });
+  return new DataFrame(outRows, { columns: [...retained,...encoded.map(entry=>entry.name)], index: frame.index });
 }
 
 /**
@@ -162,11 +149,11 @@ export function factorize<T extends CellValue>(
   const uniques: T[] = [];
   const seen = new Map<string, number>();
   const codes = values.map((value) => {
-    if (value === null || value === undefined || (typeof value === "number" && Number.isNaN(value))) {
+    if (isAbsent(value)) {
       return -1;
     }
     const key =
-      value instanceof Date ? `date:${value.toISOString()}` : `${typeof value}:${String(value)}`;
+      scalarKey(value);
     const existing = seen.get(key);
     if (existing !== undefined) {
       return existing;

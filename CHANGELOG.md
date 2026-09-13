@@ -8,12 +8,24 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ### Added
 
+- Add 524 pinned pandas 3.0.5 value and metadata contracts, an API-by-API
+  evidence inventory, and strict conformance reporting. Mismatches and invalid
+  observation sets now fail the conformance command. Live results go to `out/`.
+
 - Added the browser-based Wasm Analytics Studio example with deterministic
   workload generation, TypeScript/Wasm comparisons, Web Worker execution,
   SHA-256 correctness checks, adaptive-dispatch explanations, capability and
   bundle telemetry, local run history, and downloadable JSON reports.
 - Added seeded CSV/JSON property tests and numeric, IO, reshape, categorical,
   and datetime contract tests. Raised the line-coverage gate from 70% to 85%.
+
+### Changed
+
+- Match tested pandas defaults for dummy encoding, categorical validation and
+  typed values, missing-value factorization, empty Series reductions, constant
+  moments, ties-to-even rounding, Series slicing/name preservation, and string
+  operations. These intentionally change earlier behavior; migration details
+  and remaining incompatibilities are in `docs/COMPATIBILITY.md`.
 
 ### Fixed
 

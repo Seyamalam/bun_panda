@@ -36,7 +36,7 @@
 
 ## Completed in v0.3.x–v0.4.0 (parity sprint)
 
-1. Pandas API parity 50% → 100% (255/505 → 505/505) across the tracked reference set.
+1. Tracked pandas API-name coverage 50% → 100% (255/505 → 505/505) across the tracked reference set.
 2. Self-contained parity audit (`bun run parity` — committed baseline, refresh script included).
 3. Categorical dtype support: `Categorical`, `CategoricalDtype`, `.cat` accessor.
 4. Datetime helpers: `resample`, `ewm`, `at_time`, `between_time`, `asof`, `asfreq`, tz shims, `Interval`.
@@ -61,3 +61,10 @@
 ## Quality Backlog
 
 1. Expand performance regression coverage beyond the existing benchmark drift gate.
+
+## pandas behavioral compatibility
+
+- [x] Add strict observation comparison and reject incomplete or mismatched runs.
+- [x] Add 524 pinned pandas value/metadata regression cases and fix discovered mismatches.
+- [x] Separate API-name coverage from per-API behavioral evidence.
+- [ ] Implement dtype/missing-scalar and index foundations, then extend every API contract. See [compatibility work](COMPATIBILITY.md). Full parity remains unfinished.

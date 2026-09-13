@@ -1,6 +1,7 @@
 // pandas-style Categorical / CategoricalDtype.
 import { DataFrame } from "./dataframe";
 import type { CellValue } from "./types";
+import { isAbsent, scalarKey, sortedCategories } from "./internal/shared/valueSemantics";
 
 /**
  * Dtype descriptor for categorical data: the fixed category list plus an
@@ -14,11 +15,11 @@ export class CategoricalDtype {
     const seen = new Set<string>();
     const unique: CellValue[] = [];
     for (const value of categories ?? []) {
-      const key = String(value);
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(value);
-      }
+      if (isAbsent(value)) throw new Error("Categorical categories cannot be null");
+      const key = scalarKey(value);
+      if (seen.has(key)) throw new Error("Categorical categories must be unique");
+      seen.add(key);
+      unique.push(value);
     }
     this.categories = unique;
     this.ordered = ordered;
@@ -31,7 +32,7 @@ export class CategoricalDtype {
     return (
       this.categories.length === other.categories.length &&
       this.categories.every(
-        (c, i) => String(c) === String(other.categories[i])
+        (c, i) => this.ordered ? scalarKey(c) === scalarKey(other.categories[i]) : other.categories.some(value => scalarKey(c) === scalarKey(value))
       )
     );
   }
@@ -45,7 +46,7 @@ export class CategoricalDtype {
 
 function categoryIndex(dtype: CategoricalDtype): Map<string, number> {
   const map = new Map<string, number>();
-  dtype.categories.forEach((category, position) => map.set(String(category), position));
+  dtype.categories.forEach((category, position) => map.set(scalarKey(category), position));
   return map;
 }
 
@@ -68,11 +69,11 @@ export class Categorical {
       this.dtype = options.dtype;
     } else {
       // Unspecified categories default to the sorted unique observed values.
-      const provided = options.categories ?? [...new Set(values.map(String))].sort();
+      const provided = options.categories ?? sortedCategories(values);
       this.dtype = new CategoricalDtype(provided, options.ordered ?? false);
     }
     const index = categoryIndex(this.dtype);
-    this._codes = values.map((value) => index.get(String(value)) ?? -1);
+    this._codes = values.map((value) => isAbsent(value) ? -1 : index.get(scalarKey(value)) ?? -1);
   }
 
   /** The dtype's category list. */
@@ -122,10 +123,8 @@ export class Categorical {
   equals(other: unknown): boolean {
     if (!(other instanceof Categorical)) return false;
     if (!this.dtype.equals(other.dtype)) return false;
-    return (
-      this._codes.length === other._codes.length &&
-      this._codes.every((code, i) => code === other._codes[i])
-    );
+    const otherValues = other.to_list();
+    return this.length === other.length && this.to_list().every((value,i) => scalarKey(value) === scalarKey(otherValues[i]));
   }
 
   /**
@@ -237,8 +236,8 @@ export class CategoricalAccessor {
 
   /** Reorders the existing categories; must list exactly the current set. */
   reorder_categories(newCategories: CellValue[]): CategoricalAccessor {
-    const current = [...new Set(this.cat.categories.map(String))].sort();
-    const proposed = [...new Set(newCategories.map(String))].sort();
+    const current = [...new Set(this.cat.categories.map(scalarKey))].sort();
+    const proposed = [...new Set(newCategories.map(scalarKey))].sort();
     if (
       current.length !== proposed.length ||
       current.some((c, i) => c !== proposed[i])
@@ -252,9 +251,9 @@ export class CategoricalAccessor {
 
   /** Appends unseen categories (duplicates of existing ones are rejected). */
   add_categories(newCategories: CellValue[]): CategoricalAccessor {
-    const existing = new Set(this.cat.categories.map(String));
+    const existing = new Set(this.cat.categories.map(scalarKey));
     for (const category of newCategories) {
-      if (existing.has(String(category))) {
+      if (existing.has(scalarKey(category))) {
         throw new Error(`add_categories: category '${String(category)}' already exists.`);
       }
     }
@@ -269,9 +268,9 @@ export class CategoricalAccessor {
   /** Drops categories that never appear in the data. */
   remove_unused_categories(): CategoricalAccessor {
     const used = new Set(
-      this.cat.codes.filter((code) => code >= 0).map((code) => String(this.cat.categories[code]))
+      this.cat.codes.filter((code) => code >= 0).map((code) => scalarKey(this.cat.categories[code]))
     );
-    const kept = this.cat.categories.filter((c) => used.has(String(c)));
+    const kept = this.cat.categories.filter((c) => used.has(scalarKey(c)));
     return CategoricalAccessor.wrap(
       new Categorical(this.cat.to_list(), { categories: kept, ordered: this.cat.ordered })
     );

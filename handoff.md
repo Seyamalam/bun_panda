@@ -113,3 +113,14 @@ The release candidate is `v0.4.1`. Keep later paper revisions synchronized to th
 - Software Heritage is the selected permanent archive. The author declined Zenodo; no DOI is claimed. An exact-tag source ZIP is prepared locally. Independent tester sign-off is still pending.
 - The archive revision compiles to 20 pages and its code-availability page was visually checked. The Paper Amigo project-list request failed before replacement; retry `bun run paper:amigo:sync` when the service responds. The existing remote-hash record was deliberately retained.
 - Tester instructions: `paper/INDEPENDENT-REPRODUCTION-HANDOFF.md`.
+
+## pandas compatibility expansion
+
+The user requested full pandas compatibility. Work has begun but full parity is
+not complete. `docs/COMPATIBILITY.md` records the remaining storage/dtype/index
+work and intentional behavior changes. A 524-case pandas 3.0.5 fixture tests
+values and selected metadata with zero finite-number tolerance; its transport
+normalizes missing scalars and does not prove native dtype parity. The strict
+comparison remains a failing audit. Current live conformance outputs go to
+`out/`, preserving the frozen paper corpus. See `docs/API-COVERAGE.json` for
+per-API partial/unverified coverage. Do not claim 505/505 behavioral parity.

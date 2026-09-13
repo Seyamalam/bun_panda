@@ -1,3 +1,4 @@
+import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
   dataFrameToCsv,
@@ -1878,13 +1879,12 @@ export class DataFrame {
   }
 
   round(decimals = 0): DataFrame {
-    const factor = 10 ** decimals;
     const rows = this._rows.map((row) => {
       const next = cloneRow(row, this._columns);
       for (const column of this._columns) {
         const value = next[column];
         if (isNumber(value)) {
-          next[column] = Math.round((value + Number.EPSILON) * factor) / factor;
+          next[column] = roundToEven(value, decimals);
         }
       }
       return next;

@@ -17,7 +17,9 @@ Run the complete local study with:
 bun run conformance
 ```
 
-Outputs are written under `paper/data/conformance/`:
+Live outputs are written under `out/conformance/`. The original frozen evidence
+remains under `paper/data/conformance/`. Set `BUN_PANDA_CONFORMANCE_DIR` to
+choose a separate output directory:
 
 - `cases.json`: frozen generated inputs;
 - `pandas.json`: pandas 3.0.5 observations;
@@ -34,3 +36,10 @@ NumPy/extension dtype system and `bun_panda`'s smaller dtype vocabulary.
 This is a reproducible first behavioral layer, not proof of full pandas
 compatibility. MultiIndex, extension dtypes, warnings, categorical metadata,
 and timezone semantics remain explicit expansion gates in the Q1 plan.
+
+`bun run conformance:strict` writes exact-observation diagnostics under
+`out/strict-conformance` and fails on mismatches. Strict mode preserves row
+order, numeric values, native dtype names, and exception type/message. Both
+modes reject incomplete observation sets. `--report-only` disables only the
+mismatch exit gate. See `docs/COMPATIBILITY.md` for adapter boundaries and
+remaining work; strict serialized observations are not whole-API parity.

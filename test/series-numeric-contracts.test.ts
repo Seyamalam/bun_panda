@@ -12,12 +12,15 @@ describe("Series numeric contracts", () => {
     expect(series.std()).toBeCloseTo(2);
     expect(series.std(0)).toBeCloseTo(Math.sqrt(3));
     expect(new Series<CellValue>([1, 2, 3, 4]).kurt()).toBeCloseTo(-1.2);
-    expect(new Series<CellValue>([5, 5, 5, 5]).skew()).toBeNull();
-    expect(new Series<CellValue>([5, 5, 5, 5]).kurt()).toBeNull();
+    expect(new Series<CellValue>([5, 5, 5, 5]).skew()).toBe(0);
+    expect(new Series<CellValue>([5, 5, 5, 5]).kurt()).toBe(0);
     const empty = new Series<CellValue>([]);
-    for (const reduce of ["mean", "sum", "min", "max", "median", "var", "std", "prod", "product", "skew", "kurt", "sem", "autocorr"] as const) {
+    for (const reduce of ["mean", "min", "max", "median", "var", "std", "skew", "kurt", "sem", "autocorr"] as const) {
       expect(empty[reduce]()).toBeNull();
     }
+    expect(empty.sum()).toBe(0);
+    expect(empty.prod()).toBe(1);
+    expect(empty.product()).toBe(1);
     expect(new Series<CellValue>([1]).var()).toBeNull();
     expect(new Series<CellValue>([1]).sem()).toBeNull();
   });
@@ -88,7 +91,7 @@ describe("Series numeric contracts", () => {
     for (const [inclusive, expected] of [
       ["both", [true, true, true]], ["neither", [false, true, false]],
       ["left", [true, true, false]], ["right", [false, true, true]],
-    ] as const) expect<CellValue[]>(series.between(1, 3, inclusive).to_list()).toEqual([...expected, null, null]);
+    ] as const) expect<CellValue[]>(series.between(1, 3, inclusive).to_list()).toEqual([...expected, false, false]);
   });
 
   test("sorting preserves tie order, labels and placement of nulls", () => {
@@ -188,7 +191,7 @@ describe("Series numeric contracts", () => {
     for (const [method, expected] of cases) expect<CellValue[]>(series[method](3).to_list()).toEqual([...expected]);
     expect<CellValue[]>(new Series<CellValue>(["2", null]).neg().to_list()).toEqual([-2, null]);
     expect(new Series<CellValue>(["-2.25", null]).abs().to_list()).toEqual([2.25, null]);
-    expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual([2.3, null]);
+    expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual([2.2, null]);
     expect<CellValue[]>(series.ge(3).to_list()).toEqual([false, true, null]);
   });
 
