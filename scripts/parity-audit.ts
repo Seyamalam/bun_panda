@@ -139,6 +139,34 @@ const totalHave = sections.reduce((sum, s) => sum + s.have, 0);
 
 const fixture = JSON.parse(readFileSync("test/fixtures/pandas-value-contracts.json", "utf8")) as { cases: { api: string }[] };
 const corpus = JSON.parse(readFileSync("paper/data/conformance/cases.json", "utf8")) as { cases: { family: string }[] };
+// Count primary contracts exercised by the offline pandas-oracle test adapters.
+// Setup constructors and incidental helper assertions are not counted separately.
+function readCases<T>(name: string): T[] {
+  return (JSON.parse(readFileSync(`test/fixtures/${name}.json`, "utf8")) as { cases: T[] }).cases;
+}
+const dtypeCounts = new Map<string, number>();
+const indexCounts = new Map<string, number>();
+const count = (counts: Map<string, number>, api: string) => counts.set(api, (counts.get(api) ?? 0) + 1);
+for (const entry of readCases<{ mode: string; operation?: string }>("pandas-dtype-contracts")) {
+  const api = entry.operation ? `Series.${entry.operation}` : ["constructor", "inferred_constructor"].includes(entry.mode) ? "Series" : `Series.${entry.mode}`;
+  count(dtypeCounts, api);
+  if (entry.operation && !["repeat", "rename", "set_axis"].includes(entry.operation)) count(dtypeCounts, `DataFrame.${entry.operation}`);
+}
+for (const entry of readCases<{ api: string }>("pandas-dtype-queries")) {
+  count(dtypeCounts, `DataFrame.${entry.api}`);
+  if (entry.api === "equals") count(dtypeCounts, "Series.equals");
+}
+for (const name of ["pandas-frame-dtypes", "pandas-frame-assignment"]) {
+  for (const entry of readCases<{ operation: string }>(name)) count(dtypeCounts, `DataFrame.${entry.operation}`);
+}
+for (const _entry of readCases<unknown>("pandas-frame-update")) count(dtypeCounts, "DataFrame.update");
+for (const entry of readCases<{ api: string }>("pandas-index-contracts")) {
+  if (entry.api === "Index.equals") count(indexCounts, "Index");
+  else {
+    count(indexCounts, `Series.${entry.api}`);
+    count(indexCounts, `DataFrame.${entry.api}`);
+  }
+}
 const inventory = sections.flatMap(section => section.names.map(name => {
   const api = section.label === "Top-level" ? name : `${section.label}.${name}`;
   const valueCases = fixture.cases.filter(entry => entry.api === api || entry.api.startsWith(`${api}.`)).length;
@@ -146,7 +174,8 @@ const inventory = sections.flatMap(section => section.names.map(name => {
     api === `DataFrame.${entry.family}` || (entry.family === "groupby_agg" && ["DataFrame.groupby", "GroupBy.agg"].includes(api))
   ).length;
   return { api, namePresent: !section.missing.includes(name), valueContractCases: valueCases,
-    semanticCorpusCases: semanticCases, behavioralCoverage: valueCases + semanticCases > 0 ? "partial" : "unverified",
+    dtypeContractCases: dtypeCounts.get(api) ?? 0, indexContractCases: indexCounts.get(api) ?? 0,
+    semanticCorpusCases: semanticCases, behavioralCoverage: valueCases + semanticCases + (dtypeCounts.get(api) ?? 0) + (indexCounts.get(api) ?? 0) > 0 ? "partial" : "unverified",
     exactPandasParity: "not-established" };
 }));
 writeFileSync("docs/API-COVERAGE.json", `${JSON.stringify({ pandasVersion: "3.0.5", trackedNames: inventory.length,
