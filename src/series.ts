@@ -1,8 +1,8 @@
+import { castColumn } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
 import {
-  coerceValueToDType,
   compareCellValues,
   isMissing,
   numericValues,
@@ -58,6 +58,7 @@ import { computeExpanding, computeRolling, type RollingWindow } from "./internal
 export type SeriesDType = DType;
 
 export interface SeriesOptions {
+  dtype?: DType;
   name?: string;
   index?: IndexLabel[];
 }
@@ -65,12 +66,14 @@ export interface SeriesOptions {
 export type { SeriesReplaceInput };
 
 export class Series<T extends CellValue = CellValue> {
+  private readonly _dtype: DType | undefined;
   private readonly _name: string | undefined;
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
 
   constructor(values: T[], options: SeriesOptions = {}) {
-    this._values = [...values];
+    this._dtype = options.dtype;
+    this._values = (options.dtype ? castColumn(values, options.dtype) : [...values]) as T[];
     this._index = options.index ? [...options.index] : range(values.length);
     this._name = options.name;
 
@@ -137,6 +140,7 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(this._values.slice(0, count), {
       index: this._index.slice(0, count),
       name: this.name,
+      dtype: this._dtype,
     });
   }
 
@@ -145,6 +149,7 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(this._values.slice(start), {
       index: this._index.slice(start),
       name: this.name,
+      dtype: this._dtype,
     });
   }
 
@@ -502,7 +507,8 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   astype(dtype: SeriesDType): Series<CellValue> {
-    return this.map((value) => coerceValueToDType(value, dtype), this.name);
+    const values = castColumn(this._values, dtype, this.dtype);
+    return new Series(values, { index: this._index, name: this.name, dtype });
   }
 
   isin(values: CellValue[]): Series<boolean> {
@@ -798,7 +804,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   copy(): Series<T> {
-    return new Series([...this._values], { index: [...this._index], name: this.name });
+    return new Series([...this._values], { index: [...this._index], name: this.name, dtype: this._dtype });
   }
 
   std(ddof = 1): number | null {
@@ -952,7 +958,7 @@ export class Series<T extends CellValue = CellValue> {
 
   /** True-shape helpers for parity (pandas reports these on Series). */
   get dtype(): string {
-    return this.inferSeriesDType();
+    return this._dtype ?? this.inferSeriesDType();
   }
 
   get dtypes(): string {

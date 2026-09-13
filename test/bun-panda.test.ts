@@ -82,8 +82,8 @@ describe("dtypes and astype", () => {
 
   test("astype can cast selected columns", () => {
     const df = new DataFrame([
-      { amount: "10.5", active: "true", when: "2026-01-01T00:00:00.000Z" },
-      { amount: "3", active: "false", when: "bad-date" },
+      { amount: "10.5", active: true, when: "2026-01-01T00:00:00.000Z" },
+      { amount: "3", active: false, when: "bad-date" },
     ]).astype({
       amount: "number",
       active: "boolean",
@@ -104,8 +104,8 @@ describe("dtypes and astype", () => {
     ]).astype("string");
 
     expect(df.to_records()).toEqual([
-      { a: "1", b: "true" },
-      { a: "0", b: "false" },
+      { a: "1", b: "True" },
+      { a: "0", b: "False" },
     ]);
   });
 

@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 528 explicit dtype cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | Fails; exact compatibility is not established |
 
@@ -43,10 +43,22 @@ causes a nonzero exit. `--report-only` writes findings without failing; it must
 not be used as a correctness gate. Empty, duplicate, missing, and unexpected
 case observations are rejected even in report-only mode.
 
+The separate dtype fixture (`generate-dtype-oracle.py`) compares explicit dtype
+names and values, preserving `NA` and `NaN` separately. It covers constructors
+and casts for numeric widths, nullable numeric types, `bool`, `boolean`,
+`string`, and `object`. Error cases currently assert rejection, not exact error
+classes/messages. Integers outside JavaScript's safe range are rejected until
+exact bigint storage is implemented. Default dtype inference and propagation
+through all operations remain incomplete. `number` and `date` remain legacy
+conversion aliases.
+
 ## Changes to existing behavior
 
 The pandas-oracle tests required changes to earlier library contracts:
 
+- Explicit `boolean` casts now require bool-like values; strings such as `"false"`
+  are rejected. `string` casts use pandas boolean spelling (`"True"`/`"False"`)
+  and represent missing values with `NA`.
 - `get_dummies` sorts categories, returns booleans by default, retains the input
   index and empty-frame columns, excludes missing categories, and implements
   `dummy_na`. `dtype: "number"` retains numeric indicator values. `drop_first`
@@ -73,8 +85,8 @@ behavior and measurements.
 ## Remaining work for full parity
 
 1. **Dtypes and missing scalars.** Shared missing detection and typed NA/NaT
-   sentinels are implemented. Replace the four-type dtype vocabulary with
-   explicit logical and physical dtype metadata, inference/promotion rules,
+   sentinels and explicit cast metadata are implemented. Complete physical
+   storage, default inference/promotion rules,
    nullable masks, and exact integer support. Distinguish NaN, NA, NaT, and
    Python object null where required. Preserve metadata through every operation.
 2. **Index and output contracts.** Integrate Index/MultiIndex into DataFrame and

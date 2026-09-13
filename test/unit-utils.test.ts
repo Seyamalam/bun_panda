@@ -99,9 +99,9 @@ describe("utils.coerceValueToDType", () => {
   });
 
   test("coerces to boolean", () => {
-    expect(coerceValueToDType("true", "boolean")).toBe(true);
-    expect(coerceValueToDType("0", "boolean")).toBe(false);
-    expect(coerceValueToDType(3, "boolean")).toBe(true);
+    expect(coerceValueToDType(true, "boolean")).toBe(true);
+    expect(coerceValueToDType(0, "boolean")).toBe(false);
+    expect(() => coerceValueToDType(3, "boolean")).toThrow();
   });
 
   test("coerces to date", () => {

@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Add explicit numeric/nullable, boolean, string and object dtype casts and metadata, checked against 528 pandas-generated constructor/cast cases. Nullable missing values use NA; float missing values use NaN. Exact integers outside the JavaScript safe range are rejected.
+
 ### Added
 
 - Add 524 pinned pandas 3.0.5 value and metadata contracts, an API-by-API

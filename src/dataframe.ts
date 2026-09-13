@@ -1,3 +1,4 @@
+import { assertDType, castColumn } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -155,7 +156,6 @@ import type {
 } from "./types";
 import {
   cloneRow,
-  coerceValueToDType,
   compareCellValues,
   inferColumnDType,
   isMissing,
@@ -165,6 +165,7 @@ import {
 import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
 
 export interface DataFrameOptions {
+  dtype?: DType;
   index?: IndexLabel[];
   columns?: string[];
 }
@@ -262,6 +263,7 @@ export interface DataFrameFlagsOptions {
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
 
 export class DataFrame {
+  private readonly _explicitDtypes: Partial<Record<string, DType>>;
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
@@ -279,6 +281,15 @@ export class DataFrame {
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
     this._dtypeHints = {};
+    this._explicitDtypes = {};
+    if (options.dtype) {
+      assertDType(options.dtype);
+      for (const column of this._columns) {
+        const values = castColumn(this._rows.map(row => row[column]), options.dtype);
+        this._rows.forEach((row, i) => { row[column] = values[i]; });
+        this._explicitDtypes[column] = options.dtype;
+      }
+    }
 
     assertRowsShape(this._rows, this._index);
   }
@@ -287,7 +298,8 @@ export class DataFrame {
     rows: Row[],
     columns: string[],
     index: IndexLabel[],
-    dtypeHints: Partial<Record<string, InferredDType>> = {}
+    dtypeHints: Partial<Record<string, InferredDType>> = {},
+    explicitDtypes: Partial<Record<string, DType>> = {}
   ): DataFrame {
     assertRowsShape(rows, index);
     const frame = Object.create(DataFrame.prototype) as DataFrame;
@@ -297,6 +309,8 @@ export class DataFrame {
     (frame as unknown as { _dtypeHints: Partial<Record<string, InferredDType>> })._dtypeHints = {
       ...dtypeHints,
     };
+    (frame as unknown as { _explicitDtypes: Partial<Record<string, DType>> })._explicitDtypes = { ...explicitDtypes };
+    frame._attrs = {};
     return frame;
   }
 
@@ -454,10 +468,7 @@ export class DataFrame {
   }
 
   copy(): DataFrame {
-    return new DataFrame(this.to_records(), {
-      columns: this._columns,
-      index: this._index,
-    });
+    return DataFrame.createInternal(this.to_records(), [...this._columns], [...this._index], this._dtypeHints, this._explicitDtypes);
   }
 
   to_records(): Row[] {
@@ -472,9 +483,9 @@ export class DataFrame {
     const out: Record<string, InferredDType> = {};
     for (const column of this._columns) {
       const inferred = inferColumnDType(this._rows.map((row) => row[column]));
-      out[column] = inferred === "unknown"
+      out[column] = this._explicitDtypes[column] ?? (inferred === "unknown"
         ? this._dtypeHints[column] ?? inferred
-        : inferred;
+        : inferred);
     }
     return out;
   }
@@ -509,15 +520,13 @@ export class DataFrame {
       }
     }
 
-    const rows = this._rows.map((row) => {
-      const next = cloneRow(row, this._columns);
-      for (const [column, target] of Object.entries(castMap)) {
-        next[column] = coerceValueToDType(next[column], target);
-      }
-      return next;
-    });
-
-    return this.withRows(rows, this._index, this._columns, true);
+    const rows = this.to_records();
+    for (const [column, target] of Object.entries(castMap)) {
+      const values = castColumn(this._rows.map(row => row[column]), target, this.dtypes()[column]);
+      rows.forEach((row, i) => { row[column] = values[i]; });
+    }
+    if (typeof dtype === "string") assertDType(dtype);
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, { ...this._explicitDtypes, ...castMap });
   }
 
   to_dict(orient: "records" | "list" = "records"): Row[] | Record<string, CellValue[]> {
@@ -574,6 +583,7 @@ export class DataFrame {
     this.assertColumnExists(column);
     return new Series(this._rows.map((row) => row[column]), {
       name: column,
+      dtype: this._explicitDtypes[column],
       index: this._index,
     });
   }

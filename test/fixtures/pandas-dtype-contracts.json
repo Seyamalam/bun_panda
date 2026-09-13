@@ -1,0 +1,6657 @@
+{
+  "pandasVersion": "3.0.5",
+  "cases": [
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [],
+      "expected": {
+        "dtype": "object",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [],
+      "expected": {
+        "dtype": "bool",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        "1",
+        "2"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [],
+      "expected": {
+        "dtype": "string",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "True",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1.2",
+          "2.8"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0",
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "-1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0.1",
+          "-0.0"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [],
+      "expected": {
+        "dtype": "float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [],
+      "expected": {
+        "dtype": "float64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [],
+      "expected": {
+        "dtype": "Float64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [],
+      "expected": {
+        "dtype": "int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [],
+      "expected": {
+        "dtype": "int16",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [],
+      "expected": {
+        "dtype": "int32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [],
+      "expected": {
+        "dtype": "int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [],
+      "expected": {
+        "dtype": "uint8",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [],
+      "expected": {
+        "dtype": "uint16",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [],
+      "expected": {
+        "dtype": "uint32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [],
+      "expected": {
+        "dtype": "uint64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [],
+      "expected": {
+        "dtype": "Int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [],
+      "expected": {
+        "dtype": "Int32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [],
+      "expected": {
+        "dtype": "Int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [],
+      "expected": {
+        "dtype": "UInt8",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [],
+      "expected": {
+        "dtype": "UInt16",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [],
+      "expected": {
+        "dtype": "UInt32",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [],
+      "expected": {
+        "dtype": "UInt64",
+        "values": []
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [],
+      "expected": {
+        "dtype": "object",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [],
+      "expected": {
+        "dtype": "bool",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        "1",
+        "2"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [],
+      "expected": {
+        "dtype": "string",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "True",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1.2",
+          "2.8"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0",
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "-1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0.1",
+          "-0.0"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [],
+      "expected": {
+        "dtype": "float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [],
+      "expected": {
+        "dtype": "float64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [],
+      "expected": {
+        "dtype": "Float64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [],
+      "expected": {
+        "dtype": "int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [],
+      "expected": {
+        "dtype": "int16",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [],
+      "expected": {
+        "dtype": "int32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "int32",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [],
+      "expected": {
+        "dtype": "int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [],
+      "expected": {
+        "dtype": "uint8",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [],
+      "expected": {
+        "dtype": "uint16",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "uint16",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [],
+      "expected": {
+        "dtype": "uint32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "uint32",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [],
+      "expected": {
+        "dtype": "uint64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        null,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        1,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        true,
+        null
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "expected": {
+        "dtype": "uint64",
+        "values": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [],
+      "expected": {
+        "dtype": "Int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [],
+      "expected": {
+        "dtype": "Int16",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [],
+      "expected": {
+        "dtype": "Int32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [],
+      "expected": {
+        "dtype": "Int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [],
+      "expected": {
+        "dtype": "UInt8",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [],
+      "expected": {
+        "dtype": "UInt16",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [],
+      "expected": {
+        "dtype": "UInt32",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [],
+      "expected": {
+        "dtype": "UInt64",
+        "values": []
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        -1,
+        2
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        "true",
+        "false"
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        "bad",
+        ""
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        0.1,
+        -0.0
+      ],
+      "error": "TypeError"
+    }
+  ]
+}
