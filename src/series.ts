@@ -1,4 +1,4 @@
-import { castColumn } from "./dtypes";
+import { castColumn, convertedDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
@@ -1286,8 +1286,8 @@ export class Series<T extends CellValue = CellValue> {
     return seriesApi.combine(this.view(), other, fn);
   }
   combine_first(other: Series<CellValue>): Series<CellValue> { return seriesApi.combine_first(this.view(), other); }
-  convert_dtypes(): Series<CellValue> { return seriesApi.convert_dtypes(this.view()); }
-  infer_objects(): Series<CellValue> { return seriesApi.infer_objects(this.view()); }
+  convert_dtypes(): Series<CellValue> { return this.astype(convertedDType(this._values, this._dtype, true)); }
+  infer_objects(): Series<CellValue> { return this.astype(convertedDType(this._values, this._dtype, false)); }
   reindex_like(other: Series<CellValue>, fill_value: CellValue | null = null): Series<CellValue> {
     return seriesApi.reindex_like(this.view(), other, fill_value);
   }

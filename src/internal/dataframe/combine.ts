@@ -162,62 +162,6 @@ function valuesDiffer(a: CellValue, b: CellValue): boolean {
   return a !== b;
 }
 
-const NUMERIC_STRING = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
-
-function coerceCell(value: CellValue): CellValue {
-  if (isMissing(value)) return value;
-  if (typeof value !== "string") return value;
-  const trimmed = value.trim();
-  if (NUMERIC_STRING.test(trimmed)) return Number(trimmed);
-  const lower = trimmed.toLowerCase();
-  if (lower === "true") return true;
-  if (lower === "false") return false;
-  return value;
-}
-
-/**
- * pandas-style `convert_dtypes`: coerce numeric-looking and
- * boolean-looking strings to real numbers/booleans across all columns.
- */
-export function convertDtypesRows(rows: Row[], columns: string[]): Row[] {
-  return rows.map((row) => {
-    const next: Row = {};
-    for (const column of columns) next[column] = coerceCell(row[column]);
-    return next;
-  });
-}
-
-/**
- * pandas-style `infer_objects`: like `convert_dtypes`, but only touches
- * mixed ("object"-like) columns; homogeneous columns are left untouched.
- */
-export function inferObjectsRows(rows: Row[], columns: string[]): Row[] {
-  const coercible = columns.filter((column) => {
-    let sawValue = false;
-    for (const row of rows) {
-      const value = row[column];
-      if (isMissing(value)) continue;
-      sawValue = true;
-      if (typeof value !== "string") return false;
-      const trimmed = value.trim();
-      if (trimmed !== "" && Number.isNaN(Number(trimmed)) && !isBooleanString(trimmed)) return false;
-    }
-    return sawValue;
-  });
-  return rows.map((row) => {
-    const next: Row = {};
-    for (const column of columns) {
-      next[column] = coercible.includes(column) ? coerceCell(row[column]) : row[column];
-    }
-    return next;
-  });
-}
-
-function isBooleanString(value: string): boolean {
-  return value === "true" || value === "false";
-}
-
-
 /**
  * pandas-style `corrwith`: Pearson correlation between the shared numeric
  * columns of two frames, pairing values by matching index label.

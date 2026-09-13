@@ -24,7 +24,7 @@ export type AggFn = (values: CellValue[], rows: Row[]) => CellValue;
 export type AggSpec = Record<string, AggName | AggFn>;
 
 export type IntegerDType = `${"int" | "uint" | "Int" | "UInt"}${8 | 16 | 32 | 64}`;
-export type DType = "number" | "string" | "boolean" | "date" | "bool" | "object"
+export type DType = "number" | "string" | "str" | "boolean" | "date" | "bool" | "object"
   | "float32" | "float64" | "Float32" | "Float64" | IntegerDType;
 
 export type InferredDType = DType | "mixed" | "unknown";

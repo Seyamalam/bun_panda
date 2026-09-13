@@ -322,32 +322,6 @@ export function combine_first(s: SeriesHost, other: Series<CellValue>): Series<C
     return new Series(out, { index: range(length), name: s.nameSnapshot() });
   }
 
-  /**
-   * Values are already strongly typed in TS, so convert_dtypes is an honest
-   * copy that preserves dtype inference (pandas parity shim).
-   */
-export function convert_dtypes(s: SeriesHost, ): Series<CellValue> {
-    return s.copy() as Series<CellValue>;
-  }
-
-  /**
-   * Infers better dtypes for stringly-typed content: numeric strings become
-   * numbers and "true"/"false" become booleans; everything else unchanged.
-   */
-export function infer_objects(s: SeriesHost, ): Series<CellValue> {
-    const numericPattern = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
-    const out = s.valuesSnapshot().map((value): CellValue => {
-      if (typeof value !== "string") return value as CellValue;
-      const trimmed = value.trim();
-      if (numericPattern.test(trimmed)) return Number(trimmed);
-      if (trimmed === "true") return true;
-      if (trimmed === "false") return false;
-      return value;
-    });
-    return new Series(out, { index: [...s.labelsSnapshot()], name: s.nameSnapshot() });
-  }
-
-  /** Reindex to match another series' index labels (fill_value for gaps). */
 export function reindex_like(s: SeriesHost, other: Series<CellValue>, _fill_value: CellValue | null = null): Series<CellValue> {
     return s.reindex([...(other.index as IndexLabel[])]) as unknown as Series<CellValue>;
   }

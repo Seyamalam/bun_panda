@@ -19,16 +19,34 @@ def encode(x):
 
 cases=[]
 dtypes=['object','bool','boolean','string','float32','float64','Float32','Float64']+[f'{prefix}{bits}' for prefix in ['int','uint','Int','UInt'] for bits in [8,16,32,64]]
-inputs=[[],[None,None],[1,None],[True,None],['1','2'],[1.2,2.8],[0,1],[-1,2],['true','false'],['bad',''],[0.1,-0.0]]
+inputs=[[],[None,None],[1,None],[True,None],['1','2'],[1.2,2.8],[0,1],[-1,2],['true','false'],['bad',''],[0.1,-0.0],[pd.NA,1],[np.nan,1],[np.nan,np.nan],[pd.NA,pd.NA],['a',pd.NA],[None,np.nan],[np.inf,-np.inf]]
 for mode in ['constructor','astype']:
     for dtype in dtypes:
         for values in inputs:
-            entry={'mode':mode,'dtype':dtype,'values':values}
+            entry={'mode':mode,'dtype':dtype,'values':[encode(x) for x in values]}
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore')
                     s=pd.Series(values,dtype=dtype) if mode=='constructor' else pd.Series(values,dtype=object).astype(dtype)
                 entry['expected']={'dtype':str(s.dtype),'values':[encode(x) for x in s.tolist()]}
+            except Exception as e:
+                entry['error']=type(e).__name__
+            cases.append(entry)
+for mode in ['infer_objects','convert_dtypes']:
+    for dtype in ['object','float32','float64','Float32','int8','uint8','Int8','bool','boolean','string']:
+        for values in inputs:
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    source=pd.Series(values,dtype=dtype)
+            except Exception:
+                continue
+            entry={'mode':mode,'dtype':dtype,'values':[encode(x) for x in values]}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result=getattr(source,mode)()
+                entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()]}
             except Exception as e:
                 entry['error']=type(e).__name__
             cases.append(entry)

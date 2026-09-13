@@ -13,12 +13,25 @@ function encode(value: CellValue): unknown {
   return value;
 }
 
+function decode(value: unknown): CellValue {
+  if (value && typeof value === "object") {
+    if ("$missing" in value) return value.$missing === "NA" ? NA : NaN;
+    if ("$number" in value) return value.$number === "-0" ? -0 : value.$number === "Infinity" ? Infinity : -Infinity;
+  }
+  return value as CellValue;
+}
+
 for (const [i, entry] of fixture.cases.entries()) {
   test(`pandas dtype ${i}: ${entry.mode} ${entry.dtype} ${JSON.stringify(entry.values)}`, () => {
     const dtype = entry.dtype as DType;
-    const run = () => entry.mode === "constructor"
-      ? new Series<CellValue>(entry.values, { dtype })
-      : new Series<CellValue>(entry.values, { dtype: "object" }).astype(dtype);
+    const values = entry.values.map(decode);
+    const run = () => {
+      if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
+      const source = new Series<CellValue>(values, { dtype });
+      if (entry.mode === "infer_objects") return source.infer_objects();
+      if (entry.mode === "convert_dtypes") return source.convert_dtypes();
+      return source;
+    };
     if (entry.error) expect(run).toThrow();
     else {
       const result = run();
@@ -48,4 +61,17 @@ test("integer ranges are checked and numpy integer casts wrap", () => {
   expect(() => new Series([Number.MAX_SAFE_INTEGER + 1], { dtype: "int64" })).toThrow("safe range");
   expect(() => new Series([], { dtype: "unknown" as DType })).toThrow("not understood");
   expect(() => new DataFrame().astype("unknown" as DType)).toThrow("not understood");
+});
+
+test("frame inference preserves text and labels while selecting nullable dtypes", () => {
+  const frame = new DataFrame({ code: ["001", null], qty: [1, null], active: [true, null], mixed: [1, "1"] }, { dtype: "object", index: ["a", "b"] });
+  const result = frame.convert_dtypes();
+  expect(result.dtypes()).toEqual({ code: "string", qty: "Int64", active: "boolean", mixed: "object" });
+  expect(result.to_records()).toEqual([
+    { code: "001", qty: 1, active: true, mixed: 1 },
+    { code: NA, qty: NA, active: NA, mixed: "1" },
+  ]);
+  expect(result.index).toEqual(["a", "b"]);
+  expect(frame.infer_objects().dtypes()).toEqual({ code: "str", qty: "float64", active: "object", mixed: "object" });
+  expect(frame.get("qty").to_list()).toEqual([1, null]);
 });

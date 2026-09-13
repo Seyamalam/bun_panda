@@ -112,7 +112,7 @@ describe("Series extracted API delegates", () => {
     expect(series.array).toEqual(["1", null, "3"]);
     expect(series.list).toEqual(["1", null, "3"]);
     expect(series.flags.allows_duplicate_labels).toBe(true);
-    expect(series.infer_objects().to_list()).toEqual([1, null, 3]);
+    expect(series.infer_objects().to_list()).toEqual(["1", NaN, "3"]);
     expect(series.to_markdown()).toContain("value");
     expect(series.to_latex()).toContain("\\begin{tabular}");
     expect(series.to_excel()).toContain("<table");

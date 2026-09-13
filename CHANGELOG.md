@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Correct Series/DataFrame dtype inference: preserve numeric-looking strings, select nullable types from scalar values, and distinguish object nulls, NA and NaN. Expand pinned dtype contracts to 1,106 cases.
+
 - Add explicit numeric/nullable, boolean, string and object dtype casts and metadata, checked against 528 pandas-generated constructor/cast cases. Nullable missing values use NA; float missing values use NaN. Exact integers outside the JavaScript safe range are rejected.
 
 ### Added

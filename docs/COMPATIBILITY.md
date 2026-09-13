@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 528 explicit dtype cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,106 dtype/cast/inference cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | Fails; exact compatibility is not established |
 
@@ -45,17 +45,25 @@ case observations are rejected even in report-only mode.
 
 The separate dtype fixture (`generate-dtype-oracle.py`) compares explicit dtype
 names and values, preserving `NA` and `NaN` separately. It covers constructors
-and casts for numeric widths, nullable numeric types, `bool`, `boolean`,
+casts and inference for numeric widths, nullable numeric types, `bool`, `boolean`,
 `string`, and `object`. Error cases currently assert rejection, not exact error
 classes/messages. Integers outside JavaScript's safe range are rejected until
 exact bigint storage is implemented. Default dtype inference and propagation
 through all operations remain incomplete. `number` and `date` remain legacy
 conversion aliases.
 
+`infer_objects()` and `convert_dtypes()` share scalar-type inference. They keep
+numeric-looking strings as strings, preserve explicit widths where pandas does,
+and distinguish object nulls, NaN, and NA during inference. JavaScript does not
+retain whether an integral number was written as Python `1` or `1.0`; an explicit
+float dtype is needed to preserve that distinction.
+
 ## Changes to existing behavior
 
 The pandas-oracle tests required changes to earlier library contracts:
 
+- `infer_objects()` and `convert_dtypes()` no longer parse numeric or boolean
+  strings. They now infer and retain dtype metadata.
 - Explicit `boolean` casts now require bool-like values; strings such as `"false"`
   are rejected. `string` casts use pandas boolean spelling (`"True"`/`"False"`)
   and represent missing values with `NA`.

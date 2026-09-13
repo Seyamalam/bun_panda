@@ -56,13 +56,13 @@ describe("DataFrame combine/compare", () => {
 });
 
 describe("DataFrame dtype conversion", () => {
-  test("convert_dtypes coerces numeric and boolean strings everywhere", () => {
+  test("convert_dtypes preserves text while inferring nullable types", () => {
     const df = new DataFrame({ a: ["1", "2.5"], b: ["true", "false"], c: [1, 2] });
     const converted = df.convert_dtypes();
-    expect(converted.to_dict("list")).toEqual({ a: [1, 2.5], b: [true, false], c: [1, 2] });
+    expect(converted.to_dict("list")).toEqual({ a: ["1", "2.5"], b: ["true", "false"], c: [1, 2] });
   });
 
-  test("infer_objects only touches mixed columns", () => {
+  test("infer_objects preserves numeric-looking strings", () => {
     const df = new DataFrame({
       mixed: ["1", "2"],
       text: ["a", "b"],
@@ -70,7 +70,7 @@ describe("DataFrame dtype conversion", () => {
     });
     const inferred = df.infer_objects();
     expect(inferred.to_dict("list")).toEqual({
-      mixed: [1, 2],
+      mixed: ["1", "2"],
       text: ["a", "b"],
       nums: [3, 4],
     });

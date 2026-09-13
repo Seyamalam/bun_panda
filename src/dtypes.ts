@@ -3,7 +3,7 @@ import type { CellValue, DType } from "./types";
 
 const integerPattern = /^(U?Int|u?int)(8|16|32|64)$/;
 const supported = new Set<string>([
-  "number", "date", "string", "boolean", "bool", "object",
+  "number", "date", "string", "str", "boolean", "bool", "object",
   "float32", "float64", "Float32", "Float64",
   ...["int", "uint", "Int", "UInt"].flatMap(prefix => [8, 16, 32, 64].map(bits => `${prefix}${bits}`)),
 ]);
@@ -52,7 +52,7 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
       if (value === NA) throw new TypeError("boolean value of NA is ambiguous");
       return typeof value === "number" && Number.isNaN(value) ? true : Boolean(value);
     }
-    if (dtype === "string") return isMissingScalar(value) ? NA : pythonString(value);
+    if (dtype === "string" || dtype === "str") return isMissingScalar(value) ? (dtype === "string" ? NA : NaN) : pythonString(value);
     if (dtype === "boolean") {
       if (isMissingScalar(value)) return NA;
       if (typeof value === "boolean") return value;
@@ -62,7 +62,10 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
     const nullable = dtype[0] === dtype[0]!.toUpperCase();
     if (isMissingScalar(value)) {
       if (nullable) return NA;
-      if (dtype.startsWith("float")) return NaN;
+      if (dtype.startsWith("float")) {
+        if (value === NA && !sourceDType?.match(/^(U?Int|Float|boolean)/)) throw new TypeError("float() argument must be a string or a real number, not 'NAType'");
+        return NaN;
+      }
       throw new TypeError("Cannot convert non-finite values (NA or inf) to integer");
     }
     const integer = integerPattern.exec(dtype);
@@ -91,4 +94,31 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
     }
     return truncated === 0 ? 0 : truncated;
   });
+}
+
+/** Infer from scalar types; parsing text is exclusively an explicit cast. */
+export function convertedDType(values: readonly CellValue[], source: DType | undefined, nullable: boolean): DType {
+  if (source && source !== "object" && source !== "number" && source !== "date") {
+    if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string") return source;
+    if (/^u?int/.test(source)) return source.replace(/^uint/, "UInt").replace(/^int/, "Int") as DType;
+    if (source === "bool") return "boolean";
+    if (source === "str") return "string";
+  }
+  const present = values.filter(value => !isMissingScalar(value));
+  if (present.length === 0) {
+    if (values.some(value => typeof value === "number" && Number.isNaN(value)) && !values.includes(NA)) return nullable ? "Int64" : "float64";
+    return nullable && source?.startsWith("float") ? "Int64" : source ?? "object";
+  }
+  if (present.every(value => typeof value === "string")) return nullable ? "string" : "str";
+  if (present.every(value => typeof value === "boolean")) {
+    return nullable ? "boolean" : present.length === values.length ? "bool" : "object";
+  }
+  if (present.every(value => typeof value === "number")) {
+    if (!nullable && values.includes(NA)) return "object";
+    const integral = present.every(value => typeof value === "number" && Number.isSafeInteger(value));
+    if (nullable) return integral ? "Int64" : source === "float32" ? "Float32" : "Float64";
+    return integral && present.length === values.length ? "int64" : "float64";
+  }
+  if (present.every(value => value instanceof Date)) return "date";
+  return "object";
 }

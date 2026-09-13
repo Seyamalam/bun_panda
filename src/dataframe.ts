@@ -1,4 +1,4 @@
-import { assertDType, castColumn } from "./dtypes";
+import { assertDType, castColumn, convertedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -127,10 +127,8 @@ import {
   combineFrames,
   combineFirstFrames,
   compareFrames,
-  convertDtypesRows,
   corrwithValues,
   hasDuplicateLabels,
-  inferObjectsRows,
   stackFrame,
   unstackFrame,
   type FrameCombineFn,
@@ -2360,30 +2358,21 @@ export class DataFrame {
     return this.withRows(result.rows, result.index, result.columns, true);
   }
 
-  /**
-   * pandas-style `convert_dtypes`: coerce numeric-looking and
-   * boolean-looking strings to real numbers/booleans in every column.
-   */
+  /** Convert scalar types to nullable dtypes without parsing string values. */
   convert_dtypes(): DataFrame {
-    return this.withRows(
-      convertDtypesRows(this._rows, this._columns),
-      [...this._index],
-      this._columns,
-      true
-    );
+    return this.convertColumnDtypes(true);
   }
 
-  /**
-   * pandas-style `infer_objects`: like `convert_dtypes`, but only mixed
-   * ("object"-like) columns are converted; homogeneous columns pass through.
-   */
+  /** Infer more specific scalar types for object columns. */
   infer_objects(): DataFrame {
-    return this.withRows(
-      inferObjectsRows(this._rows, this._columns),
-      [...this._index],
-      this._columns,
-      true
-    );
+    return this.convertColumnDtypes(false);
+  }
+
+  private convertColumnDtypes(nullable: boolean): DataFrame {
+    const targets = Object.fromEntries(this._columns.map(column => [column,
+      convertedDType(this._rows.map(row => row[column]), this._explicitDtypes[column], nullable),
+    ]));
+    return this.astype(targets);
   }
 
   /**

@@ -150,7 +150,9 @@
       "dtype": "object",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "object",
@@ -158,6 +160,151 @@
           0.1,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -311,13 +458,122 @@
       "dtype": "bool",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "bool",
         "values": [
           true,
           false
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "bool",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
         ]
       }
     },
@@ -448,7 +704,138 @@
       "dtype": "boolean",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
       ],
       "error": "TypeError"
     },
@@ -609,7 +996,9 @@
       "dtype": "string",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "string",
@@ -621,6 +1010,149 @@
     },
     {
       "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "string",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "inf",
+          "-inf"
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
       "dtype": "float32",
       "values": [],
       "expected": {
@@ -764,7 +1296,9 @@
       "dtype": "float32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "float32",
@@ -772,6 +1306,127 @@
           0.10000000149011612,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -921,7 +1576,9 @@
       "dtype": "float64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "float64",
@@ -929,6 +1586,127 @@
           0.1,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -1078,7 +1856,9 @@
       "dtype": "Float32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "Float32",
@@ -1086,6 +1866,145 @@
           0.10000000149011612,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -1235,7 +2154,9 @@
       "dtype": "Float64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "Float64",
@@ -1249,6 +2170,145 @@
     },
     {
       "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
       "dtype": "int8",
       "values": [],
       "expected": {
@@ -1360,9 +2420,94 @@
       "dtype": "int8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -1477,9 +2622,94 @@
       "dtype": "int16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -1594,9 +2824,94 @@
       "dtype": "int32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -1711,9 +3026,94 @@
       "dtype": "int64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "int64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -1822,9 +3222,94 @@
       "dtype": "uint8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -1933,9 +3418,94 @@
       "dtype": "uint16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2044,9 +3614,94 @@
       "dtype": "uint32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2155,9 +3810,94 @@
       "dtype": "uint64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2298,9 +4038,140 @@
       "dtype": "Int8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2441,9 +4312,140 @@
       "dtype": "Int16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2584,9 +4586,140 @@
       "dtype": "Int32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2727,9 +4860,140 @@
       "dtype": "Int64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -2864,9 +5128,140 @@
       "dtype": "UInt8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -3001,9 +5396,140 @@
       "dtype": "UInt16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -3138,9 +5664,140 @@
       "dtype": "UInt32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "constructor",
@@ -3275,9 +5932,140 @@
       "dtype": "UInt64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "constructor",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -3428,7 +6216,9 @@
       "dtype": "object",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "object",
@@ -3436,6 +6226,151 @@
           0.1,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "object",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -3589,13 +6524,122 @@
       "dtype": "bool",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "bool",
         "values": [
           true,
           false
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "bool",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
         ]
       }
     },
@@ -3726,7 +6770,138 @@
       "dtype": "boolean",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
       ],
       "error": "TypeError"
     },
@@ -3887,7 +7062,9 @@
       "dtype": "string",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "string",
@@ -3899,6 +7076,149 @@
     },
     {
       "mode": "astype",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "string",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "inf",
+          "-inf"
+        ]
+      }
+    },
+    {
+      "mode": "astype",
       "dtype": "float32",
       "values": [],
       "expected": {
@@ -4042,7 +7362,9 @@
       "dtype": "float32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "float32",
@@ -4050,6 +7372,127 @@
           0.10000000149011612,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -4199,7 +7642,9 @@
       "dtype": "float64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "float64",
@@ -4207,6 +7652,127 @@
           0.1,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -4356,7 +7922,9 @@
       "dtype": "Float32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "Float32",
@@ -4364,6 +7932,145 @@
           0.10000000149011612,
           {
             "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
           }
         ]
       }
@@ -4513,7 +8220,9 @@
       "dtype": "Float64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "Float64",
@@ -4527,6 +8236,145 @@
     },
     {
       "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
       "dtype": "int8",
       "values": [],
       "expected": {
@@ -4644,7 +8492,9 @@
       "dtype": "int8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "int8",
@@ -4656,6 +8506,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "int16",
       "values": [],
       "expected": {
@@ -4773,7 +8706,9 @@
       "dtype": "int16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "int16",
@@ -4785,6 +8720,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "int32",
       "values": [],
       "expected": {
@@ -4902,7 +8920,9 @@
       "dtype": "int32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "int32",
@@ -4911,6 +8931,89 @@
           0
         ]
       }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -5031,7 +9134,9 @@
       "dtype": "int64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "int64",
@@ -5040,6 +9145,89 @@
           0
         ]
       }
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "int64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -5154,7 +9342,9 @@
       "dtype": "uint8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "uint8",
@@ -5166,6 +9356,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "uint16",
       "values": [],
       "expected": {
@@ -5277,7 +9550,9 @@
       "dtype": "uint16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "uint16",
@@ -5289,6 +9564,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "uint32",
       "values": [],
       "expected": {
@@ -5400,7 +9758,9 @@
       "dtype": "uint32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "uint32",
@@ -5412,6 +9772,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "uint64",
       "values": [],
       "expected": {
@@ -5523,7 +9966,9 @@
       "dtype": "uint64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "expected": {
         "dtype": "uint64",
@@ -5535,6 +9980,89 @@
     },
     {
       "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "uint64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "astype",
       "dtype": "Int8",
       "values": [],
       "expected": {
@@ -5672,9 +10200,140 @@
       "dtype": "Int8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -5815,9 +10474,140 @@
       "dtype": "Int16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -5958,9 +10748,140 @@
       "dtype": "Int32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -6101,9 +11022,140 @@
       "dtype": "Int64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "Int64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -6238,9 +11290,140 @@
       "dtype": "UInt8",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt8",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -6375,9 +11558,140 @@
       "dtype": "UInt16",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt16",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -6512,9 +11826,140 @@
       "dtype": "UInt32",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
     },
     {
       "mode": "astype",
@@ -6649,9 +12094,4276 @@
       "dtype": "UInt64",
       "values": [
         0.1,
-        -0.0
+        {
+          "$number": "-0"
+        }
       ],
       "error": "TypeError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "UInt64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "astype",
+      "dtype": "UInt64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "error": "OverflowError"
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [],
+      "expected": {
+        "dtype": "object",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "a",
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "object",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [],
+      "expected": {
+        "dtype": "float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [],
+      "expected": {
+        "dtype": "float64",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "int8",
+      "values": [],
+      "expected": {
+        "dtype": "int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "uint8",
+      "values": [],
+      "expected": {
+        "dtype": "uint8",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "uint8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "uint8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "uint8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [],
+      "expected": {
+        "dtype": "Int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "Int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [],
+      "expected": {
+        "dtype": "bool",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "bool",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "boolean",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [],
+      "expected": {
+        "dtype": "string",
+        "values": []
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "True",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1.2",
+          "2.8"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0",
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "-1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0.1",
+          "-0.0"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "infer_objects",
+      "dtype": "string",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "inf",
+          "-inf"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [],
+      "expected": {
+        "dtype": "object",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "object",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [],
+      "expected": {
+        "dtype": "Int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [],
+      "expected": {
+        "dtype": "Int64",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [],
+      "expected": {
+        "dtype": "Float32",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          1.2000000476837158,
+          2.799999952316284
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          -1.0,
+          2.0
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Float32",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "int8",
+      "values": [],
+      "expected": {
+        "dtype": "Int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "uint8",
+      "values": [],
+      "expected": {
+        "dtype": "UInt8",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "uint8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "uint8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "UInt8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [],
+      "expected": {
+        "dtype": "Int8",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "Int8",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "Int8",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "bool",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [],
+      "expected": {
+        "dtype": "boolean",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          true
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "boolean",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [],
+      "expected": {
+        "dtype": "string",
+        "values": []
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "True",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1.2",
+          "2.8"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0",
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "-1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "0.1",
+          "-0.0"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "a",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "convert_dtypes",
+      "dtype": "string",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "inf",
+          "-inf"
+        ]
+      }
     }
   ]
 }
