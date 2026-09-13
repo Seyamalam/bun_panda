@@ -45,7 +45,7 @@ describe("Series numeric contracts", () => {
     expect(description.get("max")).toBe(4);
     expect(description.name).toBe("x");
     expect(new Series<CellValue>(["b", "a", "b", null]).describe().to_dict()).toEqual({ count: 3, unique: 2, top: "b", freq: 2 });
-    expect(new Series<CellValue>([]).describe().to_dict()).toEqual({ count: 0, unique: 0, top: null, freq: 0 });
+    expect(new Series<CellValue>([]).describe().to_dict()).toEqual({ count: 0, unique: 0, top: NaN, freq: 0 });
     const date = new Date("2026-01-01T00:00:00Z");
     expect(new Series<CellValue>([date, new Date(date)]).describe().get("freq")).toBe(2);
   });
@@ -98,7 +98,7 @@ describe("Series numeric contracts", () => {
     const series = new Series<CellValue>([3, null, 1, 3, null], { index: ["e", "d", "c", "b", "a"] });
     expect(series.sort_values().index).toEqual(["c", "e", "b", "d", "a"]);
     expect(series.sort_values({ ascending: false, na_position: "first" }).index).toEqual(["d", "a", "e", "b", "c"]);
-    expect(series.sort_values(false).to_list()).toEqual([3, 3, 1, null, null]);
+    expect(series.sort_values(false).to_list()).toEqual([3, 3, 1, NaN, NaN]);
     expect(series.sort_index().index).toEqual(["a", "b", "c", "d", "e"]);
     expect(series.sort_index(false).index).toEqual(series.index);
     expect(series.argsort()).toEqual([2, 0, 3]);
@@ -115,8 +115,8 @@ describe("Series numeric contracts", () => {
     const series = new Series<CellValue>([1, 2, 3], { index: ["a", "b", "c"], name: "x" });
     expect(series.where([true, false, true], 0).to_list()).toEqual([1, 0, 3]);
     expect(series.mask([true, false, true], 0).to_list()).toEqual([0, 2, 0]);
-    expect(series.where((_value, label) => label === "b").to_list()).toEqual([null, 2, null]);
-    expect(series.mask((_value, _label, position) => position === 1).to_list()).toEqual([1, null, 3]);
+    expect(series.where((_value, label) => label === "b").to_list()).toEqual([NaN, 2, NaN]);
+    expect(series.mask((_value, _label, position) => position === 1).to_list()).toEqual([1, NaN, 3]);
     expect(series.where(() => true).name).toBe("x");
     expect(() => series.where([true])).toThrow("length");
     expect(() => series.mask([])).toThrow("length");
@@ -140,12 +140,12 @@ describe("Series numeric contracts", () => {
 
   test("shifts, differences and percentage changes handle direction and gaps", () => {
     const series = new Series<CellValue>([1, 2, 4, null, 0, 5]);
-    expect(series.shift().to_list()).toEqual([null, 1, 2, 4, null, 0]);
-    expect(series.shift(-1).to_list()).toEqual([2, 4, null, 0, 5, null]);
-    expect(series.diff().to_list()).toEqual([null, 1, 2, null, null, 5]);
-    expect(series.diff(-1).to_list()).toEqual([-1, -2, null, null, -5, null]);
-    expect(series.pct_change().to_list()).toEqual([null, 1, 1, null, null, null]);
-    expect(series.pct_change(-1).to_list()).toEqual([-0.5, -0.5, null, null, -1, null]);
+    expect(series.shift().to_list()).toEqual([NaN, 1, 2, 4, NaN, 0]);
+    expect(series.shift(-1).to_list()).toEqual([2, 4, NaN, 0, 5, NaN]);
+    expect(series.diff().to_list()).toEqual([NaN, 1, 2, NaN, NaN, 5]);
+    expect(series.diff(-1).to_list()).toEqual([-1, -2, NaN, NaN, -5, NaN]);
+    expect(series.pct_change().to_list()).toEqual([NaN, 1, 1, NaN, NaN, NaN]);
+    expect(series.pct_change(-1).to_list()).toEqual([-0.5, -0.5, NaN, NaN, -1, NaN]);
     expect(series.shift(0).equals(series)).toBe(true);
   });
 
@@ -162,13 +162,13 @@ describe("Series numeric contracts", () => {
 
   test("fills and reindex retain source labels and source data", () => {
     const series = new Series<CellValue>([null, 2, null, 6, null], { index: ["a", "b", "c", "d", "e"] });
-    expect(series.ffill().to_list()).toEqual([null, 2, 2, 6, 6]);
-    expect(series.bfill().to_list()).toEqual([2, 2, 6, 6, null]);
+    expect(series.ffill().to_list()).toEqual([NaN, 2, 2, 6, 6]);
+    expect(series.bfill().to_list()).toEqual([2, 2, 6, 6, NaN]);
     expect(series.interpolate().to_list()).toEqual([2, 2, 4, 6, 6]);
     expect(new Series<CellValue>([]).interpolate().empty).toBe(true);
     expect(new Series<CellValue>([null, null]).interpolate().to_list()).toEqual([null, null]);
-    expect(series.reindex(["d", "missing", "a"], -1).to_list()).toEqual([6, -1, null]);
-    expect(series.to_list()).toEqual([null, 2, null, 6, null]);
+    expect(series.reindex(["d", "missing", "a"], -1).to_list()).toEqual([6, -1, NaN]);
+    expect(series.to_list()).toEqual([NaN, 2, NaN, 6, NaN]);
   });
 
   test("aggregate routes named reducers and rejects unknown reducers", () => {
@@ -182,16 +182,16 @@ describe("Series numeric contracts", () => {
   test("reverse arithmetic and aliases preserve operand order", () => {
     const series = new Series<CellValue>([2, 4, null]);
     const cases = [
-      ["subtract", [-1, 1, null]], ["multiply", [6, 12, null]],
-      ["truediv", [2 / 3, 4 / 3, null]], ["floordiv", [0, 1, null]],
-      ["radd", [5, 7, null]], ["rmul", [6, 12, null]],
-      ["rdiv", [1.5, 0.75, null]], ["rtruediv", [1.5, 0.75, null]],
-      ["rmod", [1, 3, null]], ["rpow", [9, 81, null]], ["rfloordiv", [1, 0, null]],
+      ["subtract", [-1, 1, NaN]], ["multiply", [6, 12, NaN]],
+      ["truediv", [2 / 3, 4 / 3, NaN]], ["floordiv", [0, 1, NaN]],
+      ["radd", [5, 7, NaN]], ["rmul", [6, 12, NaN]],
+      ["rdiv", [1.5, 0.75, NaN]], ["rtruediv", [1.5, 0.75, NaN]],
+      ["rmod", [1, 3, NaN]], ["rpow", [9, 81, NaN]], ["rfloordiv", [1, 0, NaN]],
     ] as const;
     for (const [method, expected] of cases) expect<CellValue[]>(series[method](3).to_list()).toEqual([...expected]);
-    expect<CellValue[]>(new Series<CellValue>(["2", null]).neg().to_list()).toEqual([-2, null]);
-    expect(new Series<CellValue>(["-2.25", null]).abs().to_list()).toEqual([2.25, null]);
-    expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual([2.2, null]);
+    expect<CellValue[]>(new Series<CellValue>(["2", null]).neg().to_list()).toEqual([-2, NaN]);
+    expect(new Series<CellValue>(["-2.25", null]).abs().to_list()).toEqual([2.25, NaN]);
+    expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual(["2.25", NaN]);
     expect<CellValue[]>(series.ge(3).to_list()).toEqual([false, true, null]);
   });
 

@@ -1909,6 +1909,7 @@ export class DataFrame {
     const rows = this._rows.map((row) => {
       const next = cloneRow(row, this._columns);
       for (const column of this._columns) {
+        if (this._explicitDtypes[column] === "object") continue;
         const value = next[column];
         if (isNumber(value)) {
           next[column] = roundToEven(value, decimals);
@@ -1916,7 +1917,7 @@ export class DataFrame {
       }
       return next;
     });
-    return this.withRows(rows, this._index, this._columns, true);
+    return this.withReplacement(rows, this._index, this._columns, true);
   }
 
   abs(columns?: string | string[]): DataFrame {

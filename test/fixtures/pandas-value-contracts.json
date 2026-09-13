@@ -7,6 +7,7 @@
       "api": "Series.sum",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -15,6 +16,7 @@
       "api": "Series.prod",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": 1.0,
       "status": "ok"
     },
@@ -23,6 +25,7 @@
       "api": "Series.skew",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -31,6 +34,7 @@
       "api": "Series.kurt",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -39,6 +43,7 @@
       "api": "Series.count",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": 0,
       "status": "ok"
     },
@@ -47,6 +52,7 @@
       "api": "Series.is_unique",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -55,6 +61,7 @@
       "api": "Series.is_monotonic_increasing",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -63,6 +70,7 @@
       "api": "Series.is_monotonic_decreasing",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -71,6 +79,7 @@
       "api": "Series.hasnans",
       "values": [],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -81,6 +90,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [],
       "status": "ok"
     },
@@ -91,6 +101,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [],
       "status": "ok"
     },
@@ -101,6 +112,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [],
       "status": "ok"
     },
@@ -111,6 +123,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1.0,
       "status": "ok"
     },
@@ -121,6 +134,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1.0,
       "status": "ok"
     },
@@ -131,6 +145,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -141,6 +156,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -151,6 +167,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1,
       "status": "ok"
     },
@@ -161,6 +178,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -171,6 +189,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -181,6 +200,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -191,6 +211,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -203,6 +224,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0
       ],
@@ -217,6 +239,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         1.0
       ],
@@ -231,6 +254,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         1.0
       ],
@@ -246,6 +270,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 4.0,
       "status": "ok"
     },
@@ -259,6 +284,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1.0,
       "status": "ok"
     },
@@ -272,6 +298,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -285,6 +312,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -298,6 +326,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 4,
       "status": "ok"
     },
@@ -311,6 +340,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -324,6 +354,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -337,6 +368,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -350,6 +382,7 @@
         1
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -365,6 +398,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0,
         0.0,
@@ -385,6 +419,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         1.0,
@@ -405,6 +440,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         1.0,
@@ -423,6 +459,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 8.0,
       "status": "ok"
     },
@@ -436,6 +473,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 5.0,
       "status": "ok"
     },
@@ -449,6 +487,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1.9999999999999998,
       "status": "ok"
     },
@@ -462,6 +501,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 4.0,
       "status": "ok"
     },
@@ -475,6 +515,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 4,
       "status": "ok"
     },
@@ -488,6 +529,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -501,6 +543,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -514,6 +557,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -527,6 +571,7 @@
         5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -542,6 +587,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0,
         0.0,
@@ -562,6 +608,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         1.0,
@@ -582,6 +629,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         1.0,
@@ -600,6 +648,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 10.0,
       "status": "ok"
     },
@@ -613,6 +662,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 24.0,
       "status": "ok"
     },
@@ -626,6 +676,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -639,6 +690,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": -1.1999999999999993,
       "status": "ok"
     },
@@ -652,6 +704,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 4,
       "status": "ok"
     },
@@ -665,6 +718,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -678,6 +732,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -691,6 +746,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -704,6 +760,7 @@
         4
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -719,6 +776,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0,
         0.0,
@@ -739,6 +797,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         2.0,
@@ -759,6 +818,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         2.0,
@@ -775,6 +835,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -786,6 +847,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 1.0,
       "status": "ok"
     },
@@ -797,6 +859,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -808,6 +871,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -819,6 +883,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0,
       "status": "ok"
     },
@@ -830,6 +895,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -841,6 +907,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -852,6 +919,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -863,6 +931,7 @@
         null
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -876,6 +945,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         null,
         null
@@ -892,6 +962,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         null,
         null
@@ -908,6 +979,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         null,
         null
@@ -924,6 +996,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 6.0,
       "status": "ok"
     },
@@ -937,6 +1010,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 6.0,
       "status": "ok"
     },
@@ -950,6 +1024,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -963,6 +1038,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": null,
       "status": "ok"
     },
@@ -976,6 +1052,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 3,
       "status": "ok"
     },
@@ -989,6 +1066,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -1002,6 +1080,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1015,6 +1094,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1028,6 +1108,7 @@
         2
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -1043,6 +1124,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0,
         0.0,
@@ -1063,6 +1145,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         3.0,
         1.0,
@@ -1083,6 +1166,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         3.0,
         1.0,
@@ -1102,6 +1186,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -1116,6 +1201,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -1130,6 +1216,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -1144,6 +1231,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.1999999999999993,
       "status": "ok"
     },
@@ -1158,6 +1246,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 5,
       "status": "ok"
     },
@@ -1172,6 +1261,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -1186,6 +1276,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -1200,6 +1291,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1214,6 +1306,7 @@
         3
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1230,6 +1323,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         {
           "$number": "-0"
@@ -1256,6 +1350,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         -3.0,
         -1.0,
@@ -1278,6 +1373,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         -3.0,
         -1.0,
@@ -1299,6 +1395,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -1314,6 +1411,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": -19.140625,
       "status": "ok"
     },
@@ -1329,6 +1427,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 0.0,
       "status": "ok"
     },
@@ -1344,6 +1443,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": -1.5413333333333332,
       "status": "ok"
     },
@@ -1359,6 +1459,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": 6,
       "status": "ok"
     },
@@ -1374,6 +1475,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": true,
       "status": "ok"
     },
@@ -1389,6 +1491,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1404,6 +1507,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1419,6 +1523,7 @@
         0.5
       ],
       "args": {},
+      "dtype": "float64",
       "expected": false,
       "status": "ok"
     },
@@ -1436,6 +1541,7 @@
       "args": {
         "decimals": -1
       },
+      "dtype": "float64",
       "expected": [
         0.0,
         0.0,
@@ -1466,6 +1572,7 @@
       "args": {
         "decimals": 0
       },
+      "dtype": "float64",
       "expected": [
         2.0,
         4.0,
@@ -1492,6 +1599,7 @@
       "args": {
         "decimals": 1
       },
+      "dtype": "float64",
       "expected": [
         2.5,
         3.5,
@@ -3225,6 +3333,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3240,6 +3349,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3255,6 +3365,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3270,6 +3381,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3285,6 +3397,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3300,6 +3413,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3315,6 +3429,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3330,6 +3445,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3345,6 +3461,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3360,6 +3477,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [],
       "status": "ok"
     },
@@ -3371,6 +3489,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 0,
       "status": "ok"
     },
@@ -3382,6 +3501,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3397,6 +3517,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3414,6 +3535,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3431,6 +3553,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3448,6 +3571,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3465,6 +3589,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3482,6 +3607,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3499,6 +3625,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3516,6 +3643,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3533,6 +3661,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3550,6 +3679,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3567,6 +3697,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3584,6 +3715,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3601,6 +3733,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3618,6 +3751,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3635,6 +3769,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3653,6 +3788,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3671,6 +3807,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3688,6 +3825,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3705,6 +3843,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3726,6 +3865,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3747,6 +3887,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3768,6 +3909,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3789,6 +3931,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3810,6 +3953,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3831,6 +3975,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3852,6 +3997,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false
@@ -3873,6 +4019,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true
@@ -3894,6 +4041,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         1.0
       ],
@@ -3909,6 +4057,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 1,
       "status": "ok"
     },
@@ -3922,6 +4071,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -3943,6 +4093,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false
@@ -3966,6 +4117,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -3985,6 +4137,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -4004,6 +4157,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4027,6 +4181,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -4046,6 +4201,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -4065,6 +4221,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4088,6 +4245,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null
@@ -4111,6 +4269,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4134,6 +4293,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null
@@ -4157,6 +4317,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null
@@ -4180,6 +4341,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0
@@ -4203,6 +4365,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null
@@ -4226,6 +4389,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4249,6 +4413,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4273,6 +4438,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4297,6 +4463,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true
@@ -4320,6 +4487,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4346,6 +4514,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4376,6 +4545,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4406,6 +4576,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4436,6 +4607,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4466,6 +4638,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4496,6 +4669,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4526,6 +4700,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4556,6 +4731,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -4586,6 +4762,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -4616,6 +4793,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         1.0
       ],
@@ -4634,6 +4812,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 1,
       "status": "ok"
     },
@@ -4650,6 +4829,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0
@@ -4674,6 +4854,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -4706,6 +4887,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4734,6 +4916,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -4756,6 +4939,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4784,6 +4968,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4812,6 +4997,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -4834,6 +5020,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4862,6 +5049,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4894,6 +5082,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -4926,6 +5115,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -4958,6 +5148,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -4990,6 +5181,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -5022,6 +5214,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -5054,6 +5247,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5086,6 +5280,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5119,6 +5314,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5152,6 +5348,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -5184,6 +5381,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5222,6 +5420,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5252,6 +5451,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5282,6 +5482,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5312,6 +5513,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5342,6 +5544,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5372,6 +5575,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5402,6 +5606,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5432,6 +5637,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -5462,6 +5668,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -5492,6 +5699,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         5.0
@@ -5511,6 +5719,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 2,
       "status": "ok"
     },
@@ -5527,6 +5736,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5553,6 +5763,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -5585,6 +5796,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5613,6 +5825,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -5635,6 +5848,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5663,6 +5877,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5691,6 +5906,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -5713,6 +5929,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5741,6 +5958,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5773,6 +5991,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5805,6 +6024,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -5837,6 +6057,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -5869,6 +6090,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -5901,6 +6123,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -5933,6 +6156,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5965,6 +6189,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -5998,6 +6223,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6031,6 +6257,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -6063,6 +6290,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6101,6 +6329,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6131,6 +6360,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6161,6 +6391,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6191,6 +6422,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6221,6 +6453,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6251,6 +6484,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6281,6 +6515,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6311,6 +6546,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -6341,6 +6577,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -6371,6 +6608,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         1.0,
         2.0,
@@ -6392,6 +6630,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 4,
       "status": "ok"
     },
@@ -6408,6 +6647,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6438,6 +6678,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -6470,6 +6711,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6498,6 +6740,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -6520,6 +6763,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6548,6 +6792,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -6576,6 +6821,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -6598,6 +6844,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -6626,6 +6873,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.0,
@@ -6658,6 +6906,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6690,6 +6939,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -6722,6 +6972,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -1.0,
@@ -6754,6 +7005,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -6786,6 +7038,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -6818,6 +7071,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6850,6 +7104,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6883,6 +7138,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6916,6 +7172,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -6948,6 +7205,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -6984,6 +7242,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7008,6 +7267,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7032,6 +7292,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7056,6 +7317,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7080,6 +7342,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7104,6 +7367,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7128,6 +7392,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -7146,6 +7411,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -7170,6 +7436,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -7194,6 +7461,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         null
       ],
@@ -7210,6 +7478,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 0,
       "status": "ok"
     },
@@ -7224,6 +7493,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null
@@ -7246,6 +7516,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -7272,6 +7543,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -7292,6 +7564,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -7312,6 +7585,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7338,6 +7612,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -7358,6 +7633,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -7378,6 +7654,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7404,6 +7681,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7430,6 +7708,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7456,6 +7735,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7482,6 +7762,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7508,6 +7789,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7534,6 +7816,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7560,6 +7843,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -7586,6 +7870,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7613,6 +7898,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7640,6 +7926,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -7666,6 +7953,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -7696,6 +7984,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7726,6 +8015,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7756,6 +8046,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7786,6 +8077,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7816,6 +8108,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7846,6 +8139,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7876,6 +8170,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -7904,6 +8199,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -7934,6 +8230,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -7964,6 +8261,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         3.0,
         1.0,
@@ -7985,6 +8283,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 3,
       "status": "ok"
     },
@@ -8001,6 +8300,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8031,6 +8331,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -8063,6 +8364,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8091,6 +8393,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -8113,6 +8416,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8141,6 +8445,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -8169,6 +8474,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -8191,6 +8497,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -8219,6 +8526,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -8251,6 +8559,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8283,6 +8592,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -8315,6 +8625,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.0,
@@ -8347,6 +8658,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -8379,6 +8691,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -8411,6 +8724,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8443,6 +8757,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8476,6 +8791,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.0,
@@ -8509,6 +8825,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -8541,6 +8858,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.0,
@@ -8580,6 +8898,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8613,6 +8932,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8646,6 +8966,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8679,6 +9000,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8712,6 +9034,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8745,6 +9068,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8778,6 +9102,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8811,6 +9136,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -8844,6 +9170,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -8877,6 +9204,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         -3.0,
         -1.0,
@@ -8900,6 +9228,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 5,
       "status": "ok"
     },
@@ -8917,6 +9246,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -8950,6 +9280,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -8985,6 +9316,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9016,6 +9348,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -9039,6 +9372,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9068,6 +9402,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -9099,6 +9434,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -9122,6 +9458,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           1.0,
@@ -9151,6 +9488,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -1.0,
@@ -9186,6 +9524,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9221,6 +9560,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -9256,6 +9596,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -2.0,
@@ -9291,6 +9632,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -9326,6 +9668,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -9361,6 +9704,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9396,6 +9740,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9432,6 +9777,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -1.0,
@@ -9468,6 +9814,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -9503,6 +9850,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -3.0,
@@ -9547,6 +9895,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9583,6 +9932,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9619,6 +9969,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9655,6 +10006,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9691,6 +10043,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9727,6 +10080,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9763,6 +10117,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9799,6 +10154,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -9835,6 +10191,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           true,
@@ -9871,6 +10228,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": [
         2.5,
         3.5,
@@ -9896,6 +10254,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": 6,
       "status": "ok"
     },
@@ -9914,6 +10273,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -9950,6 +10310,7 @@
         "positional": [],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -9988,6 +10349,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -10022,6 +10384,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -10046,6 +10409,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -10076,6 +10440,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -2.5,
@@ -10110,6 +10475,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [],
         "index": [],
@@ -10134,6 +10500,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -0.5,
@@ -10164,6 +10531,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           3.5,
@@ -10202,6 +10570,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -10240,6 +10609,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -10278,6 +10648,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           -1.0,
@@ -10316,6 +10687,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           0.0,
@@ -10354,6 +10726,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           null,
@@ -10392,6 +10765,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -10430,6 +10804,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.0,
@@ -10471,6 +10846,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.0,
@@ -10510,6 +10886,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           false,
@@ -10548,6 +10925,7 @@
         ],
         "metadata": true
       },
+      "dtype": "float64",
       "expected": {
         "values": [
           2.5,
@@ -10593,6 +10971,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "HELLO",
         "HELLO",
@@ -10613,6 +10992,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "hello",
         "hello",
@@ -10633,6 +11013,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "Hello",
         "Hello",
@@ -10653,6 +11034,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "Hello",
         "Hello",
@@ -10673,6 +11055,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "HELLO",
         "hELLo",
@@ -10693,6 +11076,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "HELLO",
         "hELLo",
@@ -10713,6 +11097,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "HELLO",
         "hELLo",
@@ -10733,6 +11118,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         5,
         5,
@@ -10755,6 +11141,7 @@
           5
         ]
       },
+      "dtype": "object",
       "expected": [
         "HELLO",
         "hELLo",
@@ -10778,6 +11165,7 @@
           3
         ]
       },
+      "dtype": "object",
       "expected": [
         "EL",
         "EL",
@@ -10800,6 +11188,7 @@
           8
         ]
       },
+      "dtype": "object",
       "expected": [
         null,
         null,
@@ -10822,6 +11211,7 @@
           "a.b"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -10844,6 +11234,7 @@
           "a"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -10866,6 +11257,7 @@
           "."
         ]
       },
+      "dtype": "object",
       "expected": [
         5,
         5,
@@ -10887,6 +11279,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "  SPACE  ",
         "-12",
@@ -10909,6 +11302,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "  space  ",
         "-12",
@@ -10931,6 +11325,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "  space  ",
         "-12",
@@ -10953,6 +11348,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "  Space  ",
         "-12",
@@ -10975,6 +11371,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "space",
         "-12",
@@ -10997,6 +11394,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "space  ",
         "-12",
@@ -11019,6 +11417,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "  space",
         "-12",
@@ -11041,6 +11440,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         9.0,
         3.0,
@@ -11065,6 +11465,7 @@
           5
         ]
       },
+      "dtype": "object",
       "expected": [
         "  space  ",
         "-0012",
@@ -11090,6 +11491,7 @@
           3
         ]
       },
+      "dtype": "object",
       "expected": [
         " s",
         "12",
@@ -11114,6 +11516,7 @@
           8
         ]
       },
+      "dtype": "object",
       "expected": [
         " ",
         null,
@@ -11138,6 +11541,7 @@
           "a.b"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -11162,6 +11566,7 @@
           "a"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -11186,6 +11591,7 @@
           "."
         ]
       },
+      "dtype": "object",
       "expected": [
         9.0,
         3.0,
@@ -11208,6 +11614,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A.B",
         "ACB",
@@ -11230,6 +11637,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a.b",
         "acb",
@@ -11252,6 +11660,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A.b",
         "Acb",
@@ -11274,6 +11683,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A.B",
         "Acb",
@@ -11296,6 +11706,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a.b",
         "acb",
@@ -11318,6 +11729,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a.b",
         "acb",
@@ -11340,6 +11752,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a.b",
         "acb",
@@ -11362,6 +11775,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         3.0,
         3.0,
@@ -11386,6 +11800,7 @@
           5
         ]
       },
+      "dtype": "object",
       "expected": [
         "00a.b",
         "00acb",
@@ -11411,6 +11826,7 @@
           3
         ]
       },
+      "dtype": "object",
       "expected": [
         ".b",
         "cb",
@@ -11435,6 +11851,7 @@
           8
         ]
       },
+      "dtype": "object",
       "expected": [
         null,
         null,
@@ -11459,6 +11876,7 @@
           "a.b"
         ]
       },
+      "dtype": "object",
       "expected": [
         true,
         true,
@@ -11483,6 +11901,7 @@
           "a"
         ]
       },
+      "dtype": "object",
       "expected": [
         true,
         true,
@@ -11507,6 +11926,7 @@
           "."
         ]
       },
+      "dtype": "object",
       "expected": [
         3.0,
         3.0,
@@ -11528,6 +11948,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00c9",
         "\u00c9COLE",
@@ -11548,6 +11969,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00e9",
         "\u00e9cole",
@@ -11568,6 +11990,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00e9",
         "\u00c9cole",
@@ -11588,6 +12011,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00c9",
         "\u00c9cole",
@@ -11608,6 +12032,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00e9",
         "\u00e9COLE",
@@ -11628,6 +12053,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00e9",
         "\u00e9COLE",
@@ -11648,6 +12074,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "\ud83d\ude00\u00e9",
         "\u00e9COLE",
@@ -11668,6 +12095,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         2.0,
         5.0,
@@ -11690,6 +12118,7 @@
           5
         ]
       },
+      "dtype": "object",
       "expected": [
         "000\ud83d\ude00\u00e9",
         "\u00e9COLE",
@@ -11713,6 +12142,7 @@
           3
         ]
       },
+      "dtype": "object",
       "expected": [
         "\u00e9",
         "CO",
@@ -11735,6 +12165,7 @@
           8
         ]
       },
+      "dtype": "object",
       "expected": [
         null,
         null,
@@ -11757,6 +12188,7 @@
           "a.b"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -11779,6 +12211,7 @@
           "a"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         false,
@@ -11801,6 +12234,7 @@
           "."
         ]
       },
+      "dtype": "object",
       "expected": [
         2.0,
         5.0,
@@ -11821,6 +12255,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A",
         null,
@@ -11841,6 +12276,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a",
         null,
@@ -11861,6 +12297,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A",
         null,
@@ -11881,6 +12318,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "A",
         null,
@@ -11901,6 +12339,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a",
         null,
@@ -11921,6 +12360,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a",
         null,
@@ -11941,6 +12381,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         "a",
         null,
@@ -11961,6 +12402,7 @@
       "args": {
         "positional": []
       },
+      "dtype": "object",
       "expected": [
         1.0,
         null,
@@ -11983,6 +12425,7 @@
           5
         ]
       },
+      "dtype": "object",
       "expected": [
         "0000a",
         null,
@@ -12006,6 +12449,7 @@
           3
         ]
       },
+      "dtype": "object",
       "expected": [
         "",
         null,
@@ -12028,6 +12472,7 @@
           8
         ]
       },
+      "dtype": "object",
       "expected": [
         null,
         null,
@@ -12050,6 +12495,7 @@
           "a.b"
         ]
       },
+      "dtype": "object",
       "expected": [
         false,
         null,
@@ -12072,6 +12518,7 @@
           "a"
         ]
       },
+      "dtype": "object",
       "expected": [
         true,
         null,
@@ -12094,6 +12541,7 @@
           "."
         ]
       },
+      "dtype": "object",
       "expected": [
         1.0,
         null,

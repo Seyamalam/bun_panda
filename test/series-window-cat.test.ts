@@ -109,8 +109,8 @@ describe("Series extracted API delegates", () => {
 
     expect(series.at.a).toBe("1");
     expect(series.iat[2]).toBe("3");
-    expect(series.array).toEqual(["1", null, "3"]);
-    expect(series.list).toEqual(["1", null, "3"]);
+    expect(series.array).toEqual(["1", NaN, "3"]);
+    expect(series.list).toEqual(["1", NaN, "3"]);
     expect(series.flags.allows_duplicate_labels).toBe(true);
     expect(series.infer_objects().to_list()).toEqual(["1", NaN, "3"]);
     expect(series.to_markdown()).toContain("value");
@@ -133,10 +133,10 @@ describe("Series extracted API delegates", () => {
     const right = new Series<CellValue>([10, 20], { index: [0, 1], name: "other" });
 
     expect(left.combine_first(right).to_list()).toEqual([1, 20]);
-    expect(left.combine(right, (a, b) => Number(a ?? 0) + Number(b ?? 0)).to_list()).toEqual([11, 20]);
-    expect(left.compare(new Series<CellValue>([1, 3])).to_records()).toEqual([{ self: null, other: 3 }]);
+    expect(left.combine(right, (a, b) => Number(a ?? 0) + Number(b ?? 0)).to_list()).toEqual([11, NaN]);
+    expect(left.compare(new Series<CellValue>([1, 3])).to_records()).toEqual([{ self: NaN, other: 3 }]);
     expect(left.reindex_like(right).index).toEqual([0, 1]);
-    expect(left.asfreq(1).to_list()).toEqual([1, null, null]);
+    expect(left.asfreq(1).to_list()).toEqual([1, NaN, NaN]);
     expect(left.asof(2)).toBe(1);
     expect(left.unstack().columns).toEqual(["value"]);
     expect(left.xs(0)).toBe(1);

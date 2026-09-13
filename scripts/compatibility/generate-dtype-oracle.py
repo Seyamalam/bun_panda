@@ -77,6 +77,21 @@ for dtype in ['int16','Int16','float32','Float32','bool','boolean','string','str
             except Exception as e:
                 entry['error']=type(e).__name__
             cases.append(entry)
+for values in inputs+[[1,True],[1,'1'],['001','false',None]]:
+    source=pd.Series(values)
+    cases.append({'mode':'inferred_constructor','dtype':str(source.dtype),'values':[encode(x) for x in values],
+        'expected':{'dtype':str(source.dtype),'values':[encode(x) for x in source.tolist()]}})
+for dtype,values in [('float64',[-.5,.5]),('string',['1.25',None]),('object',[1.25,None]),('object',[True,False]),('boolean',[True,None])]:
+    source=pd.Series(values,dtype=dtype,index=['row-0','row-1'],name='v')
+    entry={'mode':'selection','dtype':dtype,'values':[encode(x) for x in values],'operation':'round','args':[0]}
+    try:
+        result=source.round(0)
+        entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}
+    except Exception as e:
+        entry['error']=type(e).__name__
+    result=source.to_frame().round(0)['v']
+    entry['frameExpected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}
+    cases.append(entry)
 queries=[]
 columns={'i':'int16','n':'Int16','f':'float32','nf':'Float32','b':'bool','nb':'boolean','s':'string','st':'str','o':'object'}
 frame=pd.DataFrame({key:pd.Series([1],dtype=dtype) for key,dtype in columns.items()})

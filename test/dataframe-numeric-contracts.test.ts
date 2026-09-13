@@ -4,12 +4,12 @@ import { DataFrame, Series } from "../src/index";
 describe("DataFrame numeric contracts", () => {
   test("fills preserve index, existing values and source data", () => {
     const frame = new DataFrame({ x: [null, 2, null, null, 8, null], label: [null, "a", null, "b", null, null] }, { index: ["a", "b", "c", "d", "e", "f"] });
-    expect(frame.ffill().get("x").to_list()).toEqual([null, 2, 2, 2, 8, 8]);
-    expect(frame.bfill().get("x").to_list()).toEqual([2, 2, 8, 8, 8, null]);
-    expect(frame.interpolate().get("x").to_list()).toEqual([null, 2, 4, 6, 8, null]);
-    expect(frame.interpolate().get("label").to_list()).toEqual([null, "a", null, "b", null, null]);
+    expect(frame.ffill().get("x").to_list()).toEqual([NaN, 2, 2, 2, 8, 8]);
+    expect(frame.bfill().get("x").to_list()).toEqual([2, 2, 8, 8, 8, NaN]);
+    expect(frame.interpolate().get("x").to_list()).toEqual([NaN, 2, 4, 6, 8, NaN]);
+    expect(frame.interpolate().get("label").to_list()).toEqual([NaN, "a", NaN, "b", NaN, NaN]);
     expect(frame.ffill().index).toEqual(frame.index);
-    expect(frame.get("x").to_list()).toEqual([null, 2, null, null, 8, null]);
+    expect(frame.get("x").to_list()).toEqual([NaN, 2, NaN, NaN, 8, NaN]);
     expect(new DataFrame({ x: [null, 1, null], y: [null, null, null] }).interpolate().values()).toEqual([[null, null], [1, null], [null, null]]);
   });
 
@@ -23,9 +23,9 @@ describe("DataFrame numeric contracts", () => {
   for (const [method, expected] of arithmetic) {
     test(`${method} handles scalars and equal-shape frames`, () => {
       const frame = new DataFrame({ x: [3, 5, null, "text", Infinity] });
-      expect(frame[method](2).get("x").to_list()).toEqual([...expected, null, null, null]);
+      expect(frame[method](2).get("x").to_list()).toEqual([...expected, NaN, NaN, NaN]);
       const right = new DataFrame({ x: [2, 2, 2, 2, 2] });
-      expect(frame[method](right).get("x").to_list()).toEqual([...expected, null, null, null]);
+      expect(frame[method](right).get("x").to_list()).toEqual([...expected, NaN, NaN, NaN]);
       expect(() => frame[method](new DataFrame({ x: [1] }))).toThrow("identical shape");
     });
   }
@@ -62,9 +62,9 @@ describe("DataFrame numeric contracts", () => {
 
   test("cumulative values skip gaps and retain their positions", () => {
     const frame = new DataFrame({ x: [3, null, 2, 4], y: [1, 2, 3, 4] });
-    expect(frame.cummax().get("x").to_list()).toEqual([3, null, 3, 4]);
-    expect(frame.cummin().get("x").to_list()).toEqual([3, null, 2, 2]);
-    expect(frame.cumprod().get("x").to_list()).toEqual([3, null, 6, 24]);
+    expect(frame.cummax().get("x").to_list()).toEqual([3, NaN, 3, 4]);
+    expect(frame.cummin().get("x").to_list()).toEqual([3, NaN, 2, 2]);
+    expect(frame.cumprod().get("x").to_list()).toEqual([3, NaN, 6, 24]);
     expect(frame.cumsum("y").get("y").to_list()).toEqual([1, 3, 6, 10]);
   });
 

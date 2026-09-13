@@ -26,6 +26,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     const dtype = entry.dtype as DType;
     const values = entry.values.map(decode);
     const run = () => {
+      if (entry.mode === "inferred_constructor") return new Series<CellValue>(values);
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
       const source = new Series<CellValue>(values, { dtype, ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}) });
       if ("operation" in entry) {
@@ -56,7 +57,7 @@ test("explicit frame casts preserve source, metadata, and missing representation
   expect(typed.copy().dtypes()).toEqual(typed.dtypes());
   expect(typed.get("id").dtype).toBe("Int16");
   expect(typed.index).toEqual(["a", "b"]);
-  expect(source.get("id").to_list()).toEqual(["1", null]);
+  expect(source.get("id").to_list()).toEqual(["1", NaN]);
   expect(new DataFrame([], { columns: ["id"], dtype: "UInt32" }).dtypes()).toEqual({ id: "UInt32" });
 });
 
@@ -91,9 +92,9 @@ for (const entry of fixture.cases) {
     if (entry.operation === "sort_values") args = ["v"];
     if (entry.operation === "reindex") args = [{ index: entry.args![0] }];
     const run = () => operation.apply(frame, args) as DataFrame;
-    if (entry.error) { expect(run).toThrow(); return; }
+    if (entry.error && !("frameExpected" in entry)) { expect(run).toThrow(); return; }
     const result = run();
-    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index, name: "v" }).toEqual(entry.expected!);
+    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index, name: "v" }).toEqual("frameExpected" in entry ? entry.frameExpected! : entry.expected!);
   });
 }
 

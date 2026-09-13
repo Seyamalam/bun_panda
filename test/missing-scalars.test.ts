@@ -20,7 +20,7 @@ test("Series counts, fills, drops and cumulative scans use the same missing mask
   expect(series.fillna(2).to_list()).toEqual([1,2,2,2,2,2,2,3]);
   expect(series.ffill().to_list()).toEqual([1,1,1,1,1,1,1,3]);
   expect(series.bfill().to_list()).toEqual([1,3,3,3,3,3,3,3]);
-  expect<CellValue[]>(series.cumsum().to_list()).toEqual([1,null,null,null,null,null,null,4]);
+  expect<CellValue[]>(series.cumsum().to_list()).toEqual([1,NaN,NaN,NaN,NaN,NaN,NaN,4]);
 });
 
 test("DataFrame missing operations recognize exported sentinels", () => {

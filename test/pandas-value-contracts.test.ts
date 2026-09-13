@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { Categorical, CategoricalDtype, DataFrame, Series, factorize, get_dummies } from "../src/index";
-import type { CellValue } from "../src/types";
+import type { CellValue, DType } from "../src/types";
 import fixture from "./fixtures/pandas-value-contracts.json";
 
 // Matches the documented fixture transport, with zero numeric tolerance.
@@ -22,13 +22,13 @@ for (const entry of fixture.cases) {
     const args = entry.args as { decimals?: number; categories?: CellValue[]; other?: CellValue[]; ordered?: boolean; drop_first?: boolean; dummy_na?: boolean; positional?: (number|string)[]; metadata?: boolean };
     const execute = (): unknown => {
       if (entry.api.startsWith("Series.str.")) {
-        const accessor = new Series(values).str;
+        const accessor = new Series(values, { dtype: entry.dtype as DType | undefined }).str;
         const member: unknown = Reflect.get(accessor, entry.api.slice(11));
         if (typeof member !== "function") throw new Error(`Missing string method: ${entry.api}`);
         return member.apply(accessor,args.positional ?? []);
       }
       if (entry.api.startsWith("Series.")) {
-        const series = new Series(values, args.metadata ? {index:values.map((_,i)=>`label-${i}`),name:"v"} : {});
+        const series = new Series(values, {dtype:entry.dtype as DType | undefined,...(args.metadata ? {index:values.map((_,i)=>`label-${i}`),name:"v"} : {})});
         const member: unknown = Reflect.get(series, entry.api.slice(7));
         if (typeof member !== "function") throw new Error(`Missing Series method: ${entry.api}`);
         const result = member.apply(series,args.positional ?? (entry.api === "Series.round" ? [args.decimals] : []));

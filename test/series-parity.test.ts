@@ -29,7 +29,7 @@ describe("Series arithmetic", () => {
 
   test("nulls propagate", () => {
     const withNull = new Series<number | null>([1, null, 3]);
-    expect(withNull.add(1).to_list() as (number | null)[]).toEqual([2, null, 4]);
+    expect(withNull.add(1).to_list() as (number | null)[]).toEqual([2, NaN, 4]);
   });
 
   test("neg/abs/round", () => {
@@ -64,7 +64,7 @@ describe("Series comparisons", () => {
 describe("Series cumulative + selection", () => {
   test("cumsum skips nulls but keeps positions", () => {
     const s = new Series<number | null>([1, null, 3, 4]);
-    expect(s.cumsum().to_list() as (number | null)[]).toEqual([1, null, 4, 8]);
+    expect(s.cumsum().to_list() as (number | null)[]).toEqual([1, NaN, 4, 8]);
   });
 
   test("cummax/cummin", () => {

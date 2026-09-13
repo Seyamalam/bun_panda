@@ -29,8 +29,9 @@ def encode(x):
 def cat(c): return {'categories': encode(c.categories), 'codes': encode(c.codes), 'ordered': c.ordered}
 
 cases=[]
-def add(api, values, args, fn):
+def add(api, values, args, fn, dtype=None):
     case={'id': f'{api}/{len(cases)}', 'api': api, 'values': values, 'args': args}
+    if dtype is not None: case['dtype']=dtype
     try:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
@@ -46,9 +47,9 @@ numeric=[[], [1], [1,1,1,1], [1,1,1,5], [1,2,3,4], [None,None], [3,1,None,2], [-
 for values in numeric:
     s=pd.Series(values, dtype='float64')
     for op in ['sum','prod','skew','kurt','count','is_unique','is_monotonic_increasing','is_monotonic_decreasing','hasnans']:
-        add('Series.'+op, values, {}, lambda op=op: getattr(s,op)() if callable(getattr(s,op)) else getattr(s,op))
+        add('Series.'+op, values, {}, lambda op=op: getattr(s,op)() if callable(getattr(s,op)) else getattr(s,op), dtype='float64')
     for decimals in [-1,0,1]:
-        add('Series.round', values, {'decimals':decimals}, lambda: s.round(decimals))
+        add('Series.round', values, {'decimals':decimals}, lambda: s.round(decimals), dtype='float64')
 for values in [['b','a'], ['Z','a'], ['a','b','b'], ['b',None,'a'], [True,1,False,0,'1'], [], [10,2,1,None,10], [1,'1',None,1]]:
     s=pd.Series(values)
     add('Series.factorize',values,{},lambda:s.factorize())
@@ -80,13 +81,13 @@ for values in numeric:
     operations += [(op,[n]) for op in ['shift','diff'] for n in [-1,0,1]]
     operations += [('fillna',[0]),('round',[0]),('clip',[-1,2]),('between',[-1,2]),('repeat',[2])]
     for op,positional in operations:
-        add('Series.'+op,values,{'positional':positional,'metadata':True},lambda op=op,positional=positional:series_result(getattr(s,op)(*positional)))
+        add('Series.'+op,values,{'positional':positional,'metadata':True},lambda op=op,positional=positional:series_result(getattr(s,op)(*positional)), dtype='float64')
 strings=[['HELLO','hELLo','hello world',''],['  space  ','-12','+12','1.2',None],['a.b','acb','ba','',None],['😀é','éCOLE','ßeta',None],['a',42,True,None]]
 for values in strings:
     s=pd.Series(values,dtype=object)
     operations=[(op,[]) for op in ['upper','lower','capitalize','title','strip','lstrip','rstrip','len']]
     operations += [('zfill',[5]),('slice',[1,3]),('get',[8]),('contains',['a.b']),('match',['a']),('count',['.'])]
     for op,positional in operations:
-        add('Series.str.'+op,values,{'positional':positional},lambda op=op,positional=positional:getattr(s.str,op)(*positional))
+        add('Series.str.'+op,values,{'positional':positional},lambda op=op,positional=positional:getattr(s.str,op)(*positional), dtype='object')
 Path('test/fixtures/pandas-value-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'transport':'missing scalars -> null; Series -> list; native dtypes/classes excluded','cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(cases)} pandas value/metadata contracts')

@@ -180,7 +180,7 @@ describe("DataFrame.eval", () => {
     const out = df.eval("a + b");
     expect(out).toBeInstanceOf(Series);
     expect(out.name).toBe("a + b");
-    expect(out.to_list()).toEqual([11, 22, null]);
+    expect(out.to_list()).toEqual([11, 22, NaN]);
     expect(out.index).toEqual(["i", "j", "k"]);
   });
 
@@ -191,7 +191,7 @@ describe("DataFrame.eval", () => {
 
   test("precedence, unary minus, parens, floor-div, power", () => {
     expect(df.eval("a * 2 + 1").to_list()).toEqual([3, 5, 7]);
-    expect(df.eval("(a + 1) * b").to_list()).toEqual([20, 60, null]);
+    expect(df.eval("(a + 1) * b").to_list()).toEqual([20, 60, NaN]);
     expect(df.eval("-a + 1").to_list()).toEqual([0, -1, -2]);
     expect(new DataFrame([{ a: 7 }, { a: 8 }]).eval("a // 3").to_list())
       .toEqual([2, 2]);

@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Infer common pandas dtypes in Series constructors, including float/NaN and str/NaN defaults. Preserve float dtype and negative zero during rounding, honor object-rounding behavior, and retain declared input dtypes in pandas oracle adapters.
+
 - Make equality dtype-aware and distinguish NA/NaT from object nulls. Add numeric-family and exclusion support to select_dtypes, validated by 93 pandas query contracts.
 
 - Preserve or promote explicit dtypes in shift, reindex, where/mask and fill operations. Reject incompatible nullable replacements and expand dtype contracts to 1,808 pandas cases.

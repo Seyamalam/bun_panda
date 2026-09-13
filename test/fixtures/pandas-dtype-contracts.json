@@ -33478,6 +33478,548 @@
         "index": [],
         "name": "v"
       }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [],
+      "expected": {
+        "dtype": "object",
+        "values": []
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        1,
+        null
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        true,
+        null
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          null
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "str",
+      "values": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        1.2,
+        2.8
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.2,
+          2.8
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "int64",
+      "values": [
+        0,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "int64",
+      "values": [
+        -1,
+        2
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "str",
+      "values": [
+        "true",
+        "false"
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "str",
+      "values": [
+        "bad",
+        ""
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "bad",
+          ""
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        0.1,
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-0"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          1
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$missing": "NaN"
+        },
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        {
+          "$missing": "NA"
+        },
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "str",
+      "values": [
+        "a",
+        {
+          "$missing": "NA"
+        }
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "a",
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        null,
+        {
+          "$missing": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          {
+            "$number": "-Infinity"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        1,
+        true
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          true
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "object",
+      "values": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "mode": "inferred_constructor",
+      "dtype": "str",
+      "values": [
+        "001",
+        "false",
+        null
+      ],
+      "expected": {
+        "dtype": "str",
+        "values": [
+          "001",
+          "false",
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "selection",
+      "dtype": "float64",
+      "values": [
+        -0.5,
+        0.5
+      ],
+      "operation": "round",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "-0"
+          },
+          0.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "-0"
+          },
+          0.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "selection",
+      "dtype": "string",
+      "values": [
+        "1.25",
+        null
+      ],
+      "operation": "round",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [
+          "1.25",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "string",
+        "values": [
+          "1.25",
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "selection",
+      "dtype": "object",
+      "values": [
+        1.25,
+        null
+      ],
+      "operation": "round",
+      "args": [
+        0
+      ],
+      "error": "TypeError",
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          1.25,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "selection",
+      "dtype": "object",
+      "values": [
+        true,
+        false
+      ],
+      "operation": "round",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1,
+          0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          true,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "selection",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null
+      ],
+      "operation": "round",
+      "args": [
+        0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [
+          true,
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
     }
   ]
 }

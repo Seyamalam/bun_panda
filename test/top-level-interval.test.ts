@@ -95,8 +95,8 @@ describe("align helper", () => {
     const [la, lb] = align(a, b);
     expect(la.index).toEqual(["a", "b", "c", "d"]);
     expect(lb.index).toEqual(["a", "b", "c", "d"]);
-    expect(lb.values[0]).toBeNull();
-    expect(la.values[3]).toBeNull();
+    expect(lb.values[0]).toBeNaN();
+    expect(la.values[3]).toBeNaN();
   });
 
   test("Series inputs on inner join", () => {

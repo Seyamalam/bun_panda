@@ -197,7 +197,7 @@ describe("groupby transform", () => {
   test("function mode scalar broadcast per group across all non-key columns", () => {
     const df = parityFrame();
     const result = df.groupby("team").transform(
-      (column) => column.values.filter((v) => v !== null).length
+      (column) => column.count()
     );
     expect(result.columns).toEqual(["player", "points", "assists"]);
     expect(result.to_records()).toEqual([

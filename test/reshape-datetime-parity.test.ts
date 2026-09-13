@@ -179,7 +179,7 @@ describe("Series.rank", () => {
 
   test("nulls stay null with na_option keep", () => {
     const s = new Series<number | null>([5, null, 1]);
-    expect(s.rank().to_list()).toEqual([2, null, 1]);
+    expect(s.rank().to_list()).toEqual([2, NaN, 1]);
   });
 });
 

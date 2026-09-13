@@ -66,14 +66,14 @@ export interface SeriesOptions {
 export type { SeriesReplaceInput };
 
 export class Series<T extends CellValue = CellValue> {
-  private readonly _dtype: DType | undefined;
+  private readonly _dtype: DType;
   private readonly _name: string | undefined;
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
 
   constructor(values: T[], options: SeriesOptions = {}) {
-    this._dtype = options.dtype;
-    this._values = (options.dtype ? castColumn(values, options.dtype) : [...values]) as T[];
+    this._dtype = options.dtype ?? convertedDType(values, undefined, false);
+    this._values = castColumn(values, this._dtype) as T[];
     this._index = options.index ? [...options.index] : range(values.length);
     this._name = options.name;
 
@@ -658,6 +658,15 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   round(decimals = 0): Series<CellValue> {
+    if (!Number.isInteger(decimals)) throw new TypeError("decimals must be an integer");
+    if (this._dtype === "object") {
+      const values = this._values.map(value => {
+        if (typeof value !== "number" && typeof value !== "boolean") throw new TypeError(`Cannot round ${String(value)}`);
+        return roundToEven(Number(value), decimals);
+      });
+      return new Series<CellValue>(values, { index: this._index, name: this.name, dtype: "object" });
+    }
+    if (!/^(u?int|float|number)/i.test(this._dtype ?? "")) return new Series<CellValue>(this._values, { index: this._index, name: this.name, dtype: this._dtype });
     const out: CellValue[] = this._values.map((value) => {
       if (isMissing(value)) {
         return null;
@@ -665,7 +674,7 @@ export class Series<T extends CellValue = CellValue> {
       const n = typeof value === "number" ? value : Number(value as CellValue);
       return roundToEven(n, decimals);
     });
-    return new Series(out as unknown as CellValue[], { index: this._index, name: this.name }) as unknown as Series<CellValue>;
+    return new Series(out, { index: this._index, name: this.name, dtype: replacementDType(this._dtype, out) });
   }
 
   // ---- comparisons (return boolean Series) ----
@@ -778,8 +787,8 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   equals(other: Series): boolean {
-    const mine = this._dtype ?? convertedDType(this._values, undefined, false);
-    const theirs = other._dtype ?? convertedDType(other._values, undefined, false);
+    const mine = this._dtype;
+    const theirs = other._dtype;
     if (mine !== theirs) return false;
     return seriesEquals(this._values as CellValue[], this._index, (other as Series<CellValue>)._values, (other as Series<CellValue>)._index);
   }
@@ -960,8 +969,8 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   /** True-shape helpers for parity (pandas reports these on Series). */
-  get dtype(): string {
-    return this._dtype ?? this.inferSeriesDType();
+  get dtype(): DType {
+    return this._dtype;
   }
 
   get dtypes(): string {
@@ -982,18 +991,6 @@ export class Series<T extends CellValue = CellValue> {
 
   aggregate(fn: string | ((values: CellValue[]) => CellValue)): CellValue {
     return this.agg(fn);
-  }
-
-  private inferSeriesDType(): string {
-    let hasNumber = false, hasString = false, hasBool = false, hasDate = false;
-    for (const v of this._values) {
-      if (v === null || v === undefined || (typeof v === "number" && Number.isNaN(v as number))) continue;
-      if (typeof v === "number") hasNumber = true;
-      else if (typeof v === "string") hasString = true;
-      else if (typeof v === "boolean") hasBool = true;
-      else if (v instanceof Date) hasDate = true;
-    }
-    if (hasDate) return "date"; if (hasString) return "string"; if (hasBool) return "boolean"; if (hasNumber) return "number"; return "object";
   }
 
   nunique(dropna = true): number {

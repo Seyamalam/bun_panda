@@ -287,7 +287,7 @@ describe("DataFrame numeric parity methods", () => {
       { v: -1.891, s: "x" },
     ]).round(2);
     expect(df.get("v").values).toEqual([1.23, 2.57, -1.89]);
-    expect(df.get("s").values).toEqual(["keep", null, "x"]);
+    expect(df.get("s").values).toEqual(["keep", NaN, "x"]);
   });
 
   test("round defaults to integers", () => {
@@ -301,7 +301,7 @@ describe("DataFrame numeric parity methods", () => {
       { a: 3, b: null, s: "y" },
     ]).abs();
     expect(df.get("a").values).toEqual([1, 3]);
-    expect(df.get("b").values).toEqual([2.5, null]);
+    expect(df.get("b").values).toEqual([2.5, NaN]);
   });
 
   test("abs restricts to given columns", () => {
@@ -353,8 +353,8 @@ describe("DataFrame numeric parity methods", () => {
       { a: 2, b: null },
       { a: 3, b: 5 },
     ]).cumsum();
-    expect(df.get("a").values).toEqual([1, null, 3, 6]);
-    expect(df.get("b").values).toEqual([10, 30, null, 35]);
+    expect(df.get("a").values).toEqual([1, NaN, 3, 6]);
+    expect(df.get("b").values).toEqual([10, 30, NaN, 35]);
   });
 
   test("cumsum restricts accumulation to target columns", () => {
