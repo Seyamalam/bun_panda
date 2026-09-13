@@ -1,4 +1,5 @@
-import { assertDType, castColumn, convertedDType, replacementDType } from "./dtypes";
+import { scalarEquals } from "./internal/shared/valueSemantics";
+import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -43,7 +44,6 @@ import {
 } from "./internal/dataframe/deltas";
 import {
   projectColumns,
-  selectDtypeColumns,
   transposeFrame,
 } from "./internal/dataframe/shape";
 import {
@@ -1484,16 +1484,11 @@ export class DataFrame {
     return DataFrame.createInternal(shaped.rows, shaped.columns, shaped.index);
   }
 
-  /**
-   * Keeps only columns whose inferred dtype matches any of the given
-   * ones (`"number"`, `"string"`, `"boolean"`, `"date"`).
-   */
-  select_dtypes(include: DType | DType[]): DataFrame {
-    const keep = selectDtypeColumns(this._rows, this._columns, include);
-    if (keep.length === 0) {
-      throw new Error("select_dtypes matched no columns.");
-    }
-    return this.withRows(projectColumns(this._rows, keep), [...this._index], keep, true);
+  /** Select columns by stored dtype, numeric family, and optional exclusions. */
+  select_dtypes(include?: DTypeSelector | DTypeSelector[], exclude?: DTypeSelector | DTypeSelector[]): DataFrame {
+    const matches = dtypeSelector(include, exclude);
+    const keep = this._columns.filter(column => matches(this._explicitDtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false)));
+    return this.withSelection(projectColumns(this._rows, keep), [...this._index], keep, true);
   }
 
   apply(
@@ -1960,6 +1955,11 @@ export class DataFrame {
   }
 
   equals(other: DataFrame): boolean {
+    for (const column of this._columns) {
+      const mine = this._explicitDtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false);
+      const theirs = other._explicitDtypes[column] ?? convertedDType(other._rows.map(row => row[column]), undefined, false);
+      if (mine !== theirs) return false;
+    }
     if (JSON.stringify(this._columns) !== JSON.stringify(other._columns)) {
       return false;
     }
@@ -1972,8 +1972,7 @@ export class DataFrame {
       }
       for (const column of this._columns) {
         if (
-          JSON.stringify(normalizeKeyCell(this._rows[i]![column])) !==
-          JSON.stringify(normalizeKeyCell(other._rows[i]![column]))
+          !scalarEquals(this._rows[i]![column], other._rows[i]![column])
         ) {
           return false;
         }

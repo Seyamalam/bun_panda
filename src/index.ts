@@ -148,7 +148,10 @@ export type {
   AggSpec,
   CellValue,
   DType,
+  IntegerDType,
   IndexLabel,
   InferredDType,
   Row,
 } from "./types";
+
+export type { DTypeSelector } from "./dtypes";

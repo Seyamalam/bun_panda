@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,808 dtype/cast/inference/selection/replacement cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,808 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | Fails; exact compatibility is not established |
 
@@ -62,10 +62,17 @@ and distinguish object nulls, NaN, and NA during inference. JavaScript does not
 retain whether an integral number was written as Python `1` or `1.0`; an explicit
 float dtype is needed to preserve that distinction.
 
+Dtype query cases compare `select_dtypes` include/exclude rules and Series/frame
+equality across explicit dtypes and missing sentinels. pandas warning categories,
+including its transitional object/str selection warning, are not yet reproduced.
+
 ## Changes to existing behavior
 
 The pandas-oracle tests required changes to earlier library contracts:
 
+- Equality checks dtypes and distinguishes `NA` and `NaT` from object `None`/NaN.
+  `select_dtypes()` supports numeric families and exclusions and permits an empty
+  result while retaining its row index.
 - `infer_objects()` and `convert_dtypes()` no longer parse numeric or boolean
   strings. They now infer and retain dtype metadata.
 - Explicit `boolean` casts now require bool-like values; strings such as `"false"`

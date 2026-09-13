@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Make equality dtype-aware and distinguish NA/NaT from object nulls. Add numeric-family and exclusion support to select_dtypes, validated by 93 pandas query contracts.
+
 - Preserve or promote explicit dtypes in shift, reindex, where/mask and fill operations. Reject incompatible nullable replacements and expand dtype contracts to 1,808 pandas cases.
 
 - Preserve explicit dtypes through row/column selection, sorting, copying and renaming. Correct DataFrame negative head/tail counts and tail(0); extend pandas dtype/selection contracts to 1,379 cases.

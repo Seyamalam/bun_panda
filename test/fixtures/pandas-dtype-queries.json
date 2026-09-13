@@ -1,0 +1,1631 @@
+{
+  "pandasVersion": "3.0.5",
+  "cases": [
+    {
+      "api": "select_dtypes",
+      "include": "number",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "i",
+        "n",
+        "f",
+        "nf"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "number",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "error": "ValueError"
+    },
+    {
+      "api": "select_dtypes",
+      "include": "integer",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "i",
+        "n"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "integer",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "floating",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "f",
+        "nf"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "floating",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "bool",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "bool",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "boolean",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "boolean",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "object",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "st",
+        "o"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "object",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "st",
+        "o"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "str",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "s",
+        "st"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "str",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "s",
+        "st"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "string",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "s",
+        "st"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "string",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "s",
+        "st"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "int16",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "i",
+        "n"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "int16",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "Int16",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "i",
+        "n"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "Int16",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "float32",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "f",
+        "nf"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": "float32",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "float64",
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": "float64",
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": []
+    },
+    {
+      "api": "select_dtypes",
+      "include": null,
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "error": "ValueError"
+    },
+    {
+      "api": "select_dtypes",
+      "include": null,
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb",
+        "s",
+        "st",
+        "o"
+      ]
+    },
+    {
+      "api": "select_dtypes",
+      "include": [],
+      "exclude": null,
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "error": "ValueError"
+    },
+    {
+      "api": "select_dtypes",
+      "include": [],
+      "exclude": "number",
+      "columns": {
+        "i": "int16",
+        "n": "Int16",
+        "f": "float32",
+        "nf": "Float32",
+        "b": "bool",
+        "nb": "boolean",
+        "s": "string",
+        "st": "str",
+        "o": "object"
+      },
+      "expected": [
+        "b",
+        "nb",
+        "s",
+        "st",
+        "o"
+      ]
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Int16"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "int64"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "Float32"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "bool"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          1
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          null
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": false
+    },
+    {
+      "api": "equals",
+      "left": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "right": {
+        "values": [
+          {
+            "$missing": "NaT"
+          }
+        ],
+        "dtype": "object"
+      },
+      "expected": true
+    }
+  ]
+}

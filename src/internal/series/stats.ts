@@ -1,3 +1,4 @@
+import { scalarEquals } from "../shared/valueSemantics";
 // Numeric statistics for Series — pure functions over raw value arrays.
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
@@ -126,17 +127,7 @@ export function seriesEquals(
     if (leftIndex[i] !== rightIndex[i]) return false;
   }
   for (let i = 0; i < leftValues.length; i += 1) {
-    const left = leftValues[i];
-    const right = rightValues[i];
-    const leftMissing = isMissing(left) || (typeof left === "number" && Number.isNaN(left as number));
-    const rightMissing = isMissing(right) || (typeof right === "number" && Number.isNaN(right as number));
-    if (leftMissing && rightMissing) continue;
-    if (leftMissing || rightMissing) return false;
-    if (left instanceof Date && right instanceof Date) {
-      if (left.getTime() !== right.getTime()) return false;
-      continue;
-    }
-    if (left !== right) return false;
+    if (!scalarEquals(leftValues[i], rightValues[i])) return false;
   }
   return true;
 }

@@ -77,5 +77,27 @@ for dtype in ['int16','Int16','float32','Float32','bool','boolean','string','str
             except Exception as e:
                 entry['error']=type(e).__name__
             cases.append(entry)
+queries=[]
+columns={'i':'int16','n':'Int16','f':'float32','nf':'Float32','b':'bool','nb':'boolean','s':'string','st':'str','o':'object'}
+frame=pd.DataFrame({key:pd.Series([1],dtype=dtype) for key,dtype in columns.items()})
+selectors=['number','integer','floating','bool','boolean','object','str','string','int16','Int16','float32','float64',None,[]]
+for include in selectors:
+    for exclude in [None,'number']:
+        entry={'api':'select_dtypes','include':include,'exclude':exclude,'columns':columns}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                entry['expected']=frame.select_dtypes(include=include,exclude=exclude).columns.tolist()
+        except Exception as e:
+            entry['error']=type(e).__name__
+        queries.append(entry)
+for left in ['int16','Int16','int64','float32','Float32','bool','object']:
+    for right in ['int16','Int16','int64','float32','Float32','bool','object']:
+        queries.append({'api':'equals','left':{'values':[1],'dtype':left},'right':{'values':[1],'dtype':right},'expected':pd.Series([1],dtype=left).equals(pd.Series([1],dtype=right))})
+for left in [None,np.nan,pd.NA,pd.NaT]:
+    for right in [None,np.nan,pd.NA,pd.NaT]:
+        queries.append({'api':'equals','left':{'values':[{'$missing':'NaT'} if left is pd.NaT else encode(left)],'dtype':'object'},'right':{'values':[{'$missing':'NaT'} if right is pd.NaT else encode(right)],'dtype':'object'},'expected':pd.Series([left],dtype=object).equals(pd.Series([right],dtype=object))})
+Path('test/fixtures/pandas-dtype-queries.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':queries},indent=2,allow_nan=False)+'\n')
+print(f'wrote {len(queries)} dtype query contracts')
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(cases)} dtype contracts')

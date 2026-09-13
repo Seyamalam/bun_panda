@@ -778,6 +778,9 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   equals(other: Series): boolean {
+    const mine = this._dtype ?? convertedDType(this._values, undefined, false);
+    const theirs = other._dtype ?? convertedDType(other._values, undefined, false);
+    if (mine !== theirs) return false;
     return seriesEquals(this._values as CellValue[], this._index, (other as Series<CellValue>)._values, (other as Series<CellValue>)._index);
   }
 

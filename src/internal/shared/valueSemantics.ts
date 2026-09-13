@@ -1,4 +1,4 @@
-import { isMissingScalar } from "../../missing";
+import { isMissingScalar, NA, NaT } from "../../missing";
 import type { CellValue } from "../../types";
 
 export function isAbsent(value: CellValue): boolean {
@@ -11,6 +11,17 @@ export function scalarKey(value: CellValue): string {
   if (typeof value === "boolean" || typeof value === "number") return `number:${Number(value)}`;
   if (value instanceof Date) return `date:${value.getTime()}`;
   return `${typeof value}:${String(value)}`;
+}
+
+/** Object equality distinguishes extension missing sentinels from None/NaN. */
+export function scalarEquals(left: CellValue, right: CellValue): boolean {
+  if (left === NA || right === NA) return left === right;
+  const isNaT = (value: CellValue) => value === NaT || (value instanceof Date && Number.isNaN(value.getTime()));
+  if (isNaT(left) || isNaT(right)) return isNaT(left) && isNaT(right);
+  if (isAbsent(left) || isAbsent(right)) return isAbsent(left) && isAbsent(right);
+  if (left instanceof Date && right instanceof Date) return left.getTime() === right.getTime();
+  if ((typeof left === "number" || typeof left === "boolean") && (typeof right === "number" || typeof right === "boolean")) return Number(left) === Number(right);
+  return left === right;
 }
 
 /** Category inference sorts numeric values before strings without stringifying them. */

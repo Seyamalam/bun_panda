@@ -1,7 +1,6 @@
 // Reshape helpers for DataFrame — transpose and dtype selection as
 // pure functions. (melt/pivot already delegate to reshape.ts.)
-import type { CellValue, DType, IndexLabel, Row } from "../../types";
-import { inferColumnDType } from "../../utils";
+import type { CellValue, IndexLabel, Row } from "../../types";
 
 export function transposeFrame(
   rows: Row[],
@@ -18,18 +17,6 @@ export function transposeFrame(
   });
   const outColumns = ["index", ...index.map((label) => String(label))];
   return { rows: outRows, columns: outColumns, index: columns.map((c) => String(c)) };
-}
-
-export function selectDtypeColumns(
-  rows: Row[],
-  columns: string[],
-  include: DType | DType[]
-): string[] {
-  const wanted = Array.isArray(include) ? include : [include];
-  return columns.filter((column) => {
-    const dtype = inferColumnDType(rows.map((row) => row[column]));
-    return wanted.includes(dtype as DType);
-  });
 }
 
 export function projectColumns(rows: Row[], keep: string[]): Row[] {

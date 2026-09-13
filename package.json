@@ -59,7 +59,7 @@
     "conformance": "bun run paper/artifact/conformance/run-study.ts",
     "conformance:strict": "bun run paper/artifact/conformance/run-study.ts --strict",
     "compatibility:fixtures": "uv run --with pandas==3.0.5 python scripts/compatibility/generate-oracle.py && uv run --with pandas==3.0.5 python scripts/compatibility/generate-dtype-oracle.py",
-    "compatibility:test": "bun test test/pandas-value-contracts.test.ts test/conformance-comparison.test.ts test/pandas-dtype-contracts.test.ts",
+    "compatibility:test": "bun test test/pandas-value-contracts.test.ts test/conformance-comparison.test.ts test/pandas-dtype-contracts.test.ts test/pandas-dtype-queries.test.ts",
     "conformance:generate": "bun run paper/artifact/conformance/generate-cases.ts",
     "conformance:compare": "bun run paper/artifact/conformance/compare.ts",
     "bench:fresh": "bun run paper/artifact/run-fresh-process-ablation.ts",

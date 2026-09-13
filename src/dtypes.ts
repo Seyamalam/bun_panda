@@ -142,3 +142,31 @@ export function replacementDType(dtype: DType | undefined, values: readonly Cell
   if (/^u?int/.test(dtype) && (present.length !== values.length || present.some(value => !Number.isInteger(value)))) return "float64";
   return dtype;
 }
+
+export type DTypeSelector = DType | "integer" | "floating" | "datetime";
+
+function normalizedSelector(selector: DTypeSelector): string {
+  if (selector === "integer" || selector === "floating" || selector === "datetime") return selector;
+  assertDType(selector);
+  if (selector === "boolean") return "bool";
+  if (selector === "string") return "str";
+  if (selector === "date") return "datetime";
+  return selector.toLowerCase();
+}
+
+export function dtypeSelector(include?: DTypeSelector | DTypeSelector[], exclude?: DTypeSelector | DTypeSelector[]): (dtype: DType) => boolean {
+  const normalize = (value?: DTypeSelector | DTypeSelector[]) => (value === undefined ? [] : Array.isArray(value) ? value : [value]).map(normalizedSelector);
+  const included = normalize(include), excluded = normalize(exclude);
+  if (included.length + excluded.length === 0) throw new TypeError("at least one of include or exclude must be nonempty");
+  if (included.some(dtype => excluded.includes(dtype))) throw new TypeError("include and exclude overlap");
+  const matches = (dtype: DType, selector: string): boolean => {
+    const type = normalizedSelector(dtype);
+    if (selector === "number") return type === "number" || /^(u?int|float)/.test(type);
+    if (selector === "integer") return /^u?int/.test(type);
+    if (selector === "floating") return /^float/.test(type);
+    // pandas 3 includes its inferred str dtype when selecting object.
+    if (selector === "object") return dtype === "object" || dtype === "str";
+    return type === selector;
+  };
+  return dtype => (included.length === 0 || included.some(selector => matches(dtype, selector))) && !excluded.some(selector => matches(dtype, selector));
+}
