@@ -1,0 +1,2785 @@
+{
+  "pandasVersion": "3.0.5",
+  "cases": [
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        0
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        0
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        0
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.0,
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          0.0
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          0
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        2
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          0.0
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "1",
+        "2"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.0,
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          0.0
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          0
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        "1"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": []
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          1.0,
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          1,
+          "1"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          1.0
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          1,
+          1
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          0
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        0
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        1,
+        1
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        0
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        "a",
+        "a"
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        0
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        0
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        2
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        "1",
+        "2"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        "1"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        1
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        1,
+        1
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "expected": false
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        "a",
+        "a"
+      ],
+      "error": {
+        "type": "ValueError",
+        "message": "cannot reindex on an axis with duplicate labels"
+      }
+    },
+    {
+      "api": "Index.equals",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": true
+    },
+    {
+      "api": "reindex",
+      "labels": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "target": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "NaN"
+        }
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          0,
+          1
+        ],
+        "index": [
+          {
+            "$number": "NaN"
+          },
+          {
+            "$number": "NaN"
+          }
+        ]
+      }
+    }
+  ]
+}

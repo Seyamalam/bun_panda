@@ -1,3 +1,4 @@
+import { indexLabelEquals, reindexPositions } from "./internal/shared/indexing";
 import { castColumn, convertedDType, replacementDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
@@ -128,7 +129,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   loc(label: IndexLabel): T | undefined {
-    const position = this._index.findIndex((entry) => entry === label);
+    const position = this._index.findIndex((entry) => indexLabelEquals(entry, label));
     if (position < 0) {
       return undefined;
     }
@@ -794,7 +795,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   get(key: IndexLabel, defaultVal?: T): T | undefined {
-    const pos = this._index.findIndex((entry) => entry === key);
+    const pos = this._index.findIndex((entry) => indexLabelEquals(entry, key));
     if (pos < 0) return defaultVal as T | undefined;
     return this._values[pos];
   }
@@ -1102,15 +1103,7 @@ export class Series<T extends CellValue = CellValue> {
 
   reindex(newIndex: IndexLabel[], fill_value?: T | null): Series<T> {
     const fill = fill_value === undefined ? (this._dtype ? NaN : null) : fill_value;
-    const posByLabel = new Map<IndexLabel, number>();
-    for (let i = 0; i < this._index.length; i += 1) {
-      // keep first occurrence, matching pandas
-      if (!posByLabel.has(this._index[i]!)) posByLabel.set(this._index[i]!, i);
-    }
-    const values = newIndex.map((label) => {
-      const pos = posByLabel.get(label);
-      return pos !== undefined ? this._values[pos]! : (fill as T);
-    });
+    const values = reindexPositions(this._index, newIndex).map(position => position < 0 ? fill as T : this._values[position]!);
     return this.withReplacement(values, newIndex);
   }
 

@@ -1,3 +1,4 @@
+import { reindexPositions } from "../shared/indexing";
 // Extended helpers for DataFrame — pure functions over rows/columns/index.
 // Stats, cumulative, export, reshaping helpers.
 
@@ -223,10 +224,9 @@ export function reindexRows(
 ): { rows: Row[]; columns: string[]; index: IndexLabel[] } {
   const outColumns = newColumns ? [...newColumns] : [...columns];
   const outIndex = newIndex ? [...newIndex] : [...index];
-  const indexToRow = new Map<string, Row>();
-  for (let i = 0; i < index.length; i += 1) indexToRow.set(String(index[i]), rows[i]!);
-  const outRows: Row[] = outIndex.map((label) => {
-    const src = indexToRow.get(String(label));
+  const positions = reindexPositions(index, outIndex);
+  const outRows: Row[] = positions.map(position => {
+    const src = position < 0 ? undefined : rows[position];
     const row: Row = {};
     for (const c of outColumns) {
       if (src && c in src) row[c] = src[c] as CellValue;

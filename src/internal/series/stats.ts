@@ -1,3 +1,4 @@
+import { indexLabelEquals } from "../shared/indexing";
 import { scalarEquals } from "../shared/valueSemantics";
 // Numeric statistics for Series — pure functions over raw value arrays.
 import type { CellValue } from "../../types";
@@ -124,7 +125,7 @@ export function seriesEquals(
   if (leftValues.length !== rightValues.length) return false;
   if (leftIndex.length !== rightIndex.length) return false;
   for (let i = 0; i < leftIndex.length; i += 1) {
-    if (leftIndex[i] !== rightIndex[i]) return false;
+    if (!indexLabelEquals(leftIndex[i]!, rightIndex[i]!)) return false;
   }
   for (let i = 0; i < leftValues.length; i += 1) {
     if (!scalarEquals(leftValues[i], rightValues[i])) return false;

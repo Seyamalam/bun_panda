@@ -22,22 +22,22 @@ export interface ShapedFrame {
 function alignColumn(
   rows: Row[],
   column: string,
-  labelPositions: Map<string, number>,
+  labelPositions: Map<IndexLabel, number>,
   unionIndex: IndexLabel[]
 ): (CellValue | null)[] {
   return unionIndex.map((label) => {
-    const pos = labelPositions.get(String(label));
+    const pos = labelPositions.get(label);
     if (pos === undefined || pos >= rows.length) return null;
     const value = rows[pos]![column];
     return isMissing(value) ? null : (value as CellValue);
   });
 }
 
-function labelPositionMap(index: IndexLabel[]): Map<string, number> {
-  const positions = new Map<string, number>();
+function labelPositionMap(index: IndexLabel[]): Map<IndexLabel, number> {
+  const positions = new Map<IndexLabel, number>();
   for (let i = 0; i < index.length; i += 1) {
-    if (!positions.has(String(index[i]))) {
-      positions.set(String(index[i]), i);
+    if (!positions.has(index[i]!)) {
+      positions.set(index[i]!, i);
     }
   }
   return positions;
@@ -61,11 +61,11 @@ export function combineFrames(
   const leftPositions = labelPositionMap(leftIndex);
   const rightPositions = labelPositionMap(rightIndex);
   for (let i = 0; i < rightIndex.length; i += 1) {
-    if (!leftPositions.has(String(rightIndex[i]))) {
+    if (!leftPositions.has(rightIndex[i]!)) {
       outIndex.push(rightIndex[i]!);
       // The label has no left-side row: alignColumn reads past the end and
       // yields null. Its right-side position stays as mapped above.
-      leftPositions.set(String(rightIndex[i]), Number.MAX_SAFE_INTEGER);
+      leftPositions.set(rightIndex[i]!, Number.MAX_SAFE_INTEGER);
     }
   }
   const rowCount = outIndex.length;
@@ -174,10 +174,10 @@ export function corrwithValues(
   rightColumns: string[],
   rightIndex: IndexLabel[]
 ): Record<string, number | null> {
-  const rightByLabel = new Map<string, Row>();
+  const rightByLabel = new Map<IndexLabel, Row>();
   for (let i = 0; i < rightIndex.length; i += 1) {
-    if (!rightByLabel.has(String(rightIndex[i]))) {
-      rightByLabel.set(String(rightIndex[i]!), rightRows[i]!);
+    if (!rightByLabel.has(rightIndex[i]!)) {
+      rightByLabel.set(rightIndex[i]!, rightRows[i]!);
     }
   }
   const rightSet = new Set(rightColumns);
@@ -188,7 +188,7 @@ export function corrwithValues(
     const b: number[] = [];
     for (let r = 0; r < leftRows.length; r += 1) {
       const av = leftRows[r]![column];
-      const bv = rightByLabel.get(String(leftIndex[r]))?.[column];
+      const bv = rightByLabel.get(leftIndex[r]!)?.[column];
       if (typeof av === "number" && typeof bv === "number" && Number.isFinite(av) && Number.isFinite(bv)) {
         a.push(av);
         b.push(bv);
@@ -269,11 +269,5 @@ export function unstackFrame(rows: Row[], columns: string[]): ShapedFrame {
 
 /** True when the index contains duplicate labels. */
 export function hasDuplicateLabels(index: IndexLabel[]): boolean {
-  const seen = new Set<string>();
-  for (const label of index) {
-    const key = String(label);
-    if (seen.has(key)) return true;
-    seen.add(key);
-  }
-  return false;
+  return new Set(index).size !== index.length;
 }

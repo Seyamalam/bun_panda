@@ -11,3 +11,10 @@ export class NotSupportedError extends Error {
     this.name = "NotSupportedError";
   }
 }
+
+export class ValueError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValueError";
+  }
+}

@@ -26,7 +26,7 @@ export {
   type WhereOther,
 } from "./dataframe";
 export { GroupBy } from "./groupby";
-export { BunPandaValidationError } from "./errors";
+export { BunPandaValidationError, ValueError } from "./errors";
 export {
   concat,
   merge,

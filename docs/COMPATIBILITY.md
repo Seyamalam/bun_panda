@@ -9,7 +9,7 @@ an API name exists.
 | Check | What it establishes | Current result |
 | --- | --- | --- |
 | `bun run parity` | Presence of tracked API names | 505/505 |
-| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases and 232 in-place update cases pass |
+| `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 1,834 dtype/cast/inference/selection/replacement cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases and 232 in-place update cases plus 162 scalar-index cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
 | `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 1,778/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
 
@@ -73,6 +73,11 @@ do not establish pandas mutation/return-value parity.
 Dtype query cases compare `select_dtypes` include/exclude rules and Series/frame
 equality across explicit dtypes and missing sentinels. pandas warning categories,
 including its transitional object/str selection warning, are not yet reproduced.
+
+Scalar-index contracts cover numeric/string identity, NaN equality and reindexing
+for Series and DataFrame. Duplicate source labels allow an unchanged target;
+other targets raise pandas `ValueError` text. Hierarchical indexes, index dtype
+metadata, and general duplicate-label alignment remain incomplete.
 
 ## Changes to existing behavior
 

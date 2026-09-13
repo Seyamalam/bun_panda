@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Keep numeric and string index labels distinct, match NaN labels, and reject reindexing duplicate source labels with pandas ValueError text. Add 162 scalar-index contracts and preserve exact-label matching in combine/corrwith.
+
 - Validate in-place DataFrame updates against stored dtypes, including float32 precision, nullable casts and numeric-width promotion. Add 232 pandas update contracts.
 
 - Preserve untouched column dtypes during assignment and align assigned Series by label while retaining their dtype. Validate assign/insert/isetitem values and dtypes against 1,566 pandas cases.

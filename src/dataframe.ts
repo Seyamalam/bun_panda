@@ -1,3 +1,4 @@
+import { indexLabelEquals } from "./internal/shared/indexing";
 import { scalarEquals } from "./internal/shared/valueSemantics";
 import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, dtypeFamily, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
@@ -629,7 +630,7 @@ export class DataFrame {
 
   loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame | undefined {
     if (!Array.isArray(selector)) {
-      const position = this._index.findIndex((entry) => entry === selector);
+      const position = this._index.findIndex((entry) => indexLabelEquals(entry, selector));
       if (position < 0) {
         return undefined;
       }
@@ -639,7 +640,7 @@ export class DataFrame {
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
     for (const label of selector) {
-      const position = this._index.findIndex((entry) => entry === label);
+      const position = this._index.findIndex((entry) => indexLabelEquals(entry, label));
       if (position < 0) {
         continue;
       }
@@ -1131,7 +1132,7 @@ export class DataFrame {
     if (this._columns.includes(key as string)) {
       return this.columnSeries(key as string);
     }
-    const rowPosition = this._index.findIndex((label) => label === key);
+    const rowPosition = this._index.findIndex((label) => indexLabelEquals(label, key));
     if (rowPosition >= 0) {
       return cloneRow(this._rows[rowPosition]!, this._columns);
     }
@@ -1975,7 +1976,7 @@ export class DataFrame {
       return false;
     }
     for (let i = 0; i < this._rows.length; i += 1) {
-      if (this._index[i] !== other._index[i]) {
+      if (!indexLabelEquals(this._index[i]!, other._index[i]!)) {
         return false;
       }
       for (const column of this._columns) {

@@ -1,3 +1,4 @@
+import { indexLabelsEqual } from "./internal/shared/indexing";
 // Top-level pandas module surface: options registry, scalar/index types,
 // range builders, and reshape/merge wrappers.
 import { DataFrame } from "./dataframe";
@@ -195,10 +196,7 @@ export class Index {
   }
 
   equals(other: Index): boolean {
-    return (
-      this.labels.length === other.labels.length &&
-      this.labels.every((l, i) => String(l) === String(other.labels[i]))
-    );
+    return indexLabelsEqual(this.labels, other.labels);
   }
 
   toString(): string {
