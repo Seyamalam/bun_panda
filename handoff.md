@@ -129,13 +129,14 @@ per-API partial/unverified coverage. Do not claim 505/505 behavioral parity.
 The user requested sequential implementation with frequent commits. Recent
 commits add shared missing scalars, canonical/nullable casts, default Series and
 DataFrame dtypes, dtype-preserving selections and assignments, validated in-place
-updates, and scalar-index identity/reindex rules. Latest implementation commit:
-`68e534b` (scalar indexes). All 5,636 tests pass; coverage is 88.54% of lines.
+updates, scalar-index identity/reindex rules, and pandas rank output dtypes
+(nullable UInt64/Float64 for Series, float64 for frames). Latest implementation
+commit: `f7f6aa1` (rank dtypes). All 6,806 tests pass; coverage is 88.54% of lines.
 The live semantic corpus passes 2,500/2,500 for pandas/adaptive and both backend
 comparisons. The last strict audit matches 1,778/2,500 pandas observations and
 still exits nonzero for 722 mismatches. No frozen paper timings were changed.
 
-The offline pandas evidence now includes 524 value/metadata cases, 1,834 dtype
+The offline pandas evidence now includes 524 value/metadata cases, 2,419 dtype
 cases, 93 dtype queries, 105 default-frame cases, 1,566 assignment cases, 232
 update cases and 162 scalar-index cases. The inventory counts their primary
 operations separately. Mutation/return-value parity for insert/isetitem is still

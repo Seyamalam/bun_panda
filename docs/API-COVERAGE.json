@@ -1237,7 +1237,7 @@
       "api": "DataFrame.rank",
       "namePresent": true,
       "valueContractCases": 0,
-      "dtypeContractCases": 0,
+      "dtypeContractCases": 585,
       "indexContractCases": 0,
       "semanticCorpusCases": 250,
       "behavioralCoverage": "partial",
@@ -3227,10 +3227,10 @@
       "api": "Series.rank",
       "namePresent": true,
       "valueContractCases": 0,
-      "dtypeContractCases": 0,
+      "dtypeContractCases": 585,
       "indexContractCases": 0,
       "semanticCorpusCases": 0,
-      "behavioralCoverage": "unverified",
+      "behavioralCoverage": "partial",
       "exactPandasParity": "not-established"
     },
     {
