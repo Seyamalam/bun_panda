@@ -1,6 +1,6 @@
 import { indexLabelEquals } from "./internal/shared/indexing";
 import { scalarEquals } from "./internal/shared/valueSemantics";
-import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, updatedDType } from "./dtypes";
+import { arithResultDType, assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -878,7 +878,8 @@ export class DataFrame {
 
   private binaryOp(
     other: number | DataFrame,
-    fn: (a: number, b: number) => number
+    fn: (a: number, b: number) => number,
+    division = false
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
     if (otherFrame) {
@@ -892,7 +893,16 @@ export class DataFrame {
       otherFrame ? null : (other as number),
       fn
     );
-    return this.withRows(rows, [...this._index], [...this._columns], true);
+    const scalarDtype: DType = Number.isInteger(other as number) ? "int64" : "float64";
+    const declared: Partial<Record<string, DType>> = {};
+    this._columns.forEach((column, i) => {
+      const right = otherFrame
+        ? otherFrame._dtypes[otherFrame._columns[i]!] ?? "object"
+        : scalarDtype;
+      const dtype = arithResultDType(this._dtypes[column] ?? "object", right, division);
+      if (dtype) declared[column] = dtype;
+    });
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, declared);
   }
 
   add(other: number | DataFrame): DataFrame {
@@ -912,7 +922,7 @@ export class DataFrame {
   }
 
   div(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a / b);
+    return this.binaryOp(other, (a, b) => a / b, true);
   }
 
   truediv(other: number | DataFrame): DataFrame {
@@ -940,7 +950,7 @@ export class DataFrame {
   }
 
   rdiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b / a);
+    return this.binaryOp(other, (a, b) => b / a, true);
   }
 
   rpow(other: number | DataFrame): DataFrame {

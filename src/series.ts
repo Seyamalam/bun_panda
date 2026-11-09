@@ -1,5 +1,5 @@
 import { indexLabelEquals, reindexPositions } from "./internal/shared/indexing";
-import { castColumn, convertedDType, replacementDType } from "./dtypes";
+import { arithResultDType, castColumn, convertedDType, replacementDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
@@ -558,7 +558,8 @@ export class Series<T extends CellValue = CellValue> {
   private numericOp(
     other: number | Series<T>,
     fn: (left: number, right: number) => number,
-    name?: string
+    name?: string,
+    division = false
   ): Series<number> {
     const otherValues =
       other instanceof Series ? other._values : new Array(this.length).fill(other);
@@ -571,7 +572,15 @@ export class Series<T extends CellValue = CellValue> {
       const r = typeof right === "number" ? right : Number(right);
       return fn(left, r);
     });
-    return new Series(out as never, { index: this._index, name: name ?? this.name });
+    const rightDtype: DType = other instanceof Series
+      ? other._dtype
+      : Number.isInteger(other as number) ? "int64" : "float64";
+    const dtype = arithResultDType(this._dtype, rightDtype, division);
+    return new Series(out as never, {
+      index: this._index,
+      name: name ?? this.name,
+      ...(dtype ? { dtype } : {}),
+    });
   }
 
   add(other: number | Series<T>): Series<number> {
@@ -591,7 +600,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   div(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a / b);
+    return this.numericOp(other, (a, b) => a / b, undefined, true);
   }
 
   mod(other: number | Series<T>): Series<number> {
@@ -622,7 +631,7 @@ export class Series<T extends CellValue = CellValue> {
     return this.mul(other);
   }
   rdiv(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b / a);
+    return this.numericOp(other, (a, b) => b / a, undefined, true);
   }
   rtruediv(other: number | Series<T>): Series<number> {
     return this.rdiv(other);

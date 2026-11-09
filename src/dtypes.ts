@@ -203,3 +203,33 @@ export function updatedDType(dtype: DType, incoming: DType, values: readonly Cel
   }
   return dtype;
 }
+
+/**
+ * pandas result dtype for element-wise arithmetic between two columns.
+ * True division always yields floating output; other ops preserve integer
+ * families, widen through float64, and keep nullable/nullable-float sources
+ * nullable. Returns undefined for non-numeric operands so callers fall back
+ * to inference.
+ */
+export function arithResultDType(left: DType, right: DType, division: boolean): DType | undefined {
+  const isPlainInt = (d: DType) => /^(u?int)/.test(d);
+  const isPlainFloat = (d: DType) => /^float/.test(d) || d === "number";
+  const isNullableInt = (d: DType) => /^(U?Int)/.test(d);
+  const isNullableFloat = (d: DType) => /^Float/.test(d);
+  const isNumeric = (d: DType) =>
+    isPlainInt(d) || isPlainFloat(d) || isNullableInt(d) || isNullableFloat(d) ||
+    d === "bool" || d === "boolean";
+  if (!isNumeric(left) || !isNumeric(right)) return undefined;
+  const anyNullable = [left, right].some(d => isNullableInt(d) || isNullableFloat(d) || d === "boolean");
+  if (division) return anyNullable ? "Float64" : "float64";
+  if (left === "bool" && right === "bool") return "bool";
+  if (left === "boolean" && right === "boolean") return "boolean";
+  if ((left === "boolean" || right === "boolean") && (left === "bool" || right === "bool")) return "boolean";
+  if (isNullableFloat(left) || isNullableFloat(right)) return "Float64";
+  if (isNullableInt(left) || isNullableInt(right)) {
+    return [left, right].some(d => /^UInt/.test(d)) ? "UInt64" : "Int64";
+  }
+  if (left === "boolean" || right === "boolean") return "Int64";
+  if (isPlainFloat(left) || isPlainFloat(right)) return "float64";
+  return "int64";
+}
