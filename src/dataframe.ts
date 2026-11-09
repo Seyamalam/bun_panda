@@ -674,11 +674,15 @@ export class DataFrame {
     return { values, dtype };
   }
 
+  /**
+   * In-place column insertion like pandas `DataFrame.insert(loc, column, value)`:
+   * inserts `column` at position `loc`, aligning Series values by index label.
+   */
   insert(
     loc: number,
     column: string,
     value: CellValue | CellValue[] | Series<any>
-  ): DataFrame {
+  ): void {
     if (this._columns.includes(column)) {
       throw new Error(`Column '${column}' already exists.`);
     }
@@ -697,7 +701,11 @@ export class DataFrame {
       return next;
     });
 
-    return DataFrame.createInternal(rows, nextColumns, [...this._index], {}, { ...this._dtypes, [column]: assigned.dtype });
+    const prepared = DataFrame.prepareColumns(rows, nextColumns, { ...this._dtypes, [column]: assigned.dtype });
+    invalidateColumnStore(this._rows);
+    (this as unknown as { _rows: Row[] })._rows = prepared.rows;
+    (this as unknown as { _columns: string[] })._columns = nextColumns;
+    Object.assign(this._dtypes, prepared.dtypes);
   }
 
   pop(column: string): Series<CellValue> {
@@ -2547,10 +2555,21 @@ export class DataFrame {
   swaplevel(): DataFrame {
     return windowApi.swaplevel(this.view());
   }
-  isetitem(position: number, value: CellValue[] | Series<CellValue>): DataFrame {
+  /**
+   * In-place positional assignment like pandas `DataFrame.isetitem(loc, value)`:
+   * replaces the column at `position`, aligning Series values by index label
+   * and adopting the incoming dtype.
+   */
+  isetitem(position: number, value: CellValue[] | Series<CellValue>): void {
     const resolved = resolvePosition(position, this._columns.length);
     if (resolved === undefined) throw new Error(`isetitem: position ${String(position)} out of bounds.`);
-    return this.assign({ [this._columns[resolved]!]: value });
+    const column = this._columns[resolved]!;
+    const assigned = this.assignmentColumn(column, value);
+    const rows = this._rows.map((row, i): Row => ({ ...row, [column]: assigned.values[i]! }));
+    const prepared = DataFrame.prepareColumns(rows, this._columns, { ...this._dtypes, [column]: assigned.dtype });
+    invalidateColumnStore(this._rows);
+    (this as unknown as { _rows: Row[] })._rows = prepared.rows;
+    Object.assign(this._dtypes, prepared.dtypes);
   }
   tz_localize(tz: string): DataFrame {
     return windowApi.tz_localize(this.view(), tz);

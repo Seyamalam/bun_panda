@@ -232,19 +232,22 @@ describe("DataFrame transform", () => {
 
 describe("DataFrame insert/pop", () => {
   test("insert at loc 0 puts column first", () => {
-    const df = base().insert(0, "z", 1);
+    const df = base();
+    df.insert(0, "z", 1);
     expect(df.columns).toEqual(["z", "a", "b"]);
     expect(df.get("z").values).toEqual([1, 1, 1]);
   });
 
   test("insert in the middle", () => {
-    const df = base().insert(1, "m", [9, 8, 7]);
+    const df = base();
+    df.insert(1, "m", [9, 8, 7]);
     expect(df.columns).toEqual(["a", "m", "b"]);
     expect(df.get("m").values).toEqual([9, 8, 7]);
   });
 
   test("insert clamps out-of-range loc to end", () => {
-    const df = base().insert(99, "end", 0);
+    const df = base();
+    df.insert(99, "end", 0);
     expect(df.columns).toEqual(["a", "b", "end"]);
   });
 
@@ -259,7 +262,8 @@ describe("DataFrame insert/pop", () => {
     const df = new DataFrame(
       [{ v: 1 }, { v: 2 }, { v: 3 }],
       { index: ["a", "b", "c"] }
-    ).insert(1, "s", s);
+    );
+    df.insert(1, "s", s);
     expect(df.get("s").values).toEqual([200, 300, 100]);
     expect(df.index).toEqual(["a", "b", "c"]);
   });

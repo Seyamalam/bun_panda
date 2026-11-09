@@ -6,6 +6,10 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+- Match pandas rank semantics: string and date ordering, `pct` output, and nullable UInt64/Float64 Series results while DataFrame.rank stays float64. Add 585 pandas rank contracts.
+
+- **Breaking**: `DataFrame.insert` and `DataFrame.isetitem` now mutate in place and return `undefined`, matching pandas. They previously returned a new frame.
+
 - Keep numeric and string index labels distinct, match NaN labels, and reject reindexing duplicate source labels with pandas ValueError text. Add 162 scalar-index contracts and preserve exact-label matching in combine/corrwith.
 
 - Validate in-place DataFrame updates against stored dtypes, including float32 precision, nullable casts and numeric-width promotion. Add 232 pandas update contracts.

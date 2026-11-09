@@ -139,8 +139,8 @@ still exits nonzero for 722 mismatches. No frozen paper timings were changed.
 The offline pandas evidence now includes 524 value/metadata cases, 2,419 dtype
 cases, 93 dtype queries, 105 default-frame cases, 1,566 assignment cases, 232
 update cases and 162 scalar-index cases. The inventory counts their primary
-operations separately. Mutation/return-value parity for insert/isetitem is still
-pending; they return new frames here. Other unfinished areas include exact
+operations separately. Mutation/return-value parity for insert/isetitem now
+matches pandas: both mutate in place and return `undefined`. Other unfinished areas include exact
 bigint storage, arithmetic dtype propagation, hierarchical indexes, index
 metadata, datetime/timezone storage, duplicate-label alignment and broad API
 signature/return/error compatibility. Continue with small tested commits.

@@ -24,9 +24,9 @@ describe("DataFrame align / isetitem", () => {
 
   test("isetitem replaces one column positionally", () => {
     const df = new DataFrame({ a: [1, 2], b: [3, 4] });
-    const out = df.isetitem(1, [9, 9]);
-    expect(out.columns).toEqual(["a", "b"]);
-    expect((out.to_dict("list") as Record<string, number[]>).b).toEqual([9, 9]);
+    df.isetitem(1, [9, 9]);
+    expect(df.columns).toEqual(["a", "b"]);
+    expect((df.to_dict("list") as Record<string, number[]>).b).toEqual([9, 9]);
   });
 
   test("isetitem rejects bad positions and lengths", () => {

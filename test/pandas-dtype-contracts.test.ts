@@ -132,7 +132,7 @@ for (const [i, entry] of assignmentFixture.cases.entries()) {
     const source = new DataFrame({ v: entry.values.map(decode), keep: [null, null] }, { dtype: "object" }).astype({ v: entry.dtype as DType });
     const incoming = entry.incoming.map(decode);
     const value = entry.inputDtype ? new Series<CellValue>(incoming, { dtype: entry.inputDtype as DType, index: [1, 0] }) : incoming;
-    const result = entry.operation === "assign" ? source.assign({ v: value }) : entry.operation === "insert" ? source.insert(1, "new", value) : source.isetitem(0, value);
+    const result = entry.operation === "assign" ? source.assign({ v: value }) : entry.operation === "insert" ? (source.insert(1, "new", value), source) : (source.isetitem(0, value), source);
     expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
   });
 }
