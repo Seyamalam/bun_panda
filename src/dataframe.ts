@@ -1642,7 +1642,8 @@ export class DataFrame {
       throw new Error("rank na_option must be keep, top, or bottom.");
     }
     const rows = computeRankRows(this._rows, this._columns, options);
-    return this.withRows(rows, this._index, this._columns, true);
+    const dtypes = Object.fromEntries(this._columns.map(column => [column, "float64" as const]));
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, dtypes);
   }
 
   sort_values(

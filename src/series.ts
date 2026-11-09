@@ -40,7 +40,7 @@ import {
   cumprodValues,
   cumsumValues,
 } from "./internal/series/cumulative";
-import { computeRank } from "./internal/series/rank";
+import { computeRank, type RankOptions } from "./internal/series/rank";
 import { NotSupportedError } from "./errors";
 import * as seriesApi from "./internal/series/seriesApi";
 import {
@@ -904,16 +904,15 @@ export class Series<T extends CellValue = CellValue> {
   /**
    * Computes ranks alongside pandas: average method by default.
    * `method`: "average" | "min" | "max" | "first" | "dense".
-   * NaN/null values get rank null. Ascending=false reverses order.
+   * Missing values retain a missing rank by default. Ascending=false reverses order.
    */
-  rank(options: {
-    method?: "average" | "min" | "max" | "first" | "dense";
-    ascending?: boolean;
-    na_option?: "keep" | "bottom" | "top";
-  } = {}): Series<number | null> {
-    return new Series(computeRank(this._values, options), {
+  rank(options: RankOptions = {}): Series<CellValue> {
+    const nullable = /^(U?Int|Float)/.test(this.dtype) || this.dtype === "boolean";
+    const integral = !options.pct && (options.method ?? "average") !== "average";
+    return new Series<CellValue>(computeRank(this._values, options), {
       index: this._index,
       name: this.name,
+      dtype: nullable ? (integral ? "UInt64" : "Float64") : "float64",
     });
   }
 

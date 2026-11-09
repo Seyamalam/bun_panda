@@ -161,3 +161,20 @@ for dtype in ['int16','Int16','float32','Float32','bool','boolean','str','string
             update_cases.append(entry)
 Path('test/fixtures/pandas-frame-update.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':update_cases},indent=2,allow_nan=False)+'\n')
 print(f'wrote {len(update_cases)} frame update contracts')
+
+rank_cases=[]
+for dtype,values in [('int16',[3,1,1]),('float32',[3,1,1]),('Int16',[1,None,1]),('Float32',[1,None,1]),('boolean',[True,None,False]),('string',['b',None,'A']),('str',['10','2',None]),('object',[1,'1',2]),('object',[None,None]),('float64',[np.inf,-np.inf,np.inf,np.nan]),('object',['😀','\ue000','A','a']),('float64',[]),('Int16',[])]:
+    source=pd.Series(values,dtype=dtype,index=[f'row-{i}' for i in range(len(values))],name='v')
+    for method in ['average','min','max','first','dense']:
+        for na_option in ['keep','top','bottom']:
+            for ascending,pct in [(True,False),(False,False),(True,True)]:
+                options={'method':method,'na_option':na_option,'ascending':ascending,'pct':pct}
+                entry={'mode':'selection','dtype':dtype,'values':[encode(x) for x in values],'operation':'rank','args':[options]}
+                try:
+                    for key,result in [('expected',source.rank(**options)),('frameExpected',source.to_frame().rank(**options)['v'])]:
+                        entry[key]={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist(),'name':result.name}
+                except Exception as e: entry['error']=type(e).__name__
+                rank_cases.append(entry)
+cases.extend(rank_cases)
+Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
+print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

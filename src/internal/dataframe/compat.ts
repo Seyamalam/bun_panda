@@ -1,15 +1,10 @@
+import { computeRank, type RankOptions } from "../series/rank";
 import type { CellValue, Row } from "../../types";
 import { normalizeKeyCell } from "./keys";
-import { compareCellValues, isMissing } from "../../utils";
 
 export type ReplaceInput = CellValue | CellValue[] | Record<string, CellValue>;
 
-export interface RankOptions {
-  method?: "average" | "min" | "max" | "dense" | "first";
-  ascending?: boolean;
-  na_option?: "keep" | "top" | "bottom";
-  pct?: boolean;
-}
+export type { RankOptions };
 
 export function computeIsinRows(
   sourceRows: Row[],
@@ -125,52 +120,11 @@ export function computeRankRows(
   columns: string[],
   options: RankOptions = {}
 ): Row[] {
-  const method = options.method ?? "average";
-  const ascending = options.ascending ?? true;
-  const naOption = options.na_option ?? "keep";
-  const pct = options.pct ?? false;
-  const rowCount = sourceRows.length;
-  const outRows = Array.from({ length: rowCount }, () => ({} as Row));
-
+  const outRows = sourceRows.map(() => ({} as Row));
   for (const column of columns) {
-    const values = sourceRows.map((row) => row[column]);
-    const missingPositions: number[] = [];
-    const nonMissingPositions: number[] = [];
-
-    for (let i = 0; i < rowCount; i += 1) {
-      if (isMissing(values[i])) {
-        missingPositions.push(i);
-      } else {
-        nonMissingPositions.push(i);
-      }
-    }
-
-    nonMissingPositions.sort((left, right) => {
-      const compared = compareCellValues(values[left], values[right]);
-      return ascending ? compared : -compared;
-    });
-
-    const ranks = new Array<number | null>(rowCount).fill(null);
-    assignNonMissingRanks(ranks, values, nonMissingPositions, method);
-    applyMissingRanks(
-      ranks,
-      missingPositions,
-      nonMissingPositions.length,
-      method,
-      naOption
-    );
-
-    const denominator = pct ? calculatePctDenominator(ranks, method) : 1;
-
-    for (let i = 0; i < rowCount; i += 1) {
-      const rank = ranks[i];
-      outRows[i]![column] =
-        rank == null
-          ? null
-          : (pct ? rank / denominator : rank);
-    }
+    const ranks = computeRank(sourceRows.map(row => row[column]), options);
+    ranks.forEach((rank, i) => { outRows[i]![column] = rank; });
   }
-
   return outRows;
 }
 
@@ -238,112 +192,4 @@ function createSeededRandom(seed: number): () => number {
     state = (1664525 * state + 1013904223) >>> 0;
     return state / 2 ** 32;
   };
-}
-
-function assignNonMissingRanks(
-  ranks: Array<number | null>,
-  values: CellValue[],
-  sortedPositions: number[],
-  method: NonNullable<RankOptions["method"]>
-): void {
-  if (method === "first") {
-    for (let i = 0; i < sortedPositions.length; i += 1) {
-      ranks[sortedPositions[i]!] = i + 1;
-    }
-    return;
-  }
-
-  let denseRank = 1;
-  let cursor = 0;
-  while (cursor < sortedPositions.length) {
-    const start = cursor;
-    let end = cursor + 1;
-    while (
-      end < sortedPositions.length &&
-      compareCellValues(
-        values[sortedPositions[start]!],
-        values[sortedPositions[end]!]
-      ) === 0
-    ) {
-      end += 1;
-    }
-
-    const minRank = start + 1;
-    const maxRank = end;
-    const rankValue =
-      method === "min"
-        ? minRank
-        : method === "max"
-          ? maxRank
-          : method === "dense"
-            ? denseRank
-            : (minRank + maxRank) / 2;
-
-    for (let i = start; i < end; i += 1) {
-      ranks[sortedPositions[i]!] = rankValue;
-    }
-
-    if (method === "dense") {
-      denseRank += 1;
-    }
-    cursor = end;
-  }
-}
-
-function applyMissingRanks(
-  ranks: Array<number | null>,
-  missingPositions: number[],
-  nonMissingCount: number,
-  method: NonNullable<RankOptions["method"]>,
-  naOption: NonNullable<RankOptions["na_option"]>
-): void {
-  if (missingPositions.length === 0 || naOption === "keep") {
-    return;
-  }
-
-  if (naOption === "top") {
-    const offset = method === "dense" ? 1 : missingPositions.length;
-    for (let i = 0; i < ranks.length; i += 1) {
-      if (ranks[i] !== null) {
-        ranks[i] = (ranks[i] as number) + offset;
-      }
-    }
-    for (let i = 0; i < missingPositions.length; i += 1) {
-      ranks[missingPositions[i]!] = missingRank(method, 0, missingPositions.length, i);
-    }
-    return;
-  }
-
-  const denseGroups = method === "dense"
-    ? ranks.reduce<number>((max, rank) => rank === null ? max : Math.max(max, rank), 0)
-    : 0;
-  const base = method === "dense" ? denseGroups : nonMissingCount;
-  for (let i = 0; i < missingPositions.length; i += 1) {
-    ranks[missingPositions[i]!] = missingRank(method, base, missingPositions.length, i);
-  }
-}
-
-function missingRank(
-  method: NonNullable<RankOptions["method"]>,
-  base: number,
-  missingCount: number,
-  position: number
-): number {
-  if (method === "first") return base + position + 1;
-  if (method === "max") return base + missingCount;
-  if (method === "average") return base + (missingCount + 1) / 2;
-  return base + 1;
-}
-
-function calculatePctDenominator(
-  ranks: Array<number | null>,
-  method: NonNullable<RankOptions["method"]>
-): number {
-  if (method === "dense") {
-    return Math.max(
-      ranks.reduce<number>((max, rank) => rank === null ? max : Math.max(max, rank), 0),
-      1
-    );
-  }
-  return Math.max(ranks.filter((rank) => rank !== null).length, 1);
 }
