@@ -11,7 +11,7 @@ an API name exists.
 | `bun run parity` | Presence of tracked API names | 505/505 |
 | `bun run compatibility:test` | Focused pandas-derived values, selected Series labels/names and categorical metadata | 524 value/metadata cases and 2,419 dtype/cast/inference/selection/replacement/rank cases and 93 dtype-query cases plus 105 default DataFrame inference/selection cases and 1,566 assignment cases and 232 in-place update cases plus 162 scalar-index cases pass |
 | `bun run conformance` | Ten operation families under the paper's declared comparison rules | 2,500/2,500 for pandas/adaptive and each backend comparison |
-| `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 2,489/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
+| `bun run conformance:strict` | Exact serialized observations, native dtype strings, exception types/messages and row order | 2,490/2,500 pandas/adaptive observations agree; command fails on the remaining mismatches |
 
 [API-COVERAGE.json](API-COVERAGE.json) lists every tracked name separately.
 `partial` means that some contracts have tests; `unverified` means that none

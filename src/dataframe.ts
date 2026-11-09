@@ -1817,7 +1817,13 @@ export class DataFrame {
       limit,
     });
 
-    return this.withRows(counts.rows, undefined, [...subset, counts.valueColumnName], true);
+    return DataFrame.createInternal(
+      counts.rows,
+      [...subset, counts.valueColumnName],
+      range(counts.rows.length),
+      {},
+      { [counts.valueColumnName]: normalize ? "float64" : "int64" }
+    );
   }
 
   dropna(subset?: string[]): DataFrame {
