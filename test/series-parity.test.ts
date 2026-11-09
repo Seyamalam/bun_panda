@@ -184,19 +184,21 @@ describe("DataFrame shift/diff/pct_change", () => {
     ]);
   });
 
-  test("diff computes row deltas on numeric columns only", () => {
-    expect(df.diff().to_records()).toEqual([
-      { v: NaN, tag: null },
-      { v: 10, tag: null },
-      { v: 20, tag: null },
+  test("diff computes row deltas and rejects non-numeric columns", () => {
+    expect(() => df.diff()).toThrow("unsupported operand type(s) for -: 'str' and 'str'");
+    expect(df.select(["v"]).diff().to_records()).toEqual([
+      { v: NaN },
+      { v: 10 },
+      { v: 20 },
     ]);
   });
 
-  test("pct_change computes relative deltas", () => {
-    expect(df.pct_change().to_records()).toEqual([
-      { v: NaN, tag: null },
-      { v: 1, tag: null },
-      { v: 1, tag: null },
+  test("pct_change computes relative deltas and rejects non-numeric columns", () => {
+    expect(() => df.pct_change()).toThrow("unsupported operand type(s) for /: 'str' and 'str'");
+    expect(df.select(["v"]).pct_change().to_records()).toEqual([
+      { v: NaN },
+      { v: 1 },
+      { v: 1 },
     ]);
   });
 

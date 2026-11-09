@@ -90,14 +90,17 @@ function canonicalFrame(frame: DataFrame): Record<string, unknown> {
 
 function classifyError(error: unknown): string {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-  if (message.includes("does not exist") || message.includes("not found") || message.includes("unknown column")) {
+  const name = error instanceof Error ? error.name : "";
+  if (name === "KeyError" && message.replace(/["']/g, "") === "invalid") return "invalid-argument";
+  if (name === "KeyError" || message.includes("not found") || message.includes("does not exist")) {
     return "missing-label";
   }
-  if (message.includes("not supported") || message.includes("unsupported")) return "unsupported";
+  if (name === "NotSupportedError" || message.includes("not supported")) return "unsupported";
+  if (error instanceof TypeError || name === "ValueError") return "invalid-argument";
   if (message.includes("must") || message.includes("invalid") || message.includes("requires")) {
     return "invalid-argument";
   }
-  return error instanceof TypeError ? "type-error" : "runtime-error";
+  return "runtime-error";
 }
 
 function execute(frame: DataFrame, right: DataFrame | undefined, operation: CaseSpec["operation"]): DataFrame {

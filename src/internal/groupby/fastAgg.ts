@@ -12,6 +12,7 @@ import {
   compareCellValues,
   isMissing,
   isNumber,
+  kahanSum,
   median,
   numericValues,
   std,
@@ -27,6 +28,7 @@ interface FastGroupState {
   keyValues: CellValue[];
   counts: number[];
   sums: number[];
+  comps: number[];
   hasAny: boolean[];
   seen: boolean[];
   best: CellValue[];
@@ -64,7 +66,7 @@ export function finalizeNamedAggValues(name: AggName, values: CellValue[]): Cell
   if (name === "sum" || name === "mean") {
     const numbers = numericValues(values);
     if (numbers.length === 0) return null;
-    const total = numbers.reduce((sum, value) => sum + value, 0);
+    const total = kahanSum(numbers);
     return name === "sum" ? total : total / numbers.length;
   }
   if (name === "min" || name === "max") {
@@ -126,7 +128,10 @@ export function updateFastGroupStates(
       if (isNumber(value)) {
         state.hasAny[i] = true;
         state.counts[i]! += 1;
-        state.sums[i]! += value;
+        const y = value - state.comps[i]!;
+        const t = state.sums[i]! + y;
+        state.comps[i] = (t - state.sums[i]!) - y;
+        state.sums[i] = t;
       }
       continue;
     }

@@ -6,7 +6,9 @@ import { DataFrame } from "./dataframe";
 import {
   compareCellValues,
   isMissing,
+  isSubtractableOperand,
   numericValues,
+  pythonOperandTypeName,
   range,
 } from "./utils";
 import {
@@ -41,7 +43,7 @@ import {
   cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank, type RankOptions } from "./internal/series/rank";
-import { NotSupportedError } from "./errors";
+import { KeyError, NotSupportedError, ValueError } from "./errors";
 import * as seriesApi from "./internal/series/seriesApi";
 import {
   asciiBoxplot,
@@ -907,6 +909,14 @@ export class Series<T extends CellValue = CellValue> {
    * Missing values retain a missing rank by default. Ascending=false reverses order.
    */
   rank(options: RankOptions = {}): Series<CellValue> {
+    const method = options.method ?? "average";
+    const naOption = options.na_option ?? "keep";
+    if (!["average", "min", "max", "first", "dense"].includes(method)) {
+      throw new KeyError(`'${method}'`);
+    }
+    if (!["keep", "top", "bottom"].includes(naOption)) {
+      throw new ValueError("na_option must be one of 'keep', 'top', or 'bottom'");
+    }
     const nullable = /^(U?Int|Float)/.test(this.dtype) || this.dtype === "boolean";
     const integral = !options.pct && (options.method ?? "average") !== "average";
     return new Series<CellValue>(computeRank(this._values, options), {
@@ -1107,7 +1117,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   shift(periods = 1): Series<T | null> {
-    if (!Number.isInteger(periods)) throw new TypeError("periods must be an integer");
+    if (!Number.isInteger(periods)) throw new TypeError("slice indices must be integers or None or have an __index__ method");
     const out: (T | null)[] = new Array(this.length).fill(null);
     for (let i = 0; i < this.length; i += 1) {
       const src = i - periods;
@@ -1118,6 +1128,16 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   diff(periods = 1): Series<number | null> {
+    if (!Number.isInteger(periods)) throw new ValueError("periods must be an integer");
+    if (this._dtype === "object" || this._dtype === "str" || this._dtype === "string") {
+      for (let i = Math.max(0, periods); i < Math.min(this.length, this.length + periods); i++) {
+        const left = this._values[i] as unknown as CellValue;
+        const right = this._values[i - periods] as unknown as CellValue;
+        if (!isSubtractableOperand(left) || !isSubtractableOperand(right)) {
+          throw new TypeError(`unsupported operand type(s) for -: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
+        }
+      }
+    }
     const out: (number | null)[] = new Array(this.length).fill(null);
     for (let i = 0; i < this.length; i += 1) {
       const src = i - periods;
@@ -1134,6 +1154,16 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   pct_change(periods = 1): Series<number | null> {
+    if (!Number.isInteger(periods)) throw new TypeError("slice indices must be integers or None or have an __index__ method");
+    if (this._dtype === "object" || this._dtype === "str" || this._dtype === "string") {
+      for (let i = Math.max(0, periods); i < Math.min(this.length, this.length + periods); i++) {
+        const left = this._values[i] as unknown as CellValue;
+        const right = this._values[i - periods] as unknown as CellValue;
+        if ((!isMissing(left) && !isSubtractableOperand(left)) || (!isMissing(right) && !isSubtractableOperand(right))) {
+          throw new TypeError(`unsupported operand type(s) for /: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
+        }
+      }
+    }
     const out: (number | null)[] = new Array(this.length).fill(null);
     for (let i = 0; i < this.length; i += 1) {
       const src = i - periods;

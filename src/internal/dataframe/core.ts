@@ -172,11 +172,13 @@ export function buildMergedRow(
       row[outputColumn] = leftRow[sourceColumn];
       continue;
     }
-    row[outputColumn] = joinKeys.includes(sourceColumn) ? rightRow?.[sourceColumn] : undefined;
+    row[outputColumn] = joinKeys.includes(sourceColumn)
+      ? (rightRow === undefined ? NaN : rightRow[sourceColumn])
+      : NaN;
   }
 
   for (let i = 0; i < rightColumnsSource.length; i += 1) {
-    row[rightColumnsOut[i]!] = rightRow?.[rightColumnsSource[i]!];
+    row[rightColumnsOut[i]!] = rightRow === undefined ? NaN : rightRow[rightColumnsSource[i]!];
   }
 
   return row;

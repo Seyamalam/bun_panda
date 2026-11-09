@@ -44,7 +44,7 @@ function pairedNumeric(
       ) {
         target[column] = fn(a, b);
       } else {
-        target[column] = null;
+        target[column] = NaN;
       }
     }
   }

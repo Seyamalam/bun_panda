@@ -134,7 +134,7 @@ import {
   unstackFrame,
   type FrameCombineFn,
 } from "./internal/dataframe/combine";
-import { NotSupportedError } from "./errors";
+import { KeyError, NotSupportedError, ValueError } from "./errors";
 import * as windowApi from "./internal/dataframe/windowApi";
 import {
   asciiBoxplot,
@@ -159,6 +159,8 @@ import {
   inferColumnDType,
   isMissing,
   isNumber,
+  isSubtractableOperand,
+  pythonOperandTypeName,
   range,
 } from "./utils";
 import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
@@ -1239,7 +1241,7 @@ export class DataFrame {
    */
   shift(periods = 1): DataFrame {
     if (!Number.isInteger(periods)) {
-      throw new Error("periods must be an integer.");
+      throw new TypeError("slice indices must be integers or None or have an __index__ method");
     }
     const rows = shiftRows(this._rows, this._columns, periods);
     for (const column of this._columns) {
@@ -1258,31 +1260,52 @@ export class DataFrame {
   /** First discrete difference of numeric columns. */
   diff(periods = 1): DataFrame {
     if (!Number.isInteger(periods)) {
-      throw new Error("periods must be an integer.");
+      throw new ValueError("periods must be an integer");
     }
     if (this._rows.length > Math.abs(periods)) {
       for (const column of this._columns) {
-        if (inferColumnDType(this._rows.map((row) => row[column])) === "unknown") {
-          throw new TypeError(`Column '${column}' must contain subtractable numeric values.`);
+        const values = this._rows.map((row) => row[column]);
+        const inferred = inferColumnDType(values);
+        if (inferred === "number" || inferred === "boolean" || inferred === "date") continue;
+        for (let i = Math.max(0, periods); i < Math.min(values.length, values.length + periods); i++) {
+          const left = values[i]!;
+          const right = values[i - periods]!;
+          if (!isSubtractableOperand(left) || !isSubtractableOperand(right)) {
+            throw new TypeError(`unsupported operand type(s) for -: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
+          }
         }
       }
     }
     const rows = diffRows(this._rows, this._columns, periods);
-    const numericHints = Object.fromEntries(
+    const dtypes = Object.fromEntries(
       this._columns.map((column) => [
         column,
         inferColumnDType(this._rows.map((row) => row[column])) === "number"
-          ? "number" as const
-          : "unknown" as const,
+          ? "float64" as const
+          : "object" as const,
       ])
     );
-    return DataFrame.createInternal(rows, [...this._columns], [...this._index], numericHints);
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, dtypes);
   }
 
   /** Percentage change between the current and prior row (numeric columns). */
   pct_change(periods = 1): DataFrame {
     if (!Number.isInteger(periods)) {
-      throw new Error("periods must be an integer.");
+      throw new TypeError("slice indices must be integers or None or have an __index__ method");
+    }
+    if (this._rows.length > Math.abs(periods)) {
+      for (const column of this._columns) {
+        const values = this._rows.map((row) => row[column]);
+        const inferred = inferColumnDType(values);
+        if (inferred !== "string" && inferred !== "mixed") continue;
+        for (let i = Math.max(0, periods); i < Math.min(values.length, values.length + periods); i++) {
+          const left = values[i]!;
+          const right = values[i - periods]!;
+          if ((!isMissing(left) && !isSubtractableOperand(left)) || (!isMissing(right) && !isSubtractableOperand(right))) {
+            throw new TypeError(`unsupported operand type(s) for /: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
+          }
+        }
+      }
     }
     const rows = pctChangeRows(this._rows, this._columns, periods);
     return this.withRows(rows, [...this._index], this._columns, true);
@@ -1644,10 +1667,10 @@ export class DataFrame {
     const method = options.method ?? "average";
     const naOption = options.na_option ?? "keep";
     if (!["average", "min", "max", "first", "dense"].includes(method)) {
-      throw new Error("rank method must be average, min, max, first, or dense.");
+      throw new KeyError(`'${method}'`);
     }
     if (!["keep", "top", "bottom"].includes(naOption)) {
-      throw new Error("rank na_option must be keep, top, or bottom.");
+      throw new ValueError("na_option must be one of 'keep', 'top', or 'bottom'");
     }
     const rows = computeRankRows(this._rows, this._columns, options);
     const dtypes = Object.fromEntries(this._columns.map(column => [column, "float64" as const]));
@@ -1662,7 +1685,7 @@ export class DataFrame {
   ): DataFrame {
     const columns = Array.isArray(by) ? by : [by];
     for (const column of columns) {
-      this.assertColumnExists(column);
+      if (!this._columns.includes(column)) throw new KeyError(`'${column}'`);
     }
     if (na_position !== "first" && na_position !== "last") {
       throw new Error("na_position must be 'first' or 'last'.");
@@ -1744,7 +1767,10 @@ export class DataFrame {
     ignore_index = false
   ): DataFrame {
     const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
-    for (const column of columns) this.assertColumnExists(column);
+    const missingSubset = columns.filter((column) => !this._columns.includes(column));
+    if (missingSubset.length > 0) {
+      throw new KeyError(`Index([${missingSubset.map((column) => `'${column}'`).join(", ")}], dtype='str')`);
+    }
     const include = computeDuplicateKeepFlags(this._rows, columns, keep);
 
     const rows: Row[] = [];
@@ -1779,7 +1805,7 @@ export class DataFrame {
     const limit = normalizeSortLimit(options.limit, Number.MAX_SAFE_INTEGER);
 
     for (const column of subset) {
-      this.assertColumnExists(column);
+      if (!this._columns.includes(column)) throw new KeyError(`'${column}'`);
     }
 
     const counts = computeValueCountsRows(this._rows, {
@@ -1796,8 +1822,9 @@ export class DataFrame {
 
   dropna(subset?: string[]): DataFrame {
     const columns = subset && subset.length > 0 ? subset : this._columns;
-    for (const column of columns) {
-      this.assertColumnExists(column);
+    const missingSubset = columns.filter((column) => !this._columns.includes(column));
+    if (missingSubset.length > 0) {
+      throw new KeyError(`[${missingSubset.map((column) => `'${column}'`).join(", ")}]`);
     }
 
     const result = this.filter((row) => columns.every((column) => !isMissing(row[column])));
@@ -2046,8 +2073,7 @@ export class DataFrame {
     const keys = Array.isArray(options.on) ? options.on : [options.on];
 
     for (const key of keys) {
-      this.assertColumnExists(key);
-      right.assertColumnExists(key);
+      if (!this._columns.includes(key) || !right._columns.includes(key)) throw new KeyError(`'${key}'`);
     }
 
     const result = computeMergeRows({
@@ -2088,6 +2114,9 @@ export class DataFrame {
       const dtype = leftDtypes[column] ?? "unknown";
       if (mayPreserve(this._rows, column, dtype, keys.includes(column))) {
         dtypeHints[output] = dtype;
+      } else if (result.rows.every((row) => isMissing(row[output]))) {
+        // pandas keeps all-missing merged columns object-typed rather than float64.
+        dtypeHints[output] = "object";
       }
     }
     for (const column of right._columns) {
@@ -2100,6 +2129,9 @@ export class DataFrame {
       const output = duplicateNonKeys.has(column) ? `${column}${suffixes[1]}` : column;
       const dtype = rightDtypes[column] ?? "unknown";
       if (mayPreserve(right._rows, column, dtype, false)) dtypeHints[output] = dtype;
+      else if (result.rows.every((row) => isMissing(row[output]))) {
+        dtypeHints[output] = "object";
+      }
     }
     for (const key of keys) {
       const sourceDtype = (options.how ?? "inner") === "right"

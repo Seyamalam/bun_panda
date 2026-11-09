@@ -5,12 +5,12 @@ import { Series } from "../src/series";
 describe("differential-conformance regressions", () => {
   test("drop_duplicates rejects a missing subset label", () => {
     const frame = new DataFrame([{ a: 1 }]);
-    expect(() => frame.drop_duplicates(["missing"])).toThrow("does not exist");
+    expect(() => frame.drop_duplicates(["missing"])).toThrow("Index(['missing'], dtype='str')");
   });
 
   test("shift and diff reject fractional periods", () => {
     const frame = new DataFrame([{ a: 1 }, { a: 2 }]);
-    expect(() => frame.shift(1.5)).toThrow("periods must be an integer");
+    expect(() => frame.shift(1.5)).toThrow("slice indices must be integers");
     expect(() => frame.diff(1.5)).toThrow("periods must be an integer");
   });
 

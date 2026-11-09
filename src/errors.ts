@@ -18,3 +18,10 @@ export class ValueError extends Error {
     this.name = "ValueError";
   }
 }
+
+export class KeyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "KeyError";
+  }
+}

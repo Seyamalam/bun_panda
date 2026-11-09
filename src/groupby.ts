@@ -26,6 +26,7 @@ import {
   semOfMean,
 } from "./internal/series/stats";
 import { computeRank } from "./internal/series/rank";
+import { KeyError } from "./errors";
 import { computeRolling } from "./internal/dataframe/rolling";
 import { covariance, pearson } from "./internal/dataframe/stats";
 
@@ -48,6 +49,7 @@ interface FastGroupState {
   keyValues: CellValue[];
   counts: number[];
   sums: number[];
+  comps: number[];
   hasAny: boolean[];
   seen: boolean[];
   best: CellValue[];
@@ -117,7 +119,7 @@ export class GroupBy {
     }
     for (const column of by) {
       if (!availableColumns.includes(column)) {
-        throw new Error(`Column '${column}' does not exist.`);
+        throw new KeyError(`'${column}'`);
       }
     }
 
@@ -218,6 +220,7 @@ export class GroupBy {
             keyValues: [keyValue],
             counts: new Array(namedPlans.length).fill(0),
             sums: new Array(namedPlans.length).fill(0),
+            comps: new Array(namedPlans.length).fill(0),
             hasAny: new Array(namedPlans.length).fill(false),
             seen: new Array(namedPlans.length).fill(false),
             best: new Array(namedPlans.length).fill(null),
@@ -242,6 +245,7 @@ export class GroupBy {
             keyValues,
             counts: new Array(namedPlans.length).fill(0),
             sums: new Array(namedPlans.length).fill(0),
+            comps: new Array(namedPlans.length).fill(0),
             hasAny: new Array(namedPlans.length).fill(false),
             seen: new Array(namedPlans.length).fill(false),
             best: new Array(namedPlans.length).fill(null),
@@ -615,7 +619,7 @@ export class GroupBy {
    */
   value_counts(column: string): DataFrame {
     if (!this.sourceColumns.includes(column)) {
-      throw new Error(`Column '${column}' does not exist.`);
+      throw new KeyError(`'${column}'`);
     }
     const outRows: Row[] = [];
     for (const group of this.sortGroups([...this.getGroups().values()])) {

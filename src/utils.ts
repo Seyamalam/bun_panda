@@ -19,6 +19,22 @@ export function cloneRow(row: Row, columns?: string[]): Row {
 
 export const isMissing = isMissingScalar;
 
+/** Whether pandas would accept the cell as a subtraction operand (numbers, bools, datetimes). */
+export function isSubtractableOperand(value: CellValue): boolean {
+  return typeof value === "number" || typeof value === "boolean" || value instanceof Date;
+}
+
+/** The Python type name pandas reports for the cell in unsupported-operand errors. */
+export function pythonOperandTypeName(value: CellValue): string {
+  if (value === null || value === undefined) return "NoneType";
+  if (typeof value === "symbol") return "NAType";
+  if (typeof value === "number") return Number.isNaN(value) ? "float" : Number.isInteger(value) ? "int" : "float";
+  if (typeof value === "boolean") return "bool";
+  if (typeof value === "string") return "str";
+  if (value instanceof Date) return "datetime.datetime";
+  return "object";
+}
+
 export function isNumber(value: CellValue): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
@@ -49,6 +65,19 @@ export function compareCellValues(left: CellValue, right: CellValue): number {
   const leftString = String(left);
   const rightString = String(right);
   return leftString.localeCompare(rightString);
+}
+
+/** Kahan compensated summation, matching pandas groupby accumulation order. */
+export function kahanSum(values: number[]): number {
+  let sum = 0;
+  let compensation = 0;
+  for (const value of values) {
+    const y = value - compensation;
+    const t = sum + y;
+    compensation = (t - sum) - y;
+    sum = t;
+  }
+  return sum;
 }
 
 export function variance(values: number[]): number | null {

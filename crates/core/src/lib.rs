@@ -210,6 +210,10 @@ pub unsafe extern "C" fn bp_agg_f64(
 
     match code {
         AGG_SUM | AGG_MEAN => {
+            let comp = bp_alloc(n_groups.max(1) * 8) as *mut f64;
+            for g in 0..n_groups {
+                *comp.add(g) = 0.0;
+            }
             for i in 0..n {
                 let v = vals[i];
                 if v.is_nan() {
@@ -220,7 +224,10 @@ pub unsafe extern "C" fn bp_agg_f64(
                     continue;
                 }
                 let g = g as usize;
-                *out.add(g) += v;
+                let y = v - *comp.add(g);
+                let t = *out.add(g) + y;
+                *comp.add(g) = (t - *out.add(g)) - y;
+                *out.add(g) = t;
                 *counts.add(g) += 1;
             }
             if code == AGG_MEAN {
@@ -320,6 +327,10 @@ pub unsafe extern "C" fn bp_agg_multi_f64(
         let cnt_p = counts.add(p * n_groups);
         match code {
             AGG_SUM | AGG_MEAN => {
+                let comp = bp_alloc(n_groups.max(1) * 8) as *mut f64;
+                for g in 0..n_groups {
+                    *comp.add(g) = 0.0;
+                }
                 for i in 0..n {
                     let v = col[i];
                     if v.is_nan() {
@@ -330,7 +341,10 @@ pub unsafe extern "C" fn bp_agg_multi_f64(
                         continue;
                     }
                     let g = g as usize;
-                    *out_p.add(g) += v;
+                    let y = v - *comp.add(g);
+                    let t = *out_p.add(g) + y;
+                    *comp.add(g) = (t - *out_p.add(g)) - y;
+                    *out_p.add(g) = t;
                     *cnt_p.add(g) += 1;
                 }
                 if code == AGG_MEAN {
