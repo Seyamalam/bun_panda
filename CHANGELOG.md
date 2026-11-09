@@ -6,6 +6,8 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-09
+
 - Raise pandas-typed errors with pandas-exact messages: `KeyError` for missing labels (including `Index([...], dtype='str')` and subset-list formats), `ValueError` for invalid rank options and non-integer `diff` periods, and `TypeError` slice/operand errors for `shift`, `pct_change` and `diff` on non-subtractable columns. New exported `KeyError` class. `diff` and `pct_change` now reject string/mixed columns the way pandas does instead of returning nulls.
 
 - Accumulate groupby sum/mean with Kahan compensated summation in both the TypeScript and Rust/Wasm kernels, matching pandas bit-for-bit. Rebuilt `bun_panda_core.wasm` (7,728 bytes).

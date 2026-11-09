@@ -1,6 +1,6 @@
 {
   "name": "bun_panda",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Pandas-inspired DataFrame and Series utilities for Bun/TypeScript.",
   "license": "MIT",
   "homepage": "https://github.com/Seyamalam/bun_panda#readme",
