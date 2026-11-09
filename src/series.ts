@@ -43,7 +43,7 @@ import {
   cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank, type RankOptions } from "./internal/series/rank";
-import { KeyError, NotSupportedError, ValueError } from "./errors";
+import { KeyError, NotSupportedError, ValueError, ZeroDivisionError } from "./errors";
 import * as seriesApi from "./internal/series/seriesApi";
 import {
   asciiBoxplot,
@@ -597,13 +597,20 @@ export class Series<T extends CellValue = CellValue> {
     name?: string,
     division = false,
     boolArithmetic = false,
-    floordiv = false
+    floordiv = false,
+    narrowBool = false,
+    zeroDivisorError = false
   ): Series<number> {
     const rightDtype0: DType = other instanceof Series ? other._dtype : "number";
     if (/^(str|string)$/.test(this._dtype) || (other instanceof Series && /^(str|string)$/.test(rightDtype0))) {
       throw new TypeError("unsupported operand type(s) for Series arithmetic");
     }
     const { leftValues, rightValues, resultIndex, missingIntroduced } = this.alignBinary(other);
+    // pandas object columns divide element-wise and raise ZeroDivisionError.
+    if (zeroDivisorError && this._dtype === "object" &&
+        rightValues.some((v, i) => v === 0 && !isMissing(leftValues[i]))) {
+      throw new ZeroDivisionError("integer division or modulo by zero");
+    }
     const out = leftValues.map((value, i): number | null => {
       const right = rightValues[i];
       if (isMissing(value) || isMissing(right)) {
@@ -615,7 +622,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     const rightDtype: DType = other instanceof Series
       ? other._dtype
-      : scalarOperandDType(this._dtype, other as number);
+      : scalarOperandDType(this._dtype, other as number, narrowBool);
     let dtype = floordiv
       ? floordivResultDType(this._dtype, rightDtype)
       : arithResultDType(this._dtype, rightDtype, division, boolArithmetic);
@@ -628,7 +635,17 @@ export class Series<T extends CellValue = CellValue> {
         out.some(value => typeof value === "number" && !Number.isInteger(value))) {
       dtype = /^U?Int/.test(dtype) ? "Float64" : "float64";
     }
-    return new Series(out as never, {
+    // pandas floordiv on a float-family left computes through float64 and
+    // widens when non-integral results appear (Float32 // int -> Float64).
+    if (floordiv && /^[fF]loat|^number$/.test(this._dtype) &&
+        out.some(value => typeof value === "number" && !Number.isInteger(value))) {
+      dtype = /^Float/.test(this._dtype) ? "Float64" : "float64";
+    }
+    // pandas Float32/float32 columns compute in float32 precision.
+    const values = (dtype === "Float32" || dtype === "float32")
+      ? out.map(v => typeof v === "number" && Number.isFinite(v) ? Math.fround(v) : v)
+      : dtype === "object" ? out.map(v => v === null ? NaN : v) : out;
+    return new Series(values as never, {
       index: resultIndex, indexName: this._indexName,
       name: name ?? this.name,
       ...(dtype ? { dtype } : {}),
@@ -651,19 +668,37 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   mul(other: number | Series<T>): Series<number> {
+    // pandas repeats strings by integer operands: 'a' * 2 -> 'aa'.
+    if (/^(str|string)$/.test(this._dtype)) {
+      const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
+      const out = leftValues.map((value, i): string | null => {
+        const right = rightValues[i];
+        if (isMissing(value) || isMissing(right)) return null;
+        const count = typeof right === "number" ? right : Number(right);
+        return count > 0 ? String(value).repeat(count) : "";
+      });
+      return new Series(out as never, { index: resultIndex, indexName: this._indexName, name: this.name, dtype: "string" });
+    }
     return this.numericOp(other, (a, b) => a * b, undefined, false, true);
   }
 
   div(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a / b, undefined, true);
+    return this.numericOp(other, (a, b) => a / b, undefined, true, false, false, false, true);
   }
 
   mod(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a % b);
+    // pandas integer mod emits 0 on a zero divisor, keeping the int dtype.
+    const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
+      (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
+      !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
+        /^(U?Int|boolean)/.test(other._dtype));
+    return this.numericOp(other, intOperands
+      ? (a, b) => (b === 0 ? 0 : a % b)
+      : (a, b) => a % b, undefined, false, false, false, false, true);
   }
 
   pow(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a ** b);
+    return this.numericOp(other, (a, b) => a ** b, undefined, false, false, false, true);
   }
 
   // pandas long-form aliases
@@ -678,11 +713,13 @@ export class Series<T extends CellValue = CellValue> {
   }
   floordiv(other: number | Series<T>): Series<number> {
     // pandas keeps integer floordiv integer, emitting 0 on a zero divisor.
-    const intOperands = /^u?int|^bool/.test(this._dtype) &&
-      (!(other instanceof Series) || /^u?int|^bool/.test(other._dtype));
+    const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
+      (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
+      !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
+        /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (b === 0 ? 0 : Math.floor(a / b))
-      : (a, b) => Math.floor(a / b), undefined, false, false, true);
+      : (a, b) => Math.floor(a / b), undefined, false, false, true, false, true);
   }
   radd(other: number | Series<T>): Series<number> {
     return this.add(other);
@@ -691,26 +728,34 @@ export class Series<T extends CellValue = CellValue> {
     return this.mul(other);
   }
   rdiv(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b / a, undefined, true);
+    return this.numericOp(other, (a, b) => b / a, undefined, true, false, false, false, true);
   }
   rtruediv(other: number | Series<T>): Series<number> {
     return this.rdiv(other);
   }
 
   rmod(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b % a);
+    const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
+      (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
+      !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
+        /^(U?Int|boolean)/.test(other._dtype));
+    return this.numericOp(other, intOperands
+      ? (a, b) => (a === 0 ? 0 : b % a)
+      : (a, b) => b % a, undefined, false, false, false, false, true);
   }
 
   rpow(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b ** a);
+    return this.numericOp(other, (a, b) => b ** a, undefined, false, false, false, true);
   }
 
   rfloordiv(other: number | Series<T>): Series<number> {
-    const intOperands = /^u?int|^bool/.test(this._dtype) &&
-      (!(other instanceof Series) || /^u?int|^bool/.test(other._dtype));
+    const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
+      (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
+      !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
+        /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (a === 0 ? 0 : Math.floor(b / a))
-      : (a, b) => Math.floor(b / a), undefined, false, false, true);
+      : (a, b) => Math.floor(b / a), undefined, false, false, true, false, true);
   }
 
   neg(): Series<number> {
@@ -757,14 +802,24 @@ export class Series<T extends CellValue = CellValue> {
 
   private compareOp(
     other: CellValue | Series<T>,
-    fn: (left: number | string | boolean, right: number | string | boolean) => boolean
+    fn: (left: number | string | boolean, right: number | string | boolean) => boolean,
+    ordering = false
   ): Series<boolean> {
+    const isStrDtype = (d: string) => /^(str|string)$/.test(d);
+    const leftStr = isStrDtype(this._dtype);
+    const rightDtype = other instanceof Series ? other._dtype : null;
+    const rightStr = rightDtype !== null ? isStrDtype(rightDtype) : typeof other === "string";
+    // pandas ordering comparisons between string and non-string dtypes raise.
+    if (ordering && leftStr !== rightStr) {
+      throw new TypeError("unsupported operand type(s) for Series comparison");
+    }
     const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
     // pandas comparisons with missing operands use IEEE NaN semantics (False)
-    // for plain dtypes and NA propagation for nullable dtypes.
+    // for plain dtypes and NA propagation for nullable dtypes; string
+    // comparisons produce the nullable boolean dtype.
     const leftNullable = /^(U?Int|Float)|^boolean/.test(this._dtype);
     const rightNullable = other instanceof Series && /^(U?Int|Float)|^boolean/.test(other._dtype);
-    const nullableCompare = leftNullable || rightNullable;
+    const nullableCompare = leftNullable || rightNullable || leftStr || rightStr;
     const out = leftValues.map((value, i): boolean | null => {
       const right = rightValues[i];
       const aMiss = isMissing(value);
@@ -792,19 +847,19 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   lt(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => (a as number) < (b as number));
+    return this.compareOp(other, (a, b) => (a as number) < (b as number), true);
   }
 
   le(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => (a as number) <= (b as number));
+    return this.compareOp(other, (a, b) => (a as number) <= (b as number), true);
   }
 
   gt(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => (a as number) > (b as number));
+    return this.compareOp(other, (a, b) => (a as number) > (b as number), true);
   }
 
   ge(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => (a as number) >= (b as number));
+    return this.compareOp(other, (a, b) => (a as number) >= (b as number), true);
   }
 
   // ---- cumulative ----

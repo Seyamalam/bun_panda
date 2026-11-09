@@ -890,7 +890,10 @@ export class DataFrame {
     other: number | DataFrame,
     fn: (a: number, b: number) => number,
     division = false,
-    floorIntZero = false
+    floorIntZero = false,
+    boolArithmetic = false,
+    floordivDtype = false,
+    narrowBool = false
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
     if (otherFrame) {
@@ -908,10 +911,10 @@ export class DataFrame {
     this._columns.forEach((column, i) => {
       const right = otherFrame
         ? otherFrame._dtypes[otherFrame._columns[i]!] ?? "object"
-        : scalarOperandDType(this._dtypes[column] ?? "object", other as number);
-      let dtype = floorIntZero
+        : scalarOperandDType(this._dtypes[column] ?? "object", other as number, narrowBool);
+      let dtype = floordivDtype
         ? floordivResultDType(this._dtypes[column] ?? "object", right)
-        : arithResultDType(this._dtypes[column] ?? "object", right, division);
+        : arithResultDType(this._dtypes[column] ?? "object", right, division, boolArithmetic);
       // pandas int floordiv keeps the int dtype and emits 0 on a zero divisor;
       // other int ops widen to float64 on non-integer results.
       if (dtype !== undefined && /^u?int|^bool/.test(dtype)) {
@@ -926,13 +929,19 @@ export class DataFrame {
           rows.some(row => typeof row[column] === "number" && !Number.isInteger(row[column] as number))) {
         dtype = "float64";
       }
+      // pandas object columns store NaN (not missing) for failed elements.
+      if (dtype === "object") {
+        for (const row of rows) {
+          if (row[column] === null) row[column] = NaN;
+        }
+      }
       if (dtype) declared[column] = dtype;
     });
     return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, declared);
   }
 
   add(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a + b);
+    return this.binaryOp(other, (a, b) => a + b, false, false, true);
   }
 
   sub(other: number | DataFrame): DataFrame {
@@ -944,7 +953,7 @@ export class DataFrame {
   }
 
   mul(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a * b);
+    return this.binaryOp(other, (a, b) => a * b, false, false, true);
   }
 
   div(other: number | DataFrame): DataFrame {
@@ -956,15 +965,15 @@ export class DataFrame {
   }
 
   mod(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a % b);
+    return this.binaryOp(other, (a, b) => a % b, false, true);
   }
 
   pow(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a ** b);
+    return this.binaryOp(other, (a, b) => a ** b, false, false, false, false, true);
   }
 
   floordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(a / b), false, true);
+    return this.binaryOp(other, (a, b) => Math.floor(a / b), false, true, false, true);
   }
 
   radd(other: number | DataFrame): DataFrame {
@@ -984,7 +993,7 @@ export class DataFrame {
   }
 
   rmod(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b % a);
+    return this.binaryOp(other, (a, b) => b % a, false, true);
   }
 
   // ---- element-wise comparisons (boolean frames) ----
@@ -2406,7 +2415,7 @@ export class DataFrame {
 
   // ---- additional aliases ----
   rfloordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(b / a), false, true);
+    return this.binaryOp(other, (a, b) => Math.floor(b / a), false, true, false, true);
   }
 
   rtruediv(other: number | DataFrame): DataFrame {

@@ -219,6 +219,7 @@ export function arithResultDType(left: DType, right: DType, division: boolean, b
   const isNumeric = (d: DType) =>
     isPlainInt(d) || isPlainFloat(d) || isNullableInt(d) || isNullableFloat(d) ||
     d === "bool" || d === "boolean";
+  if (left === "object" || right === "object") return "object";
   if (!isNumeric(left) || !isNumeric(right)) return undefined;
   const width = (d: DType) => Number(d.match(/\d+/)?.[0] ?? 64);
   const ops = [left, right];
@@ -233,7 +234,7 @@ export function arithResultDType(left: DType, right: DType, division: boolean, b
     }
     if (ops.some(d => isNullableInt(d) || d === "boolean")) {
       const w = Math.max(...ops.map(d =>
-        isNullableInt(d) || isPlainInt(d) ? width(d) : d === "boolean" ? 64 : 8));
+        isNullableInt(d) || isPlainInt(d) ? width(d) : 8));
       return `${ops.some(d => /^UInt/.test(d)) ? "UInt" : "Int"}${w}` as DType;
     }
     if (ops.some(isPlainFloat)) return `float${floatWidth()}` as DType;
@@ -254,17 +255,11 @@ export function arithResultDType(left: DType, right: DType, division: boolean, b
 }
 
 /**
- * pandas floordiv dtype: like other int-preserving ops, except that mixing a
- * plain-integer operand with a nullable-integer operand computes through
- * float64 (Int16//Int16 stays Int16; int16//Int16 becomes Float64).
+ * pandas floordiv dtype follows normal promotion; value-driven widening
+ * (zero divisors -> Float64/float64) is applied by the callers.
  */
 export function floordivResultDType(left: DType, right: DType): DType | undefined {
-  const promoted = arithResultDType(left, right, false);
-  if (promoted === undefined || !/^U?Int/.test(promoted)) return promoted;
-  const plain = (d: DType) => /^(u?int)/.test(d) || d === "bool";
-  const nullable = (d: DType) => /^(U?Int)/.test(d) || d === "boolean";
-  if ((plain(left) && nullable(right)) || (nullable(left) && plain(right))) return "Float64";
-  return promoted;
+  return arithResultDType(left, right, false);
 }
 
 /**
@@ -272,14 +267,15 @@ export function floordivResultDType(left: DType, right: DType): DType | undefine
  * integer scalars never upcast the array's width (int16+2 -> int16,
  * float32+2.5 -> float32), but a float scalar widens integer arrays.
  */
-export function scalarOperandDType(column: DType, scalar: number): DType {
+export function scalarOperandDType(column: DType, scalar: number, narrowBool = false): DType {
   const numeric = /^(u?int|float|U?Int|Float)|^number$|^bool$|^boolean$/.test(column);
   if (!numeric) return "object";
   if (!Number.isInteger(scalar)) {
     if (/^float|^Float|^number$/.test(column)) return column;
-    if (column === "boolean") return "Float64";
-    return column === "bool" ? "int64" : "float64";
+    return column === "boolean" ? "Float64" : "float64";
   }
-  if (column === "boolean") return "Int64";
-  return column === "bool" ? "int64" : column;
+  // pandas narrows bool to int8 for pow/mod/floordiv; other ops promote to int64.
+  if (column === "boolean") return narrowBool ? "Int8" : "Int64";
+  if (column === "bool") return narrowBool ? "int8" : "int64";
+  return column;
 }
