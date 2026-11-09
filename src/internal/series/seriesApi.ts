@@ -22,6 +22,7 @@ export interface SeriesHost {
   labelsSnapshot(): IndexLabel[];
   lengthSnapshot(): number;
   nameSnapshot(): string | undefined;
+  indexNameSnapshot(): string | undefined;
   dtypeSnapshot(): DType | undefined;
   reindex(labels: IndexLabel[]): SeriesHost;
   copy(): unknown;
@@ -120,7 +121,7 @@ export function explode(s: SeriesHost, ): Series<CellValue> {
         for (const item of v as CellValue[]) { vals.push(item as CellValue); idx.push(s.labelsSnapshot()[i]!); }
       } else { vals.push(v as CellValue); idx.push(s.labelsSnapshot()[i]!); }
     }
-    return new Series(vals as unknown as CellValue[], { index: idx, name: s.nameSnapshot() }) as unknown as Series<CellValue>;
+    return new Series(vals as unknown as CellValue[], { index: idx, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() }) as unknown as Series<CellValue>;
   }
 
 export function groupby(s: SeriesHost, by: string | string[]): unknown {
@@ -154,18 +155,22 @@ export function repeat(s: SeriesHost, repeats: number): Series<CellValue> {
     for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
       for (let r = 0; r < repeats; r += 1) { vals.push(s.valuesSnapshot()[i]!); idx.push(s.labelsSnapshot()[i]!); }
     }
-    return new Series(vals, { index: idx, name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+    return new Series(vals, { index: idx, name: s.nameSnapshot(), indexName: s.indexNameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
-export function rename(s: SeriesHost, name: string): Series<CellValue> { return new Series([...s.valuesSnapshot()], { index: [...s.labelsSnapshot()], name, dtype: s.dtypeSnapshot() }); }
+export function rename(s: SeriesHost, name: string): Series<CellValue> { return new Series([...s.valuesSnapshot()], { index: [...s.labelsSnapshot()], indexName: s.indexNameSnapshot(), name, dtype: s.dtypeSnapshot() }); }
 
-export function rename_axis(s: SeriesHost, name: string): unknown { return rename(s, name); }
+/** pandas `Series.rename_axis` renames the *index*, not the series. */
+export function rename_axis(s: SeriesHost, name: string): unknown {
+  return new Series([...s.valuesSnapshot()], { index: [...s.labelsSnapshot()], indexName: name, name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+}
 
 export function reset_index(s: SeriesHost, drop = false): DataFrame | Series<CellValue> {
     if (drop) return new Series([...s.valuesSnapshot()], { index: range(s.valuesSnapshot().length), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+    const indexColumn = s.indexNameSnapshot() ?? "index";
     const df = new DataFrame(
-      s.valuesSnapshot().map((v, i) => ({ index: s.labelsSnapshot()[i]!, [String(s.nameSnapshot() ?? "0")]: v })),
-      { columns: ["index", String(s.nameSnapshot() ?? "0")] }
+      s.valuesSnapshot().map((v, i) => ({ [indexColumn]: s.labelsSnapshot()[i]!, [String(s.nameSnapshot() ?? "0")]: v })),
+      { columns: [indexColumn, String(s.nameSnapshot() ?? "0")] }
     );
     const dtype = s.dtypeSnapshot();
     return dtype ? df.astype({ [String(s.nameSnapshot() ?? "0")]: dtype }) : df;
@@ -173,7 +178,7 @@ export function reset_index(s: SeriesHost, drop = false): DataFrame | Series<Cel
 
 export function set_axis(s: SeriesHost, labels: IndexLabel[]): Series<CellValue> {
     if (labels.length !== s.valuesSnapshot().length) throw new Error("set_axis: length mismatch");
-    return new Series([...s.valuesSnapshot()], { index: [...labels], name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+    return new Series([...s.valuesSnapshot()], { index: [...labels], indexName: s.indexNameSnapshot(), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function squeeze(s: SeriesHost): CellValue | SeriesHost { return s.lengthSnapshot() === 1 ? (s.valuesSnapshot()[0] as CellValue) : s; }
@@ -183,19 +188,19 @@ export function take(s: SeriesHost, indices: number[]): Series<CellValue> {
       const pos = i < 0 ? s.valuesSnapshot().length + i : i;
       if (pos < 0 || pos >= s.valuesSnapshot().length) throw new Error(`take: index ${String(i)} out of bounds`);
       return s.valuesSnapshot()[pos]!;
-    }) as unknown as CellValue[]), { index: indices.map((i) => { const p = i < 0 ? s.labelsSnapshot().length + i : i; return s.labelsSnapshot()[p]!; }), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+    }) as unknown as CellValue[]), { index: indices.map((i) => { const p = i < 0 ? s.labelsSnapshot().length + i : i; return s.labelsSnapshot()[p]!; }), name: s.nameSnapshot(), indexName: s.indexNameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function transform(s: SeriesHost, fn: (s: Series<CellValue>) => Series<CellValue> | CellValue[]): Series<CellValue> {
     const r = fn(s as unknown as Series<CellValue>);
-    return Array.isArray(r) ? new Series(r as CellValue[], { index: [...s.labelsSnapshot()], name: s.nameSnapshot() }) : r as Series<CellValue>;
+    return Array.isArray(r) ? new Series(r as CellValue[], { index: [...s.labelsSnapshot()], name: s.nameSnapshot(), indexName: s.indexNameSnapshot() }) : r as Series<CellValue>;
   }
 
 export function truncate(s: SeriesHost, before?: IndexLabel, after?: IndexLabel): Series<CellValue> {
     let start = 0, end = s.valuesSnapshot().length;
     if (before !== undefined) { const p = s.labelsSnapshot().indexOf(before); if (p >= 0) start = p; }
     if (after !== undefined) { const p = s.labelsSnapshot().indexOf(after); if (p >= 0) end = p + 1; }
-    return new Series(s.valuesSnapshot().slice(start, end), { index: s.labelsSnapshot().slice(start, end), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
+    return new Series(s.valuesSnapshot().slice(start, end), { index: s.labelsSnapshot().slice(start, end), name: s.nameSnapshot(), indexName: s.indexNameSnapshot(), dtype: s.dtypeSnapshot() });
   }
 
 export function update(s: SeriesHost, other: Series<CellValue>): void {
@@ -265,7 +270,7 @@ export function case_when(s: SeriesHost,
       }
       return null;
     });
-    return new Series<CellValue | null>(out, { index: [...s.labelsSnapshot()], name: s.nameSnapshot() });
+    return new Series<CellValue | null>(out, { index: [...s.labelsSnapshot()], name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /**
@@ -310,7 +315,7 @@ export function combine(s: SeriesHost,
     for (let i = 0; i < length; i += 1) {
       out.push(fn(s.valuesSnapshot()[i] ?? null, (other.values as CellValue[])[i] ?? null));
     }
-    return new Series(out, { index: range(length), name: s.nameSnapshot() });
+    return new Series(out, { index: range(length), name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /** Keep this series' values where present; fall back to `other` where missing. */
@@ -321,7 +326,7 @@ export function combine_first(s: SeriesHost, other: Series<CellValue>): Series<C
       const mine = s.valuesSnapshot()[i];
       out.push(!isMissing(mine) ? (mine as CellValue) : (((other.values as CellValue[])[i] ?? null) as CellValue));
     }
-    return new Series(out, { index: range(length), name: s.nameSnapshot() });
+    return new Series(out, { index: range(length), name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
 export function reindex_like(s: SeriesHost, other: Series<CellValue>, _fill_value: CellValue | null = null): Series<CellValue> {
@@ -353,7 +358,7 @@ export function xs(s: SeriesHost, key: IndexLabel): CellValue | undefined | Seri
     }
     return new Series(
       positions.map((p) => s.valuesSnapshot()[p]) as CellValue[],
-      { index: positions.map((p) => s.labelsSnapshot()[p]!), name: s.nameSnapshot() }
+      { index: positions.map((p) => s.labelsSnapshot()[p]!), name: s.nameSnapshot(), indexName: s.indexNameSnapshot() }
     );
   }
 
@@ -397,7 +402,7 @@ export function between_time(s: SeriesHost,
         index.push(s.labelsSnapshot()[i]!);
       }
     }
-    return new Series(values, { index, name: s.nameSnapshot() });
+    return new Series(values, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /**
@@ -413,7 +418,7 @@ export function asfreq(s: SeriesHost, freq = 1, fill_value: CellValue | null = n
       throw new Error("asfreq: requires a fully numeric index.");
     }
     if (s.lengthSnapshot() === 0) {
-      return new Series<CellValue | null>([], { index: [], name: s.nameSnapshot() });
+      return new Series<CellValue | null>([], { index: [], name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
     }
     const numbers = s.labelsSnapshot() as number[];
     const first = Math.min(...numbers);
@@ -429,7 +434,7 @@ export function asfreq(s: SeriesHost, freq = 1, fill_value: CellValue | null = n
       values.push(pos !== undefined ? s.valuesSnapshot()[pos]! : fill_value);
       index.push(label);
     }
-    return new Series(values, { index, name: s.nameSnapshot() });
+    return new Series(values, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /**
@@ -511,7 +516,7 @@ export function at_time(s: SeriesHost, time: string): Series<CellValue> {
         index.push(s.labelsSnapshot()[i]!);
       }
     }
-    return new Series(values, { index, name: s.nameSnapshot() });
+    return new Series(values, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /** Exponentially weighted windows (adjust=True). */
@@ -530,7 +535,7 @@ export function ewm(s: SeriesHost, span: number, options: { min_periods?: number
     const make = (kind: "mean" | "sum" | "std") =>
       new Series(ewmValues(nums, span, minPeriods, kind), {
         index: [...s.labelsSnapshot()],
-        name: s.nameSnapshot(),
+        name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
       });
     return { mean: () => make("mean"), sum: () => make("sum"), std: () => make("std") };
   }
@@ -565,7 +570,7 @@ export function resample(s: SeriesHost, rule: string): {
       new Series(bins.map((b) => {
         const nums = collect(b);
         return nums.length > 0 ? fn(nums) : fallback;
-      }), { index: labels, name: s.nameSnapshot() });
+      }), { index: labels, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
     return {
       sum: () => reduce((n) => n.reduce((a, b) => a + b, 0), null),
       mean: () => reduce((n) => n.reduce((a, b) => a + b, 0) / n.length, null),
@@ -574,7 +579,7 @@ export function resample(s: SeriesHost, rule: string): {
       count: () =>
         new Series(bins.map((b) => countAll(b)), {
           index: labels,
-          name: s.nameSnapshot(),
+          name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
         }),
     };
   }

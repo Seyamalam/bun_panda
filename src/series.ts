@@ -64,6 +64,7 @@ export interface SeriesOptions {
   dtype?: DType;
   name?: string;
   index?: IndexLabel[];
+  indexName?: string;
 }
 
 export type { SeriesReplaceInput };
@@ -73,11 +74,13 @@ export class Series<T extends CellValue = CellValue> {
   private readonly _name: string | undefined;
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
+  private readonly _indexName: string | undefined;
 
   constructor(values: T[], options: SeriesOptions = {}) {
     this._dtype = options.dtype ?? convertedDType(values, undefined, false);
     this._values = castColumn(values, this._dtype) as T[];
     this._index = options.index ? [...options.index] : range(values.length);
+    this._indexName = options.indexName;
     this._name = options.name;
 
     if (this._index.length !== this._values.length) {
@@ -100,6 +103,11 @@ export class Series<T extends CellValue = CellValue> {
   /** Series name (pandas exposes this as a plain attribute). */
   get name(): string | undefined {
     return this._name;
+  }
+
+  /** pandas `series.index.name` for single-level indexes. */
+  get index_name(): string | undefined {
+    return this._indexName;
   }
 
   get length(): number {
@@ -163,7 +171,7 @@ export class Series<T extends CellValue = CellValue> {
     const values = this._values.map((value, position) =>
       fn(value, this._index[position]!, position)
     );
-    return new Series(values, { index: this._index, name });
+    return new Series(values, { index: this._index, indexName: this._indexName, name });
   }
 
   apply<U extends CellValue>(
@@ -226,7 +234,7 @@ export class Series<T extends CellValue = CellValue> {
     const out = this._values.map(
       (value) => isMissing(value) || (typeof value === "number" && Number.isNaN(value))
     );
-    return new Series(out, { index: this._index, name: this.name });
+    return new Series(out, { index: this._index, indexName: this._indexName, name: this.name });
   }
 
   notna(): Series<boolean> {
@@ -421,7 +429,7 @@ export class Series<T extends CellValue = CellValue> {
           return value >= lower && value <= upper;
       }
     });
-    return new Series(out as never, { index: this._index, name: this.name });
+    return new Series(out as never, { index: this._index, indexName: this._indexName, name: this.name });
   }
 
   /** First element as a scalar (pandas item / iat shortcut). */
@@ -511,12 +519,12 @@ export class Series<T extends CellValue = CellValue> {
 
   astype(dtype: SeriesDType): Series<CellValue> {
     const values = castColumn(this._values, dtype, this.dtype);
-    return new Series(values, { index: this._index, name: this.name, dtype });
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   isin(values: CellValue[]): Series<boolean> {
     return new Series(computeSeriesIsin(this._values, values), {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
@@ -526,14 +534,14 @@ export class Series<T extends CellValue = CellValue> {
       throw new Error("clip lower bound cannot exceed upper bound.");
     }
     return new Series(computeSeriesClip(this._values, lower, upper), {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
 
   replace(toReplace: SeriesReplaceInput, value?: CellValue): Series<CellValue> {
     return new Series(computeSeriesReplace(this._values, toReplace, value), {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
@@ -577,7 +585,7 @@ export class Series<T extends CellValue = CellValue> {
       : Number.isInteger(other as number) ? "int64" : "float64";
     const dtype = arithResultDType(this._dtype, rightDtype, division);
     return new Series(out as never, {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: name ?? this.name,
       ...(dtype ? { dtype } : {}),
     });
@@ -656,7 +664,7 @@ export class Series<T extends CellValue = CellValue> {
       }
       return -(typeof value === "number" ? value : Number(value));
     });
-    return new Series(out as never, { index: this._index, name: this.name });
+    return new Series(out as never, { index: this._index, indexName: this._indexName, name: this.name });
   }
 
   abs(): Series<CellValue> {
@@ -666,7 +674,7 @@ export class Series<T extends CellValue = CellValue> {
       }
       return Math.abs(typeof value === "number" ? value : Number(value));
     });
-    return new Series(out as unknown as CellValue[], { index: this._index, name: this.name }) as unknown as Series<CellValue>;
+    return new Series(out as unknown as CellValue[], { index: this._index, indexName: this._indexName, name: this.name }) as unknown as Series<CellValue>;
   }
 
   round(decimals = 0): Series<CellValue> {
@@ -676,9 +684,9 @@ export class Series<T extends CellValue = CellValue> {
         if (typeof value !== "number" && typeof value !== "boolean") throw new TypeError(`Cannot round ${String(value)}`);
         return roundToEven(Number(value), decimals);
       });
-      return new Series<CellValue>(values, { index: this._index, name: this.name, dtype: "object" });
+      return new Series<CellValue>(values, { index: this._index, indexName: this._indexName, name: this.name, dtype: "object" });
     }
-    if (!/^(u?int|float|number)/i.test(this._dtype ?? "")) return new Series<CellValue>(this._values, { index: this._index, name: this.name, dtype: this._dtype });
+    if (!/^(u?int|float|number)/i.test(this._dtype ?? "")) return new Series<CellValue>(this._values, { index: this._index, indexName: this._indexName, name: this.name, dtype: this._dtype });
     const out: CellValue[] = this._values.map((value) => {
       if (isMissing(value)) {
         return null;
@@ -686,7 +694,7 @@ export class Series<T extends CellValue = CellValue> {
       const n = typeof value === "number" ? value : Number(value as CellValue);
       return roundToEven(n, decimals);
     });
-    return new Series(out, { index: this._index, name: this.name, dtype: replacementDType(this._dtype, out) });
+    return new Series(out, { index: this._index, indexName: this._indexName, name: this.name, dtype: replacementDType(this._dtype, out) });
   }
 
   // ---- comparisons (return boolean Series) ----
@@ -704,7 +712,7 @@ export class Series<T extends CellValue = CellValue> {
       }
       return fn(value as never, right as never);
     });
-    return new Series(out as never, { index: this._index, name: this.name });
+    return new Series(out as never, { index: this._index, indexName: this._indexName, name: this.name });
   }
 
   eq(other: CellValue | Series<T>): Series<boolean> {
@@ -735,28 +743,28 @@ export class Series<T extends CellValue = CellValue> {
 
   cumsum(): Series<number> {
     return new Series(cumsumValues(this._values) as unknown as number[], {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
 
   cummax(): Series<T> {
     return new Series(cummaxValues(this._values) as unknown as T[], {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
 
   cummin(): Series<T> {
     return new Series(cumminValues(this._values) as unknown as T[], {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
 
   cumprod(): Series<number> {
     return new Series(cumprodValues(this._values) as unknown as number[], {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
@@ -764,7 +772,7 @@ export class Series<T extends CellValue = CellValue> {
   /** 0-based position within the run of non-null values (pandas cumcount). */
   cumcount(): Series<number> {
     return new Series(cumcountValues(this._values) as unknown as number[], {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
     });
   }
@@ -909,7 +917,7 @@ export class Series<T extends CellValue = CellValue> {
       }
       return null;
     });
-    return new Series(out, { index: this._index, name: this.name });
+    return new Series(out, { index: this._index, indexName: this._indexName, name: this.name });
   }
 
   /**
@@ -929,7 +937,7 @@ export class Series<T extends CellValue = CellValue> {
     const nullable = /^(U?Int|Float)/.test(this.dtype) || this.dtype === "boolean";
     const integral = !options.pct && (options.method ?? "average") !== "average";
     return new Series<CellValue>(computeRank(this._values, options), {
-      index: this._index,
+      index: this._index, indexName: this._indexName,
       name: this.name,
       dtype: nullable ? (integral ? "UInt64" : "Float64") : "float64",
     });
@@ -1052,7 +1060,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, dtype: this._dtype,
+      name: this.name, indexName: this._indexName, dtype: this._dtype,
     });
   }
 
@@ -1064,7 +1072,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, dtype: this._dtype,
+      name: this.name, indexName: this._indexName, dtype: this._dtype,
     });
   }
 
@@ -1255,6 +1263,7 @@ export class Series<T extends CellValue = CellValue> {
       labelsSnapshot: () => this._index,
       lengthSnapshot: () => this.length,
       nameSnapshot: () => this.name,
+      indexNameSnapshot: () => this._indexName,
       dtypeSnapshot: () => this._dtype,
       reindex: (labels) => this.reindex(labels) as never,
       copy: () => this.copy(),

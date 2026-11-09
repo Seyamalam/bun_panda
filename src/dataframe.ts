@@ -168,6 +168,7 @@ import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
 export interface DataFrameOptions {
   dtype?: DType;
   index?: IndexLabel[];
+  indexName?: string;
   columns?: string[];
 }
 
@@ -268,6 +269,8 @@ export class DataFrame {
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
+  /** pandas `df.index.name` for single-level indexes. */
+  private readonly _indexName: string | undefined;
   /** Dtype fallback used only when an output column has no present values. */
   private readonly _dtypeHints: Partial<Record<string, InferredDType>>;
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
@@ -284,6 +287,7 @@ export class DataFrame {
     this._rows = prepared.rows;
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
+    this._indexName = options.indexName;
     this._dtypeHints = {};
     this._dtypes = prepared.dtypes;
 
@@ -295,7 +299,8 @@ export class DataFrame {
     columns: string[],
     index: IndexLabel[],
     dtypeHints: Partial<Record<string, InferredDType>> = {},
-    dtypes: Partial<Record<string, DType>> = {}
+    dtypes: Partial<Record<string, DType>> = {},
+    indexName?: string
   ): DataFrame {
     assertRowsShape(rows, index);
     const prepared = DataFrame.prepareColumns(rows, columns, dtypes, dtypeHints);
@@ -303,6 +308,7 @@ export class DataFrame {
     (frame as unknown as { _rows: Row[] })._rows = prepared.rows;
     (frame as unknown as { _columns: string[] })._columns = columns;
     (frame as unknown as { _index: IndexLabel[] })._index = index;
+    (frame as unknown as { _indexName: string | undefined })._indexName = indexName;
     (frame as unknown as { _dtypeHints: Partial<Record<string, InferredDType>> })._dtypeHints = {
       ...dtypeHints,
     };
@@ -592,6 +598,7 @@ export class DataFrame {
       name: column,
       dtype: this._dtypes[column],
       index: this._index,
+      indexName: this._indexName,
     });
   }
 
@@ -762,8 +769,11 @@ export class DataFrame {
     return DataFrame.createInternal(nextRows, renamedColumns, [...this._index], {}, dtypes);
   }
 
-  /** Renames the axis (index) labels via a mapper or new label list. */
-  rename_axis(mapper: Record<string, IndexLabel> | ((label: IndexLabel) => IndexLabel)): DataFrame {
+  /** pandas `rename_axis`: sets the index name. A mapper arg keeps the legacy label-mapping behavior. */
+  rename_axis(mapper: string | Record<string, IndexLabel> | ((label: IndexLabel) => IndexLabel)): DataFrame {
+    if (typeof mapper === "string") {
+      return DataFrame.createInternal(this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes, mapper);
+    }
     const mapLabel = (label: IndexLabel): IndexLabel => {
       if (typeof mapper === "function") {
         return mapper(label);
@@ -1874,18 +1884,29 @@ export class DataFrame {
     this.assertColumnExists(column);
     const index = indexLabelsFromColumn(this._rows, column, this._index);
 
-    if (!drop) {
-      return this.withRows(this.to_records(), index, this._columns, true);
-    }
-    return this.drop(column).withIndex(index);
+    const frame = drop
+      ? this.drop(column).withIndex(index)
+      : this.withRows(this.to_records(), index, this._columns, true);
+    return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame._dtypes, column);
   }
 
-  reset_index(name = "index"): DataFrame {
-    if (this._columns.includes(name)) {
-      throw new Error(`Column '${name}' already exists.`);
+  /** pandas `df.index.name` for single-level indexes. */
+  get index_name(): string | undefined {
+    return this._indexName;
+  }
+
+  /** pandas `df.index.names` (single-level index: a one-element list). */
+  get index_names(): (string | undefined)[] {
+    return [this._indexName];
+  }
+
+  reset_index(name?: string): DataFrame {
+    const columnName = name ?? this._indexName ?? "index";
+    if (this._columns.includes(columnName)) {
+      throw new Error(`Column '${columnName}' already exists.`);
     }
-    const rows = resetIndexRows(this._rows, this._columns, this._index, name);
-    return new DataFrame(rows, { columns: [name, ...this._columns] });
+    const rows = resetIndexRows(this._rows, this._columns, this._index, columnName);
+    return new DataFrame(rows, { columns: [columnName, ...this._columns] });
   }
 
   sum(): Record<string, number | null> {
@@ -2423,7 +2444,7 @@ export class DataFrame {
 
   /** Row/column selection preserves each retained column's dtype before casting. */
   private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
-    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes);
+    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes, index ? this._indexName : undefined);
   }
 
   private withRows(
@@ -2437,7 +2458,8 @@ export class DataFrame {
       ? rows
       : rows.map((row) => cloneRow(row, nextColumns));
     const nextIndex = index ? [...index] : range(nextRows.length);
-    return DataFrame.createInternal(nextRows, nextColumns, nextIndex);
+    const nextIndexName = index ? this._indexName : undefined;
+    return DataFrame.createInternal(nextRows, nextColumns, nextIndex, {}, {}, nextIndexName);
   }
 
   private withIndex(index: IndexLabel[]): DataFrame {

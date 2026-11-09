@@ -443,3 +443,42 @@ describe("DataFrame duplicated/equals", () => {
     expect(base().equals(base().head(2))).toBe(false);
   });
 });
+
+describe("index name metadata (pandas index.name)", () => {
+  test("set_index names the index after the column", () => {
+    const df = new DataFrame([{ a: "x", b: 1 }, { a: "y", b: 2 }]);
+    expect(df.index_name).toBeUndefined();
+    const indexed = df.set_index("a");
+    expect(indexed.index_name).toBe("a");
+    expect(indexed.index_names).toEqual(["a"]);
+    // extracted Series inherit the index name
+    expect(indexed.get("b").index_name).toBe("a");
+  });
+
+  test("reset_index uses the index name for the column", () => {
+    const df = new DataFrame([{ a: "x", b: 1 }]).set_index("a");
+    const reset = df.reset_index();
+    expect(reset.columns).toEqual(["a", "b"]);
+    expect(reset.index_name).toBeUndefined();
+  });
+
+  test("rename_axis renames the index, not the frame", () => {
+    const df = new DataFrame([{ a: 1 }]);
+    expect(df.rename_axis("rows").index_name).toBe("rows");
+  });
+
+  test("Series.rename_axis renames the index and keeps series name", () => {
+    const s = new Series([1, 2], { name: "s", indexName: "ix" });
+    const renamed = s.rename_axis("rows");
+    expect(renamed.index_name).toBe("rows");
+    expect(renamed.name).toBe("s");
+  });
+
+  test("Series ops preserve index name", () => {
+    const s = new Series([3, 1, 2], { indexName: "ix" });
+    expect(s.sort_values().index_name).toBe("ix");
+    expect(s.add(1).index_name).toBe("ix");
+    expect(s.rename("t").index_name).toBe("ix");
+    expect(s.set_axis(["p", "q", "r"]).index_name).toBe("ix");
+  });
+});
