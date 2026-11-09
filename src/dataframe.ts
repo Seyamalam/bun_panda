@@ -1,6 +1,6 @@
 import { indexLabelEquals } from "./internal/shared/indexing";
 import { scalarEquals } from "./internal/shared/valueSemantics";
-import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, dtypeFamily, updatedDType } from "./dtypes";
+import { assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -93,7 +93,7 @@ import {
   type DataFrameApplyRowFn,
   type DataFrameMapFn,
 } from "./internal/dataframe/apply";
-import { normalizeKeyCell } from "./internal/dataframe/keys";
+import { keyForColumns, normalizeKeyCell } from "./internal/dataframe/keys";
 import {
   applyUpdateOverwrite,
   computeDotMatrix,
@@ -2099,31 +2099,34 @@ export class DataFrame {
       this._columns.filter((column) => !keys.includes(column) && right._columns.includes(column))
     );
     const dtypeHints: Partial<Record<string, InferredDType>> = {};
-    const mayPreserve = (
-      rows: Row[],
-      column: string,
-      dtype: InferredDType,
-      isKey: boolean
-    ): boolean => {
-      if (dtype === "unknown") return false;
-      if (result.rows.length > 0) {
-        return !isKey && ["number", "string", "datetime"].includes(dtypeFamily(dtype));
-      }
-      if (dtypeFamily(dtype) === "boolean") {
-        return !rows.some((row) => isMissing(row[column]));
-      }
-      return true;
+    const declaredDTypes: Partial<Record<string, DType>> = {};
+    // pandas preserves a column's dtype through merges, upcasting only
+    // non-nullable ints to float64 and bool to object when missing values
+    // are introduced. Columns our inference marked nullable (Int64/Float64/
+    // boolean) correspond to pandas' float64/object sources.
+    const mergedColumnDType = (source: DType | "mixed", hasMissing: boolean): DType => {
+      if (source === "mixed") return "object";
+      if (/^(U?Int|Float)$/.test(source)) return "float64";
+      if (source === "boolean") return "object";
+      if (/^u?int/.test(source)) return hasMissing ? "float64" : source;
+      if (source === "bool") return hasMissing ? "object" : source;
+      return source;
     };
 
     for (const column of this._columns) {
+      if (keys.includes(column)) continue;
       const output = duplicateNonKeys.has(column) ? `${column}${suffixes[0]}` : column;
       const dtype = leftDtypes[column] ?? "unknown";
-      if (mayPreserve(this._rows, column, dtype, keys.includes(column))) {
-        dtypeHints[output] = dtype;
-      } else if (result.rows.every((row) => isMissing(row[output]))) {
-        // pandas keeps all-missing merged columns object-typed rather than float64.
-        dtypeHints[output] = "object";
+      if (dtype === "unknown") {
+        if (result.rows.every((row) => isMissing(row[output]))) {
+          dtypeHints[output] = "object";
+        }
+        continue;
       }
+      declaredDTypes[output] = mergedColumnDType(
+        dtype,
+        result.rows.some((row) => isMissing(row[output]))
+      );
     }
     for (const column of right._columns) {
       if (keys.includes(column)) {
@@ -2134,20 +2137,54 @@ export class DataFrame {
       }
       const output = duplicateNonKeys.has(column) ? `${column}${suffixes[1]}` : column;
       const dtype = rightDtypes[column] ?? "unknown";
-      if (mayPreserve(right._rows, column, dtype, false)) dtypeHints[output] = dtype;
-      else if (result.rows.every((row) => isMissing(row[output]))) {
-        dtypeHints[output] = "object";
+      if (dtype === "unknown") {
+        if (result.rows.every((row) => isMissing(row[output]))) {
+          dtypeHints[output] = "object";
+        }
+        continue;
       }
+      declaredDTypes[output] = mergedColumnDType(
+        dtype,
+        result.rows.some((row) => isMissing(row[output]))
+      );
     }
+    // A side's key only contributes its dtype to the merged key if at least
+    // one of its rows lands in the output: the left key always contributes
+    // except in a right join, where it only does via matched (including
+    // null==null) rows; symmetrically for the right key.
+    const leftKeySet = new Set(this._rows.map((row) => keyForColumns(row, keys)));
+    const rightKeySet = new Set(right._rows.map((row) => keyForColumns(row, keys)));
+    const leftMatched = [...leftKeySet].some((k) => rightKeySet.has(k));
+    const how = options.how ?? "inner";
+    const leftContributes = how !== "right" || leftMatched;
+    const rightContributes = how === "right" || how === "outer" || leftMatched;
+
     for (const key of keys) {
-      const sourceDtype = (options.how ?? "inner") === "right"
-        ? rightDtypes[key] ?? "unknown"
-        : leftDtypes[key] ?? "unknown";
+      // pandas' merged key dtype upcasts to object when a contributing side's
+      // key is object-like; an all-missing source column reads as object too.
+      const effectiveKeyDtype = (dtype: InferredDType, rows: Row[]): InferredDType =>
+        dtype === "unknown" && rows.every((row) => isMissing(row[key])) ? "object" : dtype;
+      const leftKey = effectiveKeyDtype(leftDtypes[key] ?? "unknown", this._rows);
+      const rightKey = effectiveKeyDtype(rightDtypes[key] ?? "unknown", right._rows);
+      const leader = how === "right" ? rightKey : leftKey;
+      const isObjectLike = (dtype: InferredDType) => dtype === "object" || dtype === "mixed";
+      const anyObject =
+        (leftContributes && isObjectLike(leftKey)) ||
+        (rightContributes && isObjectLike(rightKey));
       if (
-        sourceDtype !== "unknown" &&
+        leader !== "unknown" &&
         result.rows.every((row) => isMissing(row[key]))
       ) {
-        dtypeHints[key] = sourceDtype;
+        // All-missing key (including empty inner results): pandas keeps the
+        // leading key's dtype.
+        dtypeHints[key] = anyObject ? "object" : leader;
+      } else if (leader !== "unknown") {
+        declaredDTypes[key] = anyObject
+          ? "object"
+          : mergedColumnDType(
+            leader as DType,
+            result.rows.some((row) => isMissing(row[key]))
+          );
       }
     }
 
@@ -2155,7 +2192,8 @@ export class DataFrame {
       result.rows,
       result.columns,
       range(result.rows.length),
-      dtypeHints
+      dtypeHints,
+      declaredDTypes
     );
   }
 

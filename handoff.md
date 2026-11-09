@@ -133,8 +133,8 @@ updates, scalar-index identity/reindex rules, and pandas rank output dtypes
 (nullable UInt64/Float64 for Series, float64 for frames). Latest implementation
 commit: `f7f6aa1` (rank dtypes). All 6,806 tests pass; coverage is 88.54% of lines.
 The live semantic corpus passes 2,500/2,500 for pandas/adaptive and both backend
-comparisons. The strict audit now matches 2,490/2,500 pandas observations and
-exits nonzero for 10 mismatches (merge dtype-preservation edges). No frozen
+comparisons. The strict audit now matches 2,499/2,500 pandas observations and
+exits nonzero for 1 mismatch (merge-valid-167: pandas inner-join match order is hashtable-iteration order, not replicable). No frozen
 paper timings were changed.
 
 The offline pandas evidence now includes 524 value/metadata cases, 2,419 dtype
