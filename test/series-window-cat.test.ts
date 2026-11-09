@@ -132,8 +132,9 @@ describe("Series extracted API delegates", () => {
     const left = new Series<CellValue>([1, null], { index: [0, 2], name: "value" });
     const right = new Series<CellValue>([10, 20], { index: [0, 1], name: "other" });
 
-    expect(left.combine_first(right).to_list()).toEqual([1, 20]);
-    expect(left.combine(right, (a, b) => Number(a ?? 0) + Number(b ?? 0)).to_list()).toEqual([11, NaN]);
+    // pandas combine/combine_first align on the union of index labels.
+    expect(left.combine_first(right).to_list()).toEqual([1, 20, NaN]);
+    expect(left.combine(right, (a, b) => Number(a ?? 0) + Number(b ?? 0)).to_list()).toEqual([11, 20, NaN]);
     expect(left.compare(new Series<CellValue>([1, 3])).to_records()).toEqual([{ self: NaN, other: 3 }]);
     expect(left.reindex_like(right).index).toEqual([0, 1]);
     expect(left.asfreq(1).to_list()).toEqual([1, NaN, NaN]);

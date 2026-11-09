@@ -11,7 +11,8 @@ import {
   resampleBins,
 } from "../shared";
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
-import { isMissing } from "../../utils";
+import { compareCellValues, isMissing } from "../../utils";
+import { indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
 import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
 import { Categorical } from "../../categorical";
@@ -306,27 +307,42 @@ export function compare(s: SeriesHost, other: Series<CellValue>, keepShape = fal
    * Combine two series positionally with a binary function. Shorter inputs
    * yield null for the missing side.
    */
-export function combine(s: SeriesHost, 
+export function combine(s: SeriesHost,
     other: Series<CellValue>,
     fn: (left: CellValue | null, right: CellValue | null) => CellValue
   ): Series<CellValue> {
-    const length = Math.max(s.lengthSnapshot(), other.length);
-    const out: CellValue[] = [];
-    for (let i = 0; i < length; i += 1) {
-      out.push(fn(s.valuesSnapshot()[i] ?? null, (other.values as CellValue[])[i] ?? null));
-    }
-    return new Series(out, { index: range(length), name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
+    const { index, left, right } = alignedOperands(s, other);
+    const out = index.map((_, i) => fn(left[i] ?? null, right[i] ?? null));
+    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
   /** Keep this series' values where present; fall back to `other` where missing. */
 export function combine_first(s: SeriesHost, other: Series<CellValue>): Series<CellValue> {
-    const length = Math.max(s.lengthSnapshot(), other.length);
-    const out: CellValue[] = [];
-    for (let i = 0; i < length; i += 1) {
-      const mine = s.valuesSnapshot()[i];
-      out.push(!isMissing(mine) ? (mine as CellValue) : (((other.values as CellValue[])[i] ?? null) as CellValue));
+    const { index, left, right } = alignedOperands(s, other);
+    const out = index.map((_, i) =>
+      !isMissing(left[i]) ? (left[i] as CellValue) : ((right[i] ?? null) as CellValue));
+    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
+  }
+
+  /** pandas union alignment for two Series operands. */
+function alignedOperands(s: SeriesHost, other: Series<CellValue>): {
+    index: IndexLabel[]; left: (CellValue | null)[]; right: (CellValue | null)[];
+  } {
+    const leftLabels = s.labelsSnapshot();
+    const rightLabels = other.index as IndexLabel[];
+    if (indexLabelsEqual(leftLabels, rightLabels)) {
+      return { index: [...leftLabels], left: s.valuesSnapshot(), right: other.values as CellValue[] };
     }
-    return new Series(out, { index: range(length), name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
+    const union = unionIndexLabels(leftLabels, rightLabels, compareCellValues);
+    const leftPos = reindexPositions(leftLabels, union);
+    const rightPos = reindexPositions(rightLabels, union);
+    const leftVals = s.valuesSnapshot();
+    const rightVals = other.values as CellValue[];
+    return {
+      index: union,
+      left: union.map((_, i) => leftPos[i]! < 0 ? null : leftVals[leftPos[i]!]),
+      right: union.map((_, i) => rightPos[i]! < 0 ? null : rightVals[rightPos[i]!]),
+    };
   }
 
 export function reindex_like(s: SeriesHost, other: Series<CellValue>, _fill_value: CellValue | null = null): Series<CellValue> {

@@ -1,4 +1,4 @@
-import { indexLabelEquals, reindexPositions } from "./internal/shared/indexing";
+import { indexLabelEquals, indexLabelsEqual, reindexPositions, unionIndexLabels } from "./internal/shared/indexing";
 import { arithResultDType, castColumn, convertedDType, replacementDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
@@ -562,17 +562,46 @@ export class Series<T extends CellValue = CellValue> {
 
   // ---- arithmetic (pandas element-wise, null-propagating) ----
 
-  /** Applies a numeric op; missing values stay missing. */
+  /**
+   * Align two operand vectors for a binary op. Series operands use pandas
+   * union alignment on index labels (raising on duplicate labels via
+   * reindexPositions); scalars broadcast over the existing index.
+   */
+  private alignBinary(other: CellValue | Series<T>): {
+    leftValues: readonly (CellValue | null)[];
+    rightValues: readonly (CellValue | null)[];
+    resultIndex: IndexLabel[];
+    missingIntroduced: boolean;
+  } {
+    if (!(other instanceof Series) || indexLabelsEqual(this._index, other._index)) {
+      return {
+        leftValues: this._values,
+        rightValues: other instanceof Series ? other._values : new Array(this.length).fill(other),
+        resultIndex: this._index,
+        missingIntroduced: false,
+      };
+    }
+    const union = unionIndexLabels(this._index, other._index, compareCellValues);
+    const leftPos = reindexPositions(this._index, union);
+    const rightPos = reindexPositions(other._index, union);
+    return {
+      leftValues: union.map((_, i) => leftPos[i]! < 0 ? null : this._values[leftPos[i]!]),
+      rightValues: union.map((_, i) => rightPos[i]! < 0 ? null : other._values[rightPos[i]!]),
+      resultIndex: union,
+      missingIntroduced: leftPos.some(p => p < 0) || rightPos.some(p => p < 0),
+    };
+  }
+
+  /** Applies a numeric op; missing values stay missing. Series operands align on index labels like pandas. */
   private numericOp(
     other: number | Series<T>,
     fn: (left: number, right: number) => number,
     name?: string,
     division = false
   ): Series<number> {
-    const otherValues =
-      other instanceof Series ? other._values : new Array(this.length).fill(other);
-    const out = this._values.map((value, i): number | null => {
-      const right = otherValues[i];
+    const { leftValues, rightValues, resultIndex, missingIntroduced } = this.alignBinary(other);
+    const out = leftValues.map((value, i): number | null => {
+      const right = rightValues[i];
       if (isMissing(value) || isMissing(right)) {
         return null;
       }
@@ -583,9 +612,12 @@ export class Series<T extends CellValue = CellValue> {
     const rightDtype: DType = other instanceof Series
       ? other._dtype
       : Number.isInteger(other as number) ? "int64" : "float64";
-    const dtype = arithResultDType(this._dtype, rightDtype, division);
+    let dtype = arithResultDType(this._dtype, rightDtype, division);
+    if (missingIntroduced && dtype !== undefined && /^(u?int|bool|boolean)/.test(dtype)) {
+      dtype = "float64";
+    }
     return new Series(out as never, {
-      index: this._index, indexName: this._indexName,
+      index: resultIndex, indexName: this._indexName,
       name: name ?? this.name,
       ...(dtype ? { dtype } : {}),
     });
@@ -703,16 +735,20 @@ export class Series<T extends CellValue = CellValue> {
     other: CellValue | Series<T>,
     fn: (left: number | string | boolean, right: number | string | boolean) => boolean
   ): Series<boolean> {
-    const otherValues =
-      other instanceof Series ? other._values : new Array(this.length).fill(other);
-    const out = this._values.map((value, i): boolean | null => {
-      const right = otherValues[i];
+    const { leftValues, rightValues, resultIndex, missingIntroduced } = this.alignBinary(other);
+    const out = leftValues.map((value, i): boolean | null => {
+      const right = rightValues[i];
       if (isMissing(value) || isMissing(right)) {
         return null;
       }
       return fn(value as never, right as never);
     });
-    return new Series(out as never, { index: this._index, indexName: this._indexName, name: this.name });
+    return new Series(out as never, {
+      index: resultIndex,
+      indexName: this._indexName,
+      name: this.name,
+      ...(missingIntroduced ? { dtype: "boolean" as DType } : {}),
+    });
   }
 
   eq(other: CellValue | Series<T>): Series<boolean> {

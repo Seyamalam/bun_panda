@@ -208,3 +208,34 @@ describe("DataFrame shift/diff/pct_change", () => {
     ).toEqual([{ v: NaN }, { v: NaN }, { v: 8 }]);
   });
 });
+
+describe("pandas index alignment in binary ops", () => {
+  test("arithmetic aligns on the union of index labels", () => {
+    const left = new Series([1, 2], { index: ["a", "b"] });
+    const right = new Series([10, 20], { index: ["b", "c"] });
+    const result = left.add(right);
+    expect(result.index).toEqual(["a", "b", "c"]);
+    expect(result.to_list()).toEqual([NaN, 12, NaN]);
+    expect(result.dtype).toBe("float64");
+  });
+
+  test("identical indexes stay positional", () => {
+    const left = new Series([1, 2], { index: ["a", "a"] });
+    const right = new Series([3, 4], { index: ["a", "a"] });
+    expect(left.add(right).to_list()).toEqual([4, 6]);
+  });
+
+  test("duplicate labels needing realignment raise like pandas", () => {
+    const left = new Series([1, 2], { index: ["a", "a"] });
+    const right = new Series([3, 4], { index: ["a", "b"] });
+    expect(() => left.add(right)).toThrow("cannot reindex on an axis with duplicate labels");
+  });
+
+  test("comparisons align and produce nullable boolean", () => {
+    const left = new Series([1, 2], { index: ["a", "b"] });
+    const right = new Series([2, 1], { index: ["b", "c"] });
+    const result = left.gt(right);
+    expect(result.index).toEqual(["a", "b", "c"]);
+    expect(result.dtype).toBe("boolean");
+  });
+});
