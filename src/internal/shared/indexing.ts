@@ -40,3 +40,45 @@ export function unionIndexLabels(
   if (allNumbers || allStrings) labels.sort(compare);
   return labels;
 }
+
+/**
+ * pandas binary-op label alignment: the union index keeps duplicates at the
+ * larger side's multiplicity; rows within a shared label match positionally
+ * and a single row broadcasts to N matches. Two multi-row groups of different
+ * sizes raise the pandas duplicate-label ValueError.
+ */
+export function alignedPositions(
+  left: readonly IndexLabel[],
+  right: readonly IndexLabel[],
+  compare: (a: IndexLabel, b: IndexLabel) => number
+): { index: IndexLabel[]; leftPos: number[]; rightPos: number[] } {
+  const group = (labels: readonly IndexLabel[]) => {
+    const groups = new Map<IndexLabel, number[]>();
+    labels.forEach((label, i) => {
+      const list = groups.get(label);
+      if (list) list.push(i);
+      else groups.set(label, [i]);
+    });
+    return groups;
+  };
+  const leftGroups = group(left);
+  const rightGroups = group(right);
+  const union = unionIndexLabels(left, right, compare);
+  const index: IndexLabel[] = [];
+  const leftPos: number[] = [];
+  const rightPos: number[] = [];
+  for (const label of union) {
+    const lp = leftGroups.get(label) ?? [];
+    const rp = rightGroups.get(label) ?? [];
+    if (lp.length > 1 && rp.length > 1 && lp.length !== rp.length) {
+      throw new ValueError("cannot reindex on an axis with duplicate labels");
+    }
+    const n = Math.max(lp.length, rp.length);
+    for (let i = 0; i < n; i += 1) {
+      index.push(label);
+      leftPos.push(lp.length === 0 ? -1 : lp.length === 1 ? lp[0]! : lp[i]!);
+      rightPos.push(rp.length === 0 ? -1 : rp.length === 1 ? rp[0]! : rp[i]!);
+    }
+  }
+  return { index, leftPos, rightPos };
+}

@@ -192,7 +192,8 @@ describe("Series numeric contracts", () => {
     expect<CellValue[]>(new Series<CellValue>(["2", null]).neg().to_list()).toEqual([-2, NaN]);
     expect(new Series<CellValue>(["-2.25", null]).abs().to_list()).toEqual([2.25, NaN]);
     expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual(["2.25", NaN]);
-    expect<CellValue[]>(series.ge(3).to_list()).toEqual([false, true, null]);
+    // pandas IEEE semantics: NaN >= 3 is False for plain (non-nullable) dtypes.
+    expect<CellValue[]>(series.ge(3).to_list()).toEqual([false, true, false]);
   });
 
   test("pairwise statistics use complete numeric pairs", () => {

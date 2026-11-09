@@ -176,5 +176,53 @@ for dtype,values in [('int16',[3,1,1]),('float32',[3,1,1]),('Int16',[1,None,1]),
                 except Exception as e: entry['error']=type(e).__name__
                 rank_cases.append(entry)
 cases.extend(rank_cases)
+
+arith_cases=[]
+ops=['add','sub','mul','div','floordiv','mod','pow','eq','gt','ne','combine_first']
+dtype_pairs=[('int16','int16'),('int16','Int16'),('Int16','int16'),('Int16','Float32'),('float32','float64'),('Float32','Int16'),('bool','bool'),('bool','int16'),('boolean','Int16'),('object','int16'),('string','int16'),('int64','int64')]
+value_pairs=[([1,2,3],[4,5,0]),([1,None,3],[4,None,6]),([None,None],[None,None]),([2,4],[2,3])]
+for ld,rd in dtype_pairs:
+    for lv,rv in value_pairs:
+        try:
+            left=pd.Series(lv,dtype=ld); right=pd.Series(rv,dtype=rd)
+        except Exception:
+            continue
+        for op in ops:
+            entry={'mode':'arithmetic','dtype':ld,'values':[encode(x) for x in lv],
+                   'operand':{'dtype':rd,'values':[encode(x) for x in rv]},'operation':op}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result=getattr(left,op)(right)
+                entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist()}
+            except Exception as e: entry['error']=type(e).__name__
+            arith_cases.append(entry)
+for ld in ['int16','Int16','float32','Float32','bool','boolean','int64']:
+    for lv in [[1,2],[1,None]]:
+        try: left=pd.Series(lv,dtype=ld)
+        except Exception: continue
+        for op in ['add','sub','mul','div','floordiv','mod','pow']:
+            for scalar in [2,2.5]:
+                entry={'mode':'arithmetic','dtype':ld,'values':[encode(x) for x in lv],
+                       'operand':{'scalar':scalar},'operation':op}
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore')
+                        result=getattr(left,op)(scalar)
+                    entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist()}
+                except Exception as e: entry['error']=type(e).__name__
+                arith_cases.append(entry)
+for li,ri in [([0,1],[1,2]),(['a','b'],['b','c']),([0,0],[0,1]),(['b','a'],['a','b'])]:
+    left=pd.Series([1,2],index=li); right=pd.Series([10,20],index=ri)
+    for op in ['add','gt','combine_first']:
+        entry={'mode':'arithmetic','dtype':str(left.dtype),'values':[encode(x) for x in left.tolist()],'index':li,
+               'operand':{'dtype':str(right.dtype),'values':[encode(x) for x in right.tolist()],'index':ri},'operation':op}
+        try:
+            result=getattr(left,op)(right)
+            entry['expected']={'dtype':str(result.dtype),'values':[encode(x) for x in result.tolist()],'index':result.index.tolist()}
+        except Exception as e: entry['error']=type(e).__name__
+        arith_cases.append(entry)
+cases.extend(arith_cases)
+print(f'added {len(arith_cases)} arithmetic/alignment contracts')
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

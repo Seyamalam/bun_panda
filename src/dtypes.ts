@@ -206,12 +206,12 @@ export function updatedDType(dtype: DType, incoming: DType, values: readonly Cel
 
 /**
  * pandas result dtype for element-wise arithmetic between two columns.
- * True division always yields floating output; other ops preserve integer
- * families, widen through float64, and keep nullable/nullable-float sources
- * nullable. Returns undefined for non-numeric operands so callers fall back
- * to inference.
+ * Non-division ops keep exact widths (int16+int16=int16, Float32+Int16=
+ * Float32); true division always floats (float64/Float64 for int-family
+ * operands, preserving float widths otherwise). Returns undefined for
+ * non-numeric operands so callers fall back to inference.
  */
-export function arithResultDType(left: DType, right: DType, division: boolean): DType | undefined {
+export function arithResultDType(left: DType, right: DType, division: boolean, boolArithmetic = false): DType | undefined {
   const isPlainInt = (d: DType) => /^(u?int)/.test(d);
   const isPlainFloat = (d: DType) => /^float/.test(d) || d === "number";
   const isNullableInt = (d: DType) => /^(U?Int)/.test(d);
@@ -220,16 +220,66 @@ export function arithResultDType(left: DType, right: DType, division: boolean): 
     isPlainInt(d) || isPlainFloat(d) || isNullableInt(d) || isNullableFloat(d) ||
     d === "bool" || d === "boolean";
   if (!isNumeric(left) || !isNumeric(right)) return undefined;
-  const anyNullable = [left, right].some(d => isNullableInt(d) || isNullableFloat(d) || d === "boolean");
-  if (division) return anyNullable ? "Float64" : "float64";
-  if (left === "bool" && right === "bool") return "bool";
-  if (left === "boolean" && right === "boolean") return "boolean";
-  if ((left === "boolean" || right === "boolean") && (left === "bool" || right === "bool")) return "boolean";
-  if (isNullableFloat(left) || isNullableFloat(right)) return "Float64";
-  if (isNullableInt(left) || isNullableInt(right)) {
-    return [left, right].some(d => /^UInt/.test(d)) ? "UInt64" : "Int64";
+  const width = (d: DType) => Number(d.match(/\d+/)?.[0] ?? 64);
+  const ops = [left, right];
+  const floatWidth = () => Math.max(...ops.map(d =>
+    isNullableFloat(d) || isPlainFloat(d) ? width(d)
+      : (isNullableInt(d) || isPlainInt(d)) && width(d) > 32 ? 64 : 0));
+  const promote = (): DType => {
+    if (left === right) return left;
+    if (ops.some(isNullableFloat) ||
+        (ops.some(d => isNullableInt(d) || d === "boolean") && ops.some(isPlainFloat))) {
+      return `Float${floatWidth()}` as DType;
+    }
+    if (ops.some(d => isNullableInt(d) || d === "boolean")) {
+      const w = Math.max(...ops.map(d =>
+        isNullableInt(d) || isPlainInt(d) ? width(d) : d === "boolean" ? 64 : 8));
+      return `${ops.some(d => /^UInt/.test(d)) ? "UInt" : "Int"}${w}` as DType;
+    }
+    if (ops.some(isPlainFloat)) return `float${floatWidth()}` as DType;
+    const w = Math.max(...ops.map(d => d === "bool" ? 8 : width(d)));
+    const unsigned = ops.some(d => /^uint/.test(d)) && ops.every(d => /^uint/.test(d) || d === "bool");
+    return `${unsigned ? "uint" : "int"}${w}` as DType;
+  };
+  const promoted = promote();
+  // numpy bool arithmetic keeps bool only for add/mul; floordiv/mod/pow
+  // yield int8 (Int64 for nullable boolean).
+  if (!division && promoted === "bool" && !boolArithmetic) return "int8";
+  if (!division && promoted === "boolean" && !boolArithmetic) return "Int64";
+  if (!division) return promoted;
+  if (promoted === "boolean") return "Float64";
+  if (promoted === "bool" || /^u?int/.test(promoted)) return "float64";
+  if (/^U?Int/.test(promoted)) return "Float64";
+  return promoted;
+}
+
+/**
+ * pandas floordiv dtype: like other int-preserving ops, except that mixing a
+ * plain-integer operand with a nullable-integer operand computes through
+ * float64 (Int16//Int16 stays Int16; int16//Int16 becomes Float64).
+ */
+export function floordivResultDType(left: DType, right: DType): DType | undefined {
+  const promoted = arithResultDType(left, right, false);
+  if (promoted === undefined || !/^U?Int/.test(promoted)) return promoted;
+  const plain = (d: DType) => /^(u?int)/.test(d) || d === "bool";
+  const nullable = (d: DType) => /^(U?Int)/.test(d) || d === "boolean";
+  if ((plain(left) && nullable(right)) || (nullable(left) && plain(right))) return "Float64";
+  return promoted;
+}
+
+/**
+ * The effective right-operand dtype pandas assigns a scalar in Series op:
+ * integer scalars never upcast the array's width (int16+2 -> int16,
+ * float32+2.5 -> float32), but a float scalar widens integer arrays.
+ */
+export function scalarOperandDType(column: DType, scalar: number): DType {
+  const numeric = /^(u?int|float|U?Int|Float)|^number$|^bool$|^boolean$/.test(column);
+  if (!numeric) return "object";
+  if (!Number.isInteger(scalar)) {
+    if (/^float|^Float|^number$/.test(column)) return column;
+    if (column === "boolean") return "Float64";
+    return column === "bool" ? "int64" : "float64";
   }
-  if (left === "boolean" || right === "boolean") return "Int64";
-  if (isPlainFloat(left) || isPlainFloat(right)) return "float64";
-  return "int64";
+  if (column === "boolean") return "Int64";
+  return column === "bool" ? "int64" : column;
 }

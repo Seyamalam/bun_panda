@@ -1,5 +1,5 @@
-import { indexLabelEquals, indexLabelsEqual, reindexPositions, unionIndexLabels } from "./internal/shared/indexing";
-import { arithResultDType, castColumn, convertedDType, replacementDType } from "./dtypes";
+import { alignedPositions, indexLabelEquals, indexLabelsEqual, reindexPositions } from "./internal/shared/indexing";
+import { arithResultDType, castColumn, convertedDType, floordivResultDType, replacementDType, scalarOperandDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
@@ -581,13 +581,11 @@ export class Series<T extends CellValue = CellValue> {
         missingIntroduced: false,
       };
     }
-    const union = unionIndexLabels(this._index, other._index, compareCellValues);
-    const leftPos = reindexPositions(this._index, union);
-    const rightPos = reindexPositions(other._index, union);
+    const { index, leftPos, rightPos } = alignedPositions(this._index, other._index, compareCellValues);
     return {
-      leftValues: union.map((_, i) => leftPos[i]! < 0 ? null : this._values[leftPos[i]!]),
-      rightValues: union.map((_, i) => rightPos[i]! < 0 ? null : other._values[rightPos[i]!]),
-      resultIndex: union,
+      leftValues: index.map((_, i) => leftPos[i]! < 0 ? null : this._values[leftPos[i]!]),
+      rightValues: index.map((_, i) => rightPos[i]! < 0 ? null : other._values[rightPos[i]!]),
+      resultIndex: index,
       missingIntroduced: leftPos.some(p => p < 0) || rightPos.some(p => p < 0),
     };
   }
@@ -597,8 +595,14 @@ export class Series<T extends CellValue = CellValue> {
     other: number | Series<T>,
     fn: (left: number, right: number) => number,
     name?: string,
-    division = false
+    division = false,
+    boolArithmetic = false,
+    floordiv = false
   ): Series<number> {
+    const rightDtype0: DType = other instanceof Series ? other._dtype : "number";
+    if (/^(str|string)$/.test(this._dtype) || (other instanceof Series && /^(str|string)$/.test(rightDtype0))) {
+      throw new TypeError("unsupported operand type(s) for Series arithmetic");
+    }
     const { leftValues, rightValues, resultIndex, missingIntroduced } = this.alignBinary(other);
     const out = leftValues.map((value, i): number | null => {
       const right = rightValues[i];
@@ -611,10 +615,18 @@ export class Series<T extends CellValue = CellValue> {
     });
     const rightDtype: DType = other instanceof Series
       ? other._dtype
-      : Number.isInteger(other as number) ? "int64" : "float64";
-    let dtype = arithResultDType(this._dtype, rightDtype, division);
+      : scalarOperandDType(this._dtype, other as number);
+    let dtype = floordiv
+      ? floordivResultDType(this._dtype, rightDtype)
+      : arithResultDType(this._dtype, rightDtype, division, boolArithmetic);
     if (missingIntroduced && dtype !== undefined && /^(u?int|bool|boolean)/.test(dtype)) {
       dtype = "float64";
+    }
+    // mod/floordiv by zero and negative-exponent pow yield non-integer results;
+    // pandas widens int dtypes to float64/Float64 when they appear.
+    if (dtype !== undefined && /^(u?int|U?Int)/.test(dtype) &&
+        out.some(value => typeof value === "number" && !Number.isInteger(value))) {
+      dtype = /^U?Int/.test(dtype) ? "Float64" : "float64";
     }
     return new Series(out as never, {
       index: resultIndex, indexName: this._indexName,
@@ -624,10 +636,13 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   add(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a + b);
+    return this.numericOp(other, (a, b) => a + b, undefined, false, true);
   }
 
   sub(other: number | Series<T>): Series<number> {
+    if (this._dtype === "bool" && other instanceof Series && other._dtype === "bool") {
+      throw new TypeError("numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.");
+    }
     return this.numericOp(other, (a, b) => a - b);
   }
 
@@ -636,7 +651,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   mul(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a * b);
+    return this.numericOp(other, (a, b) => a * b, undefined, false, true);
   }
 
   div(other: number | Series<T>): Series<number> {
@@ -662,7 +677,12 @@ export class Series<T extends CellValue = CellValue> {
     return this.div(other);
   }
   floordiv(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => Math.floor(a / b));
+    // pandas keeps integer floordiv integer, emitting 0 on a zero divisor.
+    const intOperands = /^u?int|^bool/.test(this._dtype) &&
+      (!(other instanceof Series) || /^u?int|^bool/.test(other._dtype));
+    return this.numericOp(other, intOperands
+      ? (a, b) => (b === 0 ? 0 : Math.floor(a / b))
+      : (a, b) => Math.floor(a / b), undefined, false, false, true);
   }
   radd(other: number | Series<T>): Series<number> {
     return this.add(other);
@@ -686,7 +706,11 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   rfloordiv(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => Math.floor(b / a));
+    const intOperands = /^u?int|^bool/.test(this._dtype) &&
+      (!(other instanceof Series) || /^u?int|^bool/.test(other._dtype));
+    return this.numericOp(other, intOperands
+      ? (a, b) => (a === 0 ? 0 : Math.floor(b / a))
+      : (a, b) => Math.floor(b / a), undefined, false, false, true);
   }
 
   neg(): Series<number> {
@@ -735,19 +759,27 @@ export class Series<T extends CellValue = CellValue> {
     other: CellValue | Series<T>,
     fn: (left: number | string | boolean, right: number | string | boolean) => boolean
   ): Series<boolean> {
-    const { leftValues, rightValues, resultIndex, missingIntroduced } = this.alignBinary(other);
+    const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
+    // pandas comparisons with missing operands use IEEE NaN semantics (False)
+    // for plain dtypes and NA propagation for nullable dtypes.
+    const leftNullable = /^(U?Int|Float)|^boolean/.test(this._dtype);
+    const rightNullable = other instanceof Series && /^(U?Int|Float)|^boolean/.test(other._dtype);
+    const nullableCompare = leftNullable || rightNullable;
     const out = leftValues.map((value, i): boolean | null => {
       const right = rightValues[i];
-      if (isMissing(value) || isMissing(right)) {
+      const aMiss = isMissing(value);
+      const bMiss = isMissing(right);
+      if ((aMiss || bMiss) && nullableCompare) {
         return null;
       }
-      return fn(value as never, right as never);
+      return fn((aMiss ? NaN : value) as never, (bMiss ? NaN : right) as never);
     });
+    // pandas nullable comparisons always produce the nullable boolean dtype.
     return new Series(out as never, {
       index: resultIndex,
       indexName: this._indexName,
       name: this.name,
-      ...(missingIntroduced ? { dtype: "boolean" as DType } : {}),
+      dtype: nullableCompare ? "boolean" : "bool",
     });
   }
 

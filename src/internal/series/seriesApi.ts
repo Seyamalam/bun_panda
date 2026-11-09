@@ -12,6 +12,7 @@ import {
 } from "../shared";
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { compareCellValues, isMissing } from "../../utils";
+import { arithResultDType } from "../../dtypes";
 import { indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
 import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
@@ -313,7 +314,7 @@ export function combine(s: SeriesHost,
   ): Series<CellValue> {
     const { index, left, right } = alignedOperands(s, other);
     const out = index.map((_, i) => fn(left[i] ?? null, right[i] ?? null));
-    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
+    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot(), dtype: combineDType(s, other) });
   }
 
   /** Keep this series' values where present; fall back to `other` where missing. */
@@ -321,7 +322,16 @@ export function combine_first(s: SeriesHost, other: Series<CellValue>): Series<C
     const { index, left, right } = alignedOperands(s, other);
     const out = index.map((_, i) =>
       !isMissing(left[i]) ? (left[i] as CellValue) : ((right[i] ?? null) as CellValue));
-    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
+    return new Series(out, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot(), dtype: combineDType(s, other) });
+  }
+
+  /** pandas find-common-dtype for combine: bool mixing with other dtypes yields object. */
+function combineDType(s: SeriesHost, other: Series<CellValue>): DType {
+    const ld = (s.dtypeSnapshot() ?? "object") as DType;
+    const rd = other.dtype as DType;
+    if (ld === rd) return ld;
+    if ((ld === "bool" || ld === "boolean") !== (rd === "bool" || rd === "boolean")) return "object";
+    return arithResultDType(ld, rd, false) ?? "object";
   }
 
   /** pandas union alignment for two Series operands. */
@@ -333,6 +343,8 @@ function alignedOperands(s: SeriesHost, other: Series<CellValue>): {
     if (indexLabelsEqual(leftLabels, rightLabels)) {
       return { index: [...leftLabels], left: s.valuesSnapshot(), right: other.values as CellValue[] };
     }
+    // pandas combine/combine_first align via reindex, which rejects
+    // duplicate labels — unlike arithmetic, which broadcasts within groups.
     const union = unionIndexLabels(leftLabels, rightLabels, compareCellValues);
     const leftPos = reindexPositions(leftLabels, union);
     const rightPos = reindexPositions(rightLabels, union);

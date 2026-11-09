@@ -55,9 +55,13 @@ describe("Series comparisons", () => {
     expect([...a.lt(b).to_list()]).toEqual([true, false, false]);
   });
 
-  test("nulls yield null in output", () => {
+  test("nulls compare by IEEE NaN semantics for plain dtypes", () => {
     const withNull = new Series<number | null>([1, null]);
-    expect(withNull.gt(0).to_list() as (boolean | null)[]).toEqual([true, null]);
+    // pandas NaN > x is False for plain numeric series.
+    expect(withNull.gt(0).to_list() as (boolean | null)[]).toEqual([true, false]);
+    const nullable = new Series<number | null>([1, null], { dtype: "Int64" });
+    expect(nullable.gt(0).dtype).toBe("boolean");
+    expect(nullable.gt(0).to_list().map(v => v === null || (typeof v === "symbol") ? null : v)).toEqual([true, null]);
   });
 });
 
@@ -211,8 +215,8 @@ describe("DataFrame shift/diff/pct_change", () => {
 
 describe("pandas index alignment in binary ops", () => {
   test("arithmetic aligns on the union of index labels", () => {
-    const left = new Series([1, 2], { index: ["a", "b"] });
-    const right = new Series([10, 20], { index: ["b", "c"] });
+    const left = new Series<number>([1, 2], { index: ["a", "b"] });
+    const right = new Series<number>([10, 20], { index: ["b", "c"] });
     const result = left.add(right);
     expect(result.index).toEqual(["a", "b", "c"]);
     expect(result.to_list()).toEqual([NaN, 12, NaN]);
@@ -220,22 +224,27 @@ describe("pandas index alignment in binary ops", () => {
   });
 
   test("identical indexes stay positional", () => {
-    const left = new Series([1, 2], { index: ["a", "a"] });
-    const right = new Series([3, 4], { index: ["a", "a"] });
+    const left = new Series<number>([1, 2], { index: ["a", "a"] });
+    const right = new Series<number>([3, 4], { index: ["a", "a"] });
     expect(left.add(right).to_list()).toEqual([4, 6]);
   });
 
-  test("duplicate labels needing realignment raise like pandas", () => {
-    const left = new Series([1, 2], { index: ["a", "a"] });
-    const right = new Series([3, 4], { index: ["a", "b"] });
-    expect(() => left.add(right)).toThrow("cannot reindex on an axis with duplicate labels");
+  test("duplicate labels broadcast like pandas arithmetic", () => {
+    const left = new Series<number>([1, 2], { index: ["a", "a"] });
+    const right = new Series<number>([3, 4], { index: ["a", "b"] });
+    const result = left.add(right);
+    expect(result.index).toEqual(["a", "a", "b"]);
+    expect(result.to_list()).toEqual([4, 5, NaN]);
+    // reindex (unlike arithmetic) still rejects duplicate source labels
+    expect(() => left.reindex(["a", "b"])).toThrow("cannot reindex on an axis with duplicate labels");
   });
 
-  test("comparisons align and produce nullable boolean", () => {
-    const left = new Series([1, 2], { index: ["a", "b"] });
-    const right = new Series([2, 1], { index: ["b", "c"] });
+  test("comparisons align; IEEE NaN semantics give bool for plain dtypes", () => {
+    const left = new Series<number>([1, 2], { index: ["a", "b"] });
+    const right = new Series<number>([2, 1], { index: ["b", "c"] });
     const result = left.gt(right);
     expect(result.index).toEqual(["a", "b", "c"]);
-    expect(result.dtype).toBe("boolean");
+    expect(result.dtype).toBe("bool");
+    expect(result.to_list()).toEqual([false, false, false]);
   });
 });

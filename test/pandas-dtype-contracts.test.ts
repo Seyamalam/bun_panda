@@ -31,7 +31,26 @@ for (const [i, entry] of fixture.cases.entries()) {
     const run = () => {
       if (entry.mode === "inferred_constructor") return new Series<CellValue>(values);
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
-      const source = new Series<CellValue>(values, { dtype, ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}) });
+      const source = new Series<CellValue>(values, {
+        dtype,
+        ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
+        ...((entry as { index?: unknown[] }).index ? { index: (entry as { index: (string | number)[] }).index } : {}),
+      });
+      if (entry.mode === "arithmetic") {
+        const operandSpec = (entry as { operand: Record<string, unknown> }).operand;
+        const operand: CellValue | Series<CellValue> = "scalar" in operandSpec
+          ? operandSpec.scalar as CellValue
+          : new Series<CellValue>(
+            (operandSpec.values as unknown[]).map(decode),
+            {
+              dtype: operandSpec.dtype as DType,
+              ...(operandSpec.index ? { index: operandSpec.index as (string | number)[] } : {}),
+            }
+          );
+        const operation: unknown = Reflect.get(source, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(source, [operand]) as Series<CellValue>;
+      }
       if ("operation" in entry) {
         const operation: unknown = Reflect.get(source, entry.operation!);
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
@@ -44,7 +63,8 @@ for (const [i, entry] of fixture.cases.entries()) {
     if (entry.error) expect(run).toThrow();
     else {
       const result = run();
-      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: result.index, name: result.name } : {}) }).toEqual(entry.expected!);
+      const expectIndex = (entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "arithmetic") && entry.expected && "index" in entry.expected;
+      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(expectIndex ? { index: result.index } : {}), ...((entry.mode === "selection" || entry.mode === "replacement") ? { name: result.name } : {}) }).toEqual(entry.expected!);
       expect(result.copy().dtype).toBe(entry.expected!.dtype);
       expect(result.head(0).dtype).toBe(entry.expected!.dtype);
     }
@@ -86,7 +106,7 @@ test("frame inference preserves text and labels while selecting nullable dtypes"
 });
 
 for (const entry of fixture.cases) {
-  if (!("operation" in entry) || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
+  if (!("operation" in entry) || entry.mode === "arithmetic" || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
   test(`frame selection preserves ${entry.dtype}: ${entry.operation} ${JSON.stringify(entry.args)} ${JSON.stringify(entry.values)}`, () => {
     const frame = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType, index: entry.values.map((_: unknown, i: number) => `row-${i}`) });
     const operation: unknown = Reflect.get(frame, entry.operation!);

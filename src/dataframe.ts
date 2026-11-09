@@ -1,6 +1,6 @@
 import { indexLabelEquals } from "./internal/shared/indexing";
 import { scalarEquals } from "./internal/shared/valueSemantics";
-import { arithResultDType, assertDType, castColumn, convertedDType, replacementDType, dtypeSelector, type DTypeSelector, updatedDType } from "./dtypes";
+import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -889,7 +889,8 @@ export class DataFrame {
   private binaryOp(
     other: number | DataFrame,
     fn: (a: number, b: number) => number,
-    division = false
+    division = false,
+    floorIntZero = false
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
     if (otherFrame) {
@@ -903,13 +904,28 @@ export class DataFrame {
       otherFrame ? null : (other as number),
       fn
     );
-    const scalarDtype: DType = Number.isInteger(other as number) ? "int64" : "float64";
     const declared: Partial<Record<string, DType>> = {};
     this._columns.forEach((column, i) => {
       const right = otherFrame
         ? otherFrame._dtypes[otherFrame._columns[i]!] ?? "object"
-        : scalarDtype;
-      const dtype = arithResultDType(this._dtypes[column] ?? "object", right, division);
+        : scalarOperandDType(this._dtypes[column] ?? "object", other as number);
+      let dtype = floorIntZero
+        ? floordivResultDType(this._dtypes[column] ?? "object", right)
+        : arithResultDType(this._dtypes[column] ?? "object", right, division);
+      // pandas int floordiv keeps the int dtype and emits 0 on a zero divisor;
+      // other int ops widen to float64 on non-integer results.
+      if (dtype !== undefined && /^u?int|^bool/.test(dtype)) {
+        for (const row of rows) {
+          const value = row[column];
+          if (typeof value === "number" && !Number.isFinite(value)) {
+            row[column] = floorIntZero ? 0 : value;
+          }
+        }
+      }
+      if (dtype !== undefined && /^(u?int)/.test(dtype) &&
+          rows.some(row => typeof row[column] === "number" && !Number.isInteger(row[column] as number))) {
+        dtype = "float64";
+      }
       if (dtype) declared[column] = dtype;
     });
     return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, declared);
@@ -948,7 +964,7 @@ export class DataFrame {
   }
 
   floordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(a / b));
+    return this.binaryOp(other, (a, b) => Math.floor(a / b), false, true);
   }
 
   radd(other: number | DataFrame): DataFrame {
@@ -2390,7 +2406,7 @@ export class DataFrame {
 
   // ---- additional aliases ----
   rfloordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(b / a));
+    return this.binaryOp(other, (a, b) => Math.floor(b / a), false, true);
   }
 
   rtruediv(other: number | DataFrame): DataFrame {
