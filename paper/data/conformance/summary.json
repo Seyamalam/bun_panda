@@ -1,6 +1,7 @@
 {
-  "schemaVersion": "1.0.0",
-  "generatedAt": "2026-08-27T04:26:25.823Z",
+  "schemaVersion": "1.1.0",
+  "comparisonMode": "semantic",
+  "generatedAt": "2026-11-10T17:36:48.539Z",
   "tolerance": {
     "absolute": 1e-9,
     "relative": 1e-9
@@ -12,7 +13,7 @@
       "reference": "pandas",
       "referenceVersion": "3.0.5",
       "candidate": "bun_panda-adaptive",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,
@@ -102,9 +103,9 @@
     },
     {
       "reference": "bun_panda-typescript",
-      "referenceVersion": "0.4.0",
+      "referenceVersion": "0.5.0",
       "candidate": "bun_panda-wasm",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,
@@ -194,9 +195,9 @@
     },
     {
       "reference": "bun_panda-typescript",
-      "referenceVersion": "0.4.0",
+      "referenceVersion": "0.5.0",
       "candidate": "bun_panda-adaptive",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,

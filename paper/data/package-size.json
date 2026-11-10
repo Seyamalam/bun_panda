@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-27T04:46:10.940Z",
+  "generatedAt": "2026-11-10T18:07:24.375Z",
   "package": {
     "name": "bun_panda",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "description": "Pandas-inspired DataFrame and Series utilities for Bun/TypeScript.",
     "license": "MIT",
     "homepage": "https://github.com/Seyamalam/bun_panda#readme",
@@ -60,6 +60,9 @@
       "bench:refresh-readme": "bun run bench/update-readme.js",
       "bench:ci": "bun run bench:arquero && bun run bench:gate && bun run bench:drift && bun run bench:io && bun run bench:gate:io && bun run bench:pandas && bun run bench:compare:pandas && bun run bench:gate:pandas && bun run bench:refresh-readme",
       "conformance": "bun run paper/artifact/conformance/run-study.ts",
+      "conformance:strict": "bun run paper/artifact/conformance/run-study.ts --strict",
+      "compatibility:fixtures": "uv run --with pandas==3.0.5 python scripts/compatibility/generate-oracle.py && uv run --with pandas==3.0.5 python scripts/compatibility/generate-dtype-oracle.py && uv run --with pandas==3.0.5 python scripts/compatibility/generate-index-oracle.py",
+      "compatibility:test": "bun test test/pandas-value-contracts.test.ts test/conformance-comparison.test.ts test/pandas-dtype-contracts.test.ts test/pandas-dtype-queries.test.ts test/pandas-index-contracts.test.ts",
       "conformance:generate": "bun run paper/artifact/conformance/generate-cases.ts",
       "conformance:compare": "bun run paper/artifact/conformance/compare.ts",
       "bench:fresh": "bun run paper/artifact/run-fresh-process-ablation.ts",
@@ -73,7 +76,10 @@
       "workload:public": "bun run paper/workloads/prepare-public.ts",
       "bench:linux": "bash paper/artifact/linux/run-linux-suite.sh",
       "bench:cgroup": "bash paper/artifact/linux/run-cgroup-study.sh",
-      "artifact:checksums": "bun run paper/artifact/write-checksums.ts"
+      "artifact:checksums": "bun run paper/artifact/write-checksums.ts",
+      "example:wasm": "bun run examples/wasm-analytics-studio/server.ts",
+      "example:wasm:build": "bun run examples/wasm-analytics-studio/build.ts",
+      "example:wasm:test": "bun test examples/wasm-analytics-studio/test && bunx tsc -p examples/wasm-analytics-studio/tsconfig.json"
     },
     "devDependencies": {
       "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
@@ -81,6 +87,7 @@
       "@types/bun": "latest",
       "arquero": "^8.0.3",
       "danfojs": "1.2.0",
+      "fast-check": "^4.10.0",
       "nodejs-polars": "0.26.0",
       "oxlint": "^1.79.0",
       "wasm-feature-detect": "1.9.0"
@@ -94,19 +101,19 @@
     }
   },
   "artifacts": {
-    "npmTarballBytes": 133801,
-    "npmUnpackedBytes": 559188,
-    "npmEntryCount": 77,
-    "coreMinifiedBundleBytes": 184504,
-    "coreMinifiedBundleGzipBytes": 52878,
+    "npmTarballBytes": 192359,
+    "npmUnpackedBytes": 783620,
+    "npmEntryCount": 85,
+    "coreMinifiedBundleBytes": 255692,
+    "coreMinifiedBundleGzipBytes": 73994,
     "browserKernelMinifiedBytes": 2683,
     "browserKernelGzipBytes": 996,
     "browserKernelBrotliBytes": 877,
-    "wasmBinaryBytes": 7359,
-    "wasmBinaryGzipBytes": 2984,
-    "wasmBinaryBrotliBytes": 2614,
-    "sourceBytes": 522236,
-    "sourceFileCount": 71
+    "wasmBinaryBytes": 7728,
+    "wasmBinaryGzipBytes": 3168,
+    "wasmBinaryBrotliBytes": 2752,
+    "sourceBytes": 745433,
+    "sourceFileCount": 80
   },
   "method": {
     "bundleCommand": "bun build index.ts --target=bun --minify --external=xlsx --external=parquetjs-lite",
@@ -118,42 +125,47 @@
     "packCommand": "npm pack --json --ignore-scripts"
   },
   "sourceByCategory": {
-    "dataframe": 210752,
-    "series": 107849,
-    "groupby": 48909,
-    "io": 24856,
-    "wasm": 29204,
-    "other": 100666
+    "dataframe": 286711,
+    "series": 179219,
+    "groupby": 61323,
+    "io": 26044,
+    "wasm": 29586,
+    "other": 162550
   },
   "largestPackageFiles": [
     {
       "path": "src/dataframe.ts",
-      "size": 79529,
+      "size": 140932,
       "mode": 420
     },
     {
       "path": "src/series.ts",
-      "size": 47253,
+      "size": 82424,
       "mode": 420
     },
     {
       "path": "src/groupby.ts",
-      "size": 40929,
+      "size": 51227,
       "mode": 420
     },
     {
       "path": "src/internal/series/seriesApi.ts",
-      "size": 30121,
+      "size": 34660,
       "mode": 420
     },
     {
       "path": "CHANGELOG.md",
-      "size": 22386,
+      "size": 27466,
       "mode": 420
     },
     {
       "path": "src/top-level.ts",
-      "size": 21139,
+      "size": 25077,
+      "mode": 420
+    },
+    {
+      "path": "src/dtypes.ts",
+      "size": 20446,
       "mode": 420
     },
     {
@@ -162,43 +174,38 @@
       "mode": 420
     },
     {
-      "path": "src/wasm/kernel.ts",
-      "size": 11515,
+      "path": "src/internal/dataframe/windowApi.ts",
+      "size": 15888,
+      "mode": 420
+    },
+    {
+      "path": "src/internal/series/pandasElementwise.ts",
+      "size": 14013,
+      "mode": 420
+    },
+    {
+      "path": "src/internal/dataframe/stats.ts",
+      "size": 12254,
       "mode": 420
     },
     {
       "path": "src/internal/dataframe/extended.ts",
-      "size": 10990,
+      "size": 11823,
+      "mode": 420
+    },
+    {
+      "path": "src/wasm/kernel.ts",
+      "size": 11546,
       "mode": 420
     },
     {
       "path": "src/internal/series/stringMethods.ts",
-      "size": 10845,
+      "size": 11163,
       "mode": 420
     },
     {
-      "path": "src/internal/dataframe/windowApi.ts",
-      "size": 10830,
-      "mode": 420
-    },
-    {
-      "path": "src/internal/dataframe/combine.ts",
-      "size": 10702,
-      "mode": 420
-    },
-    {
-      "path": "src/datetime.ts",
-      "size": 9412,
-      "mode": 420
-    },
-    {
-      "path": "src/categorical.ts",
-      "size": 9325,
-      "mode": 420
-    },
-    {
-      "path": "src/internal/dataframe/compat.ts",
-      "size": 9280,
+      "path": "src/internal/series/pandasOps.ts",
+      "size": 10357,
       "mode": 420
     }
   ]

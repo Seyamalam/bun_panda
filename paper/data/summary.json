@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T04:46:10.981Z",
+  "generatedAt": "2026-11-10T18:38:41.901Z",
   "arquero": {
     "rows": 25000,
     "iterations": 8,
@@ -1580,7 +1580,7 @@
       "reference": "pandas",
       "referenceVersion": "3.0.5",
       "candidate": "bun_panda-adaptive",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,
@@ -1670,9 +1670,9 @@
     },
     {
       "reference": "bun_panda-typescript",
-      "referenceVersion": "0.4.0",
+      "referenceVersion": "0.5.0",
       "candidate": "bun_panda-wasm",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,
@@ -1762,9 +1762,9 @@
     },
     {
       "reference": "bun_panda-typescript",
-      "referenceVersion": "0.4.0",
+      "referenceVersion": "0.5.0",
       "candidate": "bun_panda-adaptive",
-      "candidateVersion": "0.4.0",
+      "candidateVersion": "0.5.0",
       "total": 2500,
       "passed": 2500,
       "mismatched": 0,
@@ -1854,18 +1854,18 @@
     }
   ],
   "packageSize": {
-    "npmTarballBytes": 133801,
-    "npmUnpackedBytes": 559188,
-    "npmEntryCount": 77,
-    "coreMinifiedBundleBytes": 184504,
-    "coreMinifiedBundleGzipBytes": 52878,
+    "npmTarballBytes": 192359,
+    "npmUnpackedBytes": 783620,
+    "npmEntryCount": 85,
+    "coreMinifiedBundleBytes": 255692,
+    "coreMinifiedBundleGzipBytes": 73994,
     "browserKernelMinifiedBytes": 2683,
     "browserKernelGzipBytes": 996,
     "browserKernelBrotliBytes": 877,
-    "wasmBinaryBytes": 7359,
-    "wasmBinaryGzipBytes": 2984,
-    "wasmBinaryBrotliBytes": 2614,
-    "sourceBytes": 522236,
-    "sourceFileCount": 71
+    "wasmBinaryBytes": 7728,
+    "wasmBinaryGzipBytes": 3168,
+    "wasmBinaryBrotliBytes": 2752,
+    "sourceBytes": 745433,
+    "sourceFileCount": 80
   }
 }

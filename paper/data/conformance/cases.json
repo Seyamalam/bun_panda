@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-08-27T04:26:23.988Z",
+  "generatedAt": "2026-11-10T17:36:46.269Z",
   "generator": "paper/artifact/conformance/generate-cases.ts",
   "baseSeed": 20260826,
   "validPerFamily": 200,

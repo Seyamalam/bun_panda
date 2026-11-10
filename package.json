@@ -76,7 +76,8 @@
     "artifact:checksums": "bun run paper/artifact/write-checksums.ts",
     "example:wasm": "bun run examples/wasm-analytics-studio/server.ts",
     "example:wasm:build": "bun run examples/wasm-analytics-studio/build.ts",
-    "example:wasm:test": "bun test examples/wasm-analytics-studio/test && bunx tsc -p examples/wasm-analytics-studio/tsconfig.json"
+    "example:wasm:test": "bun test examples/wasm-analytics-studio/test && bunx tsc -p examples/wasm-analytics-studio/tsconfig.json",
+    "paper:refresh": "bun run conformance && cp out/conformance/summary.json out/conformance/mismatch-ledger.json out/conformance/cases.json paper/data/conformance/ && bun run paper/artifact/analyze-package-size.ts && bun run paper/artifact/summarize-study.ts && bun run paper/artifact/summarize-expanded-study.ts 2>/dev/null || true && bun run paper/artifact/write-checksums.ts"
   },
   "devDependencies": {
     "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
