@@ -1986,10 +1986,16 @@ export class DataFrame {
 
   sort_values(
     by: string | string[],
-    ascending: boolean | boolean[] = true,
+    ascending: boolean | boolean[] | { ascending?: boolean | boolean[]; limit?: number; na_position?: "first" | "last" } = true,
     limit?: number,
     na_position: "first" | "last" = "last"
   ): DataFrame {
+    if (typeof ascending === "object" && !Array.isArray(ascending)) {
+      const options = ascending;
+      ascending = options.ascending ?? true;
+      limit = options.limit ?? limit;
+      na_position = options.na_position ?? na_position;
+    }
     const columns = Array.isArray(by) ? by : [by];
     for (const column of columns) {
       if (!this._columns.includes(column)) throw new KeyError(`'${column}'`);
