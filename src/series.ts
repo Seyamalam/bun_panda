@@ -1,4 +1,4 @@
-import { alignedPositions, indexLabelEquals, indexLabelsEqual, reindexPositions } from "./internal/shared/indexing";
+import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelsEqual, reindexPositions } from "./internal/shared/indexing";
 import { arithResultDType, castColumn, convertedDType, floordivResultDType, replacementDType, scalarOperandDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
@@ -581,7 +581,7 @@ export class Series<T extends CellValue = CellValue> {
         missingIntroduced: false,
       };
     }
-    const { index, leftPos, rightPos } = alignedPositions(this._index, other._index, compareCellValues);
+    const { index, leftPos, rightPos } = alignedPositions(this._index, other._index, compareIndexLabels);
     return {
       leftValues: index.map((_, i) => leftPos[i]! < 0 ? null : this._values[leftPos[i]!]),
       rightValues: index.map((_, i) => rightPos[i]! < 0 ? null : other._values[rightPos[i]!]),

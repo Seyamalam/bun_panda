@@ -1,6 +1,7 @@
 import type { MissingScalar } from "./missing";
 
-export type IndexLabel = string | number;
+/** A scalar index label or a MultiIndex tuple (one scalar per level). */
+export type IndexLabel = string | number | readonly (string | number)[];
 
 export type CellValue = string | number | boolean | MissingScalar | Date;
 

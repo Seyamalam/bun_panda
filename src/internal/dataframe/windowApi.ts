@@ -24,6 +24,8 @@ export interface HostView {
   rowsSnapshot(): Row[];
   columnsSnapshot(): string[];
   labels(): IndexLabel[];
+  indexNamesSnapshot(): (string | undefined)[] | undefined;
+  withIndexAndNames(index: IndexLabel[], names?: (string | undefined)[]): DataFrame;
   withRows(rows: Row[], index?: IndexLabel[], columns?: string[], normalized?: boolean): DataFrame;
   iloc(position: number): unknown;
   reindex(options: { index?: IndexLabel[]; columns?: string[]; fill_value?: CellValue }): DataFrame;
@@ -206,16 +208,44 @@ export function resample(df: HostView, rule: string): {
   }
 
 export function droplevel(df: HostView, level = 0): DataFrame {
-    void level; // flat index: honest copy
-    return df.copy();
+    const index = df.labels();
+    const names = df.indexNamesSnapshot();
+    const tuples: (string | number)[][] = index.map(l => (Array.isArray(l) ? l : [l]) as (string | number)[]);
+    const nlevels = tuples[0]?.length ?? 1;
+    if (nlevels <= 1) return df.copy();
+    const normalized = ((level % nlevels) + nlevels) % nlevels;
+    const remaining = tuples.map(t => t.filter((_, i) => i !== normalized));
+    const remainingNames = names?.filter((_, i) => i !== normalized);
+    const nextIndex: IndexLabel[] = remaining[0]!.length === 1
+      ? remaining.map(t => t[0]!)
+      : remaining as IndexLabel[];
+    return df.withIndexAndNames(nextIndex, remainingNames);
   }
 
-export function reorder_levels(df: HostView, ..._order: number[]): DataFrame {
-    return df.copy();
+export function reorder_levels(df: HostView, ...order: number[]): DataFrame {
+    const index = df.labels();
+    const names = df.indexNamesSnapshot();
+    const tuples: (string | number)[][] = index.map(l => (Array.isArray(l) ? l : [l]) as (string | number)[]);
+    const nlevels = tuples[0]?.length ?? 1;
+    if (nlevels <= 1) return df.copy();
+    const normalized = order.map(l => ((l % nlevels) + nlevels) % nlevels);
+    const nextIndex: IndexLabel[] = tuples.map(t => normalized.map(i => t[i]!));
+    const nextNames = normalized.map(i => names?.[i]);
+    return df.withIndexAndNames(nextIndex, nextNames);
   }
 
-export function swaplevel(df: HostView, ): DataFrame {
-    return df.copy();
+export function swaplevel(df: HostView, a = 0, b = -1): DataFrame {
+    const index = df.labels();
+    const names = df.indexNamesSnapshot();
+    const tuples: (string | number)[][] = index.map(l => (Array.isArray(l) ? l : [l]) as (string | number)[]);
+    const nlevels = tuples[0]?.length ?? 1;
+    if (nlevels <= 1) return df.copy();
+    const ia = ((a % nlevels) + nlevels) % nlevels;
+    const ib = ((b % nlevels) + nlevels) % nlevels;
+    const nextIndex: IndexLabel[] = tuples.map(t => { const n = [...t]; [n[ia], n[ib]] = [n[ib]!, n[ia]!]; return n; });
+    const nextNames = names ? [...names] : undefined;
+    if (nextNames) [nextNames[ia], nextNames[ib]] = [nextNames[ib]!, nextNames[ia]!];
+    return df.withIndexAndNames(nextIndex, nextNames);
   }
 
 export function tz_localize(df: HostView, tz: string): DataFrame {

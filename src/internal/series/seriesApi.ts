@@ -11,9 +11,9 @@ import {
   resampleBins,
 } from "../shared";
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
-import { compareCellValues, isMissing } from "../../utils";
+import { isMissing } from "../../utils";
 import { arithResultDType } from "../../dtypes";
-import { indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
+import { compareIndexLabels, indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
 import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
 import { Categorical } from "../../categorical";
@@ -171,7 +171,7 @@ export function reset_index(s: SeriesHost, drop = false): DataFrame | Series<Cel
     if (drop) return new Series([...s.valuesSnapshot()], { index: range(s.valuesSnapshot().length), name: s.nameSnapshot(), dtype: s.dtypeSnapshot() });
     const indexColumn = s.indexNameSnapshot() ?? "index";
     const df = new DataFrame(
-      s.valuesSnapshot().map((v, i) => ({ [indexColumn]: s.labelsSnapshot()[i]!, [String(s.nameSnapshot() ?? "0")]: v })),
+      s.valuesSnapshot().map((v, i) => ({ [indexColumn]: s.labelsSnapshot()[i]! as CellValue, [String(s.nameSnapshot() ?? "0")]: v })),
       { columns: [indexColumn, String(s.nameSnapshot() ?? "0")] }
     );
     const dtype = s.dtypeSnapshot();
@@ -345,7 +345,7 @@ function alignedOperands(s: SeriesHost, other: Series<CellValue>): {
     }
     // pandas combine/combine_first align via reindex, which rejects
     // duplicate labels — unlike arithmetic, which broadcasts within groups.
-    const union = unionIndexLabels(leftLabels, rightLabels, compareCellValues);
+    const union = unionIndexLabels(leftLabels, rightLabels, compareIndexLabels);
     const leftPos = reindexPositions(leftLabels, union);
     const rightPos = reindexPositions(rightLabels, union);
     const leftVals = s.valuesSnapshot();

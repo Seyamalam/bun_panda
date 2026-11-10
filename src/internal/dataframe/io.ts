@@ -21,7 +21,7 @@ export function dataFrameToCsv(frame: DataFrame, options: ToCSVOptions = {}): st
   for (let i = 0; i < rows.length; i += 1) {
     const row = rows[i]!;
     const rowCells = columns.map((column) => escapeCsvValue(row[column], sep));
-    if (includeIndex) rowCells.unshift(escapeCsvValue(index[i], sep));
+    if (includeIndex) rowCells.unshift(escapeCsvValue(index[i] as never, sep));
     lines.push(rowCells.join(sep));
   }
   const csv = `${lines.join("\n")}\n`;

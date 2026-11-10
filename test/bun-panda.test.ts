@@ -211,15 +211,45 @@ describe("groupby + merge + concat", () => {
     ]);
   });
 
-  test("groupby as_index=true with multi-key throws pending MultiIndex support", () => {
+  test("groupby as_index=true with multi-key produces a MultiIndex", () => {
     const df = new DataFrame([
       { team: "A", city: "Austin", value: 1 },
       { team: "A", city: "Seattle", value: 2 },
+      { team: "B", city: "Austin", value: 3 },
     ]);
 
-    expect(() =>
-      df.groupby(["team", "city"], { as_index: true }).agg({ value: "sum" })
-    ).toThrow("groupby(as_index=true) with multiple keys requires MultiIndex support.");
+    const result = df.groupby(["team", "city"], { as_index: true }).agg({ value: "sum" });
+    expect(result.index).toEqual([["A", "Austin"], ["A", "Seattle"], ["B", "Austin"]]);
+    expect(result.nlevels).toBe(2);
+    expect(result.index_names).toEqual(["team", "city"]);
+  });
+
+  test("set_index with multiple columns produces a MultiIndex", () => {
+    const df = new DataFrame([
+      { a: "x", b: 1, v: 10 },
+      { a: "x", b: 2, v: 20 },
+    ]);
+    const mi = df.set_index(["a", "b"]);
+    expect(mi.index).toEqual([["x", 1], ["x", 2]]);
+    expect(mi.nlevels).toBe(2);
+    expect(mi.index_names).toEqual(["a", "b"]);
+    expect(mi.columns).toEqual(["v"]);
+
+    const single = mi.droplevel(1);
+    expect(single.index).toEqual(["x", "x"]);
+    expect(single.nlevels).toBe(1);
+    expect(single.index_names).toEqual(["a"]);
+
+    const swapped = mi.swaplevel();
+    expect(swapped.index).toEqual([[1, "x"], [2, "x"]]);
+    expect(swapped.index_names).toEqual(["b", "a"]);
+
+    const reset = mi.reset_index();
+    expect(reset.columns).toEqual(["a", "b", "v"]);
+    expect(reset.to_records()).toEqual([
+      { a: "x", b: 1, v: 10 },
+      { a: "x", b: 2, v: 20 },
+    ]);
   });
 
   test("merge right join includes unmatched right rows", () => {

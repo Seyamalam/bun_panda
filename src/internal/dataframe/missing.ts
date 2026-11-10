@@ -44,7 +44,7 @@ export function resetIndexRows(
   name: string
 ): Row[] {
   return rows.map((row, position) => ({
-    [name]: index[position]!,
+    [name]: index[position]! as CellValue,
     ...cloneRow(row, columns),
   }));
 }

@@ -947,7 +947,7 @@ export class GroupBy {
           if (typeof v !== "number" || !Number.isFinite(v)) return;
           if (best === null || (mode === "max" ? v > best : v < best)) { best = v; bestPos = this.sourceRows.indexOf(r); }
         });
-        row[col] = bestPos >= 0 ? this.source.index[bestPos] ?? bestPos : null;
+        row[col] = bestPos >= 0 ? (this.source.index[bestPos] ?? bestPos) as CellValue : null;
       }
       rows.push(row);
     }
@@ -1189,11 +1189,6 @@ export class GroupBy {
     if (!this.options.as_index) {
       return DataFrame.from_normalized(rows, [...this.by, ...valueColumns]);
     }
-    if (this.by.length !== 1) {
-      throw new Error("groupby(as_index=true) with multiple keys requires MultiIndex support.");
-    }
-
-    const keyColumn = this.by[0]!;
     const outRows = rows.map((row) => {
       const out: Row = {};
       for (const column of valueColumns) {
@@ -1202,8 +1197,16 @@ export class GroupBy {
       return out;
     });
 
-    const index = rows.map((row, position) => toIndexLabel(row[keyColumn], position));
-    return DataFrame.from_normalized(outRows, valueColumns, index);
+    if (this.by.length === 1) {
+      const keyColumn = this.by[0]!;
+      const index = rows.map((row, position) => toIndexLabel(row[keyColumn], position));
+      return DataFrame.from_normalized(outRows, valueColumns, index);
+    }
+
+    // Multi-key groups produce a tuple index like pandas MultiIndex.
+    const index = rows.map((row, position) =>
+      this.by.map((keyColumn) => toIndexLabel(row[keyColumn], position) as string | number));
+    return DataFrame.createInternal(outRows, valueColumns, index, {}, {}, undefined, this.by);
   }
 }
 

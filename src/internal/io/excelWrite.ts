@@ -18,7 +18,7 @@ export function writeExcelFrame(frame: FrameLike, options: ToExcelOptions): void
     const record = records[i]!;
     const row = frame.columns.map((column) => normalizeExcelCell(record[column]));
     if (includeIndex) {
-      row.unshift(index[i]!);
+      row.unshift(index[i]! as never);
     }
     matrix.push(row);
   }

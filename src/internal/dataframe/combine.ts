@@ -216,7 +216,7 @@ export function stackFrame(
     for (const column of columns) {
       const value = rows[r]![column];
       if (dropna && isMissing(value)) continue;
-      outRows.push({ index: index[r], column, value });
+      outRows.push({ index: index[r] as CellValue, column, value });
       outIndex.push(outRows.length - 1);
     }
   }

@@ -1,4 +1,4 @@
-import { indexLabelEquals } from "./internal/shared/indexing";
+import { compareIndexLabels, indexLabelEquals } from "./internal/shared/indexing";
 import { scalarEquals } from "./internal/shared/valueSemantics";
 import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
@@ -271,6 +271,8 @@ export class DataFrame {
   private readonly _index: IndexLabel[];
   /** pandas `df.index.name` for single-level indexes. */
   private readonly _indexName: string | undefined;
+  /** pandas `df.index.names` — one per level; set for MultiIndex frames. */
+  private readonly _indexNames: (string | undefined)[] | undefined;
   /** Dtype fallback used only when an output column has no present values. */
   private readonly _dtypeHints: Partial<Record<string, InferredDType>>;
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
@@ -300,7 +302,8 @@ export class DataFrame {
     index: IndexLabel[],
     dtypeHints: Partial<Record<string, InferredDType>> = {},
     dtypes: Partial<Record<string, DType>> = {},
-    indexName?: string
+    indexName?: string,
+    indexNames?: (string | undefined)[]
   ): DataFrame {
     assertRowsShape(rows, index);
     const prepared = DataFrame.prepareColumns(rows, columns, dtypes, dtypeHints);
@@ -308,7 +311,8 @@ export class DataFrame {
     (frame as unknown as { _rows: Row[] })._rows = prepared.rows;
     (frame as unknown as { _columns: string[] })._columns = columns;
     (frame as unknown as { _index: IndexLabel[] })._index = index;
-    (frame as unknown as { _indexName: string | undefined })._indexName = indexName;
+    (frame as unknown as { _indexName: string | undefined })._indexName = indexName ?? indexNames?.[0];
+    (frame as unknown as { _indexNames: (string | undefined)[] | undefined })._indexNames = indexNames;
     (frame as unknown as { _dtypeHints: Partial<Record<string, InferredDType>> })._dtypeHints = {
       ...dtypeHints,
     };
@@ -1794,7 +1798,7 @@ export class DataFrame {
   sort_index(ascending = true): DataFrame {
     const positions = range(this._rows.length);
     positions.sort((leftPosition, rightPosition) => {
-      const compared = compareCellValues(this._index[leftPosition], this._index[rightPosition]);
+      const compared = compareIndexLabels(this._index[leftPosition]!, this._index[rightPosition]!);
       return ascending ? compared : -compared;
     });
 
@@ -1905,14 +1909,17 @@ export class DataFrame {
     return this.withReplacement(fillnaRows(this._rows, this._columns, value), this._index, this._columns, true);
   }
 
-  set_index(column: string, drop = true): DataFrame {
-    this.assertColumnExists(column);
-    const index = indexLabelsFromColumn(this._rows, column, this._index);
+  set_index(column: string | string[], drop = true): DataFrame {
+    const columns = Array.isArray(column) ? column : [column];
+    columns.forEach(c => this.assertColumnExists(c));
+    const index: IndexLabel[] = columns.length === 1
+      ? indexLabelsFromColumn(this._rows, columns[0]!, this._index)
+      : this._rows.map(row => columns.map(c => row[c] as string | number));
 
     const frame = drop
-      ? this.drop(column).withIndex(index)
+      ? this.drop(columns).withIndex(index)
       : this.withRows(this.to_records(), index, this._columns, true);
-    return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame._dtypes, column);
+    return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame._dtypes, columns[0], columns);
   }
 
   /** pandas `df.index.name` for single-level indexes. */
@@ -1920,12 +1927,35 @@ export class DataFrame {
     return this._indexName;
   }
 
-  /** pandas `df.index.names` (single-level index: a one-element list). */
+  /** pandas `df.index.names` — one entry per index level. */
   get index_names(): (string | undefined)[] {
-    return [this._indexName];
+    return this._indexNames ?? [this._indexName];
+  }
+
+  /** pandas `df.index.nlevels`. */
+  get nlevels(): number {
+    const tuple = this._index.find(l => Array.isArray(l));
+    return tuple ? (tuple as (string | number)[]).length : 1;
   }
 
   reset_index(name?: string): DataFrame {
+    if (this.nlevels > 1) {
+      // pandas emits one column per level, named by index.names or level_N.
+      const names = Array.from({ length: this.nlevels },
+        (_, i) => this.index_names[i] ?? `level_${i}`);
+      for (const columnName of names) {
+        if (this._columns.includes(columnName)) {
+          throw new Error(`Column '${columnName}' already exists.`);
+        }
+      }
+      const rows = this._rows.map((row, i) => {
+        const tuple = (this._index[i] ?? []) as (string | number)[];
+        const out: Row = { ...row };
+        names.forEach((columnName, level) => { out[columnName] = tuple[level] as CellValue; });
+        return out;
+      });
+      return new DataFrame(rows, { columns: [...names, ...this._columns] });
+    }
     const columnName = name ?? this._indexName ?? "index";
     if (this._columns.includes(columnName)) {
       throw new Error(`Column '${columnName}' already exists.`);
@@ -2284,7 +2314,7 @@ export class DataFrame {
     const rows = this._rows.map((row, i) => {
       const next = cloneRow(row, this._columns);
       next[keyColumn] =
-        sourceColumn !== undefined ? row[sourceColumn] : labels ? labels[i] : this._index[i];
+        sourceColumn !== undefined ? row[sourceColumn] : (labels ? labels[i] : this._index[i]) as CellValue;
       return next;
     });
     return DataFrame.createInternal(rows, [...this._columns, keyColumn], [...this._index]);
@@ -2646,6 +2676,9 @@ export class DataFrame {
       rowsSnapshot: () => this._rows,
       columnsSnapshot: () => this._columns,
       labels: () => this._index,
+      indexNamesSnapshot: () => this._indexNames,
+      withIndexAndNames: (index: IndexLabel[], names?: (string | undefined)[]) =>
+        DataFrame.createInternal(this.to_records(), [...this._columns], index, this._dtypeHints, this._dtypes, names?.[0], names),
       withRows: (rows: Row[], index?: IndexLabel[], columns?: string[], normalized?: boolean) =>
         this.withRows(rows, index, columns, normalized),
       iloc: (position: number) => this.iloc(position),
@@ -2685,8 +2718,8 @@ export class DataFrame {
   reorder_levels(...order: number[]): DataFrame {
     return windowApi.reorder_levels(this.view(), ...order);
   }
-  swaplevel(): DataFrame {
-    return windowApi.swaplevel(this.view());
+  swaplevel(a = 0, b = -1): DataFrame {
+    return windowApi.swaplevel(this.view(), a, b);
   }
   /**
    * In-place positional assignment like pandas `DataFrame.isetitem(loc, value)`:

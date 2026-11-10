@@ -1,21 +1,50 @@
 import { ValueError } from "../../errors";
-import type { IndexLabel } from "../../types";
+import type { CellValue, IndexLabel } from "../../types";
+import { compareCellValues } from "../../utils";
 
-export function indexLabelEquals(left: IndexLabel, right: IndexLabel): boolean {
+/** pandas label ordering: scalars by value, tuples lexicographically. */
+export function compareIndexLabels(a: IndexLabel, b: IndexLabel): number {
+  if (!Array.isArray(a) && !Array.isArray(b)) return compareCellValues(a as CellValue, b as CellValue);
+  const at = Array.isArray(a) ? a : [a];
+  const bt = Array.isArray(b) ? b : [b];
+  for (let i = 0; i < Math.min(at.length, bt.length); i += 1) {
+    const compared = compareCellValues(at[i] as CellValue, bt[i] as CellValue);
+    if (compared !== 0) return compared;
+  }
+  return at.length - bt.length;
+}
+
+/** True when the label is a MultiIndex tuple. */
+export function isIndexTuple(label: unknown): label is (string | number)[] {
+  return Array.isArray(label);
+}
+
+/** Stable map key for a scalar label or tuple. */
+export function indexLabelKey(label: IndexLabel | readonly (string | number)[]): string {
+  return isIndexTuple(label)
+    ? `tuple:${JSON.stringify(label)}`
+    : `${typeof label}:${String(label)}`;
+}
+
+export function indexLabelEquals(left: IndexLabel | readonly (string | number)[], right: IndexLabel | readonly (string | number)[]): boolean {
+  if (isIndexTuple(left) || isIndexTuple(right)) {
+    return isIndexTuple(left) && isIndexTuple(right) &&
+      left.length === right.length && left.every((v, i) => indexLabelEquals(v as IndexLabel, right[i]!));
+  }
   return left === right || (typeof left === "number" && Number.isNaN(left) && typeof right === "number" && Number.isNaN(right));
 }
 
-export function indexLabelsEqual(left: readonly IndexLabel[], right: readonly IndexLabel[]): boolean {
+export function indexLabelsEqual(left: readonly (IndexLabel | readonly (string|number)[])[], right: readonly (IndexLabel | readonly (string|number)[])[]): boolean {
   return left.length === right.length && left.every((label, i) => indexLabelEquals(label, right[i]!));
 }
 
 /** Resolve scalar labels once. Duplicate source labels only permit an unchanged target. */
 export function reindexPositions(source: readonly IndexLabel[], target: readonly IndexLabel[]): number[] {
   if (indexLabelsEqual(source, target)) return source.map((_, i) => i);
-  const positions = new Map<IndexLabel, number>();
-  source.forEach((label, i) => positions.set(label, i));
+  const positions = new Map<string, number>();
+  source.forEach((label, i) => positions.set(indexLabelKey(label), i));
   if (positions.size !== source.length) throw new ValueError("cannot reindex on an axis with duplicate labels");
-  return target.map(label => positions.get(label) ?? -1);
+  return target.map(label => positions.get(indexLabelKey(label)) ?? -1);
 }
 
 /**
