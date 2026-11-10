@@ -13,7 +13,9 @@ import {
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
 import { arithResultDType } from "../../dtypes";
+import { datetime64Name, dtypeUnit, dtypeZone, isDatetimeDType, zoneOffsetMinutes } from "../shared/timezone";
 import { compareIndexLabels, indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
+import { jsonBigintReplacer } from "../shared/valueSemantics";
 import { DataFrame } from "../../dataframe";
 import { range } from "../../utils";
 import { Categorical } from "../../categorical";
@@ -35,7 +37,7 @@ export interface SeriesHost {
   iloc(position: number): unknown;
   loc(label: IndexLabel): unknown;
   hasnans(): boolean;
-  sum(): number | null;
+  sum(): number | bigint | null;
   mean(): number | null;
   min(): unknown;
   max(): unknown;
@@ -45,7 +47,7 @@ export interface SeriesHost {
   median(): number | null;
   skew(): number | null;
   sem(): number | null;
-  prod(): number | null;
+  prod(): number | bigint | null;
   removeAt(position: number): CellValue;
   setAt(position: number, value: CellValue): void;
 }
@@ -56,8 +58,9 @@ export function corr(s: SeriesHost, other: Series<CellValue>): number | null {
     const a: number[] = []; const b: number[] = [];
     for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
       const x = s.valuesSnapshot()[i] as unknown as CellValue; const y = (other.values as CellValue[])[i] as unknown as CellValue;
-      if (typeof x === "number" && Number.isFinite(x) && typeof y === "number" && Number.isFinite(y)) {
-        a.push(x as number); b.push(y as number);
+      const nx = typeof x === "bigint" ? Number(x) : x; const ny = typeof y === "bigint" ? Number(y) : y;
+      if (typeof nx === "number" && Number.isFinite(nx) && typeof ny === "number" && Number.isFinite(ny)) {
+        a.push(nx); b.push(ny);
       }
     }
     if (a.length < 2) return null;
@@ -76,8 +79,9 @@ export function cov(s: SeriesHost, other: Series<CellValue>): number | null {
     const a: number[] = []; const b: number[] = [];
     for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
       const x = s.valuesSnapshot()[i] as unknown as CellValue; const y = (other.values as CellValue[])[i] as unknown as CellValue;
-      if (typeof x === "number" && Number.isFinite(x) && typeof y === "number" && Number.isFinite(y)) {
-        a.push(x as number); b.push(y as number);
+      const nx = typeof x === "bigint" ? Number(x) : x; const ny = typeof y === "bigint" ? Number(y) : y;
+      if (typeof nx === "number" && Number.isFinite(nx) && typeof ny === "number" && Number.isFinite(ny)) {
+        a.push(nx); b.push(ny);
       }
     }
     if (a.length < 2) return null;
@@ -93,8 +97,9 @@ export function dot(s: SeriesHost, other: Series<CellValue>): number | null {
     let sum = 0; let any = false;
     for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
       const x = s.valuesSnapshot()[i]; const y = (other.values as CellValue[])[i];
-      if (typeof x !== "number" || !Number.isFinite(x) || typeof y !== "number" || !Number.isFinite(y)) continue;
-      sum += x * y; any = true;
+      const nx = typeof x === "bigint" ? Number(x) : x; const ny = typeof y === "bigint" ? Number(y) : y;
+      if (typeof nx !== "number" || !Number.isFinite(nx) || typeof ny !== "number" || !Number.isFinite(ny)) continue;
+      sum += nx * ny; any = true;
     }
     return any ? sum : null;
   }
@@ -135,7 +140,7 @@ export function to_numpy(s: SeriesHost, ): CellValue[] { return [...s.valuesSnap
 
 export function to_string(s: SeriesHost, ): string { return s.valuesSnapshot().map((v) => String(v)).join("\\n"); }
 export function to_csv(s: SeriesHost, ): string { return s.valuesSnapshot().map((v) => String(v ?? "")).join("\\n"); }
-export function to_json(s: SeriesHost, ): string { return JSON.stringify(s.valuesSnapshot()); }
+export function to_json(s: SeriesHost, ): string { return JSON.stringify(s.valuesSnapshot(), jsonBigintReplacer); }
 export function to_period(_s: SeriesHost): Series<CellValue> { return _s.copy() as Series<CellValue>; }
 
 export function info(s: SeriesHost): string {
@@ -631,13 +636,56 @@ export function set_flags(_s: SeriesHost, options: { allows_duplicate_labels?: b
     return _s.copy() as Series<CellValue>;
   }
 
-export function tz_localize(s: SeriesHost, _tz: string): Series<CellValue> {
-    // Offsets are carried transparently; Date has no zone field in the model.
-    return s.copy() as Series<CellValue>;
+/**
+   * pandas `Series.dt.tz_localize`: naive wall-clock values are
+   * reinterpreted as local times in `tz`, so the stored UTC instants shift
+   * by -offset and the dtype gains the zone label
+   * (`datetime64[<unit>, <tz>]`). `tz === null` on an aware series strips
+   * the zone, keeping the source zone's wall-clock reading
+   * (pandas tz_localize(None)); on a naive series it is a no-op copy.
+   */
+export function tz_localize(s: SeriesHost, tz: string | null): Series<CellValue> {
+    const dtype = s.dtypeSnapshot() ?? "object";
+    if (!isDatetimeDType(dtype)) {
+      throw new TypeError(`tz_localize requires a datetime dtype, got '${dtype}'.`);
+    }
+    const sourceZone = dtypeZone(dtype);
+    const unit = dtypeUnit(dtype);
+    const options = { index: [...s.labelsSnapshot()], name: s.nameSnapshot(), indexName: s.indexNameSnapshot() };
+    if (sourceZone !== null) {
+      if (tz !== null) throw new TypeError("Already tz-aware, use tz_convert to convert.");
+      // Strip the zone: naive values keep the source zone's wall clock.
+      const shift = zoneOffsetMinutes(sourceZone) * 60_000;
+      const values = s.valuesSnapshot().map(v => (v instanceof Date ? new Date(v.getTime() + shift) : v) as CellValue);
+      return new Series(values, { ...options, dtype: datetime64Name(unit, null) });
+    }
+    if (tz === null) {
+      return new Series(s.valuesSnapshot(), { ...options, dtype: datetime64Name(unit, null) });
+    }
+    const shift = zoneOffsetMinutes(tz) * 60_000;
+    const values = s.valuesSnapshot().map(v => (v instanceof Date ? new Date(v.getTime() - shift) : v) as CellValue);
+    return new Series(values, { ...options, dtype: datetime64Name(unit, tz) });
   }
 
-export function tz_convert(_s: SeriesHost, _tz: string): Series<CellValue> {
-    return _s.copy() as Series<CellValue>;
+/**
+   * pandas `Series.dt.tz_convert`: the stored UTC instant is fixed — only
+   * the zone label changes (`datetime64[<unit>, <tz>]`). `tz === null`
+   * drops the zone, yielding naive values at the UTC instant reading.
+   */
+export function tz_convert(s: SeriesHost, tz: string | null): Series<CellValue> {
+    const dtype = s.dtypeSnapshot() ?? "object";
+    if (!isDatetimeDType(dtype)) {
+      throw new TypeError(`tz_convert requires a datetime dtype, got '${dtype}'.`);
+    }
+    if (dtypeZone(dtype) === null) {
+      throw new TypeError("Cannot convert tz-naive timestamps, use tz_localize to localize.");
+    }
+    if (tz !== null) zoneOffsetMinutes(tz); // validate the target zone
+    return new Series(s.valuesSnapshot(), {
+      index: [...s.labelsSnapshot()],
+      name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
+      dtype: datetime64Name(dtypeUnit(dtype), tz),
+    });
   }
 
 export function seriesFromArrow(records: Record<string, CellValue>[]): DataFrame {
@@ -656,7 +704,7 @@ export function to_clipboard(s: SeriesHost, sep = "\t"): string {
   }
 
 export function to_hdf(s: SeriesHost, ): Buffer {
-    return Buffer.from(JSON.stringify({ values: s.valuesSnapshot(), index: s.labelsSnapshot() }), "utf8");
+    return Buffer.from(JSON.stringify({ values: s.valuesSnapshot(), index: s.labelsSnapshot() }, jsonBigintReplacer), "utf8");
   }
 
 export function to_pickle(s: SeriesHost, ): Buffer {
@@ -666,7 +714,7 @@ export function to_pickle(s: SeriesHost, ): Buffer {
 export function to_sql(s: SeriesHost, tableName: string): string {
     const name = s.nameSnapshot() ?? "value";
     return s.valuesSnapshot()
-      .map((v) => `INSERT INTO ${tableName} (${name}) VALUES (${JSON.stringify(v ?? null)});`)
+      .map((v) => `INSERT INTO ${tableName} (${name}) VALUES (${typeof v === "bigint" ? v.toString() : JSON.stringify(v ?? null)});`)
       .join("\n");
   }
 

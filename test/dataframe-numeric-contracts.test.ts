@@ -26,7 +26,8 @@ describe("DataFrame numeric contracts", () => {
       expect(frame[method](2).get("x").to_list()).toEqual([...expected, NaN, NaN, NaN]);
       const right = new DataFrame({ x: [2, 2, 2, 2, 2] });
       expect(frame[method](right).get("x").to_list()).toEqual([...expected, NaN, NaN, NaN]);
-      expect(() => frame[method](new DataFrame({ x: [1] }))).toThrow("identical shape");
+      // pandas aligns on the union of index labels rather than requiring identical shape.
+      expect(frame[method](new DataFrame({ x: [1] })).index).toEqual([0, 1, 2, 3, 4]);
     });
   }
 

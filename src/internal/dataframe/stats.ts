@@ -3,6 +3,7 @@
 // columnar paths can reuse them without touching class internals.
 import type { CellValue, IndexLabel, Row } from "../../types";
 import { isMissing, isNumber, median, numericValues, std, variance } from "../../utils";
+import { bigintOperand } from "../shared/valueSemantics";
 
 export function reduceNumericColumns(
   columns: string[],
@@ -16,12 +17,37 @@ export function reduceNumericColumns(
   return out;
 }
 
-export function columnSum(columns: string[], rows: Row[]): Record<string, number | null> {
-  return reduceNumericColumns(
-    columns,
-    rows,
-    (values) => (values.length > 0 ? values.reduce((acc, value) => acc + value, 0) : null)
-  );
+/**
+ * All non-missing cells as exact bigints, or null when any is not integer —
+ * or when no bigint cell exists at all: plain number columns keep
+ * number-valued reductions.
+ */
+function exactIntValues(cells: CellValue[]): bigint[] | null {
+  const out: bigint[] = [];
+  let sawBigint = false;
+  for (const value of cells) {
+    if (isMissing(value)) continue;
+    const wide = bigintOperand(value);
+    if (wide === null) return null;
+    if (typeof value === "bigint") sawBigint = true;
+    out.push(wide);
+  }
+  return sawBigint ? out : null;
+}
+
+export function columnSum(columns: string[], rows: Row[]): Record<string, number | bigint | null> {
+  const out: Record<string, number | bigint | null> = {};
+  for (const column of columns) {
+    const cells = rows.map((row) => row[column]);
+    const wide = exactIntValues(cells);
+    if (wide !== null) {
+      out[column] = wide.length > 0 ? wide.reduce((acc, value) => acc + value, 0n) : null;
+      continue;
+    }
+    const values = numericValues(cells);
+    out[column] = values.length > 0 ? values.reduce((acc, value) => acc + value, 0) : null;
+  }
+  return out;
 }
 
 export function columnMean(columns: string[], rows: Row[]): Record<string, number | null> {
@@ -45,22 +71,46 @@ export function columnVariance(columns: string[], rows: Row[]): Record<string, n
   return reduceNumericColumns(columns, rows, variance);
 }
 
-export function columnMin(columns: string[], rows: Row[]): Record<string, number | null> {
-  return reduceNumericColumns(columns, rows, (values) =>
-    values.length > 0 ? Math.min(...values) : null
-  );
-}
-
-export function columnMax(columns: string[], rows: Row[]): Record<string, number | null> {
-  return reduceNumericColumns(columns, rows, (values) =>
-    values.length > 0 ? Math.max(...values) : null
-  );
-}
-
-export function columnProd(columns: string[], rows: Row[]): Record<string, number | null> {
-  const out: Record<string, number | null> = {};
+export function columnMin(columns: string[], rows: Row[]): Record<string, number | bigint | null> {
+  const out: Record<string, number | bigint | null> = {};
   for (const column of columns) {
-    const values = numericValues(rows.map((row) => row[column]));
+    let best: number | bigint | null = null;
+    for (const row of rows) {
+      const value = row[column];
+      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint") ||
+          (typeof value === "number" && !Number.isFinite(value))) continue;
+      if (best === null || value < best) best = value;
+    }
+    out[column] = best;
+  }
+  return out;
+}
+
+export function columnMax(columns: string[], rows: Row[]): Record<string, number | bigint | null> {
+  const out: Record<string, number | bigint | null> = {};
+  for (const column of columns) {
+    let best: number | bigint | null = null;
+    for (const row of rows) {
+      const value = row[column];
+      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint") ||
+          (typeof value === "number" && !Number.isFinite(value))) continue;
+      if (best === null || value > best) best = value;
+    }
+    out[column] = best;
+  }
+  return out;
+}
+
+export function columnProd(columns: string[], rows: Row[]): Record<string, number | bigint | null> {
+  const out: Record<string, number | bigint | null> = {};
+  for (const column of columns) {
+    const cells = rows.map((row) => row[column]);
+    const wide = exactIntValues(cells);
+    if (wide !== null) {
+      out[column] = wide.length > 0 ? wide.reduce((acc, value) => acc * value, 1n) : null;
+      continue;
+    }
+    const values = numericValues(cells);
     out[column] = values.length > 0 ? values.reduce((acc, value) => acc * value, 1) : null;
   }
   return out;
@@ -102,7 +152,7 @@ export function pairwiseNumericMatrix(
   fn: (a: number[], b: number[]) => number
 ): { rows: Row[]; columns: string[]; index: IndexLabel[] } {
   const numericCols = columns.filter((column) =>
-    rows.some((row) => typeof row[column] === "number")
+    rows.some((row) => typeof row[column] === "number" || typeof row[column] === "bigint")
   );
   const outRows: Row[] = numericCols.map(() => ({}));
   for (let c = 0; c < numericCols.length; c += 1) {
@@ -153,7 +203,7 @@ export function describeStatRows(
   rows: Row[]
 ): { rows: Row[]; numericColumns: string[] } {
   const numericColumns = columns.filter((column) =>
-    rows.some((row) => isNumber(row[column]))
+    rows.some((row) => isNumber(row[column]) || typeof row[column] === "bigint")
   );
   const stats = ["count", "mean", "std", "min", "max"];
   const outRows: Row[] = stats.map((statName) => ({ stat: statName }));
@@ -180,11 +230,12 @@ export function columnIdx(
 ): Record<string, IndexLabel | null> {
   const out: Record<string, IndexLabel | null> = {};
   for (const column of columns) {
-    let best: number | null = null;
+    let best: number | bigint | null = null;
     let bestLabel: IndexLabel | null = null;
     rows.forEach((row, i) => {
       const value = row[column];
-      if (typeof value !== "number" || !Number.isFinite(value)) return;
+      if ((typeof value !== "number" && typeof value !== "bigint") ||
+          (typeof value === "number" && !Number.isFinite(value))) return;
       if (best === null || (mode === "max" ? value > best : value < best)) {
         best = value;
         bestLabel = index[i]!;

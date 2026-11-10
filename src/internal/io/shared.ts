@@ -32,9 +32,9 @@ export function normalizeExternalCell(value: unknown): CellValue {
     return value;
   }
 
+  // bigint is a first-class CellValue (int64 storage); keep it exact.
   if (typeof value === "bigint") {
-    const asNumber = Number(value);
-    return Number.isSafeInteger(asNumber) ? asNumber : value.toString();
+    return value;
   }
 
   return JSON.stringify(value);

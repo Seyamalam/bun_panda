@@ -1,4 +1,5 @@
-import { NA, isMissingScalar } from "./missing";
+import { NA, NaT, isMissingScalar } from "./missing";
+import { dtypeZone, isDatetime64DType, isDatetimeAwareDType, zoneOffsetMinutes } from "./internal/shared/timezone";
 import type { CellValue, DType } from "./types";
 
 const integerPattern = /^(U?Int|u?int)(8|16|32|64)$/;
@@ -9,7 +10,7 @@ const supported = new Set<string>([
 ]);
 
 export function assertDType(dtype: string): asserts dtype is DType {
-  if (!supported.has(dtype)) throw new TypeError(`data type '${dtype}' not understood`);
+  if (!supported.has(dtype) && !isDatetime64DType(dtype)) throw new TypeError(`data type '${dtype}' not understood`);
 }
 
 function pythonString(value: CellValue): string {
@@ -22,6 +23,7 @@ function pythonString(value: CellValue): string {
 
 function asNumber(value: CellValue): number {
   if (typeof value === "number") return value;
+  if (typeof value === "bigint") return Number(value);
   if (typeof value === "boolean") return Number(value);
   if (typeof value !== "string" || value.trim() === "") throw new TypeError(`Cannot convert ${String(value)} to a number`);
   const normalized = value.trim().toLowerCase();
@@ -35,6 +37,17 @@ function asNumber(value: CellValue): number {
 /** Cast a complete column so dtype metadata and scalar representations agree. */
 export function castColumn(values: readonly CellValue[], dtype: DType, sourceDType?: string): CellValue[] {
   assertDType(dtype);
+  const zone = dtypeZone(dtype);
+  if (zone !== null) zoneOffsetMinutes(zone); // fail fast on unknown zones in aware dtypes
+  const integer = integerPattern.exec(dtype);
+  // Exact 64-bit storage: a 64-bit integer column stores every non-missing
+  // value as bigint once any input needs it (a bigint cell or an integer
+  // outside the safe range). All-safe columns keep plain numbers.
+  const bigint64 = integer !== null && integer[2] === "64" && values.some(value =>
+    !isMissingScalar(value) && (
+      typeof value === "bigint" ||
+      (typeof value === "number" && Number.isInteger(value) && !Number.isSafeInteger(value)) ||
+      (typeof value === "string" && /^[+-]?\d+$/.test(value.trim()) && !Number.isSafeInteger(Number(value)))));
   return values.map(value => {
     if (dtype === "object") return value;
     // Compatibility aliases retained for existing bun_panda callers.
@@ -59,6 +72,14 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
       if (value === 0 || value === 1) return Boolean(value);
       throw new TypeError("Need to pass bool-like values");
     }
+    // pandas datetime64: cells hold UTC instants (Date); missing is NaT.
+    if (isDatetime64DType(dtype)) {
+      if (isMissingScalar(value)) return NaT;
+      const parsed = value instanceof Date
+        ? value
+        : typeof value === "number" ? new Date(value) : new Date(String(value));
+      return Number.isNaN(parsed.getTime()) ? NaT : parsed;
+    }
     const nullable = dtype[0] === dtype[0]!.toUpperCase();
     if (isMissingScalar(value)) {
       if (nullable) return NA;
@@ -68,7 +89,6 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
       }
       throw new TypeError("Cannot convert non-finite values (NA or inf) to integer");
     }
-    const integer = integerPattern.exec(dtype);
     if (!integer) {
       const number = asNumber(value);
       return dtype.endsWith("32") ? Math.fround(number) : number;
@@ -76,11 +96,31 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
     if (typeof value === "string" && !/^[+-]?\d+$/.test(value.trim())) {
       throw new TypeError(`invalid literal for int() with base 10: '${value}'`);
     }
+    if (bigint64) {
+      // bigint inputs and string literals convert exactly; numbers arrive
+      // through asNumber and are stored via their exact double value.
+      let wide: bigint;
+      if (typeof value === "bigint") {
+        wide = value;
+      } else if (typeof value === "string") {
+        wide = BigInt(value.trim());
+      } else {
+        const parsed = asNumber(value);
+        if (!Number.isFinite(parsed)) throw new TypeError("Cannot convert non-finite values (NA or inf) to integer");
+        if ((nullable || sourceDType === undefined) && !Number.isInteger(parsed)) throw new TypeError(`cannot safely cast non-equivalent values to ${dtype.toLowerCase()}`);
+        wide = BigInt(Math.trunc(parsed));
+      }
+      const unsigned = dtype[0]!.toLowerCase() === "u";
+      const min = unsigned ? 0n : -(2n ** 63n);
+      const max = unsigned ? 2n ** 64n - 1n : 2n ** 63n - 1n;
+      if (wide < min || wide > max) throw new RangeError(`Integer ${wide} out of bounds for ${dtype}`);
+      return wide;
+    }
     const number = asNumber(value);
     if (!Number.isFinite(number)) throw new TypeError("Cannot convert non-finite values (NA or inf) to integer");
     if ((nullable || sourceDType === undefined) && !Number.isInteger(number)) throw new TypeError(`cannot safely cast non-equivalent values to ${dtype.toLowerCase()}`);
     const truncated = Math.trunc(number);
-    if (!Number.isSafeInteger(truncated)) throw new RangeError("Exact 64-bit integers outside JavaScript's safe range require bigint storage (not yet supported)");
+    if (!Number.isSafeInteger(truncated)) throw new RangeError(`Integer ${truncated} out of bounds for ${dtype}`);
     const bits = Number(integer[2]);
     const unsigned = dtype[0]!.toLowerCase() === "u";
     const min = unsigned ? 0 : -(2 ** (bits - 1));
@@ -99,7 +139,7 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
 /** Infer from scalar types; parsing text is exclusively an explicit cast. */
 export function convertedDType(values: readonly CellValue[], source: DType | undefined, nullable: boolean): DType {
   if (source && source !== "object" && source !== "number" && source !== "date") {
-    if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string") return source;
+    if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string" || isDatetime64DType(source)) return source;
     if (/^u?int/.test(source)) return source.replace(/^uint/, "UInt").replace(/^int/, "Int") as DType;
     if (source === "bool") return "boolean";
     if (source === "str") return "string";
@@ -113,9 +153,9 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
   if (present.every(value => typeof value === "boolean")) {
     return nullable ? "boolean" : present.length === values.length ? "bool" : "object";
   }
-  if (present.every(value => typeof value === "number")) {
+  if (present.every(value => typeof value === "number" || typeof value === "bigint")) {
     if (!nullable && values.includes(NA)) return "object";
-    const integral = present.every(value => typeof value === "number" && Number.isSafeInteger(value));
+    const integral = present.every(value => typeof value === "bigint" || (typeof value === "number" && Number.isSafeInteger(value)));
     if (nullable) return integral ? "Int64" : source === "float32" ? "Float32" : "Float64";
     return integral && present.length === values.length ? "int64" : "float64";
   }
@@ -127,30 +167,36 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
 export function replacementDType(dtype: DType | undefined, values: readonly CellValue[]): DType | undefined {
   if (!dtype || dtype === "number" || dtype === "date" || dtype === "object") return dtype;
   const present = values.filter(value => !isMissingScalar(value));
+  if (isDatetime64DType(dtype)) {
+    // Datetime64 keeps its dtype (incl. tz metadata) while replacements stay datetime-like.
+    return present.every(value => value instanceof Date) ? dtype : "object";
+  }
   if (dtype === "string" || dtype === "str") return present.every(value => typeof value === "string") ? dtype : "object";
   if (dtype === "boolean") {
     if (present.some(value => typeof value !== "boolean")) throw new TypeError("Invalid value for dtype 'boolean'");
     return dtype;
   }
   if (dtype === "bool") return present.length === values.length && present.every(value => typeof value === "boolean") ? dtype : "object";
-  const numeric = present.every(value => typeof value === "number");
+  const numeric = present.every(value => typeof value === "number" || typeof value === "bigint");
   if (/^(U?Int|Float)/.test(dtype)) {
     if (!numeric) throw new TypeError(`Invalid value for dtype '${dtype}'`);
     return dtype; // castColumn enforces exact integer/range requirements.
   }
   if (!numeric) return "object";
-  if (/^u?int/.test(dtype) && (present.length !== values.length || present.some(value => !Number.isInteger(value)))) return "float64";
+  if (/^u?int/.test(dtype) && (present.length !== values.length || present.some(value => typeof value !== "bigint" && !Number.isInteger(value)))) return "float64";
   return dtype;
 }
 
-export type DTypeSelector = DType | "integer" | "floating" | "datetime";
+export type DTypeSelector = DType | "integer" | "floating" | "datetime" | "datetimetz";
 
 function normalizedSelector(selector: DTypeSelector): string {
-  if (selector === "integer" || selector === "floating" || selector === "datetime") return selector;
+  if (selector === "integer" || selector === "floating" || selector === "datetime" || selector === "datetimetz") return selector;
   assertDType(selector);
   if (selector === "boolean") return "bool";
   if (selector === "string") return "str";
-  if (selector === "date") return "datetime";
+  if (selector === "date" || isDatetime64DType(selector)) {
+    return dtypeZone(selector) !== null ? "datetimetz" : "datetime";
+  }
   return selector.toLowerCase();
 }
 
@@ -164,6 +210,10 @@ export function dtypeSelector(include?: DTypeSelector | DTypeSelector[], exclude
     if (selector === "number") return type === "number" || /^(u?int|float)/.test(type);
     if (selector === "integer") return /^u?int/.test(type);
     if (selector === "floating") return /^float/.test(type);
+    // pandas select_dtypes(np.datetime64) matches naive datetimes only;
+    // tz-aware columns select via "datetimetz".
+    if (selector === "datetime") return type === "datetime";
+    if (selector === "datetimetz") return isDatetimeAwareDType(dtype);
     // pandas 3 includes its inferred str dtype when selecting object.
     if (selector === "object") return dtype === "object" || dtype === "str";
     return type === selector;
@@ -176,7 +226,7 @@ export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "d
   if (dtype === "number" || /^(u?int|float)/i.test(dtype)) return "number";
   if (dtype === "bool" || dtype === "boolean") return "boolean";
   if (dtype === "str" || dtype === "string") return "string";
-  if (dtype === "date") return "datetime";
+  if (dtype === "date" || isDatetime64DType(dtype)) return "datetime";
   return dtype === "unknown" ? "unknown" : "mixed";
 }
 
@@ -188,10 +238,13 @@ export function updatedDType(dtype: DType, incoming: DType, values: readonly Cel
     if (present.some(value => typeof value !== "string")) invalid();
   } else if (dtype === "bool") {
     if (present.some(value => typeof value !== "boolean")) invalid();
+  } else if (isDatetime64DType(dtype)) {
+    // pandas datetime64 update validation: present values must stay datetime-like.
+    if (present.some(value => !(value instanceof Date))) invalid();
   } else if (/^(u?int|float)/.test(dtype)) {
-    if (present.some(value => typeof value !== "number")) invalid();
+    if (present.some(value => typeof value !== "number" && typeof value !== "bigint")) invalid();
     if (/^u?int/.test(dtype)) {
-      if (present.some(value => !Number.isInteger(value))) invalid();
+      if (present.some(value => typeof value !== "bigint" && !Number.isInteger(value))) invalid();
       const bits = Number(dtype.match(/\d+/)![0]);
       const unsigned = dtype.startsWith("u");
       const min = unsigned ? 0 : -(2 ** (bits - 1));
@@ -267,9 +320,18 @@ export function floordivResultDType(left: DType, right: DType): DType | undefine
  * integer scalars never upcast the array's width (int16+2 -> int16,
  * float32+2.5 -> float32), but a float scalar widens integer arrays.
  */
-export function scalarOperandDType(column: DType, scalar: number, narrowBool = false): DType {
+export function scalarOperandDType(column: DType, scalar: number | bigint, narrowBool = false): DType {
   const numeric = /^(u?int|float|U?Int|Float)|^number$|^bool$|^boolean$/.test(column);
   if (!numeric) return "object";
+  // A bigint scalar behaves like a Python int of unknown width: treat the
+  // operand as int64 so results never narrow below 64 bits.
+  if (typeof scalar === "bigint") {
+    if (/^float|^Float|^number$/.test(column)) return column;
+    if (column === "boolean") return "Int64";
+    if (column === "bool") return "int64";
+    if (/^U?Int/.test(column)) return "Int64"; // bigint scalars can be negative
+    return "int64";
+  }
   if (!Number.isInteger(scalar)) {
     if (/^float|^Float|^number$/.test(column)) return column;
     return column === "boolean" ? "Float64" : "float64";

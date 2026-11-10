@@ -1,4 +1,6 @@
 import { indexLabelsEqual } from "./internal/shared/indexing";
+import { zoneOffsetMinutes } from "./internal/shared/timezone";
+import { jsonBigintReplacer } from "./internal/shared/valueSemantics";
 // Top-level pandas module surface: options registry, scalar/index types,
 // range builders, and reshape/merge wrappers.
 import { DataFrame } from "./dataframe";
@@ -84,18 +86,58 @@ export { NaT } from "./missing";
 
 export class Timestamp {
   readonly date: Date;
+  /** Zone label carried by the timestamp (pandas `.tz`); null when naive. */
+  readonly tz: string | null;
 
-  constructor(value: Date | string | number) {
+  constructor(value: Date | string | number, tz: string | null = null) {
     this.date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+    if (tz !== null) zoneOffsetMinutes(tz); // pandas raises on unknown zones at construction
+    this.tz = tz;
   }
 
   static now(): Timestamp {
     return new Timestamp(new Date());
   }
 
+  /**
+   * pandas `Timestamp.tz_localize`: a naive wall-clock reading becomes the
+   * UTC instant `wall - offset(tz)`. `tz === null` on an aware timestamp
+   * strips the zone, keeping the source zone's wall-clock reading.
+   */
+  tz_localize(tz: string | null): Timestamp {
+    if (this.tz !== null) {
+      if (tz !== null) throw new TypeError("Already tz-aware, use tz_convert to convert.");
+      return new Timestamp(this.date.getTime() + zoneOffsetMinutes(this.tz) * 60_000, null);
+    }
+    if (tz === null) return new Timestamp(this.date, null);
+    return new Timestamp(this.date.getTime() - zoneOffsetMinutes(tz) * 60_000, tz);
+  }
+
+  /**
+   * pandas `Timestamp.tz_convert`: the UTC instant is fixed; only the zone
+   * label changes. `tz === null` yields a naive timestamp at the UTC
+   * instant reading.
+   */
+  tz_convert(tz: string | null): Timestamp {
+    if (this.tz === null) {
+      throw new TypeError("Cannot convert tz-naive timestamps, use tz_localize to localize.");
+    }
+    return new Timestamp(this.date, tz);
+  }
+
+  /**
+   * Local wall-clock reading: a pseudo-Date positioned at instant+offset
+   * so UTC getters expose the zone's calendar fields (display helper; not
+   * an instant).
+   */
+  wallClock(): Date {
+    const shift = this.tz === null ? 0 : zoneOffsetMinutes(this.tz) * 60_000;
+    return new Date(this.date.getTime() + shift);
+  }
+
   add(other: Timedelta | number): Timestamp {
     const ms = other instanceof Timedelta ? other.ms : other;
-    return new Timestamp(this.date.getTime() + ms);
+    return new Timestamp(this.date.getTime() + ms, this.tz);
   }
 
   sub(other: Timedelta | number | Timestamp): Timestamp | Timedelta {
@@ -103,7 +145,7 @@ export class Timestamp {
       return new Timedelta(this.date.getTime() - other.date.getTime());
     }
     const ms = other instanceof Timedelta ? other.ms : other;
-    return new Timestamp(this.date.getTime() - ms);
+    return new Timestamp(this.date.getTime() - ms, this.tz);
   }
 
   valueOf(): number {
@@ -111,7 +153,15 @@ export class Timestamp {
   }
 
   toString(): string {
-    return this.date.toISOString();
+    if (this.tz === null) {
+      return this.date.toISOString();
+    }
+    const offset = zoneOffsetMinutes(this.tz);
+    const sign = offset < 0 ? "-" : "+";
+    const abs = Math.abs(offset);
+    const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+    const mm = String(abs % 60).padStart(2, "0");
+    return `${this.wallClock().toISOString().slice(0, 19).replace("T", " ")}${sign}${hh}:${mm}`;
   }
 }
 
@@ -221,16 +271,59 @@ export class MultiIndex {
 }
 
 export class DatetimeIndex extends Index {
-  constructor(values: (Date | Timestamp | string | number)[]) {
+  /** Zone label carried by the index (pandas `.tz`); null when naive. */
+  readonly tz: string | null;
+
+  constructor(values: (Date | Timestamp | string | number)[], tz: string | null = null) {
     super(
       values.map((v) =>
         v instanceof Timestamp ? v.date : v instanceof Date ? v : new Date(v)
       ) as unknown as IndexLabel[]
     );
+    if (tz !== null) zoneOffsetMinutes(tz); // pandas raises on unknown zones at construction
+    this.tz = tz;
   }
 
   get as_i8(): number[] {
     return (this.labels as unknown as Date[]).map((d) => d.getTime());
+  }
+
+  /**
+   * pandas `DatetimeIndex.tz_localize`: naive wall-clock readings become
+   * UTC instants (`wall - offset`); `tz === null` on an aware index
+   * strips the zone, keeping the source zone's wall clock.
+   */
+  tz_localize(tz: string | null): DatetimeIndex {
+    if (this.tz !== null) {
+      if (tz !== null) throw new TypeError("Already tz-aware, use tz_convert to convert.");
+      const shift = zoneOffsetMinutes(this.tz) * 60_000;
+      return new DatetimeIndex(this.as_i8.map((ms) => new Date(ms + shift)), null);
+    }
+    if (tz === null) return new DatetimeIndex(this.labels as unknown as Date[], null);
+    const shift = zoneOffsetMinutes(tz) * 60_000;
+    return new DatetimeIndex(this.as_i8.map((ms) => new Date(ms - shift)), tz);
+  }
+
+  /**
+   * pandas `DatetimeIndex.tz_convert`: stored UTC instants are fixed; only
+   * the zone label changes. `tz === null` yields a naive index at the UTC
+   * instant reading.
+   */
+  tz_convert(tz: string | null): DatetimeIndex {
+    if (this.tz === null) {
+      throw new TypeError("Cannot convert tz-naive timestamps, use tz_localize to localize.");
+    }
+    return new DatetimeIndex(this.labels as unknown as Date[], tz);
+  }
+
+  /**
+   * Local wall-clock readings: pseudo-Dates positioned at instant+offset
+   * so UTC getters expose the zone's calendar fields (display helper; the
+   * stored labels remain the UTC instants).
+   */
+  wallClock(): Date[] {
+    const shift = this.tz === null ? 0 : zoneOffsetMinutes(this.tz) * 60_000;
+    return this.as_i8.map((ms) => new Date(ms + shift));
   }
 }
 
@@ -513,7 +606,7 @@ export function align(
 export const array = {
   /** Serialise a flat value array to JSON text. */
   to_json(values: CellValue[]): string {
-    return JSON.stringify(values);
+    return JSON.stringify(values, jsonBigintReplacer);
   },
   /** Parse JSON text produced by {@link array.to_json} back into values. */
   from_json(text: string): CellValue[] {

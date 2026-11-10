@@ -1,5 +1,6 @@
-import { compareIndexLabels, indexLabelEquals } from "./internal/shared/indexing";
-import { scalarEquals } from "./internal/shared/valueSemantics";
+import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelKey, indexLabelsEqual, unionIndexLabels } from "./internal/shared/indexing";
+import { NA } from "./missing";
+import { scalarEquals, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv, jsonBigintReplacer } from "./internal/shared/valueSemantics";
 import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType } from "./dtypes";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
@@ -32,11 +33,6 @@ import {
   wasmFilterPositions as computeWasmFilterPositions,
   wasmSortPositions as computeWasmSortPositions,
 } from "./internal/dataframe/selection";
-import {
-  assertSameShape,
-  elementwiseBinaryOp,
-  elementwiseCompareOp,
-} from "./internal/dataframe/arith";
 import { performJoin } from "./internal/dataframe/join";
 import {
   diffRows,
@@ -890,155 +886,388 @@ export class DataFrame {
 
   // ---- element-wise arithmetic (numeric columns; nulls propagate) ----
 
+  /**
+   * Element-wise numeric op. Frame operands align on the union of both
+   * indexes and columns like pandas (missing cells propagate); scalars
+   * broadcast. Result dtypes follow pandas promotion rules per column,
+   * including float64 widening where union alignment introduces gaps.
+   */
   private binaryOp(
-    other: number | DataFrame,
+    other: number | bigint | DataFrame,
     fn: (a: number, b: number) => number,
     division = false,
-    floorIntZero = false,
     boolArithmetic = false,
     floordivDtype = false,
-    narrowBool = false
+    narrowBool = false,
+    stringOp: "error" | "concat" | "repeat" = "error",
+    powExponent: "left" | "right" | null = null,
+    boolSub = false,
+    bigintFn?: (a: bigint, b: bigint) => bigint | null
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
+    const scalar = otherFrame ? null : (other as number | bigint);
+    let index: IndexLabel[];
+    let leftPos: number[];
+    let rightPos: number[];
     if (otherFrame) {
-      assertSameShape(this._rows, this._columns, otherFrame._rows, otherFrame._columns);
+      if (indexLabelsEqual(this._index, otherFrame._index)) {
+        index = [...this._index];
+        leftPos = this._index.map((_, i) => i);
+        rightPos = leftPos;
+      } else {
+        const aligned = alignedPositions(this._index, otherFrame._index, compareIndexLabels);
+        index = aligned.index;
+        leftPos = aligned.leftPos;
+        rightPos = aligned.rightPos;
+      }
+    } else {
+      index = [...this._index];
+      leftPos = this._index.map((_, i) => i);
+      rightPos = [];
     }
-    const rows = elementwiseBinaryOp(
-      this._rows,
-      this._columns,
-      otherFrame?._rows ?? null,
-      otherFrame?._columns ?? null,
-      otherFrame ? null : (other as number),
-      fn
-    );
+    const leftSet = new Set(this._columns);
+    const rightSet = new Set(otherFrame?._columns ?? []);
+    const columns = otherFrame
+      ? [...this._columns, ...otherFrame._columns.filter(column => !leftSet.has(column))]
+      : [...this._columns];
+    const anyShared = this._columns.some(column => rightSet.has(column));
+    const leftGap = leftPos.some(position => position < 0);
+    const rightGap = rightPos.some(position => position < 0);
+    // A plain-int column that gains missing cells through union alignment is
+    // reindexed to float64 by pandas before the op runs.
+    const widenOnGap = (dtype: DType, gap: boolean): DType =>
+      gap && /^(u?int|bool)/.test(dtype) ? "float64" : dtype;
+    const isStrDType = (dtype: DType | undefined) => /^(str|string)$/.test(dtype ?? "");
+    const isIntFamily = (dtype: DType) => /^(u?int|U?Int|bool|boolean)/.test(dtype);
+    const rows: Row[] = index.map(() => ({}));
     const declared: Partial<Record<string, DType>> = {};
-    this._columns.forEach((column, i) => {
-      const right = otherFrame
-        ? otherFrame._dtypes[otherFrame._columns[i]!] ?? "object"
-        : scalarOperandDType(this._dtypes[column] ?? "object", other as number, narrowBool);
-      let dtype = floordivDtype
-        ? floordivResultDType(this._dtypes[column] ?? "object", right)
-        : arithResultDType(this._dtypes[column] ?? "object", right, division, boolArithmetic);
-      // pandas int floordiv keeps the int dtype and emits 0 on a zero divisor;
-      // other int ops widen to float64 on non-integer results.
-      if (dtype !== undefined && /^u?int|^bool/.test(dtype)) {
-        for (const row of rows) {
-          const value = row[column];
-          if (typeof value === "number" && !Number.isFinite(value)) {
-            row[column] = floorIntZero ? 0 : value;
+    for (const column of columns) {
+      const inLeft = leftSet.has(column);
+      const inRight = otherFrame ? rightSet.has(column) : true;
+      const leftD: DType = inLeft ? this._dtypes[column] ?? "object" : "float64";
+      const rightD: DType = otherFrame
+        ? (inRight ? otherFrame._dtypes[column] ?? "object" : "float64")
+        : scalarOperandDType(leftD, scalar!, narrowBool);
+      if (boolSub && leftD === "bool" && rightD === "bool") {
+        throw new TypeError("numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.");
+      }
+      let values: (CellValue | null)[] = new Array(index.length).fill(null);
+      for (let r = 0; r < index.length; r += 1) {
+        const aGap = !inLeft || leftPos[r]! < 0;
+        const bGap = otherFrame ? !inRight || rightPos[r]! < 0 : false;
+        let a: CellValue | null = aGap ? null : this._rows[leftPos[r]!]![column] ?? null;
+        let b: CellValue | null | number | bigint = otherFrame
+          ? (bGap ? null : otherFrame._rows[rightPos[r]!]![column] ?? null)
+          : scalar;
+        // Object columns treat non-finite cells as missing like pandas'
+        // NaN coercion of object data.
+        const aMiss = isMissing(a) || (leftD === "object" && typeof a === "number" && !Number.isFinite(a));
+        const bMiss = isMissing(b) || (rightD === "object" && typeof b === "number" && !Number.isFinite(b));
+        if (aMiss || bMiss) {
+          // pandas materializes a structurally absent operand (unshared
+          // label) as NaN and still evaluates the kernel — 1**NaN = 1 is
+          // not missing. Genuine missing cells keep propagating, and
+          // string columns stay missing rather than erroring on NaN.
+          if (stringOp !== "error" || isStrDType(leftD) || isStrDType(rightD)) continue;
+          if (aGap) a = NaN;
+          if (bGap) b = NaN;
+          if ((aMiss && !aGap) || (bMiss && !bGap)) continue;
+        }
+        const aStr = typeof a === "string";
+        const bStr = typeof b === "string";
+        // String kernels/errors apply to str-dtyped columns; stray strings
+        // inside object columns simply miss, like pandas' NaN coercion.
+        if ((aStr || bStr) && (isStrDType(leftD) || isStrDType(rightD))) {
+          if (aStr && bStr && stringOp === "concat") {
+            values[r] = (a as string) + (b as string);
+            continue;
+          }
+          const repeat = (text: string, count: number) => count <= 0 ? "" : text.repeat(count);
+          if (aStr && stringOp === "repeat" && typeof b === "number" && Number.isInteger(b)) {
+            values[r] = repeat(a as string, b);
+            continue;
+          }
+          if (bStr && stringOp === "repeat" && typeof a === "number" && Number.isInteger(a)) {
+            values[r] = repeat(b as string, a);
+            continue;
+          }
+          throw new TypeError(
+            `unsupported operand type(s) for frame arithmetic: ${pythonOperandTypeName(a)} and ${pythonOperandTypeName(b)}`
+          );
+        }
+        // Integer-preserving ops run in bigint when either operand already
+        // is one (64-bit ints stay exact); a null result or zero divisor
+        // falls back to the number kernel, mirroring pandas' NaN widening.
+        if (bigintFn && (typeof a === "bigint" || typeof b === "bigint")) {
+          const wa = bigintOperand(a);
+          const wb = bigintOperand(b);
+          if (wa !== null && wb !== null) {
+            let wide: bigint | null = null;
+            try { wide = bigintFn(wa, wb); } catch { wide = null; }
+            if (wide !== null) {
+              values[r] = wide;
+              continue;
+            }
           }
         }
-      }
-      if (dtype !== undefined && /^(u?int)/.test(dtype) &&
-          rows.some(row => typeof row[column] === "number" && !Number.isInteger(row[column] as number))) {
-        dtype = "float64";
-      }
-      // pandas object columns store NaN (not missing) for failed elements.
-      if (dtype === "object") {
-        for (const row of rows) {
-          if (row[column] === null) row[column] = NaN;
+        if ((typeof a !== "number" && typeof a !== "boolean" && typeof a !== "bigint") ||
+            (typeof b !== "number" && typeof b !== "boolean" && typeof b !== "bigint")) {
+          continue;
         }
+        const av = Number(a);
+        const bv = Number(b);
+        const exponent = powExponent === "left" ? av : bv;
+        if (powExponent !== null && isIntFamily(leftD) && isIntFamily(rightD) &&
+            Number.isInteger(exponent) && exponent < 0) {
+          throw new ValueError("Integers to negative integer powers are not allowed.");
+        }
+        values[r] = fn(av, bv);
       }
+      let dtype: DType | undefined;
+      if (inLeft && inRight) {
+        const effL = widenOnGap(leftD, leftGap);
+        const effR = widenOnGap(rightD, rightGap);
+        dtype = floordivDtype
+          ? floordivResultDType(effL, effR)
+          : arithResultDType(effL, effR, division, boolArithmetic);
+      } else {
+        // pandas materializes the missing side as float64 NaN; unshared
+        // columns in partially overlapping frames collapse to float64,
+        // while pow (like fully disjoint frames) promotes against it.
+        const ownerD = widenOnGap(inLeft ? leftD : rightD, inLeft ? leftGap : rightGap);
+        dtype = anyShared && powExponent === null
+          ? "float64"
+          : (floordivDtype ? floordivResultDType(ownerD, "float64") : arithResultDType(ownerD, "float64", division, boolArithmetic)) ?? "float64";
+      }
+      if ((dtype === undefined || isStrDType(leftD) || isStrDType(rightD)) &&
+          values.some(value => typeof value === "string")) {
+        dtype = isStrDType(leftD) ? leftD : isStrDType(rightD) ? rightD : "string";
+      }
+      if (dtype !== undefined && (/^U?Int/.test(dtype) || dtype === "boolean")) {
+        // pandas nullable int frames keep the dtype and emit 0 on a zero
+        // divisor; genuine fractions still widen to Float64.
+        values = values.map(value => typeof value === "number" && !Number.isFinite(value) ? 0 : value);
+        if (values.some(value => typeof value === "number" && !Number.isInteger(value))) dtype = "Float64";
+      } else if (dtype !== undefined && (/^u?int/.test(dtype) || dtype === "bool")) {
+        if (values.some(value => typeof value === "number" && (!Number.isFinite(value) || !Number.isInteger(value)))) dtype = "float64";
+      }
+      // pandas floordiv on a float-family left computes through float64 and
+      // widens when non-integral results appear (Float32 // int -> Float64).
+      if (floordivDtype && dtype !== undefined && /^[fF]loat|^number$/.test(widenOnGap(leftD, leftGap)) &&
+          values.some(value => typeof value === "number" && !Number.isInteger(value))) {
+        dtype = /^F/.test(dtype) ? "Float64" : "float64";
+      }
+      // numpy narrow-int frame arithmetic wraps on overflow (uint8 - 2 -> 255).
+      if (dtype !== undefined && /^u?int(8|16|32)$/.test(dtype)) {
+        const bits = Number(dtype.match(/\d+$/)![0]);
+        const modulus = 2 ** bits;
+        const signed = dtype[0] !== "u";
+        values = values.map(value => {
+          if (typeof value === "bigint") {
+            const big = BigInt(modulus);
+            const wrapped = ((value % big) + big) % big;
+            return Number(signed && wrapped >= big / 2n ? wrapped - big : wrapped);
+          }
+          if (typeof value !== "number" || !Number.isFinite(value)) return value;
+          const wrapped = ((Math.trunc(value) % modulus) + modulus) % modulus;
+          return signed && wrapped >= modulus / 2 ? wrapped - modulus : wrapped;
+        });
+      }
+      if (dtype === "bool" || dtype === "boolean") {
+        values = values.map(value => typeof value === "number" ? value !== 0 : value);
+      }
+      const out = (dtype === "Float32" || dtype === "float32")
+        ? values.map(value => typeof value === "number" && Number.isFinite(value) ? Math.fround(value) : value)
+        : dtype === "object"
+          ? values.map(value => value === null ? NaN : value)
+          : values;
+      for (let r = 0; r < index.length; r += 1) rows[r]![column] = out[r] ?? null;
       if (dtype) declared[column] = dtype;
-    });
-    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, declared);
+    }
+    return DataFrame.createInternal(rows, columns, index, {}, declared,
+      otherFrame && this._indexName !== otherFrame._indexName ? undefined : this._indexName);
   }
 
-  add(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a + b, false, false, true);
+  add(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a + b, false, true, false, false, "concat", null, false, (a, b) => a + b);
   }
 
-  sub(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a - b);
+  sub(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a - b, false, false, false, false, "error", null, true, (a, b) => a - b);
   }
 
-  rsub(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b - a);
+  rsub(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b - a, false, false, false, false, "error", null, true, (a, b) => b - a);
   }
 
-  mul(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a * b, false, false, true);
+  mul(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a * b, false, true, false, false, "repeat", null, false, (a, b) => a * b);
   }
 
-  div(other: number | DataFrame): DataFrame {
+  div(other: number | bigint | DataFrame): DataFrame {
     return this.binaryOp(other, (a, b) => a / b, true);
   }
 
-  truediv(other: number | DataFrame): DataFrame {
+  truediv(other: number | bigint | DataFrame): DataFrame {
     return this.div(other);
   }
 
-  mod(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a % b, false, true);
+  mod(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => a % b, false, false, false, false, "error", null, false,
+      (a, b) => bigintMod(a, b));
   }
 
-  pow(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => a ** b, false, false, false, false, true);
+  pow(other: number | bigint | DataFrame): DataFrame {
+    // JS `**` yields NaN for any NaN operand; IEEE pow(1, NaN) = pow(x, 0) = 1.
+    const kernel = (a: number, b: number) => a === 1 || b === 0 ? 1 : a ** b;
+    return this.binaryOp(other, kernel, false, false, false, true, "error", "right", false,
+      (a, b) => (b < 0n ? null : a ** b));
   }
 
-  floordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(a / b), false, true, false, true);
+  floordiv(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => Math.floor(a / b), false, false, true, false, "error", null, false,
+      (a, b) => bigintFloorDiv(a, b));
   }
 
-  radd(other: number | DataFrame): DataFrame {
+  radd(other: number | bigint | DataFrame): DataFrame {
     return this.add(other);
   }
 
-  rmul(other: number | DataFrame): DataFrame {
+  rmul(other: number | bigint | DataFrame): DataFrame {
     return this.mul(other);
   }
 
-  rdiv(other: number | DataFrame): DataFrame {
+  rdiv(other: number | bigint | DataFrame): DataFrame {
     return this.binaryOp(other, (a, b) => b / a, true);
   }
 
-  rpow(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b ** a);
+  rpow(other: number | bigint | DataFrame): DataFrame {
+    const kernel = (a: number, b: number) => b === 1 || a === 0 ? 1 : b ** a;
+    return this.binaryOp(other, kernel, false, false, false, false, "error", "left", false,
+      (a, b) => (a < 0n ? null : b ** a));
   }
 
-  rmod(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b % a, false, true);
+  rmod(other: number | bigint | DataFrame): DataFrame {
+    return this.binaryOp(other, (a, b) => b % a, false, false, false, false, "error", null, false,
+      (a, b) => bigintMod(b, a));
   }
 
   // ---- element-wise comparisons (boolean frames) ----
 
+  /**
+   * Element-wise comparison. Frame operands align on the union of both
+   * axes like pandas. Missing cells compare with IEEE NaN semantics on
+   * plain-dtype columns (eq -> False) and propagate NA on nullable
+   * columns, so results are `bool` or `boolean` per column.
+   */
   private compareOp(
     other: CellValue | DataFrame,
-    fn: (a: number, b: number) => boolean
+    fn: (a: CellValue, b: CellValue) => boolean,
+    ordering = false
   ): DataFrame {
     const otherFrame = other instanceof DataFrame ? other : null;
-    const rows = elementwiseCompareOp(
-      this._rows,
-      this._columns,
-      otherFrame?._rows ?? null,
-      otherFrame ? null : (other as CellValue),
-      fn
-    );
-    return this.withRows(rows, [...this._index], [...this._columns], true);
+    let index: IndexLabel[];
+    let leftPos: number[];
+    let rightPos: number[];
+    if (otherFrame) {
+      if (indexLabelsEqual(this._index, otherFrame._index)) {
+        index = [...this._index];
+        leftPos = this._index.map((_, i) => i);
+        rightPos = leftPos;
+      } else {
+        const aligned = alignedPositions(this._index, otherFrame._index, compareIndexLabels);
+        index = aligned.index;
+        leftPos = aligned.leftPos;
+        rightPos = aligned.rightPos;
+      }
+    } else {
+      index = [...this._index];
+      leftPos = this._index.map((_, i) => i);
+      rightPos = [];
+    }
+    const leftSet = new Set(this._columns);
+    const rightSet = new Set(otherFrame?._columns ?? []);
+    const columns = otherFrame
+      ? [...this._columns, ...otherFrame._columns.filter(column => !leftSet.has(column))]
+      : [...this._columns];
+    const isStrDType = (dtype: DType | undefined) => /^(str|string)$/.test(dtype ?? "");
+    const isNullableDType = (dtype: DType | undefined) =>
+      dtype !== undefined && (/^(U?Int|Float)/.test(dtype) || dtype === "boolean" || isStrDType(dtype));
+    const rows: Row[] = index.map(() => ({}));
+    const declared: Partial<Record<string, DType>> = {};
+    for (const column of columns) {
+      const inLeft = leftSet.has(column);
+      const inRight = otherFrame ? rightSet.has(column) : true;
+      const leftD = inLeft ? this._dtypes[column] : undefined;
+      const rightD = otherFrame ? (inRight ? otherFrame._dtypes[column] : undefined) : undefined;
+      const rightStr = otherFrame ? (inRight && isStrDType(rightD)) : typeof other === "string";
+      // pandas ordering comparisons between string and non-string dtypes raise.
+      if (ordering && inLeft && inRight && isStrDType(leftD) !== rightStr) {
+        throw new TypeError("unsupported operand type(s) for frame comparison");
+      }
+      const nullable = isNullableDType(leftD) || isNullableDType(rightD) ||
+        (!otherFrame && typeof other === "string");
+      declared[column] = nullable ? "boolean" : "bool";
+      // Object columns holding text propagate missing (legacy object
+      // semantics); purely numeric object columns keep pandas' IEEE
+      // false-on-missing comparisons.
+      const leftTextObject = leftD === "object" &&
+        this._rows.some(row => typeof row[column] === "string");
+      const rightTextObject = otherFrame !== null && rightD === "object" &&
+        otherFrame._rows.some(row => typeof row[column] === "string");
+      for (let r = 0; r < index.length; r += 1) {
+        const a = inLeft && leftPos[r]! >= 0 ? this._rows[leftPos[r]!]![column] : null;
+        const b = otherFrame
+          ? (inRight && rightPos[r]! >= 0 ? otherFrame._rows[rightPos[r]!]![column] : null)
+          : other;
+        // Strings inside object columns compare as missing, while real
+        // str-dtyped columns compare normally.
+        const aMiss = isMissing(a) || (typeof a === "string" && !isStrDType(leftD));
+        const bMiss = isMissing(b) ||
+          (otherFrame !== null && typeof b === "string" && !isStrDType(rightD));
+        if ((aMiss || bMiss) &&
+            (nullable || (aMiss && leftTextObject) || (bMiss && rightTextObject))) {
+          rows[r]![column] = null;
+          continue;
+        }
+        // pandas compares booleans numerically against numbers.
+        const coerce = (value: CellValue) => typeof value === "boolean" ? Number(value) : value;
+        rows[r]![column] = fn(aMiss ? NaN : coerce(a as CellValue), bMiss ? NaN : coerce(b as CellValue));
+      }
+      // bool cannot hold the nulls missing-object propagation leaves behind;
+      // object-typed results keep them (pandas emits bool when none exist).
+      if (declared[column] === "bool" && rows.some(row => row[column] === null)) {
+        declared[column] = "object";
+      }
+    }
+    return DataFrame.createInternal(rows, columns, index, {}, declared,
+      otherFrame && this._indexName !== otherFrame._indexName ? undefined : this._indexName);
   }
 
   eq(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a === b);
+    // numberOrBigintEqual keeps bigint/number comparisons exact (=== is false
+    // for equal number/bigint pairs).
+    return this.compareOp(other, (a, b) => numberOrBigintEqual(a, b));
   }
 
   ne(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a !== b);
+    return this.compareOp(other, (a, b) => !numberOrBigintEqual(a, b));
   }
 
   lt(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a < b);
+    return this.compareOp(other, (a, b) => (a as number) < (b as number), true);
   }
 
   le(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a <= b);
+    return this.compareOp(other, (a, b) => (a as number) <= (b as number), true);
   }
 
   gt(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a > b);
+    return this.compareOp(other, (a, b) => (a as number) > (b as number), true);
   }
 
   ge(other: CellValue | DataFrame): DataFrame {
-    return this.compareOp(other, (a, b) => a >= b);
+    return this.compareOp(other, (a, b) => (a as number) >= (b as number), true);
   }
 
   filter(mask: boolean[] | ((row: Row, index: IndexLabel, position: number) => boolean)): DataFrame {
@@ -1964,7 +2193,7 @@ export class DataFrame {
     return new DataFrame(rows, { columns: [columnName, ...this._columns] });
   }
 
-  sum(): Record<string, number | null> {
+  sum(): Record<string, number | bigint | null> {
     return columnSum(this._columns, this._rows);
   }
 
@@ -1984,20 +2213,20 @@ export class DataFrame {
     return columnVariance(this._columns, this._rows);
   }
 
-  min(): Record<string, number | null> {
+  min(): Record<string, number | bigint | null> {
     return columnMin(this._columns, this._rows);
   }
 
-  max(): Record<string, number | null> {
+  max(): Record<string, number | bigint | null> {
     return columnMax(this._columns, this._rows);
   }
 
   /** Product of numeric column values (pandas prod/product). */
-  prod(): Record<string, number | null> {
+  prod(): Record<string, number | bigint | null> {
     return columnProd(this._columns, this._rows);
   }
 
-  product(): Record<string, number | null> {
+  product(): Record<string, number | bigint | null> {
     return this.prod();
   }
 
@@ -2064,6 +2293,8 @@ export class DataFrame {
         const value = row[column];
         if (isNumber(value)) {
           next[column] = Math.abs(value);
+        } else if (typeof value === "bigint") {
+          next[column] = value < 0n ? -value : value;
         }
       }
       return next;
@@ -2073,11 +2304,31 @@ export class DataFrame {
 
   cumsum(columns?: string | string[]): DataFrame {
     const targets = this.resolveTargetColumns(columns);
+    // Each column accumulates in number until a bigint cell appears, then in
+    // bigint while subsequent cells stay integer-representable.
     const running = new Map<string, number>();
+    const runningWide = new Map<string, bigint | null>();
     const rows = this._rows.map((row) => {
       const next = cloneRow(row, this._columns);
       for (const column of targets) {
         const value = row[column];
+        const wide = bigintOperand(value);
+        const accWide = runningWide.get(column) ?? null;
+        if (accWide !== null && wide !== null) {
+          const total = accWide + wide;
+          runningWide.set(column, total);
+          next[column] = total;
+          continue;
+        }
+        if (accWide !== null) {
+          running.set(column, Number(accWide));
+          runningWide.set(column, null);
+        }
+        if (typeof value === "bigint") {
+          runningWide.set(column, value);
+          next[column] = value;
+          continue;
+        }
         if (!isNumber(value)) {
           next[column] = null;
           continue;
@@ -2323,7 +2574,7 @@ export class DataFrame {
   to_string(maxRows = 10): string {
     const [rowCount] = this.shape;
     const rows = this.head(maxRows).to_records();
-    const preview = rows.map((row) => JSON.stringify(row)).join("\n");
+    const preview = rows.map((row) => JSON.stringify(row, jsonBigintReplacer)).join("\n");
     const suffix = rowCount > maxRows ? `\n... (${rowCount - maxRows} more rows)` : "";
     return preview + suffix;
   }
@@ -2445,11 +2696,11 @@ export class DataFrame {
 
   // ---- additional aliases ----
   rfloordiv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => Math.floor(b / a), false, true, false, true);
+    return this.binaryOp(other, (a, b) => Math.floor(b / a), false, false, true);
   }
 
   rtruediv(other: number | DataFrame): DataFrame {
-    return this.binaryOp(other, (a, b) => b / a);
+    return this.binaryOp(other, (a, b) => b / a, true);
   }
 
   agg(spec: import("./types").AggName | Record<string, import("./types").AggName | import("./types").AggFn>): Record<string, CellValue> {
@@ -2551,7 +2802,61 @@ export class DataFrame {
       other._columns,
       other._index
     );
-    return this.withRows(result.rows, result.index, result.columns, true);
+    // Result dtypes follow pandas find_common_type per column: shared
+    // columns promote numerically (bool/object/string mixes -> object),
+    // while a column owned by one side only widens to float64 when union
+    // alignment introduces gaps it cannot hold.
+    const { leftPos, rightPos } = indexLabelsEqual(this._index, other._index)
+      ? { leftPos: this._index.map((_, i) => i), rightPos: this._index.map((_, i) => i) }
+      : alignedPositions(this._index, other._index, compareIndexLabels);
+    const leftGap = leftPos.some(position => position < 0);
+    const rightGap = rightPos.some(position => position < 0);
+    const widenOnGap = (dtype: DType, gap: boolean): DType =>
+      gap && /^(u?int|bool)/.test(dtype) ? "float64" : dtype;
+    const nonNumeric = (dtype: DType) => /^(bool|boolean|str|string|object)$/.test(dtype);
+    const commonDType = (leftD: DType, rightD: DType): DType => {
+      if (leftD === rightD) return leftD;
+      if (nonNumeric(leftD) || nonNumeric(rightD)) {
+        return /^(bool|boolean)$/.test(leftD) && /^(bool|boolean)$/.test(rightD) ? "boolean" : "object";
+      }
+      return arithResultDType(leftD, rightD, false) ?? "object";
+    };
+    const leftSet = new Set(this._columns);
+    const rightSet = new Set(other._columns);
+    const declared: Partial<Record<string, DType>> = {};
+    for (const column of result.columns) {
+      const inLeft = leftSet.has(column);
+      const inRight = rightSet.has(column);
+      const leftD = inLeft ? this._dtypes[column] ?? "object" : undefined;
+      const rightD = inRight ? other._dtypes[column] ?? "object" : undefined;
+      const dtype = leftD !== undefined && rightD !== undefined
+        ? commonDType(leftD, rightD)
+        : widenOnGap((inLeft ? leftD : rightD)!, inLeft ? leftGap : rightGap);
+      if (dtype) declared[column] = dtype;
+      // pandas object results keep NA from nullable-dtype sources.
+      if (dtype === "object" && leftD !== "object" && rightD !== "object") {
+        for (const row of result.rows) {
+          if (isMissing(row[column])) row[column] = NA;
+        }
+      }
+    }
+    // pandas combine_first produces the sorted union index; reorder the
+    // aligned rows when the combine helper emitted first-seen order.
+    let outRows = result.rows;
+    let outIndex = result.index;
+    if (!indexLabelsEqual(this._index, other._index)) {
+      const wanted = unionIndexLabels(this._index, other._index, compareIndexLabels);
+      if (wanted.length === outIndex.length) {
+        const positions = new Map(outIndex.map((label, i) => [indexLabelKey(label), i] as const));
+        if (positions.size === outIndex.length && wanted.some((label, i) => !indexLabelEquals(label, outIndex[i]!))) {
+          const order = wanted.map(label => positions.get(indexLabelKey(label))!);
+          outRows = order.map(i => result.rows[i]!);
+          outIndex = wanted;
+        }
+      }
+    }
+    return DataFrame.createInternal(outRows, result.columns, outIndex, {}, declared,
+      this._indexName === other._indexName ? this._indexName : undefined);
   }
 
   /**
@@ -2645,7 +2950,7 @@ export class DataFrame {
   /** Serializes the frame to JSON and returns it as a `Buffer`. */
   to_pickle(): Buffer {
     return Buffer.from(
-      JSON.stringify({ columns: this._columns, index: this._index, rows: this.to_records() })
+      JSON.stringify({ columns: this._columns, index: this._index, rows: this.to_records() }, jsonBigintReplacer)
     );
   }
 
@@ -2676,7 +2981,8 @@ export class DataFrame {
       rowsSnapshot: () => this._rows,
       columnsSnapshot: () => this._columns,
       labels: () => this._index,
-      indexNamesSnapshot: () => this._indexNames,
+      indexNamesSnapshot: () => this.index_names,
+      dtypesSnapshot: () => this._dtypes,
       withIndexAndNames: (index: IndexLabel[], names?: (string | undefined)[]) =>
         DataFrame.createInternal(this.to_records(), [...this._columns], index, this._dtypeHints, this._dtypes, names?.[0], names),
       withRows: (rows: Row[], index?: IndexLabel[], columns?: string[], normalized?: boolean) =>
@@ -2737,10 +3043,10 @@ export class DataFrame {
     (this as unknown as { _rows: Row[] })._rows = prepared.rows;
     Object.assign(this._dtypes, prepared.dtypes);
   }
-  tz_localize(tz: string): DataFrame {
+  tz_localize(tz: string | null): DataFrame {
     return windowApi.tz_localize(this.view(), tz);
   }
-  tz_convert(tz: string): DataFrame {
+  tz_convert(tz: string | null): DataFrame {
     return windowApi.tz_convert(this.view(), tz);
   }
   to_clipboard(sep = ","): string {

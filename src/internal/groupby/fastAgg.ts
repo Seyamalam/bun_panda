@@ -1,5 +1,6 @@
 import { DataFrame } from "../../dataframe";
 import { keyFragment, normalizeKeyCell } from "../dataframe/keys";
+import { bigintOperand } from "../shared/valueSemantics";
 import {
   wasmAggregateColumn,
   wasmAggMultiF64,
@@ -28,6 +29,7 @@ interface FastGroupState {
   keyValues: CellValue[];
   counts: number[];
   sums: number[];
+  wideSums: (bigint | null)[];
   comps: number[];
   hasAny: boolean[];
   seen: boolean[];
@@ -64,6 +66,29 @@ export function finalizeNamedAggValues(name: AggName, values: CellValue[]): Cell
     return count;
   }
   if (name === "sum" || name === "mean") {
+    if (values.some((value) => typeof value === "bigint")) {
+      // Exact accumulation: bigint cells start a bigint total; integer
+      // numbers join it; non-integer numbers demote it to float.
+      let wide: bigint | null = null;
+      let counted = 0;
+      const numbers: number[] = [];
+      for (const value of values) {
+        if (typeof value === "bigint") { wide = (wide ?? 0n) + value; counted += 1; continue; }
+        const w = bigintOperand(value);
+        if (wide !== null && w !== null) { wide += w; counted += 1; continue; }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          if (wide !== null) { numbers.push(Number(wide)); wide = null; }
+          numbers.push(value);
+          counted += 1;
+        }
+      }
+      if (wide !== null) {
+        return name === "sum" ? wide : Number(wide) / counted;
+      }
+      if (numbers.length === 0) return null;
+      const total = kahanSum(numbers);
+      return name === "sum" ? total : total / numbers.length;
+    }
     const numbers = numericValues(values);
     if (numbers.length === 0) return null;
     const total = kahanSum(numbers);
@@ -125,7 +150,25 @@ export function updateFastGroupStates(
       continue;
     }
     if (code === AGG_SUM || code === AGG_MEAN) {
+      const wide = bigintOperand(value);
+      if (typeof value === "bigint") {
+        state.wideSums[i] = (state.wideSums[i] ?? 0n) + value;
+        state.hasAny[i] = true;
+        state.counts[i]! += 1;
+        continue;
+      }
+      if (state.wideSums[i] !== null && wide !== null) {
+        state.wideSums[i] = (state.wideSums[i] ?? 0n) + wide;
+        state.hasAny[i] = true;
+        state.counts[i]! += 1;
+        continue;
+      }
       if (isNumber(value)) {
+        if (state.wideSums[i] !== null) {
+          // A non-integer value demotes the running bigint total to float.
+          state.sums[i]! += Number(state.wideSums[i]);
+          state.wideSums[i] = null;
+        }
         state.hasAny[i] = true;
         state.counts[i]! += 1;
         const y = value - state.comps[i]!;

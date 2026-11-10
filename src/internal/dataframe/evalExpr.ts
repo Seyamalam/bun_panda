@@ -87,6 +87,10 @@ function toNumber(value: CellValue): number | null {
   if (typeof value === "number") {
     return value;
   }
+  // bigint participates approximately: eval() is a float64 expression engine.
+  if (typeof value === "bigint") {
+    return Number(value);
+  }
   if (typeof value === "boolean") {
     return value ? 1 : 0;
   }

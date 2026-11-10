@@ -74,7 +74,7 @@ export function buildInsertStatements(
     .map(
       (row) =>
         `INSERT INTO ${tableName} (${columns.join(", ")}) VALUES (${columns
-          .map((c) => JSON.stringify(row[c] ?? null))
+          .map((c) => typeof row[c] === "bigint" ? (row[c] as bigint).toString() : JSON.stringify(row[c] ?? null))
           .join(", ")});`
     )
     .join("\n");

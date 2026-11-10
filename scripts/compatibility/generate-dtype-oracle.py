@@ -224,5 +224,77 @@ for li,ri in [([0,1],[1,2]),(['a','b'],['b','c']),([0,0],[0,1]),(['b','a'],['a',
         arith_cases.append(entry)
 cases.extend(arith_cases)
 print(f'added {len(arith_cases)} arithmetic/alignment contracts')
+
+def frame_spec(columns_dtypes,index=None):
+    return pd.DataFrame({c:pd.Series(list(v),dtype=d,index=index) for c,(d,v) in columns_dtypes.items()})
+def frame_entry(left,operation,right=None,scalar=None,left_index=None,right_index=None):
+    entry={'mode':'frame_arithmetic',
+           'dtypes':{c:d for c,(d,v) in left.items()},
+           'columns':{c:[encode(x) for x in v] for c,(d,v) in left.items()},
+           'operation':operation}
+    if left_index is not None: entry['index']=left_index
+    if scalar is not None:
+        entry['operand']={'scalar':scalar}
+    else:
+        operand={'dtypes':{c:d for c,(d,v) in right.items()},'columns':{c:[encode(x) for x in v] for c,(d,v) in right.items()}}
+        if right_index is not None: operand['index']=right_index
+        entry['operand']=operand
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            source=frame_spec(left,index=left_index)
+            operand=scalar if scalar is not None else frame_spec(right,index=right_index)
+            result=getattr(source,operation)(operand)
+        entry['expected']={'dtypes':{str(c):str(t) for c,t in result.dtypes.items()},
+                           'columns':result.columns.tolist(),'index':result.index.tolist(),
+                           'values':[[encode(v) for v in row] for row in result.itertuples(index=False,name=None)]}
+    except Exception as e:
+        entry['error']=type(e).__name__
+    return entry
+
+frame_arith_cases=[]
+frame_ops=['add','sub','mul','div','floordiv','mod','pow','eq','gt','ne','combine_first']
+def fvals(dtype,variant):
+    if dtype in ('bool','boolean'): return ([True,False],[True,None])[variant]
+    if dtype in ('str','string'): return (['x','y'],['x',None])[variant]
+    return ([1,2],[1,None])[variant]
+def build(columns_dtypes,variant):
+    return {c:(d,fvals(d,variant)) for c,d in columns_dtypes.items()}
+aligned_pairs=[
+  ({'a':'int16','b':'int16'},{'a':'int64','b':'int16'}),
+  ({'a':'Int16','b':'Float32'},{'a':'int64','b':'Float32'}),
+  ({'a':'bool','b':'int16'},{'a':'int16','b':'int16'}),
+  ({'a':'boolean','b':'Int16'},{'a':'Int16','b':'Int16'}),
+  ({'a':'object','b':'float64'},{'a':'int64','b':'float64'}),
+  ({'a':'uint8','b':'int32'},{'a':'int16','b':'int64'}),
+  ({'a':'string','b':'int16'},{'a':'string','b':'int16'}),
+]
+for ld,rd in aligned_pairs:
+    for variant in [0,1]:
+        left=build(ld,variant); right=build(rd,variant)
+        try: frame_spec(left); frame_spec(right)
+        except Exception: continue
+        ops=frame_ops if 'string' not in ld.values() and 'string' not in rd.values() else ['add','sub','mul','eq','gt','ne','combine_first']
+        for op in ops:
+            frame_arith_cases.append(frame_entry(left,op,right=right))
+scalar_frames=[{'a':'int16','b':'float32'},{'a':'Int16','b':'Float64'},{'a':'bool','b':'uint8'},{'a':'string','b':'object'}]
+for ld in scalar_frames:
+    for variant in [0,1]:
+        left=build(ld,variant)
+        try: frame_spec(left)
+        except Exception: continue
+        ops=['add','sub','mul','div','floordiv','mod','pow','eq','gt','ne'] if 'string' not in ld.values() else ['add','sub','mul','eq','gt']
+        for op in ops:
+            for scalar in [2,2.5]:
+                frame_arith_cases.append(frame_entry(left,op,scalar=scalar))
+misaligned=[({'a':'int64','c':'Float32'},None),({'b':'int64','a':'int16'},None),({'a':'int64','b':'int16'},[1,2]),({'a':'int64','b':'int16'},[2,0]),({'c':'int64'},[2,3]),({'b':'string'},None)]
+for right_dtypes,right_index in misaligned:
+    left={'a':('int16',[1,2]),'b':('Int16',[3,4])}
+    right={c:(d,fvals(d,0)) for c,d in right_dtypes.items()}
+    for op in frame_ops:
+        if 'string' in right_dtypes.values() and op not in ['add','sub','mul','eq','gt','ne','combine_first']: continue
+        frame_arith_cases.append(frame_entry(left,op,right=right,right_index=right_index))
+cases.extend(frame_arith_cases)
+print(f'added {len(frame_arith_cases)} frame arithmetic contracts')
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

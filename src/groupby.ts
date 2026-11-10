@@ -49,6 +49,7 @@ interface FastGroupState {
   keyValues: CellValue[];
   counts: number[];
   sums: number[];
+  wideSums: (bigint | null)[];
   comps: number[];
   hasAny: boolean[];
   seen: boolean[];
@@ -220,6 +221,7 @@ export class GroupBy {
             keyValues: [keyValue],
             counts: new Array(namedPlans.length).fill(0),
             sums: new Array(namedPlans.length).fill(0),
+            wideSums: new Array(namedPlans.length).fill(null),
             comps: new Array(namedPlans.length).fill(0),
             hasAny: new Array(namedPlans.length).fill(false),
             seen: new Array(namedPlans.length).fill(false),
@@ -245,6 +247,7 @@ export class GroupBy {
             keyValues,
             counts: new Array(namedPlans.length).fill(0),
             sums: new Array(namedPlans.length).fill(0),
+            wideSums: new Array(namedPlans.length).fill(null),
             comps: new Array(namedPlans.length).fill(0),
             hasAny: new Array(namedPlans.length).fill(false),
             seen: new Array(namedPlans.length).fill(false),
@@ -269,10 +272,14 @@ export class GroupBy {
         if (code === AGG_COUNT) {
           row[plan.column] = group.counts[i]!;
         } else if (code === AGG_SUM) {
-          row[plan.column] = group.hasAny[i] ? group.sums[i] : null;
+          row[plan.column] = group.wideSums[i] !== null
+            ? group.wideSums[i]
+            : group.hasAny[i] ? group.sums[i] : null;
         } else if (code === AGG_MEAN) {
           row[plan.column] = group.counts[i]! > 0
-            ? group.sums[i]! / group.counts[i]!
+            ? group.wideSums[i] !== null
+              ? Number(group.wideSums[i]) / group.counts[i]!
+              : group.sums[i]! / group.counts[i]!
             : null;
         } else {
           row[plan.column] = group.seen[i] ? group.best[i] : null;
@@ -1177,7 +1184,7 @@ export class GroupBy {
         return false;
       }
       for (const row of this.sourceRows) {
-        if (isNumber(row[column])) {
+        if (isNumber(row[column]) || typeof row[column] === "bigint") {
           return true;
         }
       }

@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import type { DataFrame } from "../../dataframe";
 import { escapeCsvValue } from "./core";
+import { jsonBigintReplacer } from "../shared/valueSemantics";
 import { writeExcelFrame } from "../io/excelWrite";
 import { writeParquetFrame } from "../io/parquetWrite";
 import type { ToCSVOptions, ToJSONOptions, ToParquetOptions, ToExcelOptions } from "../../dataframe";
@@ -56,9 +57,9 @@ export function normalizeToJsonOptions(
 }
 
 function buildJsonOutput(frame: DataFrame, options: ResolvedToJsonOptions): string {
-  if (!options.lines) return JSON.stringify(frame.to_dict(options.orient), null, options.space);
+  if (!options.lines) return JSON.stringify(frame.to_dict(options.orient), jsonBigintReplacer, options.space);
   if (options.orient !== "records") throw new Error("to_json with lines=true only supports orient='records'.");
-  return frame.to_records().map((record) => JSON.stringify(record)).join("\n");
+  return frame.to_records().map((record) => JSON.stringify(record, jsonBigintReplacer)).join("\n");
 }
 
 export async function dataFrameToParquet(frame: DataFrame, options: ToParquetOptions): Promise<void> {

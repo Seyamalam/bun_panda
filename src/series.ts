@@ -1,6 +1,6 @@
 import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelsEqual, reindexPositions } from "./internal/shared/indexing";
 import { arithResultDType, castColumn, convertedDType, floordivResultDType, replacementDType, scalarOperandDType } from "./dtypes";
-import { isAbsent, scalarKey, roundToEven } from "./internal/shared/valueSemantics";
+import { isAbsent, scalarKey, roundToEven, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
 import { DataFrame } from "./dataframe";
 import {
@@ -296,10 +296,10 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Index label of the maximum numeric value (pandas idxmax). */
   idxmax(): IndexLabel | null {
-    let best: number | null = null;
+    let best: number | bigint | null = null;
     let bestIndex: IndexLabel | null = null;
     this._values.forEach((value, i) => {
-      if (isMissing(value) || typeof value !== "number") return;
+      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint")) return;
       if (best === null || value > best) {
         best = value;
         bestIndex = this._index[i]!;
@@ -310,10 +310,10 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Index label of the minimum numeric value (pandas idxmin). */
   idxmin(): IndexLabel | null {
-    let best: number | null = null;
+    let best: number | bigint | null = null;
     let bestIndex: IndexLabel | null = null;
     this._values.forEach((value, i) => {
-      if (isMissing(value) || typeof value !== "number") return;
+      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint")) return;
       if (best === null || value < best) {
         best = value;
         bestIndex = this._index[i]!;
@@ -394,11 +394,15 @@ export class Series<T extends CellValue = CellValue> {
     return seriesVariance(numericValues(this._values));
   }
 
-  prod(): number | null {
+  prod(): number | bigint | null {
+    const cells = this._values.filter((value) => !isMissing(value));
+    if (cells.length > 0 && cells.every((value) => typeof value === "bigint")) {
+      return (cells as bigint[]).reduce((acc, value) => acc * value, 1n);
+    }
     return seriesProd(numericValues(this._values));
   }
 
-  product(): number | null {
+  product(): number | bigint | null {
     return this.prod();
   }
 
@@ -424,9 +428,9 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   /** True for values within [lower, upper] inclusive. */
-  between(lower: number, upper: number, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<boolean> {
+  between(lower: number | bigint, upper: number | bigint, inclusive: "both" | "neither" | "left" | "right" = "both"): Series<boolean> {
     const out = this._values.map((value): boolean | null => {
-      if (isMissing(value) || typeof value !== "number") {
+      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint")) {
         return false;
       }
       switch (inclusive) {
@@ -460,7 +464,12 @@ export class Series<T extends CellValue = CellValue> {
     return this.filter((entry) => !isMissing(entry));
   }
 
-  sum(): number | null {
+  sum(): number | bigint | null {
+    // an all-bigint column sums exactly (pandas int64 scalar semantics).
+    const cells = this._values.filter((value) => !isMissing(value));
+    if (cells.length > 0 && cells.every((value) => typeof value === "bigint")) {
+      return (cells as bigint[]).reduce((acc, value) => acc + value, 0n);
+    }
     const numbers = numericValues(this._values);
     return numbers.reduce((acc, value) => acc + value, 0);
   }
@@ -603,15 +612,16 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Applies a numeric op; missing values stay missing. Series operands align on index labels like pandas. */
   private numericOp(
-    other: number | Series<T>,
+    other: number | bigint | Series<T>,
     fn: (left: number, right: number) => number,
     name?: string,
     division = false,
     boolArithmetic = false,
     floordiv = false,
     narrowBool = false,
-    zeroDivisorError = false
-  ): Series<number> {
+    zeroDivisorError = false,
+    bigintFn?: (left: bigint, right: bigint) => bigint | null
+  ): Series<number | bigint> {
     const rightDtype0: DType = other instanceof Series ? other._dtype : "number";
     if (/^(str|string)$/.test(this._dtype) || (other instanceof Series && /^(str|string)$/.test(rightDtype0))) {
       throw new TypeError("unsupported operand type(s) for Series arithmetic");
@@ -622,10 +632,22 @@ export class Series<T extends CellValue = CellValue> {
         rightValues.some((v, i) => v === 0 && !isMissing(leftValues[i]))) {
       throw new ZeroDivisionError("integer division or modulo by zero");
     }
-    const out = leftValues.map((value, i): number | null => {
+    // Integer-preserving ops on exact bigint cells run in bigint; a null
+    // result or non-integer operand falls back to the number kernel.
+    const out = leftValues.map((value, i): number | bigint | null => {
       const right = rightValues[i];
       if (isMissing(value) || isMissing(right)) {
         return null;
+      }
+      // The bigint kernel only engages when an operand is genuinely bigint;
+      // integer number columns keep plain-number results.
+      if (bigintFn && (typeof value === "bigint" || typeof right === "bigint")) {
+        const lw = bigintOperand(value);
+        const rw = bigintOperand(right);
+        if (lw !== null && rw !== null) {
+          const wide = bigintFn(lw, rw);
+          if (wide !== null) return wide;
+        }
       }
       const left = typeof value === "number" ? value : Number(value);
       const r = typeof right === "number" ? right : Number(right);
@@ -633,7 +655,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     const rightDtype: DType = other instanceof Series
       ? other._dtype
-      : scalarOperandDType(this._dtype, other as number, narrowBool);
+      : scalarOperandDType(this._dtype, other, narrowBool);
     let dtype = floordiv
       ? floordivResultDType(this._dtype, rightDtype)
       : arithResultDType(this._dtype, rightDtype, division, boolArithmetic);
@@ -663,22 +685,22 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  add(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a + b, undefined, false, true);
+  add(other: number | bigint | Series<T>): Series<number | bigint> {
+    return this.numericOp(other, (a, b) => a + b, undefined, false, true, false, false, false, (a, b) => a + b);
   }
 
-  sub(other: number | Series<T>): Series<number> {
+  sub(other: number | bigint | Series<T>): Series<number | bigint> {
     if (this._dtype === "bool" && other instanceof Series && other._dtype === "bool") {
       throw new TypeError("numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.");
     }
-    return this.numericOp(other, (a, b) => a - b);
+    return this.numericOp(other, (a, b) => a - b, undefined, false, false, false, false, false, (a, b) => a - b);
   }
 
-  rsub(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b - a);
+  rsub(other: number | bigint | Series<T>): Series<number | bigint> {
+    return this.numericOp(other, (a, b) => b - a, undefined, false, false, false, false, false, (a, b) => b - a);
   }
 
-  mul(other: number | Series<T>): Series<number> {
+  mul(other: number | bigint | Series<T>): Series<number | bigint> {
     // pandas repeats strings by integer operands: 'a' * 2 -> 'aa'.
     if (/^(str|string)$/.test(this._dtype)) {
       const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
@@ -690,14 +712,14 @@ export class Series<T extends CellValue = CellValue> {
       });
       return new Series(out as never, { index: resultIndex, indexName: this._indexName, name: this.name, dtype: "string" });
     }
-    return this.numericOp(other, (a, b) => a * b, undefined, false, true);
+    return this.numericOp(other, (a, b) => a * b, undefined, false, true, false, false, false, (a, b) => a * b);
   }
 
-  div(other: number | Series<T>): Series<number> {
+  div(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.numericOp(other, (a, b) => a / b, undefined, true, false, false, false, true);
   }
 
-  mod(other: number | Series<T>): Series<number> {
+  mod(other: number | bigint | Series<T>): Series<number | bigint> {
     // pandas integer mod emits 0 on a zero divisor, keeping the int dtype.
     const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
       (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
@@ -705,24 +727,28 @@ export class Series<T extends CellValue = CellValue> {
         /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (b === 0 ? 0 : a % b)
-      : (a, b) => a % b, undefined, false, false, false, false, true);
+      : (a, b) => a % b, undefined, false, false, false, false, true, intOperands
+      ? (a, b) => (b === 0n ? 0n : bigintMod(a, b))
+      : (a, b) => (b === 0n ? null : bigintMod(a, b)));
   }
 
-  pow(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => a ** b, undefined, false, false, false, true);
+  pow(other: number | bigint | Series<T>): Series<number | bigint> {
+    return this.numericOp(other, (a, b) => a ** b, undefined, false, false, false, true, false,
+      // negative exponents widen to float64 through the number kernel.
+      (a, b) => (b < 0n ? null : a ** b));
   }
 
   // pandas long-form aliases
-  subtract(other: number | Series<T>): Series<number> {
+  subtract(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.sub(other);
   }
-  multiply(other: number | Series<T>): Series<number> {
+  multiply(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.mul(other);
   }
-  truediv(other: number | Series<T>): Series<number> {
+  truediv(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.div(other);
   }
-  floordiv(other: number | Series<T>): Series<number> {
+  floordiv(other: number | bigint | Series<T>): Series<number | bigint> {
     // pandas keeps integer floordiv integer, emitting 0 on a zero divisor.
     const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
       (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
@@ -730,51 +756,58 @@ export class Series<T extends CellValue = CellValue> {
         /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (b === 0 ? 0 : Math.floor(a / b))
-      : (a, b) => Math.floor(a / b), undefined, false, false, true, false, true);
+      : (a, b) => Math.floor(a / b), undefined, false, false, true, false, true, intOperands
+      ? (a, b) => (b === 0n ? 0n : bigintFloorDiv(a, b))
+      : (a, b) => (b === 0n ? null : bigintFloorDiv(a, b)));
   }
-  radd(other: number | Series<T>): Series<number> {
+  radd(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.add(other);
   }
-  rmul(other: number | Series<T>): Series<number> {
+  rmul(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.mul(other);
   }
-  rdiv(other: number | Series<T>): Series<number> {
+  rdiv(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.numericOp(other, (a, b) => b / a, undefined, true, false, false, false, true);
   }
-  rtruediv(other: number | Series<T>): Series<number> {
+  rtruediv(other: number | bigint | Series<T>): Series<number | bigint> {
     return this.rdiv(other);
   }
 
-  rmod(other: number | Series<T>): Series<number> {
+  rmod(other: number | bigint | Series<T>): Series<number | bigint> {
     const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
       (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
       !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
         /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (a === 0 ? 0 : b % a)
-      : (a, b) => b % a, undefined, false, false, false, false, true);
+      : (a, b) => b % a, undefined, false, false, false, false, true, intOperands
+      ? (a, b) => (a === 0n ? 0n : bigintMod(b, a))
+      : (a, b) => (a === 0n ? null : bigintMod(b, a)));
   }
 
-  rpow(other: number | Series<T>): Series<number> {
-    return this.numericOp(other, (a, b) => b ** a, undefined, false, false, false, true);
+  rpow(other: number | bigint | Series<T>): Series<number | bigint> {
+    return this.numericOp(other, (a, b) => b ** a, undefined, false, false, false, true, false,
+      (a, b) => (a < 0n ? null : b ** a));
   }
 
-  rfloordiv(other: number | Series<T>): Series<number> {
+  rfloordiv(other: number | bigint | Series<T>): Series<number | bigint> {
     const intOperands = /^(u?int|U?Int|bool|boolean)/.test(this._dtype) &&
       (!(other instanceof Series) || /^(u?int|U?Int|bool|boolean)/.test(other._dtype)) &&
       !(/^(u?int|^bool)/.test(this._dtype) && other instanceof Series &&
         /^(U?Int|boolean)/.test(other._dtype));
     return this.numericOp(other, intOperands
       ? (a, b) => (a === 0 ? 0 : Math.floor(b / a))
-      : (a, b) => Math.floor(b / a), undefined, false, false, true, false, true);
+      : (a, b) => Math.floor(b / a), undefined, false, false, true, false, true, intOperands
+      ? (a, b) => (a === 0n ? 0n : bigintFloorDiv(b, a))
+      : (a, b) => (a === 0n ? null : bigintFloorDiv(b, a)));
   }
 
-  neg(): Series<number> {
-    const out = this._values.map((value): number | null => {
+  neg(): Series<number | bigint> {
+    const out = this._values.map((value): number | bigint | null => {
       if (isMissing(value)) {
         return null;
       }
-      return -(typeof value === "number" ? value : Number(value));
+      return typeof value === "bigint" ? -value : -(typeof value === "number" ? value : Number(value));
     });
     return new Series(out as never, { index: this._index, indexName: this._indexName, name: this.name });
   }
@@ -784,7 +817,7 @@ export class Series<T extends CellValue = CellValue> {
       if (isMissing(value)) {
         return null;
       }
-      return Math.abs(typeof value === "number" ? value : Number(value));
+      return typeof value === "bigint" ? (value < 0n ? -value : value) : Math.abs(typeof value === "number" ? value : Number(value));
     });
     return new Series(out as unknown as CellValue[], { index: this._index, indexName: this._indexName, name: this.name }) as unknown as Series<CellValue>;
   }
@@ -803,6 +836,10 @@ export class Series<T extends CellValue = CellValue> {
       if (isMissing(value)) {
         return null;
       }
+      // integers are unchanged by non-negative decimal rounding; keep bigint exact.
+      if (typeof value === "bigint" && decimals >= 0) {
+        return value;
+      }
       const n = typeof value === "number" ? value : Number(value as CellValue);
       return roundToEven(n, decimals);
     });
@@ -813,7 +850,7 @@ export class Series<T extends CellValue = CellValue> {
 
   private compareOp(
     other: CellValue | Series<T>,
-    fn: (left: number | string | boolean, right: number | string | boolean) => boolean,
+    fn: (left: number | string | boolean | bigint, right: number | string | boolean | bigint) => boolean,
     ordering = false
   ): Series<boolean> {
     const isStrDtype = (d: string) => /^(str|string)$/.test(d);
@@ -850,11 +887,13 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   eq(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => a === b);
+    // numberOrBigintEqual keeps bigint/number comparisons exact (=== is false
+    // for mixed types even when the values are numerically equal).
+    return this.compareOp(other, (a, b) => numberOrBigintEqual(a, b));
   }
 
   ne(other: CellValue | Series<T>): Series<boolean> {
-    return this.compareOp(other, (a, b) => a !== b);
+    return this.compareOp(other, (a, b) => !numberOrBigintEqual(a, b));
   }
 
   lt(other: CellValue | Series<T>): Series<boolean> {
@@ -875,8 +914,8 @@ export class Series<T extends CellValue = CellValue> {
 
   // ---- cumulative ----
 
-  cumsum(): Series<number> {
-    return new Series(cumsumValues(this._values) as unknown as number[], {
+  cumsum(): Series<number | bigint> {
+    return new Series(cumsumValues(this._values) as unknown as (number | bigint)[], {
       index: this._index, indexName: this._indexName,
       name: this.name,
     });
@@ -896,8 +935,8 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  cumprod(): Series<number> {
-    return new Series(cumprodValues(this._values) as unknown as number[], {
+  cumprod(): Series<number | bigint> {
+    return new Series(cumprodValues(this._values) as unknown as (number | bigint)[], {
       index: this._index, indexName: this._indexName,
       name: this.name,
     });
@@ -940,11 +979,11 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  equals(other: Series): boolean {
+  equals<U extends CellValue>(other: Series<U>): boolean {
     const mine = this._dtype;
     const theirs = other._dtype;
     if (mine !== theirs) return false;
-    return seriesEquals(this._values as CellValue[], this._index, (other as Series<CellValue>)._values, (other as Series<CellValue>)._index);
+    return seriesEquals(this._values as CellValue[], this._index, other._values as CellValue[], other._index);
   }
 
   get(key: IndexLabel, defaultVal?: T): T | undefined {
@@ -1108,7 +1147,7 @@ export class Series<T extends CellValue = CellValue> {
   interpolate(method: "linear" = "linear"): Series<T> {
     if (method !== "linear") throw new Error(`interpolate: unsupported method '${method}'`);
     if (this._values.length === 0) return this.copy();
-    const nums = this._values.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null));
+    const nums = this._values.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : typeof v === "bigint" ? Number(v) : null));
     const out: (T | null)[] = [...this._values] as (T | null)[];
     // linear between numeric anchors
     let left = -1;
@@ -1289,7 +1328,7 @@ export class Series<T extends CellValue = CellValue> {
         }
       }
     }
-    const out: (number | null)[] = new Array(this.length).fill(null);
+    const out: (number | bigint | null)[] = new Array(this.length).fill(null);
     for (let i = 0; i < this.length; i += 1) {
       const src = i - periods;
       if (src < 0 || src >= this.length) { out[i] = null; continue; }
@@ -1297,6 +1336,12 @@ export class Series<T extends CellValue = CellValue> {
       const b = this._values[src] as unknown as CellValue;
       if (typeof a === "number" && Number.isFinite(a) && typeof b === "number" && Number.isFinite(b)) {
         out[i] = a - b;
+      } else if (
+        (typeof a === "bigint" || (typeof a === "number" && Number.isInteger(a))) &&
+        (typeof b === "bigint" || (typeof b === "number" && Number.isInteger(b)))
+      ) {
+        // integer pairs subtract exactly; inference still reports float64 like pandas.
+        out[i] = BigInt(a as number | bigint) - BigInt(b as number | bigint);
       } else {
         out[i] = null;
       }
@@ -1321,8 +1366,10 @@ export class Series<T extends CellValue = CellValue> {
       if (src < 0 || src >= this.length) { out[i] = null; continue; }
       const a = this._values[i] as unknown as CellValue;
       const b = this._values[src] as unknown as CellValue;
-      if (typeof a === "number" && Number.isFinite(a) && typeof b === "number" && Number.isFinite(b) && b !== 0) {
-        out[i] = (a - b) / b;
+      const an = typeof a === "bigint" ? Number(a) : a;
+      const bn = typeof b === "bigint" ? Number(b) : b;
+      if (typeof an === "number" && Number.isFinite(an) && typeof bn === "number" && Number.isFinite(bn) && bn !== 0) {
+        out[i] = (an - bn) / bn;
       } else {
         out[i] = null;
       }
@@ -1379,10 +1426,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   private valueKey(value: T): string {
-    if (value instanceof Date) {
-      return `date:${value.toISOString()}`;
-    }
-    return `${typeof value}:${String(value)}`;
+    return scalarKey(value);
   }
   // ---- compat / window / export parity (delegates to internal/series/seriesApi) ----
 
@@ -1499,8 +1543,8 @@ export class Series<T extends CellValue = CellValue> {
   reorder_levels(...order: number[]): Series<T> { return (seriesApi.reorder_levels(this.view(), ...order)) as never; }
   swaplevel(): Series<T> { return seriesApi.swaplevel(this.view()) as never; }
   set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> { return seriesApi.set_flags(this.view(), options) as never; }
-  tz_localize(tz: string): Series<T> { return seriesApi.tz_localize(this.view(), tz) as never; }
-  tz_convert(tz: string): Series<T> { return seriesApi.tz_convert(this.view(), tz) as never; }
+  tz_localize(tz: string | null): Series<T> { return seriesApi.tz_localize(this.view(), tz) as never; }
+  tz_convert(tz: string | null): Series<T> { return seriesApi.tz_convert(this.view(), tz) as never; }
   to_clipboard(sep = "\t"): string { return seriesApi.to_clipboard(this.view(), sep); }
   to_hdf(): Buffer { return seriesApi.to_hdf(this.view()); }
   to_pickle(): Buffer { return seriesApi.to_pickle(this.view()); }

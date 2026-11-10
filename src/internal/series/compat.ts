@@ -17,10 +17,11 @@ export function computeSeriesClip(
   upper: number | undefined
 ): CellValue[] {
   return sourceValues.map((value) => {
-    if (typeof value !== "number") {
+    if (typeof value !== "number" && typeof value !== "bigint") {
       return value;
     }
-    let next = value;
+    // mixed bigint/number comparisons stay exact under relational operators.
+    let next: number | bigint = value;
     if (lower !== undefined && next < lower) {
       next = lower;
     }
@@ -91,6 +92,10 @@ function stringifyForReplace(value: CellValue): string {
   }
   if (value === null || value === undefined) {
     return JSON.stringify(null);
+  }
+  // JSON.stringify cannot serialize bigint; use the exact decimal text.
+  if (typeof value === "bigint") {
+    return JSON.stringify(value.toString());
   }
   return JSON.stringify(value);
 }

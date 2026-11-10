@@ -4,6 +4,7 @@ import { reindexPositions } from "../shared/indexing";
 
 import type { CellValue, IndexLabel, Row } from "../../types";
 import { cloneRow, isMissing, numericValues, inferColumnDType } from "../../utils";
+import { bigintOperand } from "../shared/valueSemantics";
 import { adjustedSkew, excessKurtosis, semOfMean } from "../series/stats";
 
 // ---- stats ----
@@ -29,15 +30,16 @@ function toNum(v: CellValue): number {
 }
 
 export function cummaxRows(rows: Row[], columns: string[]): Row[] {
-  const acc = new Map<string, number | null>();
+  const acc = new Map<string, number | bigint | null>();
   const out: Row[] = rows.map((r) => cloneRow(r, columns));
   for (let i = 0; i < rows.length; i += 1) {
     for (const c of columns) {
       const val = rows[i]![c];
       if (isMissing(val)) { out[i]![c] = null; continue; }
-      const n = toNum(val as CellValue);
+      // bigint cells keep their exact value; numbers convert as before.
+      const n: number | bigint = typeof val === "bigint" ? val : toNum(val as CellValue);
       const cur = acc.get(c) ?? null;
-      const nxt = cur === null ? n : Math.max(cur, n);
+      const nxt = cur === null || n > cur ? n : cur;
       acc.set(c, nxt);
       out[i]![c] = nxt;
     }
@@ -45,15 +47,15 @@ export function cummaxRows(rows: Row[], columns: string[]): Row[] {
   return out;
 }
 export function cumminRows(rows: Row[], columns: string[]): Row[] {
-  const acc = new Map<string, number | null>();
+  const acc = new Map<string, number | bigint | null>();
   const out: Row[] = rows.map((r) => cloneRow(r, columns));
   for (let i = 0; i < rows.length; i += 1) {
     for (const c of columns) {
       const val = rows[i]![c];
       if (isMissing(val)) { out[i]![c] = null; continue; }
-      const n = toNum(val as CellValue);
+      const n: number | bigint = typeof val === "bigint" ? val : toNum(val as CellValue);
       const cur = acc.get(c) ?? null;
-      const nxt = cur === null ? n : Math.min(cur, n);
+      const nxt = cur === null || n < cur ? n : cur;
       acc.set(c, nxt);
       out[i]![c] = nxt;
     }
@@ -61,16 +63,34 @@ export function cumminRows(rows: Row[], columns: string[]): Row[] {
   return out;
 }
 export function cumprodRows(rows: Row[], columns: string[]): Row[] {
-  const acc = new Map<string, number>();
-  for (const c of columns) acc.set(c, 1);
+  const accWide = new Map<string, bigint | null>();
+  const accNum = new Map<string, number>();
+  for (const c of columns) { accWide.set(c, null); accNum.set(c, 1); }
   const out: Row[] = rows.map((r) => cloneRow(r, columns));
   for (let i = 0; i < rows.length; i += 1) {
     for (const c of columns) {
       const val = rows[i]![c];
       if (isMissing(val)) { out[i]![c] = null; continue; }
-      const n = toNum(val as CellValue);
-      const cur = acc.get(c)! * n;
-      acc.set(c, cur);
+      const wide = bigintOperand(val);
+      const acc = accWide.get(c)!;
+      if (acc !== null && wide !== null) {
+        const nxt = acc * wide;
+        accWide.set(c, nxt);
+        out[i]![c] = nxt;
+        continue;
+      }
+      if (acc !== null) {
+        accNum.set(c, Number(acc));
+        accWide.set(c, null);
+      }
+      // bigint cells start the exact accumulator; number columns stay numeric.
+      if (typeof val === "bigint") {
+        accWide.set(c, val);
+        out[i]![c] = val;
+        continue;
+      }
+      const cur = accNum.get(c)! * toNum(val as CellValue);
+      accNum.set(c, cur);
       out[i]![c] = cur;
     }
   }

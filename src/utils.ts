@@ -21,7 +21,7 @@ export const isMissing = isMissingScalar;
 
 /** Whether pandas would accept the cell as a subtraction operand (numbers, bools, datetimes). */
 export function isSubtractableOperand(value: CellValue): boolean {
-  return typeof value === "number" || typeof value === "boolean" || value instanceof Date;
+  return typeof value === "number" || typeof value === "bigint" || typeof value === "boolean" || value instanceof Date;
 }
 
 /** The Python type name pandas reports for the cell in unsupported-operand errors. */
@@ -29,6 +29,7 @@ export function pythonOperandTypeName(value: CellValue): string {
   if (value === null || value === undefined) return "NoneType";
   if (typeof value === "symbol") return "NAType";
   if (typeof value === "number") return Number.isNaN(value) ? "float" : Number.isInteger(value) ? "int" : "float";
+  if (typeof value === "bigint") return "int";
   if (typeof value === "boolean") return "bool";
   if (typeof value === "string") return "str";
   if (value instanceof Date) return "datetime.datetime";
@@ -40,7 +41,9 @@ export function isNumber(value: CellValue): value is number {
 }
 
 export function numericValues(values: CellValue[]): number[] {
-  return values.filter(isNumber);
+  return values
+    .filter((value): value is number | bigint => isNumber(value) || typeof value === "bigint")
+    .map((value) => Number(value));
 }
 
 export function compareCellValues(left: CellValue, right: CellValue): number {
@@ -58,8 +61,13 @@ export function compareCellValues(left: CellValue, right: CellValue): number {
     return left.getTime() - right.getTime();
   }
 
-  if (typeof left === "number" && typeof right === "number") {
-    return left - right;
+  // bigint participates in exact mixed numeric ordering; mixed bigint/number
+  // pairs cannot use subtraction (which would throw or lose precision).
+  if ((typeof left === "number" || typeof left === "bigint") &&
+      (typeof right === "number" || typeof right === "bigint")) {
+    return typeof left === "bigint" || typeof right === "bigint"
+      ? left < right ? -1 : left > right ? 1 : 0
+      : left - right;
   }
 
   const leftString = String(left);
@@ -109,6 +117,16 @@ export function coerceValueToDType(value: CellValue, dtype: DType): CellValue {
   return castColumn([value], dtype)[0];
 }
 
+/** JSON.stringify replacer emitting bigint cells as numbers (JSON's only numeric form). */
+export function bigintJsonNumber(_key: string, value: unknown): unknown {
+  return typeof value === "bigint" ? Number(value) : value;
+}
+
+/** JSON.stringify replacer emitting bigint cells as exact decimal strings. */
+export function bigintJsonString(_key: string, value: unknown): unknown {
+  return typeof value === "bigint" ? value.toString() : value;
+}
+
 export function inferColumnDType(values: CellValue[]): InferredDType {
   const nonMissing = values.filter((value) => !isMissing(value));
   if (nonMissing.length === 0) {
@@ -118,7 +136,7 @@ export function inferColumnDType(values: CellValue[]): InferredDType {
   const isAll = (predicate: (value: CellValue) => boolean): boolean =>
     nonMissing.every((value) => predicate(value));
 
-  if (isAll((value) => typeof value === "number")) {
+  if (isAll((value) => typeof value === "number" || typeof value === "bigint")) {
     return "number";
   }
   if (isAll((value) => typeof value === "string")) {

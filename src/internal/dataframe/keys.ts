@@ -19,6 +19,15 @@ export function normalizeKeyCell(value: CellValue): NormalizedKey {
   ) {
     return value;
   }
+  // bigint keys join the number family when exactly representable; unsafe
+  // values keep an exact decimal marker so nothing collides with a rounded
+  // double or a like-named string.
+  if (typeof value === "bigint") {
+    const asNumber = Number(value);
+    return Number.isSafeInteger(asNumber) && BigInt(asNumber) === value
+      ? asNumber
+      : `bigint:${value}`;
+  }
   return String(value);
 }
 

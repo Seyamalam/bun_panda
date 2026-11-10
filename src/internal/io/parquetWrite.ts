@@ -43,6 +43,10 @@ function buildSchema(
 }
 
 function parquetTypeForDType(dtype: InferredDType): string {
+  // Exact 64-bit integers map to INT64 (parquetjs-lite accepts bigint values).
+  if (/^(u?int64|U?Int64)$/.test(dtype)) {
+    return "INT64";
+  }
   if (dtypeFamily(dtype) === "number") {
     return "DOUBLE";
   }
@@ -72,6 +76,10 @@ function serializeCellForParquet(value: CellValue, dtype: InferredDType): unknow
     return undefined;
   }
 
+  if (/^(u?int64|U?Int64)$/.test(dtype)) {
+    return typeof value === "bigint" ? value : BigInt(Number(value));
+  }
+
   if (dtypeFamily(dtype) === "number") {
     return typeof value === "number" ? value : Number(value);
   }
@@ -94,6 +102,11 @@ function serializeCellForParquet(value: CellValue, dtype: InferredDType): unknow
 
   if (value instanceof Date) {
     return value.toISOString();
+  }
+
+  // JSON.stringify cannot serialize bigint; use the exact decimal text.
+  if (typeof value === "bigint") {
+    return value.toString();
   }
 
   return JSON.stringify(value);

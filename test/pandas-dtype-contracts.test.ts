@@ -8,6 +8,7 @@ import fixture from "./fixtures/pandas-dtype-contracts.json";
 
 function encode(value: CellValue): unknown {
   if (value === NA) return { $missing: "NA" };
+  if (typeof value === "bigint") return Number(value);
   if (typeof value === "number") {
     if (Number.isNaN(value)) return { $missing: "NaN" };
     if (!Number.isFinite(value)) return { $number: value > 0 ? "Infinity" : "-Infinity" };
@@ -27,10 +28,26 @@ function decode(value: unknown): CellValue {
 for (const [i, entry] of fixture.cases.entries()) {
   test(`pandas dtype ${i}: ${entry.mode} ${entry.dtype} ${JSON.stringify(entry.values)}`, () => {
     const dtype = entry.dtype as DType;
-    const values = entry.values.map(decode);
+    const values = (entry.values ?? []).map(decode);
     const run = () => {
       if (entry.mode === "inferred_constructor") return new Series<CellValue>(values);
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
+      if (entry.mode === "frame_arithmetic") {
+        const buildFrame = (spec: { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] }) =>
+          new DataFrame(
+            Object.fromEntries(Object.entries(spec.columns).map(([column, columnValues]) => [column, columnValues.map(decode)])),
+            { dtype: "object", ...(spec.index ? { index: spec.index } : {}) }
+          ).astype(spec.dtypes);
+        const frameEntry = entry as unknown as { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[]; operand: Record<string, unknown> };
+        const source = buildFrame(frameEntry);
+        const operandSpec = frameEntry.operand;
+        const operand: number | DataFrame = "scalar" in operandSpec
+          ? operandSpec.scalar as number
+          : buildFrame(operandSpec as { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] });
+        const operation: unknown = Reflect.get(source, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(source, [operand]) as unknown as Series<CellValue>;
+      }
       const source = new Series<CellValue>(values, {
         dtype,
         ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
@@ -61,7 +78,10 @@ for (const [i, entry] of fixture.cases.entries()) {
       return source;
     };
     if (entry.error) expect(run).toThrow();
-    else {
+    else if (entry.mode === "frame_arithmetic") {
+      const frame = run() as unknown as DataFrame;
+      expect<unknown>({ dtypes: frame.dtypes(), columns: frame.columns, index: frame.index, values: frame.values().map(row => row.map(encode)) }).toEqual(entry.expected!);
+    } else {
       const result = run();
       const expectIndex = (entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "arithmetic") && entry.expected && "index" in entry.expected;
       expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(expectIndex ? { index: result.index } : {}), ...((entry.mode === "selection" || entry.mode === "replacement") ? { name: result.name } : {}) }).toEqual(entry.expected!);
@@ -87,7 +107,9 @@ test("explicit frame casts preserve source, metadata, and missing representation
 test("integer ranges are checked and numpy integer casts wrap", () => {
   expect(new Series([128, -129], { dtype: "int16" }).astype("int8").to_list()).toEqual([-128, 127]);
   expect(() => new Series([128], { dtype: "Int8" })).toThrow();
-  expect(() => new Series([Number.MAX_SAFE_INTEGER + 1], { dtype: "int64" })).toThrow("safe range");
+  // Unsafe numbers no longer throw: int64 stores the double's exact integer
+  // value as bigint (the represented value, since the literal already rounded).
+  expect(new Series([Number.MAX_SAFE_INTEGER + 1], { dtype: "int64" }).to_list()).toEqual([9007199254740992n] as unknown as number[]);
   expect(() => new Series([], { dtype: "unknown" as DType })).toThrow("not understood");
   expect(() => new DataFrame().astype("unknown" as DType)).toThrow("not understood");
 });
@@ -106,7 +128,7 @@ test("frame inference preserves text and labels while selecting nullable dtypes"
 });
 
 for (const entry of fixture.cases) {
-  if (!("operation" in entry) || entry.mode === "arithmetic" || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
+  if (!("operation" in entry) || entry.mode === "arithmetic" || entry.mode === "frame_arithmetic" || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
   test(`frame selection preserves ${entry.dtype}: ${entry.operation} ${JSON.stringify(entry.args)} ${JSON.stringify(entry.values)}`, () => {
     const frame = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType, index: entry.values.map((_: unknown, i: number) => `row-${i}`) });
     const operation: unknown = Reflect.get(frame, entry.operation!);

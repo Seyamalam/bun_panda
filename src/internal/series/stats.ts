@@ -89,11 +89,11 @@ export function seriesAny(values: CellValue[], skipna = true): boolean {
 }
 
 export function seriesArgmax(values: CellValue[]): number | null {
-  let best: number | null = null;
+  let best: number | bigint | null = null;
   let bestPos: number | null = null;
   for (let i = 0; i < values.length; i += 1) {
     const value = values[i]!;
-    if (isMissing(value) || typeof value !== "number" || Number.isNaN(value)) continue;
+    if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint") || (typeof value === "number" && Number.isNaN(value))) continue;
     if (best === null || value > best) {
       best = value;
       bestPos = i;
@@ -103,11 +103,11 @@ export function seriesArgmax(values: CellValue[]): number | null {
 }
 
 export function seriesArgmin(values: CellValue[]): number | null {
-  let best: number | null = null;
+  let best: number | bigint | null = null;
   let bestPos: number | null = null;
   for (let i = 0; i < values.length; i += 1) {
     const value = values[i]!;
-    if (isMissing(value) || typeof value !== "number" || Number.isNaN(value)) continue;
+    if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint") || (typeof value === "number" && Number.isNaN(value))) continue;
     if (best === null || value < best) {
       best = value;
       bestPos = i;
@@ -134,7 +134,9 @@ export function seriesEquals(
 }
 
 export function seriesDescribe(values: CellValue[]): { keys: string[]; values: CellValue[] } {
-  const numeric = values.filter((value) => typeof value === "number" && Number.isFinite(value)) as number[];
+  const numeric = values
+    .filter((value) => (typeof value === "number" && Number.isFinite(value)) || typeof value === "bigint")
+    .map((value) => Number(value));
   const count = values.filter((value) => !isMissing(value) && !(typeof value === "number" && Number.isNaN(value as number))).length;
   if (numeric.length > 0 && numeric.length === count) {
     const sorted = [...numeric].sort((a, b) => a - b);

@@ -45,5 +45,11 @@ function normalizeExcelCell(value: CellValue): CellValue {
   ) {
     return value;
   }
+  // Excel cells cannot hold 64-bit integers; write the decimal text when the
+  // value exceeds the safe range so it is never silently rounded.
+  if (typeof value === "bigint") {
+    const asNumber = Number(value);
+    return Number.isSafeInteger(asNumber) ? asNumber : value.toString();
+  }
   return JSON.stringify(value);
 }

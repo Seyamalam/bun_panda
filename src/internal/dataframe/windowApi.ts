@@ -9,7 +9,9 @@ import {
 } from "../shared";
 import { DataFrame } from "../../dataframe";
 import { dataFrameToCsv } from "./io";
-import type { CellValue, IndexLabel, Row } from "../../types";
+import { datetime64Name, dtypeUnit, dtypeZone, isDatetimeDType, zoneOffsetMinutes } from "../shared/timezone";
+import { jsonBigintReplacer } from "../shared/valueSemantics";
+import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
 import {
   buildInsertStatements,
@@ -25,6 +27,7 @@ export interface HostView {
   columnsSnapshot(): string[];
   labels(): IndexLabel[];
   indexNamesSnapshot(): (string | undefined)[] | undefined;
+  dtypesSnapshot(): Partial<Record<string, DType>>;
   withIndexAndNames(index: IndexLabel[], names?: (string | undefined)[]): DataFrame;
   withRows(rows: Row[], index?: IndexLabel[], columns?: string[], normalized?: boolean): DataFrame;
   iloc(position: number): unknown;
@@ -248,14 +251,69 @@ export function swaplevel(df: HostView, a = 0, b = -1): DataFrame {
     return df.withIndexAndNames(nextIndex, nextNames);
   }
 
-export function tz_localize(df: HostView, tz: string): DataFrame {
-    void tz;
-    return df.copy();
+/**
+ * Column-wise pandas `tz_localize`: naive datetime columns are
+ * reinterpreted as wall-clock readings in `tz`, so stored UTC instants
+ * shift by -offset and their dtypes gain the zone label
+ * (`datetime64[<unit>, <tz>]`). `tz === null` strips zones, keeping each
+ * aware column's local wall clock (pandas tz_localize(None)).
+ * Non-datetime columns pass through untouched.
+ */
+export function tz_localize(df: HostView, tz: string | null): DataFrame {
+    if (tz !== null) zoneOffsetMinutes(tz); // validate the target zone once
+    const columns = df.columnsSnapshot();
+    const dtypes = df.dtypesSnapshot();
+    const datetimeColumns = columns.filter(c => isDatetimeDType(dtypes[c]));
+    if (datetimeColumns.length === 0) return df.copy();
+    if (tz !== null && datetimeColumns.some(c => dtypeZone(dtypes[c]) !== null)) {
+      throw new TypeError("Already tz-aware, use tz_convert to convert.");
+    }
+    const shifts = new Map<string, number>();
+    const nextDtypes: Partial<Record<string, DType>> = { ...dtypes };
+    for (const column of datetimeColumns) {
+      const zone = dtypeZone(dtypes[column]);
+      const unit = dtypeUnit(dtypes[column]);
+      if (tz === null) {
+        if (zone === null) continue; // already naive: pandas no-op
+        shifts.set(column, zoneOffsetMinutes(zone));
+        nextDtypes[column] = datetime64Name(unit, null);
+      } else {
+        shifts.set(column, -zoneOffsetMinutes(tz));
+        nextDtypes[column] = datetime64Name(unit, tz);
+      }
+    }
+    const rows = df.rowsSnapshot().map(row => {
+      const next: Row = { ...row };
+      for (const [column, minutes] of shifts) {
+        const value = next[column];
+        if (value instanceof Date) next[column] = new Date(value.getTime() + minutes * 60_000);
+      }
+      return next;
+    });
+    return DataFrame.createInternal(rows, [...columns], df.labels(), {}, nextDtypes, undefined, df.indexNamesSnapshot());
   }
 
-export function tz_convert(df: HostView, tz: string): DataFrame {
-    void tz;
-    return df.copy();
+/**
+ * Column-wise pandas `tz_convert`: the stored UTC instant is fixed — only
+ * the zone label in each aware column's dtype changes. `tz === null`
+ * drops the zone, yielding naive columns at the UTC instant reading.
+ * Naive datetime columns raise the pandas tz-naive error.
+ */
+export function tz_convert(df: HostView, tz: string | null): DataFrame {
+    if (tz !== null) zoneOffsetMinutes(tz); // validate the target zone once
+    const columns = df.columnsSnapshot();
+    const dtypes = df.dtypesSnapshot();
+    const datetimeColumns = columns.filter(c => isDatetimeDType(dtypes[c]));
+    if (datetimeColumns.length === 0) return df.copy();
+    if (datetimeColumns.some(c => dtypeZone(dtypes[c]) === null)) {
+      throw new TypeError("Cannot convert tz-naive timestamps, use tz_localize to localize.");
+    }
+    const nextDtypes: Partial<Record<string, DType>> = { ...dtypes };
+    for (const column of datetimeColumns) {
+      nextDtypes[column] = datetime64Name(dtypeUnit(dtypes[column]), tz);
+    }
+    const rows = df.rowsSnapshot().map(row => ({ ...row }));
+    return DataFrame.createInternal(rows, [...columns], df.labels(), {}, nextDtypes, undefined, df.indexNamesSnapshot());
   }
 
 export function to_clipboard(df: HostView, sep = ","): string {
@@ -269,15 +327,15 @@ export function to_clipboard(df: HostView, sep = ","): string {
   }
 
 export function to_feather(df: HostView, ): Buffer {
-    return Buffer.from(JSON.stringify({ columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }), "utf8");
+    return Buffer.from(JSON.stringify({ columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }, jsonBigintReplacer), "utf8");
   }
 
 export function to_orc(df: HostView, ): Buffer {
-    return Buffer.from(JSON.stringify({ format: "orc-bridge", columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }), "utf8");
+    return Buffer.from(JSON.stringify({ format: "orc-bridge", columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }, jsonBigintReplacer), "utf8");
   }
 
 export function to_hdf(df: HostView, key = "frame"): Buffer {
-    return Buffer.from(JSON.stringify({ key, columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }), "utf8");
+    return Buffer.from(JSON.stringify({ key, columns: df.columnsSnapshot(), rows: df.rowsSnapshot() }, jsonBigintReplacer), "utf8");
   }
 
 export function to_stata(df: HostView, ): string {

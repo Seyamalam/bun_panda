@@ -179,6 +179,10 @@ function stringifyForReplace(value: CellValue): string {
   if (value === null || value === undefined) {
     return JSON.stringify(null);
   }
+  // JSON.stringify cannot serialize bigint; use the exact decimal text.
+  if (typeof value === "bigint") {
+    return JSON.stringify(value.toString());
+  }
   return JSON.stringify(value);
 }
 
