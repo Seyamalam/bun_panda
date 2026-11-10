@@ -21,9 +21,9 @@ describe("Series rolling windows", () => {
 
   test("count counts non-null entries in window", () => {
     const sparse = new Series<number | null>([1, null, 3]);
-    // count() reports the number of values in each qualifying window;
-    // windows below min_periods yield 0.
-    expect(sparse.rolling(2).count()).toEqual([0, 0, 0]);
+    // pandas: count() tallies non-missing values in each positionally-full
+    // window; windows below min_periods yield NaN (encoded here as null).
+    expect(sparse.rolling(2).count()).toEqual([null, 1, 1]);
     expect(sparse.rolling(2, 1).count()).toEqual([1, 1, 1]);
   });
 
@@ -49,15 +49,17 @@ describe("Series rolling windows", () => {
 describe("DataFrame rolling/expanding", () => {
   const df = new DataFrame([{ x: 1, y: 10 }, { x: 2, y: 20 }, { x: 3, y: 30 }]);
 
-  test("rolling mean drops non-numeric columns", () => {
+  test("rolling mean raises pandas DataError on non-numeric columns", () => {
     const tagged = new DataFrame([
       { tag: "a", v: 1 },
       { tag: "b", v: 2 },
       { tag: "c", v: 3 },
     ]);
-    const out = tagged.rolling(2).mean();
-    expect(out.columns).toEqual(["v"]);
-    expect(out.to_records()).toEqual([
+    // pandas raises "Cannot aggregate non-numeric type: str" — the numeric
+    // windows never silently drop the column.
+    expect(() => tagged.rolling(2).mean()).toThrow(/non-numeric/);
+    const numeric = new DataFrame({ v: [1, 2, 3] });
+    expect(numeric.rolling(2).mean().to_records()).toEqual([
       { v: NaN },
       { v: 1.5 },
       { v: 2.5 },
@@ -91,8 +93,9 @@ describe(".str expansion", () => {
 
   test("character class predicates", () => {
     const mixed = new Series<string | null>(["abc", "123", "", null]);
-    expect(mixed.str.isalpha()).toEqual([true, false, false, null]);
-    expect(mixed.str.isdigit()).toEqual([false, true, false, null]);
+    // pandas str-dtype predicates report False on missing values.
+    expect(mixed.str.isalpha()).toEqual([true, false, false, false]);
+    expect(mixed.str.isdigit()).toEqual([false, true, false, false]);
     expect(new Series<string>(["  "]).str.isspace()).toEqual([true]);
     expect(new Series<string>(["abc123"]).str.isalnum()).toEqual([true]);
     expect(new Series<string>(["abc"]).str.islower()).toEqual([true]);
@@ -115,7 +118,8 @@ describe(".str expansion", () => {
 
   test("findall returns match arrays", () => {
     expect(new Series<string>(["a1b22"]).str.findall(/\d+/)).toEqual([["1", "22"]]);
-    expect(s.str.findall(/o/)).toEqual([["o", "o"], [], []]);
+    // pandas propagates NaN through findall on missing values.
+    expect(s.str.findall(/o/)).toEqual([["o", "o"], [], null]);
   });
 
   test("extract pulls capture groups", () => {
@@ -136,8 +140,9 @@ describe(".str expansion", () => {
     expect(new Series<string>(["a.b.c"]).str.rsplit(".", 1)).toEqual([["a.b", "c"]]);
   });
 
-  test("nulls propagate through new methods", () => {
-    expect(s.str.isalpha()).toEqual([false, false, null]);
+  test("missing values follow pandas semantics per method", () => {
+    // Predicates report False on missing; string transformers propagate NaN.
+    expect(s.str.isalpha()).toEqual([false, false, false]);
     expect(s.str.repeat(2)).toEqual(["Hello WorldHello World", "abc123abc123", null]);
   });
 });

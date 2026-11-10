@@ -19,13 +19,21 @@ function padBoth(s: string, width: number, fillChar: string): string {
 /**
  * pandas-style `.str` accessor for Series: applies string methods
  * element-wise. Missing and non-string values propagate as null for
- * string operations on object columns.
+ * string operations on object columns. The pandas 3.0 `str` dtype reports
+ * False for boolean predicates on missing cells instead of NA.
  */
 export class StringMethods {
   private readonly values: CellValue[];
+  private readonly dtype: string | undefined;
 
-  constructor(values: CellValue[]) {
+  constructor(values: CellValue[], dtype?: string) {
     this.values = values;
+    this.dtype = dtype;
+  }
+
+  /** pandas `str` dtype (not `string`/`object`) fails boolean predicates to False on NA. */
+  private get missingPredicate(): CellValue {
+    return this.dtype === "str" ? false : null;
   }
 
   private mapStrings(fn: (s: string) => string): CellValue[] {
@@ -37,7 +45,7 @@ export class StringMethods {
 
   private mapBooleans(fn: (s: string) => boolean): CellValue[] {
     return this.values.map((value) => {
-      if (typeof value !== "string") return null;
+      if (typeof value !== "string") return this.missingPredicate;
       return fn(value);
     });
   }
@@ -128,10 +136,10 @@ export class StringMethods {
 
   find(pat: string): CellValue[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
+      if (typeof value !== "string") {
         return null;
       }
-      return String(value).indexOf(pat);
+      return value.indexOf(pat);
     });
   }
 
@@ -149,14 +157,14 @@ export class StringMethods {
   }
 
   /** Returns arrays of components; with expand=false returns them per cell. */
-  split(sep?: string): CellValue[][] {
+  split(sep?: string): (CellValue[] | null)[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return [];
+      if (typeof value !== "string") {
+        return null;
       }
-      const s = String(value);
+      const s = value;
       return sep === undefined ? s.split(/\s+/).filter(Boolean) : s.split(sep);
-    }) as CellValue[][];
+    });
   }
 
   cat(other?: string | CellValue[], sep = "", naRep?: string): CellValue[] {
@@ -265,12 +273,12 @@ export class StringMethods {
   }
 
   /** All non-overlapping matches of `pat` per cell; empty array when no match. */
-  findall(pat: string | RegExp): CellValue[][] {
+  findall(pat: string | RegExp): (CellValue[] | null)[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return [];
+      if (typeof value !== "string") {
+        return null;
       }
-      const source = String(value);
+      const source = value;
       const re = pat instanceof RegExp ? new RegExp(pat.source, pat.flags.includes("g") ? pat.flags : pat.flags + "g") : new RegExp(pat, "g");
       return [...source.matchAll(re)].map((m) => m[0]);
     });
@@ -280,34 +288,34 @@ export class StringMethods {
    * Extracts the first capture group match per cell; null when no
    * match. With multiple groups, returns the group arrays.
    */
-  extract(pat: string | RegExp): CellValue[] | CellValue[][] {
+  extract(pat: string | RegExp): CellValue[] | (CellValue[] | null)[] {
     const re = pat instanceof RegExp ? new RegExp(pat.source, pat.flags.replace("g", "")) : new RegExp(pat);
     const groupCount = new RegExp(re.source + "|").exec("")!.length - 1;
     if (groupCount > 1) {
       return this.values.map((value) => {
-        if (isMissing(value)) {
-          return [];
+        if (typeof value !== "string") {
+          return null;
         }
-        const match = String(value).match(re);
+        const match = value.match(re);
         return match ? match.slice(1) : [];
-      }) as CellValue[][];
+      }) as CellValue[];
     }
     return this.values.map((value) => {
-      if (isMissing(value)) {
+      if (typeof value !== "string") {
         return null;
       }
-      const match = String(value).match(re);
+      const match = value.match(re);
       return match ? (match[1] ?? match[0]) : null;
     });
   }
 
   /** Splits on the first occurrence; returns [before, sep, after]. */
-  partition(sep: string): CellValue[][] {
+  partition(sep: string): (CellValue[] | null)[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return ["", "", ""];
+      if (typeof value !== "string") {
+        return null;
       }
-      const s = String(value);
+      const s = value;
       const index = s.indexOf(sep);
       if (index < 0) {
         return [s, "", ""];
@@ -317,12 +325,12 @@ export class StringMethods {
   }
 
   /** Splits on the last occurrence; returns [before, sep, after]. */
-  rpartition(sep: string): CellValue[][] {
+  rpartition(sep: string): (CellValue[] | null)[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return ["", "", ""];
+      if (typeof value !== "string") {
+        return null;
       }
-      const s = String(value);
+      const s = value;
       const index = s.lastIndexOf(sep);
       if (index < 0) {
         return ["", "", s];
@@ -332,12 +340,12 @@ export class StringMethods {
   }
 
   /** Splits from the right, at most `n` times. */
-  rsplit(sep?: string, n?: number): CellValue[][] {
+  rsplit(sep?: string, n?: number): (CellValue[] | null)[] {
     return this.values.map((value) => {
-      if (isMissing(value)) {
-        return [];
+      if (typeof value !== "string") {
+        return null;
       }
-      const s = String(value);
+      const s = value;
       if (n === undefined) {
         return sep === undefined ? s.split(/\s+/).filter(Boolean) : s.split(sep);
       }

@@ -8,6 +8,7 @@ import {
   hasMissingByValue,
   keyForRow,
   keyForSingleValue,
+  keyForValues,
   shouldTryWasm as shouldTryWasmFast,
   toIndexLabel,
   tryWasmNamedAgg as tryWasmNamedAggFast,
@@ -69,6 +70,11 @@ export interface GroupByOptions {
   dropna?: boolean;
   sort?: boolean;
   as_index?: boolean;
+  /**
+   * pandas `groupby(level=...)`: index level position, name, or list of
+   * either. Mutually exclusive with `by`.
+   */
+  level?: number | string | (number | string)[];
 }
 
 export type GroupTransformFn = (
@@ -110,6 +116,13 @@ export class GroupBy {
   private readonly groupedCacheKey: string;
   private readonly sourceRows: Row[];
   private readonly sourceColumns: string[];
+  /**
+   * Per-row key tuples for `groupby(level=...)` — values pulled from index
+   * levels rather than columns, aligned to `sourceRows` by position.
+   */
+  private readonly levelKeys: CellValue[][] | undefined;
+  /** Index level names for level grouping, used for `as_index` results. */
+  private readonly levelIndexNames: (string | undefined)[] | undefined;
   private readonly options: {
     dropna: boolean;
     sort: boolean;
@@ -121,15 +134,19 @@ export class GroupBy {
     by: string[],
     sourceRows?: Row[],
     sourceColumns?: string[],
-    options: GroupByOptions = {}
+    options: GroupByOptions = {},
+    levelKeys?: CellValue[][],
+    levelIndexNames?: (string | undefined)[]
   ) {
-    const availableColumns = sourceColumns ?? source.columns;
+    const availableColumns = (sourceColumns ?? source.columns).map((column) => String(column));
     if (by.length === 0) {
       throw new Error("groupby requires at least one key column.");
     }
-    for (const column of by) {
-      if (!availableColumns.includes(column)) {
-        throw new KeyError(`'${column}'`);
+    if (!levelKeys) {
+      for (const column of by) {
+        if (!availableColumns.includes(column)) {
+          throw new KeyError(`'${column}'`);
+        }
       }
     }
 
@@ -137,12 +154,14 @@ export class GroupBy {
     this.by = by;
     this.sourceRows = sourceRows ?? source.to_records();
     this.sourceColumns = availableColumns;
+    this.levelKeys = levelKeys;
+    this.levelIndexNames = levelIndexNames;
     this.options = {
       dropna: options.dropna ?? true,
       sort: options.sort ?? true,
       as_index: options.as_index ?? false,
     };
-    this.groupedCacheKey = groupCacheKey(this.by, this.options.dropna);
+    this.groupedCacheKey = `${levelKeys ? "level|" : ""}${groupCacheKey(this.by, this.options.dropna)}`;
     this.grouped = this.readGroupCache();
   }
 
@@ -215,8 +234,33 @@ export class GroupBy {
     const states = new Map<string, FastGroupState>();
     const planCodes = namedPlans.map((plan) => aggCodeForName(plan.name));
     const byLength = this.by.length;
+    const levelKeys = this.levelKeys;
 
-    if (byLength === 1) {
+    if (levelKeys) {
+      // groupby(level=...): keys come from index levels, not row columns.
+      for (let position = 0; position < this.sourceRows.length; position += 1) {
+        const keyValues = levelKeys[position]!;
+        if (this.options.dropna && keyValues.some((value) => isMissing(value))) {
+          continue;
+        }
+        const key = keyForValues(keyValues);
+        let state = states.get(key);
+        if (!state) {
+          state = {
+            keyValues: [...keyValues],
+            counts: new Array(namedPlans.length).fill(0),
+            sums: new Array(namedPlans.length).fill(0),
+            wideSums: new Array(namedPlans.length).fill(null),
+            comps: new Array(namedPlans.length).fill(0),
+            hasAny: new Array(namedPlans.length).fill(false),
+            seen: new Array(namedPlans.length).fill(false),
+            best: new Array(namedPlans.length).fill(null),
+          };
+          states.set(key, state);
+        }
+        updateFastGroupStates(state, namedPlans, planCodes, this.sourceRows[position]!);
+      }
+    } else if (byLength === 1) {
       const keyColumn = this.by[0]!;
       for (const sourceRow of this.sourceRows) {
         const keyValue = sourceRow[keyColumn];
@@ -1036,7 +1080,45 @@ export class GroupBy {
     for (const col of candidates) {
       declared[col] = groupbyResultDType(op, (srcDtypes[col] ?? "object") as DType);
     }
-    return DataFrame.createInternal(rows, [...this.by, ...candidates], range(rows.length), {}, declared);
+    if (!this.options.as_index) {
+      return DataFrame.createInternal(rows, [...this.by, ...candidates], range(rows.length), {}, declared);
+    }
+
+    // pandas as_index=true: keys move into the index (tuple keys for
+    // multi-key groups) and the value columns carry the declared dtypes.
+    const outRows = rows.map((row) => {
+      const out: Row = {};
+      for (const col of candidates) {
+        out[col] = row[col];
+      }
+      return out;
+    });
+    const outDeclared = Object.fromEntries(
+      candidates.map((col) => [col, declared[col]!])
+    );
+    if (this.by.length === 1) {
+      const keyColumn = this.by[0]!;
+      const index = rows.map((row, position) => toIndexLabel(row[keyColumn], position));
+      return DataFrame.createInternal(
+        outRows,
+        candidates,
+        index,
+        {},
+        outDeclared,
+        this.levelIndexNames?.[0] ?? this.by[0]
+      );
+    }
+    const index = rows.map((row, position) =>
+      this.by.map((keyColumn) => toIndexLabel(row[keyColumn], position) as string | number));
+    return DataFrame.createInternal(
+      outRows,
+      candidates,
+      index,
+      {},
+      outDeclared,
+      undefined,
+      this.levelIndexNames ?? this.by
+    );
   }
 
   size(): DataFrame {
@@ -1113,6 +1195,24 @@ export class GroupBy {
 
   private buildGroupPositions(): Map<string, TransformGroupEntry> {
     const groups = new Map<string, TransformGroupEntry>();
+    const levelKeys = this.levelKeys;
+
+    if (levelKeys) {
+      for (let position = 0; position < this.sourceRows.length; position += 1) {
+        const keyValues = levelKeys[position]!;
+        if (this.options.dropna && keyValues.some((value) => isMissing(value))) {
+          continue;
+        }
+        const key = keyForValues(keyValues);
+        const existing = groups.get(key);
+        if (existing) {
+          existing.positions.push(position);
+        } else {
+          groups.set(key, { keyValues: [...keyValues], positions: [position] });
+        }
+      }
+      return groups;
+    }
 
     if (this.by.length === 1) {
       const keyColumn = this.by[0]!;
@@ -1163,6 +1263,27 @@ export class GroupBy {
 
   private buildGroups(): Map<string, GroupEntry> {
     const groups = new Map<string, GroupEntry>();
+    const levelKeys = this.levelKeys;
+
+    if (levelKeys) {
+      for (let position = 0; position < this.sourceRows.length; position += 1) {
+        const keyValues = levelKeys[position]!;
+        if (this.options.dropna && keyValues.some((value) => isMissing(value))) {
+          continue;
+        }
+        const key = keyForValues(keyValues);
+        const existing = groups.get(key);
+        if (existing) {
+          existing.rows.push(this.sourceRows[position]!);
+        } else {
+          groups.set(key, {
+            keyValues: [...keyValues],
+            rows: [this.sourceRows[position]!],
+          });
+        }
+      }
+      return groups;
+    }
 
     if (this.by.length === 1) {
       const keyColumn = this.by[0]!;
@@ -1236,13 +1357,17 @@ export class GroupBy {
     if (this.by.length === 1) {
       const keyColumn = this.by[0]!;
       const index = rows.map((row, position) => toIndexLabel(row[keyColumn], position));
-      return DataFrame.from_normalized(outRows, valueColumns, index);
+      const frame = DataFrame.from_normalized(outRows, valueColumns, index);
+      if (this.levelIndexNames?.[0] !== undefined) {
+        return frame.rename_axis(this.levelIndexNames[0]);
+      }
+      return frame;
     }
 
     // Multi-key groups produce a tuple index like pandas MultiIndex.
     const index = rows.map((row, position) =>
       this.by.map((keyColumn) => toIndexLabel(row[keyColumn], position) as string | number));
-    return DataFrame.createInternal(outRows, valueColumns, index, {}, {}, undefined, this.by);
+    return DataFrame.createInternal(outRows, valueColumns, index, {}, {}, this.levelIndexNames?.[0], this.levelIndexNames ?? this.by);
   }
 }
 

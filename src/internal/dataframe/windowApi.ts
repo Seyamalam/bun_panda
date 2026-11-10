@@ -21,6 +21,7 @@ import {
   reduceBinColumn,
   resampleFrameRows,
 } from "./windowTime";
+import { windowNumber } from "../shared";
 
 export interface HostView {
   rowsSnapshot(): Row[];
@@ -116,19 +117,39 @@ export function ewm(df: HostView, span: number, options: { min_periods?: number 
     if (typeof span !== "number" || span < 1) {
       throw new Error("ewm: span must be a number >= 1.");
     }
-    const minPeriods = Math.max(1, options.min_periods ?? 1);
+    // pandas ewm defaults min_periods to 0 and emits once the first
+    // observation arrives (the scan itself gates leading NaN positions).
+    const minPeriods = Math.max(0, options.min_periods ?? 0);
     const compute = (kind: "mean" | "sum" | "std"): DataFrame => {
       const outRows: Row[] = df.rowsSnapshot().map(() => ({} as Row));
-      for (const column of df.columnsSnapshot()) {
+      const columns = df.columnsSnapshot();
+      const dtypeMap: Record<string, DType> = {};
+      const declared = df.dtypesSnapshot();
+      for (const column of columns) {
         const values = df.rowsSnapshot().map((r) => r[column] as CellValue);
-        const numeric = values.some((v) => typeof v === "number");
-        if (!numeric) continue;
+        // pandas ewm raises DataError for any non-numeric column instead of
+        // silently dropping it.
+        for (const v of values) {
+          if (!isMissing(v) && windowNumber(v) === null) {
+            throw new NotSupportedError(
+              `Cannot aggregate non-numeric type: ${String(declared[column] ?? "object")}`
+            );
+          }
+        }
         const result = ewmColumn(values, span, minPeriods, kind);
         for (let i = 0; i < outRows.length; i += 1) {
           (outRows[i] as Row)[column] = result[i] ?? null;
         }
+        dtypeMap[column] = "float64";
       }
-      return df.withRows(outRows, [...df.labels()], [...df.columnsSnapshot()], true);
+      return DataFrame.createInternal(
+        outRows,
+        [...columns],
+        [...df.labels()],
+        {},
+        dtypeMap,
+        df.indexNamesSnapshot()?.[0]
+      );
     };
     return { mean: () => compute("mean"), sum: () => compute("sum"), std: () => compute("std") };
   }

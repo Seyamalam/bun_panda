@@ -102,7 +102,7 @@ describe("DataFrame corrwith / reindex_like", () => {
 describe("DataFrame stack/unstack", () => {
   test("stack pivots columns into long rows, dropping NaN by default", () => {
     const df = new DataFrame({ x: [1, null], y: [3, 4] }, { index: ["r1", "r2"] });
-    const long = df.stack();
+    const long = df.stack() as DataFrame;
     expect(long.columns).toEqual(["index", "column", "value"]);
     expect(long.to_records()).toEqual([
       { index: "r1", column: "x", value: 1 },

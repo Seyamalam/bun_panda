@@ -120,7 +120,7 @@ export function get_dummies(
   for (const column of cols) if (!frame.columns.includes(column)) throw new Error(`Column '${column}' does not exist`);
   const sep = options.prefix_sep ?? "_";
   const records = frame.to_records();
-  const retained = frame.columns.filter(column => !cols.includes(column));
+  const retained = (frame.columns as string[]).filter(column => !cols.includes(column));
   const encoded = cols.flatMap(column => {
     let categories = sortedCategories(records.map(record => record[column]));
     if (options.dummy_na) categories.push(null);

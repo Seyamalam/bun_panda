@@ -1,7 +1,9 @@
 import type { IndexLabel, InferredDType, Row } from "../../types";
 
 export interface FrameLike {
-  columns: string[];
+  columns: IndexLabel[];
+  /** Storage keys backing `columns` — used for record lookups. */
+  storageColumns: string[];
   index: IndexLabel[];
   to_records(): Row[];
   dtypes(): Record<string, InferredDType>;

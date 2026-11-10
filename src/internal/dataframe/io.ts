@@ -12,8 +12,12 @@ export function dataFrameToCsv(frame: DataFrame, options: ToCSVOptions = {}): st
   const includeIndex = options.index ?? false;
   const indexName = "index";
   const lines: string[] = [];
-  const columns = frame.columns;
+  // Export over the storage keys (record keys); tuple MultiColumn labels
+  // appear as their storage-key form.
   const rows = frame.to_records();
+  const columns = rows.length > 0
+    ? Object.keys(rows[0]!)
+    : frame.columns.map((column) => (Array.isArray(column) ? column.join(",") : String(column)));
   const index = frame.index;
   if (includeHeader) {
     const headerCells = includeIndex ? [indexName, ...columns] : [...columns];

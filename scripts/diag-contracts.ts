@@ -2,12 +2,14 @@
 // Diagnostic: run each fixture case like the contract harness and print a
 // compact expected-vs-actual diff for failures. Usage:
 //   bun scripts/diag-contracts.ts [modeFilter] [opFilter]
-import { concat, DataFrame, NA, Series } from "../src/index";
+import { concat, DataFrame, NA, NaT, Series } from "../src/index";
 import type { CellValue, DType } from "../src/types";
+import { isMissing } from "../src/utils";
 import fixture from "../test/fixtures/pandas-dtype-contracts.json";
 
 function encode(value: CellValue): unknown {
   if (value === NA) return { $missing: "NA" };
+  if (value === NaT) return { $missing: "NaT" };
   if (typeof value === "bigint") return Number(value);
   if (typeof value === "number") {
     if (Number.isNaN(value)) return { $missing: "NaN" };
@@ -18,10 +20,34 @@ function encode(value: CellValue): unknown {
 }
 function decode(value: unknown): CellValue {
   if (value && typeof value === "object") {
-    if ("$missing" in value) return value.$missing === "NA" ? NA : NaN;
+    if ("$missing" in value) return value.$missing === "NA" ? NA : value.$missing === "NaT" ? NaT : NaN;
     if ("$number" in value) return value.$number === "-0" ? -0 : value.$number === "Infinity" ? Infinity : -Infinity;
   }
   return value as CellValue;
+}
+// Missing-sentinel-insensitive normalization for accessor-style results
+// (window/str/dt/pivot families): every missing form collapses together.
+function normExp(value: unknown): unknown {
+  if (value === null) return "__missing__";
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if ("$missing" in value || "$number" in value) {
+      const decoded = decode(value);
+      return isMissing(decoded) ? "__missing__" : decoded;
+    }
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, cell]) => [key, normExp(cell)]));
+  }
+  if (Array.isArray(value)) return value.map(normExp);
+  return value;
+}
+function normAct(value: unknown): unknown {
+  if (isMissing(value)) return "__missing__";
+  if (Array.isArray(value)) return value.map(normAct);
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "bigint") return Number(value);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, cell]) => [key, normAct(cell)]));
+  }
+  return value;
 }
 type FrameSpec = { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] };
 function buildFrame(spec: FrameSpec): DataFrame {
@@ -70,7 +96,17 @@ for (const [i, entry] of fixture.cases.entries()) {
       const operation: unknown = Reflect.get(source, entry.operation!);
       return (operation as Function).apply(source, [operand]);
     }
-    if (entry.mode === "frame_reduction" || entry.mode === "frame_selection" || entry.mode === "groupby") {
+    if (entry.mode === "frame_window") {
+      const fe = entry as unknown as FrameSpec & { windowArgs: unknown[]; method: string };
+      const source = buildFrame(fe);
+      const factory: unknown = Reflect.get(source, entry.operation!);
+      if (typeof factory !== "function") throw new Error(`Missing operation ${entry.operation}`);
+      const accessor = (factory as Function).apply(source, fe.windowArgs ?? []) as object;
+      const method: unknown = Reflect.get(accessor, fe.method);
+      if (typeof method !== "function") throw new Error(`Missing window method ${fe.method}`);
+      return (method as Function).apply(accessor, []);
+    }
+    if (entry.mode === "frame_pivot" || entry.mode === "frame_reduction" || entry.mode === "frame_selection" || entry.mode === "groupby") {
       const fe = entry as unknown as FrameSpec & { by?: string };
       const source = buildFrame(fe);
       const target: unknown = entry.mode === "groupby" ? source.groupby(fe.by!) : source;
@@ -88,9 +124,24 @@ for (const [i, entry] of fixture.cases.entries()) {
     }
     const source = new Series<CellValue>(values, {
       dtype,
-      ...((entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view" || entry.mode === "series_reduction" || entry.mode === "series_array") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
+      ...((entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view" || entry.mode === "series_reduction" || entry.mode === "series_array" || entry.mode === "window") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
       ...((entry as { index?: unknown[] }).index ? { index: (entry as { index: (string | number)[] }).index } : {}),
     });
+    if (entry.mode === "window") {
+      const we = entry as unknown as { windowArgs: unknown[]; method: string };
+      const factory: unknown = Reflect.get(source, entry.operation!);
+      if (typeof factory !== "function") throw new Error(`Missing operation ${entry.operation}`);
+      const accessor = (factory as Function).apply(source, we.windowArgs ?? []) as object;
+      const method: unknown = Reflect.get(accessor, we.method);
+      if (typeof method !== "function") throw new Error(`Missing window method ${we.method}`);
+      return (method as Function).apply(accessor, []);
+    }
+    if (entry.mode === "str" || entry.mode === "dt") {
+      const accessor = (entry.mode === "str" ? source.str : source.dt) as unknown as Record<string, (...args: unknown[]) => unknown>;
+      const method = accessor[entry.operation!];
+      if (typeof method !== "function") throw new Error(`Missing accessor method ${entry.operation}`);
+      return method.apply(accessor, entry.args);
+    }
     if (entry.mode === "arithmetic") {
       const os = (entry as { operand: Record<string, unknown> }).operand;
       const operand: CellValue | Series<CellValue> = "scalar" in os
@@ -141,6 +192,44 @@ for (const [i, entry] of fixture.cases.entries()) {
       continue;
     }
     actual = frameResult(result as DataFrame);
+  } else if (entry.mode === "window" || entry.mode === "str" || entry.mode === "dt") {
+    const exp = entry.expected as { values: unknown[]; index?: unknown[]; name?: string | null; dtype?: string };
+    if (result instanceof Series) {
+      actual = {
+        dtype: result.dtype,
+        index: result.index.map((l) => encode(l as CellValue)),
+        name: result.name ?? null,
+        values: normAct(result.to_list()),
+      };
+      if (!eq(actual, { dtype: exp.dtype, index: exp.index, name: exp.name ?? null, values: normExp(exp.values) })) {
+        failMsg("window", { dtype: exp.dtype, index: exp.index, name: exp.name ?? null, values: normExp(exp.values) }, actual);
+        continue;
+      }
+      pass++; continue;
+    }
+    actual = normAct(result);
+    if (!eq(actual, normExp(exp.values))) failMsg("accessor", normExp(exp.values), actual); else pass++;
+    continue;
+  } else if (entry.mode === "frame_window") {
+    const f = result as DataFrame;
+    actual = normAct({ dtypes: f.dtypes(), columns: f.columns, index: f.index, indexName: f.index_name ?? null, values: f.columns.length === 0 ? [] : f.values() });
+    if (!eq(actual, normExp(entry.expected))) failMsg("frame_window", normExp(entry.expected), actual); else pass++;
+    continue;
+  } else if (entry.mode === "frame_pivot") {
+    const fr = result as DataFrame;
+    const keyColumn = (entry as unknown as { keyColumns: string[] }).keyColumns[0]!;
+    const keyValues = fr.get(keyColumn).to_list();
+    const dataColumns = fr.columns.filter((c) => c !== keyColumn);
+    const positions = dataColumns.map((c) => fr.columns.indexOf(c));
+    actual = normAct({
+      dtypes: Object.fromEntries(dataColumns.map((c) => [c, fr.dtypes()[c]])),
+      columns: dataColumns,
+      index: keyValues,
+      indexName: keyColumn,
+      values: fr.values().map((row) => positions.map((p) => row[p])),
+    });
+    if (!eq(actual, normExp(entry.expected))) failMsg("frame_pivot", normExp(entry.expected), actual); else pass++;
+    continue;
   } else if (entry.mode === "groupby") {
     const fe = entry as unknown as { by: string; seriesExpected?: { dtype: string; values: unknown[]; index: unknown[] } };
     const fr = result as DataFrame;

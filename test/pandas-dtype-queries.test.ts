@@ -25,7 +25,7 @@ for (const [i, entry] of fixture.cases.entries()) {
       const result = run();
       expect(result.columns).toEqual(entry.expected as string[]);
       expect(result.index).toEqual([0]);
-      for (const column of result.columns) expect(result.dtypes()[column]).toBe(frame.dtypes()[column]);
+      for (const column of result.columns) expect(result.dtypes()[column as string]).toBe(frame.dtypes()[column as string]);
     }
   });
 }

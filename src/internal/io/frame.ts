@@ -17,5 +17,5 @@ export function applyIndexColumn(
     throw new Error("index_col does not match any column.");
   }
 
-  return frame.set_index(indexColumn);
+  return frame.set_index(indexColumn as string | string[]);
 }

@@ -9,14 +9,17 @@ export function writeExcelFrame(frame: FrameLike, options: ToExcelOptions): void
   }
 
   const includeIndex = options.index ?? false;
-  const header = includeIndex ? ["index", ...frame.columns] : [...frame.columns];
+  // Records are keyed by storage columns; tuple MultiColumn headers stringify.
+  const header = includeIndex
+    ? ["index", ...frame.columns.map((column) => String(column))]
+    : frame.columns.map((column) => String(column));
   const matrix: CellValue[][] = [header];
   const records = frame.to_records();
   const index = frame.index;
 
   for (let i = 0; i < records.length; i += 1) {
     const record = records[i]!;
-    const row = frame.columns.map((column) => normalizeExcelCell(record[column]));
+    const row = frame.storageColumns.map((column) => normalizeExcelCell(record[column]));
     if (includeIndex) {
       row.unshift(index[i]! as never);
     }

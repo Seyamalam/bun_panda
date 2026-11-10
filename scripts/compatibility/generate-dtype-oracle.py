@@ -756,5 +756,493 @@ for label, (left_spec, right_spec) in binary_specs.items():
 cases.extend(binary_cases)
 print(f'added {len(binary_cases)} frame binary contracts')
 
+# ---------------------------------------------------------------------------
+# Window contracts: Series rolling/expanding/ewm. pandas returns a Series of
+# float64; bun_panda's rolling/expanding accessors yield bare value lists
+# (null for under-populated windows) while ewm returns a Series, so the
+# harness compares values missing-aware plus dtype/index/name when the
+# result is a Series.
+# ---------------------------------------------------------------------------
+window_cases = []
+window_inputs = [
+  ('int16', [3, 1, 4, 1, 5]),
+  ('Int16', [3, None, 1, None, 5]),
+  ('int64', [3, 1, 4, 1, 5]),
+  ('float64', [3.5, 1.5, 4.5, 0.5]),
+  ('float64', [3.5, np.nan, 1.5, np.nan]),
+  ('float64', [np.inf, 1.0, -np.inf, 2.0]),
+  ('Float32', [3.5, None, 1.5]),
+  ('bool', [True, False, True, True]),
+  ('boolean', [True, None, True]),
+  ('str', ['a', 'b', 'c', 'd']),
+  ('object', [1, 'a', 2]),
+  ('object', [1, 2, 3]),
+  ('object', [None, None]),
+  ('int16', []),
+]
+window_methods = ['mean', 'sum', 'min', 'max', 'count', 'std', 'median']
+for dtype, values in window_inputs:
+    try:
+        source = pd.Series(values, dtype=dtype,
+                           index=[f'row-{i}' for i in range(len(values))], name='v')
+    except Exception:
+        continue
+    rolling_variants = [
+        ([2], {'window': 2}),
+        ([3], {'window': 3}),
+        ([3, 1], {'window': 3, 'min_periods': 1}),
+        ([2, 1], {'window': 2, 'min_periods': 1}),
+        ([4, 2], {'window': 4, 'min_periods': 2}),
+    ]
+    for window_args, pandas_kwargs in rolling_variants:
+        for method in window_methods:
+            entry = {'mode': 'window', 'dtype': dtype,
+                     'values': [encode(x) for x in values],
+                     'operation': 'rolling', 'windowArgs': window_args,
+                     'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.rolling(**pandas_kwargs), method)()
+                entry['expected'] = {'values': [encode(x) for x in result.tolist()],
+                                     'index': [encode(x) for x in result.index.tolist()],
+                                     'name': result.name, 'dtype': str(result.dtype)}
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            window_cases.append(entry)
+    for window_args, pandas_kwargs in [([], {}), ([2], {'min_periods': 2})]:
+        for method in window_methods:
+            entry = {'mode': 'window', 'dtype': dtype,
+                     'values': [encode(x) for x in values],
+                     'operation': 'expanding', 'windowArgs': window_args,
+                     'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.expanding(**pandas_kwargs), method)()
+                entry['expected'] = {'values': [encode(x) for x in result.tolist()],
+                                     'index': [encode(x) for x in result.index.tolist()],
+                                     'name': result.name, 'dtype': str(result.dtype)}
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            window_cases.append(entry)
+    ewm_variants = [
+        ([2], {'span': 2}),
+        ([3], {'span': 3}),
+        ([2, {'min_periods': 2}], {'span': 2, 'min_periods': 2}),
+        ([1], {'span': 1}),
+    ]
+    for window_args, pandas_kwargs in ewm_variants:
+        for method in ['mean', 'sum', 'std']:
+            entry = {'mode': 'window', 'dtype': dtype,
+                     'values': [encode(x) for x in values],
+                     'operation': 'ewm', 'windowArgs': window_args,
+                     'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.ewm(**pandas_kwargs), method)()
+                entry['expected'] = {'values': [encode(x) for x in result.tolist()],
+                                     'index': [encode(x) for x in result.index.tolist()],
+                                     'name': result.name, 'dtype': str(result.dtype)}
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            window_cases.append(entry)
+cases.extend(window_cases)
+print(f'added {len(window_cases)} window contracts')
+
+# ---------------------------------------------------------------------------
+# .str accessor contracts: element-wise string ops across str/string/object
+# dtypes. bun_panda's StringMethods returns bare lists (null for missing or
+# non-string cells), so the harness compares value lists missing-aware.
+# ---------------------------------------------------------------------------
+str_cases = []
+str_inputs = [
+  ('str', ['aBc', None, 'X Y1']),
+  ('str', ['Hello World', 'abc123', '  pad  ']),
+  ('str', ['a=b=c', 'x', None]),
+  ('str', []),
+  ('string', ['aBc', None, 'X Y1']),
+  ('string', ['Hello World', 'abc123', None]),
+  ('object', ['aBc', None, 'X Y1']),
+  ('object', ['aBc', 1, 'X Y1', None]),
+]
+def encode_nested(x):
+    if isinstance(x, (list, tuple)):
+        return [encode_nested(v) for v in x]
+    return encode(x)
+str_ops = [
+  ('upper', [], {}), ('lower', [], {}), ('capitalize', [], {}), ('title', [], {}),
+  ('strip', [], {}), ('lstrip', [], {}), ('rstrip', [], {}),
+  ('zfill', [5], {'width': 5}),
+  ('slice', [1], {'start': 1}), ('slice', [0, 2], {'start': 0, 'stop': 2}),
+  ('slice', [-2], {'start': -2}),
+  ('replace', ['a', 'X'], {'pat': 'a', 'repl': 'X'}),
+  ('replace', ['a', 'X', False], {'pat': 'a', 'repl': 'X', 'regex': False}),
+  ('replace', ['\\d', '#', True], {'pat': r'\d', 'repl': '#', 'regex': True}),
+  ('contains', ['a', False], {'pat': 'a', 'regex': False}),
+  ('contains', ['a|y', True], {'pat': 'a|y'}),
+  ('startswith', ['a'], {'pat': 'a'}), ('endswith', ['c'], {'pat': 'c'}),
+  ('match', ['a.c'], {'pat': 'a.c'}), ('find', ['c'], {'sub': 'c'}),
+  ('get', [1], {'i': 1}), ('get', [-1], {'i': -1}),
+  ('len', [], {}), ('count', ['a|c'], {'pat': 'a|c'}),
+  ('isalpha', [], {}), ('isdigit', [], {}), ('isnumeric', [], {}),
+  ('isspace', [], {}), ('isalnum', [], {}), ('islower', [], {}), ('isupper', [], {}),
+  ('swapcase', [], {}), ('casefold', [], {}),
+  ('center', [8, '*'], {'width': 8, 'fillchar': '*'}),
+  ('ljust', [6, '.'], {'width': 6, 'fillchar': '.'}),
+  ('rjust', [6, '.'], {'width': 6, 'fillchar': '.'}),
+  ('pad', [8, 'both', '*'], {'width': 8, 'side': 'both', 'fillchar': '*'}),
+  ('removeprefix', ['a'], {'prefix': 'a'}), ('removesuffix', ['c'], {'suffix': 'c'}),
+  ('repeat', [2], {'repeats': 2}),
+  ('findall', ['[a-z]'], {'pat': '[a-z]'}),
+  ('split', [' '], {'pat': ' '}), ('split', [], {}),
+  ('rsplit', [' ', 1], {'pat': ' ', 'n': 1}),
+  ('partition', [' '], {'sep': ' ', 'expand': False}),
+  ('rpartition', [' '], {'sep': ' ', 'expand': False}),
+  ('extract', ['(\\d+)'], {'pat': r'(\d+)', 'expand': False}),
+]
+for dtype, values in str_inputs:
+    try:
+        source = pd.Series(values, dtype=dtype, name='v')
+    except Exception:
+        continue
+    for operation, args, kwargs in str_ops:
+        entry = {'mode': 'str', 'dtype': dtype,
+                 'values': [encode(x) for x in values],
+                 'operation': operation, 'args': args}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = getattr(source.str, operation)(**kwargs)
+            if isinstance(result, pd.Series):
+                entry['expected'] = {'values': [encode_nested(x) for x in result.tolist()]}
+            else:
+                entry['expected'] = {'values': encode_nested(result)}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        str_cases.append(entry)
+cases.extend(str_cases)
+print(f'added {len(str_cases)} str accessor contracts')
+
+# ---------------------------------------------------------------------------
+# .dt accessor contracts: datetime64 naive + fixed-offset aware dtypes.
+# Naive wall clocks are stored as the UTC instant of their reading (the
+# pandas convention used by this library); aware columns relabel the zone.
+# ---------------------------------------------------------------------------
+dt_cases = []
+dt_ops = ['year', 'month', 'day', 'hour', 'minute', 'second',
+          'dayofweek', 'dayofyear', 'day_name', 'date', 'isocalendar_week']
+def encode_cell(x):
+    if x is pd.NaT:
+        return {'$missing': 'NaT'}
+    if isinstance(x, (pd.Timestamp,)) or (hasattr(x, 'isoformat') and not isinstance(x, (str, bytes))):
+        return x.isoformat()[:10] if type(x).__name__ == 'date' else str(x)
+    return encode(x)
+dt_inputs = {
+  'datetime64[ns]': (
+    ['2020-01-15 10:30:45', '2021-02-28 23:59:58', None, '2020-12-31 05:30:00'],
+    lambda v: pd.to_datetime(pd.Series(v))),
+  'datetime64[ns]2': (
+    [],
+    lambda v: pd.to_datetime(pd.Series(v))),
+  'datetime64[ns, US/Eastern]': (
+    ['2020-01-15T10:30:45Z', '2020-01-31T23:30:00Z', None],
+    lambda v: pd.to_datetime(pd.Series(v), utc=True).dt.tz_convert('US/Eastern')),
+  'datetime64[ns, Asia/Tokyo]': (
+    ['2020-01-15T10:30:45Z', '2020-06-15T12:00:00Z', None],
+    lambda v: pd.to_datetime(pd.Series(v), utc=True).dt.tz_convert('Asia/Tokyo')),
+  'datetime64[ns, UTC]': (
+    ['2020-01-15T10:30:45Z', '2020-01-02T00:00:00Z', None],
+    lambda v: pd.to_datetime(pd.Series(v), utc=True)),
+}
+for dtype, (values, build) in dt_inputs.items():
+    entry_dtype = 'datetime64[ns]' if dtype == 'datetime64[ns]2' else dtype
+    source = build(values)
+    for operation in dt_ops:
+        entry = {'mode': 'dt', 'dtype': entry_dtype,
+                 'values': [encode(x) if x is not None else None for x in values],
+                 'operation': operation}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                if operation == 'isocalendar_week':
+                    result = source.dt.isocalendar().week
+                elif operation == 'day_name':
+                    result = getattr(source.dt, operation)()
+                else:
+                    # year/month/day/hour/.../date are pandas properties, not
+                    # methods — access without calling.
+                    result = getattr(source.dt, operation)
+            entry['expected'] = {'values': [encode_cell(x) for x in result.tolist()]}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        dt_cases.append(entry)
+cases.extend(dt_cases)
+print(f'added {len(dt_cases)} dt accessor contracts')
+
+# ---------------------------------------------------------------------------
+# Frame window contracts: rolling/expanding/ewm on frames. pandas applies
+# count to every column and raises DataError for the other aggregations when
+# any column is non-numeric; all result columns are float64.
+# ---------------------------------------------------------------------------
+frame_window_cases = []
+frame_window_specs = [
+  {'n': ('int16', [3, 1, 4, 2]), 'f': ('float32', [1.5, None, 2.5, 0.5])},
+  {'a': ('int64', [1, 2, 3]), 'b': ('float64', [np.nan, 2.0, 3.0])},
+  {'a': ('boolean', [True, None, True]), 'b': ('int16', [1, 2, 3])},
+  {'s': ('string', ['a', 'b', 'c']), 'n': ('int16', [1, 2, 3])},
+  {'s': ('string', ['a', 'b'])},
+]
+for spec in frame_window_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    for window_args, pandas_kwargs in [([2], {'window': 2}),
+                                       ([2, 1], {'window': 2, 'min_periods': 1}),
+                                       ([3], {'window': 3})]:
+        for method in window_methods:
+            entry = {'mode': 'frame_window',
+                     'dtypes': {c: d for c, (d, v) in spec.items()},
+                     'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                     'index': index, 'operation': 'rolling',
+                     'windowArgs': window_args, 'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.rolling(**pandas_kwargs), method)()
+                entry['expected'] = frame_expected(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            frame_window_cases.append(entry)
+    for window_args, pandas_kwargs in [([], {}), ([2], {'min_periods': 2})]:
+        for method in window_methods:
+            entry = {'mode': 'frame_window',
+                     'dtypes': {c: d for c, (d, v) in spec.items()},
+                     'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                     'index': index, 'operation': 'expanding',
+                     'windowArgs': window_args, 'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.expanding(**pandas_kwargs), method)()
+                entry['expected'] = frame_expected(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            frame_window_cases.append(entry)
+    for window_args, pandas_kwargs in [([2], {'span': 2}),
+                                       ([2, {'min_periods': 2}], {'span': 2, 'min_periods': 2})]:
+        for method in ['mean', 'sum', 'std']:
+            entry = {'mode': 'frame_window',
+                     'dtypes': {c: d for c, (d, v) in spec.items()},
+                     'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                     'index': index, 'operation': 'ewm',
+                     'windowArgs': window_args, 'method': method}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source.ewm(**pandas_kwargs), method)()
+                entry['expected'] = frame_expected(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            frame_window_cases.append(entry)
+cases.extend(frame_window_cases)
+print(f'added {len(frame_window_cases)} frame window contracts')
+
+# ---------------------------------------------------------------------------
+# Pivot contracts: df.pivot and df.pivot_table. pandas consumes the key
+# column into the index while bun_panda keeps it as a data column, so the
+# harness adapts (groupby-style) before comparing.
+# ---------------------------------------------------------------------------
+frame_pivot_cases = []
+pivot_specs = [
+  {'i': ('string', ['b', 'a', 'b', 'a']), 'c': ('string', ['y', 'x', 'x', 'y']),
+   'v': ('int16', [1, 2, 3, 4])},
+  {'i': ('string', ['b', 'a', 'a']), 'c': ('string', ['y', 'x', 'z']),
+   'v': ('float64', [1.0, 2.0, 3.0])},
+  {'i': ('string', ['a', 'b', 'a']), 'c': ('string', ['x', 'y', 'x']),
+   'v': ('int16', [1, 2, 3]), 'w': ('float64', [10.0, 20.0, 30.0])},
+]
+for spec in pivot_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    base = {'mode': 'frame_pivot',
+            'dtypes': {c: d for c, (d, v) in spec.items()},
+            'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+            'index': index, 'keyColumns': ['i']}
+    entry = {**base, 'operation': 'pivot', 'args': ['i', 'c', 'v']}
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            result = source.pivot(index='i', columns='c', values='v')
+        entry['expected'] = frame_expected(result)
+    except Exception as e:
+        entry['error'] = type(e).__name__
+    frame_pivot_cases.append(entry)
+    table_variants = [
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'mean'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'mean'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'count'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'count'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'min'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'min'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'max'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'max'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'fill_value': 0},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'fill_value': 0}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'margins': True},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'margins': True}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'margins': True, 'margins_name': 'Tot'},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'margins': True, 'margins_name': 'Tot'}),
+        ({'index': 'i', 'values': 'v', 'aggfunc': 'sum'},
+         {'index': 'i', 'values': 'v', 'aggfunc': 'sum'}),
+        ({'index': 'i', 'values': 'v', 'aggfunc': 'mean'},
+         {'index': 'i', 'values': 'v', 'aggfunc': 'mean'}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'sort': False},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'sort': False}),
+        ({'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'dropna': False},
+         {'index': 'i', 'columns': 'c', 'values': 'v', 'aggfunc': 'sum',
+          'dropna': False}),
+    ]
+    for options, kwargs in table_variants:
+        entry = {**base, 'operation': 'pivot_table', 'args': [options]}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = source.pivot_table(**kwargs)
+            entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        frame_pivot_cases.append(entry)
+cases.extend(frame_pivot_cases)
+print(f'added {len(frame_pivot_cases)} pivot contracts')
+
+# ---------------------------------------------------------------------------
+# Frame value_counts / drop_duplicates / fillna / describe / mode: ride the
+# existing frame_selection mode. value_counts returns a Series in pandas;
+# reset_index() gives exactly the shape bun_panda returns (key columns then
+# count/proportion), so it is encoded as a frame expectation.
+# ---------------------------------------------------------------------------
+frame_extra_specs = [
+  {'a': ('string', ['x', 'y', 'x', None]), 'b': ('int16', [1, 2, 1, 3]),
+   'c': ('boolean', [True, False, True, None])},
+  {'a': ('string', ['p', 'p', 'q']), 'b': ('float64', [1.5, None, 1.5])},
+  {'a': ('int16', [3, 1, 3]), 'b': ('string', ['u', 'v', 'u'])},
+  {'a': ('object', [1, 'x', 1]), 'b': ('float64', [np.nan, 2.0, np.nan])},
+]
+frame_extra_ops = [
+  ('drop_duplicates', [], {}),
+  ('drop_duplicates', ['a'], {'subset': 'a'}),
+  ('drop_duplicates', [['a', 'b'], 'last'], {'subset': ['a', 'b'], 'keep': 'last'}),
+  ('drop_duplicates', [None, False], {'keep': False}),
+  ('drop_duplicates', [None, 'first', True], {'keep': 'first', 'ignore_index': True}),
+  ('duplicated', [], {}),
+  ('duplicated', [['a', 'b'], 'last'], {'subset': ['a', 'b'], 'keep': 'last'}),
+  ('value_counts', [], {}),
+  ('value_counts', [{'subset': 'a'}], {'subset': 'a'}),
+  ('value_counts', [{'subset': 'a', 'normalize': True}], {'subset': 'a', 'normalize': True}),
+  ('value_counts', [{'subset': 'a', 'dropna': False}], {'subset': 'a', 'dropna': False}),
+  ('value_counts', [{'subset': ['a', 'b'], 'sort': False}], {'subset': ['a', 'b'], 'sort': False}),
+  ('value_counts', [{'ascending': True}], {'ascending': True}),
+  ('fillna', [0], {'value': 0}),
+  ('fillna', [{'a': 'zz'}], {'value': {'a': 'zz'}}),
+  ('fillna', [{'a': 'zz', 'b': 0}], {'value': {'a': 'zz', 'b': 0}}),
+  ('describe', [], {}),
+  ('mode', [], {}),
+]
+frame_extra_cases = []
+for spec in frame_extra_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    for operation, args, kwargs in frame_extra_ops:
+        entry = {'mode': 'frame_selection',
+                 'dtypes': {c: d for c, (d, v) in spec.items()},
+                 'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                 'index': index, 'operation': operation, 'args': args}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                if operation == 'value_counts':
+                    result = source.value_counts(**kwargs).reset_index()
+                elif operation == 'drop_duplicates':
+                    result = source.drop_duplicates(**kwargs)
+                elif operation == 'duplicated':
+                    result = source.duplicated(**kwargs)
+                elif operation == 'fillna':
+                    result = source.fillna(**kwargs)
+                else:
+                    result = getattr(source, operation)()
+            if isinstance(result, pd.Series):
+                entry['rowExpected'] = {'index': [encode(x) for x in result.index.tolist()],
+                                        'name': result.name,
+                                        'values': [encode(x) for x in result.tolist()],
+                                        'dtype': str(result.dtype)}
+            else:
+                entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        frame_extra_cases.append(entry)
+cases.extend(frame_extra_cases)
+print(f'added {len(frame_extra_cases)} frame counts/fill contracts')
+
+# Series fillna(dict)/list/None variants: pandas maps dict keys by index
+# label, rejects non-scalar/non-dict values, and treats None as a no-op.
+series_fillna_cases = []
+for dtype, values in [('int16', [1, None, None]), ('Int16', [1, None, None]),
+                      ('float64', [1.0, np.nan, np.nan]), ('string', ['x', None, None]),
+                      ('boolean', [True, None, None]), ('object', [1, None, 'a'])]:
+    try:
+        source = pd.Series(values, dtype=dtype,
+                           index=[f'row-{i}' for i in range(len(values))], name='v')
+    except Exception:
+        continue
+    for arg in [{'row-1': 7}, {'row-1': 7, 'row-2': 8.5}, [0], None]:
+        entry = {'mode': 'replacement', 'dtype': dtype,
+                 'values': [encode(x) for x in values],
+                 'operation': 'fillna', 'args': [arg]}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = source.fillna(arg)
+            entry['expected'] = {'dtype': str(result.dtype),
+                                 'values': [encode(x) for x in result.tolist()],
+                                 'index': result.index.tolist(), 'name': result.name}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        series_fillna_cases.append(entry)
+cases.extend(series_fillna_cases)
+print(f'added {len(series_fillna_cases)} series fillna variant contracts')
+
+# Series drop_duplicates keep variants (first already covered by selection).
+series_dd_cases = []
+for dtype, values in [('Int16', [1, None, 1]), ('float64', [1.5, 1.5, np.nan]),
+                      ('string', ['b', 'a', 'b']), ('object', [1, 'a', 1])]:
+    try:
+        source = pd.Series(values, dtype=dtype,
+                           index=[f'row-{i}' for i in range(len(values))], name='v')
+    except Exception:
+        continue
+    for keep in ['last', False]:
+        result = source.drop_duplicates(keep=keep)
+        series_dd_cases.append({'mode': 'selection', 'dtype': dtype,
+                                'values': [encode(x) for x in values],
+                                'operation': 'drop_duplicates', 'args': [keep],
+                                'expected': {'dtype': str(result.dtype),
+                                             'values': [encode(x) for x in result.tolist()],
+                                             'index': result.index.tolist(),
+                                             'name': result.name}})
+cases.extend(series_dd_cases)
+print(f'added {len(series_dd_cases)} series drop_duplicates contracts')
+
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

@@ -126,6 +126,13 @@ export function keyForRow(row: Row, columns: string[]): string {
   return key;
 }
 
+/** Same fragment encoding as keyForRow, but over an explicit value tuple. */
+export function keyForValues(values: CellValue[]): string {
+  let key = "";
+  for (const value of values) key += keyFragment(value);
+  return key;
+}
+
 export function keyForSingleValue(value: CellValue): string {
   return keyFragment(value);
 }

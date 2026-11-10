@@ -647,7 +647,7 @@ export function lreshape(
   groups: Record<string, string[]>
 ): DataFrame {
   const groupEntries = Object.entries(groups);
-  const idColumns = frame.columns.filter(
+  const idColumns = (frame.columns as string[]).filter(
     (c) => !groupEntries.some(([, cols]) => cols.includes(c))
   );
   const rows: Row[] = [];
@@ -761,7 +761,7 @@ export function merge_ordered(
     merged[on] = key as CellValue;
     return merged;
   });
-  const columns = [...new Set([...left.columns, ...right.columns])];
+  const columns = [...new Set([...left.columns, ...right.columns])] as string[];
   return DataFrame.createInternal(outRows, columns, outRows.map((_, i) => i));
 }
 

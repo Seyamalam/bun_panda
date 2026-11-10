@@ -1,13 +1,15 @@
 import updateFixture from "./fixtures/pandas-frame-update.json";
 import assignmentFixture from "./fixtures/pandas-frame-assignment.json";
 import { expect, test } from "bun:test";
-import { concat, DataFrame, NA, Series } from "../src/index";
+import { concat, DataFrame, NA, NaT, Series } from "../src/index";
 import type { CellValue, DType } from "../src/types";
+import { isMissing } from "../src/utils";
 import frameFixture from "./fixtures/pandas-frame-dtypes.json";
 import fixture from "./fixtures/pandas-dtype-contracts.json";
 
 function encode(value: CellValue): unknown {
   if (value === NA) return { $missing: "NA" };
+  if (value === NaT) return { $missing: "NaT" };
   if (typeof value === "bigint") return Number(value);
   if (typeof value === "number") {
     if (Number.isNaN(value)) return { $missing: "NaN" };
@@ -19,10 +21,37 @@ function encode(value: CellValue): unknown {
 
 function decode(value: unknown): CellValue {
   if (value && typeof value === "object") {
-    if ("$missing" in value) return value.$missing === "NA" ? NA : NaN;
+    if ("$missing" in value) return value.$missing === "NA" ? NA : value.$missing === "NaT" ? NaT : NaN;
     if ("$number" in value) return value.$number === "-0" ? -0 : value.$number === "Infinity" ? Infinity : -Infinity;
   }
   return value as CellValue;
+}
+
+// Missing-sentinel-insensitive normalization for accessor-style results
+// (window/str/dt/pivot families): pandas encodes NA/NaN/NaT/None while the
+// library's bare arrays use null, so all missing forms collapse together.
+function normalizeExpected(value: unknown): unknown {
+  if (value === null) return "__missing__";
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if ("$missing" in value || "$number" in value) {
+      const decoded = decode(value);
+      return isMissing(decoded) ? "__missing__" : decoded;
+    }
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, cell]) => [key, normalizeExpected(cell)]));
+  }
+  if (Array.isArray(value)) return value.map(normalizeExpected);
+  return value;
+}
+
+function normalizeActual(value: unknown): unknown {
+  if (isMissing(value)) return "__missing__";
+  if (Array.isArray(value)) return value.map(normalizeActual);
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "bigint") return Number(value);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, cell]) => [key, normalizeActual(cell)]));
+  }
+  return value;
 }
 
 type FrameSpec = { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] };
@@ -64,7 +93,17 @@ for (const [i, entry] of fixture.cases.entries()) {
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
         return operation.apply(source, [operand]) as unknown as Series<CellValue>;
       }
-      if (entry.mode === "frame_reduction" || entry.mode === "frame_selection" || entry.mode === "groupby") {
+      if (entry.mode === "frame_window") {
+        const frameEntry = entry as unknown as FrameSpec & { windowArgs: unknown[]; method: string };
+        const source = buildFrame(frameEntry);
+        const factory: unknown = Reflect.get(source, entry.operation!);
+        if (typeof factory !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        const accessor = factory.apply(source, frameEntry.windowArgs ?? []) as object;
+        const method: unknown = Reflect.get(accessor, frameEntry.method);
+        if (typeof method !== "function") throw new Error(`Missing window method ${frameEntry.method}`);
+        return method.apply(accessor, []) as unknown as Series<CellValue>;
+      }
+      if (entry.mode === "frame_pivot" || entry.mode === "frame_reduction" || entry.mode === "frame_selection" || entry.mode === "groupby") {
         const frameEntry = entry as unknown as FrameSpec & { by?: string };
         const source = buildFrame(frameEntry);
         const target: unknown = entry.mode === "groupby" ? source.groupby(frameEntry.by!) : source;
@@ -83,9 +122,24 @@ for (const [i, entry] of fixture.cases.entries()) {
       }
       const source = new Series<CellValue>(values, {
         dtype,
-        ...((entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view" || entry.mode === "series_reduction" || entry.mode === "series_array") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
+        ...((entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view" || entry.mode === "series_reduction" || entry.mode === "series_array" || entry.mode === "window") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
         ...((entry as { index?: unknown[] }).index ? { index: (entry as { index: (string | number)[] }).index } : {}),
       });
+      if (entry.mode === "window") {
+        const windowEntry = entry as unknown as { windowArgs: unknown[]; method: string };
+        const factory: unknown = Reflect.get(source, entry.operation!);
+        if (typeof factory !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        const accessor = factory.apply(source, windowEntry.windowArgs ?? []) as object;
+        const method: unknown = Reflect.get(accessor, windowEntry.method);
+        if (typeof method !== "function") throw new Error(`Missing window method ${windowEntry.method}`);
+        return method.apply(accessor, []) as unknown as Series<CellValue>;
+      }
+      if (entry.mode === "str" || entry.mode === "dt") {
+        const accessor = (entry.mode === "str" ? source.str : source.dt) as unknown as Record<string, (...args: unknown[]) => unknown>;
+        const method = accessor[entry.operation!];
+        if (typeof method !== "function") throw new Error(`Missing accessor method ${entry.operation}`);
+        return method.apply(accessor, entry.args) as unknown as Series<CellValue>;
+      }
       if (entry.mode === "arithmetic") {
         const operandSpec = (entry as { operand: Record<string, unknown> }).operand;
         const operand: CellValue | Series<CellValue> = "scalar" in operandSpec
@@ -130,6 +184,52 @@ for (const [i, entry] of fixture.cases.entries()) {
       } else {
         expect<unknown>(frameResult(result as DataFrame)).toEqual(entry.expected!);
       }
+    } else if (entry.mode === "window" || entry.mode === "str" || entry.mode === "dt") {
+      const result = run() as unknown;
+      const expected = entry.expected as { values: unknown[]; index?: unknown[]; name?: string | null; dtype?: string };
+      if (result instanceof Series) {
+        // ewm returns a Series: pandas dtype/index/name contracts apply too.
+        expect<unknown>({
+          dtype: result.dtype,
+          index: result.index.map((label) => encode(label as CellValue)),
+          name: result.name ?? null,
+          values: normalizeActual(result.to_list()),
+        }).toEqual({
+          dtype: expected.dtype,
+          index: expected.index,
+          name: expected.name ?? null,
+          values: normalizeExpected(expected.values),
+        });
+      } else {
+        // rolling/expanding accessors and str/dt methods return bare lists;
+        // the oracle's pandas missing markers compare missing-aware.
+        expect<unknown>(normalizeActual(result)).toEqual(normalizeExpected(expected.values));
+      }
+    } else if (entry.mode === "frame_window") {
+      const result = run() as unknown as DataFrame;
+      expect<unknown>(normalizeActual({
+        dtypes: result.dtypes(),
+        columns: result.columns,
+        index: result.index,
+        indexName: result.index_name ?? null,
+        values: result.columns.length === 0 ? [] : result.values(),
+      })).toEqual(normalizeExpected(entry.expected));
+    } else if (entry.mode === "frame_pivot") {
+      // pandas moves the key column into the index; bun_panda keeps it as a
+      // data column. Adapt like groupby before comparing.
+      const result = run() as unknown as DataFrame;
+      const keyColumn = (entry as unknown as { keyColumns: string[] }).keyColumns[0]!;
+      const keyValues = result.get(keyColumn).to_list();
+      const dataColumns = result.columns.filter((column) => column !== keyColumn);
+      const positions = dataColumns.map((column) => result.columns.indexOf(column));
+      const dtypes = result.dtypes() as Record<string, DType>;
+      expect<unknown>(normalizeActual({
+        dtypes: Object.fromEntries(dataColumns.map((column) => [column, dtypes[String(column)]])),
+        columns: dataColumns,
+        index: keyValues,
+        indexName: keyColumn,
+        values: result.values().map((row) => positions.map((p) => row[p])),
+      })).toEqual(normalizeExpected(entry.expected));
     } else if (entry.mode === "groupby") {
       const result = run() as unknown as DataFrame;
       const frameEntry = entry as unknown as { by: string; seriesExpected?: { dtype: string; values: unknown[]; index: unknown[] } };
@@ -144,8 +244,9 @@ for (const [i, entry] of fixture.cases.entries()) {
         const dataColumns = result.columns.filter((column) => column !== frameEntry.by);
         const positions = dataColumns.map((column) => result.columns.indexOf(column));
         const expected = entry.expected as { dtypes: Record<string, string>; columns: string[]; index: unknown[]; indexName: string | null; values: unknown[][] };
+        const dtypes = result.dtypes() as Record<string, DType>;
         expect<unknown>({
-          dtypes: Object.fromEntries(dataColumns.map((column) => [column, result.dtypes()[column]])),
+          dtypes: Object.fromEntries(dataColumns.map((column) => [column, dtypes[String(column)]])),
           columns: dataColumns,
           index: keyValues.map(encode),
           values: result.values().map((row) => positions.map((p) => encode(row[p]!))),

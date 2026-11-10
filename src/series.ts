@@ -1,4 +1,14 @@
 import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelsEqual, reindexPositions } from "./internal/shared/indexing";
+import {
+  crossSectionPositions,
+  dropTupleLevels,
+  indexTuple,
+  indexTuples,
+  prefixPositions,
+  resolveIndexLevel,
+  unstackCellKey,
+  unstackGrid,
+} from "./internal/shared/multiindex";
 import { arithResultDType, castColumn, convertedDType, floordivResultDType, replacementDType, scalarOperandDType } from "./dtypes";
 import { isAbsent, scalarKey, roundToEven, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
@@ -65,7 +75,7 @@ import {
 } from "./internal/shared";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
-import { computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
+import { assertWindowAggregable, computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
 
 export type SeriesDType = DType;
 
@@ -74,6 +84,8 @@ export interface SeriesOptions {
   name?: string;
   index?: IndexLabel[];
   indexName?: string;
+  /** One name per level for tuple-labeled MultiIndex series. */
+  indexNames?: (string | undefined)[];
 }
 
 export type { SeriesReplaceInput };
@@ -84,12 +96,15 @@ export class Series<T extends CellValue = CellValue> {
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
   private readonly _indexName: string | undefined;
+  /** pandas `series.index.names` — one per level; set for MultiIndex series. */
+  private readonly _indexNames: (string | undefined)[] | undefined;
 
   constructor(values: T[], options: SeriesOptions = {}) {
     this._dtype = options.dtype ?? convertedDType(values, undefined, false);
     this._values = castColumn(values, this._dtype) as T[];
     this._index = options.index ? [...options.index] : range(values.length);
     this._indexName = options.indexName;
+    this._indexNames = options.indexNames;
     this._name = options.name;
 
     if (this._index.length !== this._values.length) {
@@ -121,7 +136,14 @@ export class Series<T extends CellValue = CellValue> {
 
   /** pandas `series.index.names` — one entry per index level. */
   get index_names(): (string | undefined)[] {
-    return [this._indexName];
+    if (this._indexNames) {
+      return this._indexNames;
+    }
+    const levels = this.nlevels;
+    if (levels <= 1) {
+      return [this._indexName];
+    }
+    return Array.from({ length: levels }, (_, i) => (i === 0 ? this._indexName : undefined));
   }
 
   /** pandas `series.index.nlevels`. */
@@ -158,12 +180,112 @@ export class Series<T extends CellValue = CellValue> {
     return this._values[resolved];
   }
 
-  loc(label: IndexLabel): T | undefined {
+  /**
+   * Label lookup like pandas `s.loc[...]`:
+   * - `loc("a")` on a flat index returns the matching value or undefined.
+   * - `loc("a")` on a MultiIndex takes the outer-level slice — a Series with
+   *   the matched leading levels dropped (pandas `s.loc["a"]`).
+   * - `loc("a", 1)` / `loc([["a", 1]])` address tuple keys; a unique
+   *   full-length match returns the value.
+   * - `loc(["a", "b"])` is a label list: scalars select level-0 groups
+   *   keeping the full tuple index (pandas `s.loc[["a","b"]]`).
+   */
+  loc(label: IndexLabel | IndexLabel[], ...rest: (string | number)[]): T | Series<T> | undefined {
+    if (rest.length > 0) {
+      return this.locLevels([label as string | number, ...rest]);
+    }
+    if (Array.isArray(label)) {
+      return this.locList(label);
+    }
+    if (this.nlevels > 1) {
+      return this.locLevels([label as string | number]);
+    }
     const position = this._index.findIndex((entry) => indexLabelEquals(entry, label));
     if (position < 0) {
       return undefined;
     }
     return this._values[position];
+  }
+
+  /** MultiIndex `.loc` prefix selection matching the leading `parts` levels. */
+  private locLevels(parts: (string | number)[]): T | Series<T> | undefined {
+    const nlevels = this.nlevels;
+    if (parts.length > nlevels) {
+      throw new KeyError(`'(${parts.join(", ")})'`);
+    }
+    const positions = prefixPositions(indexTuples(this._index), parts);
+    if (positions.length === 0) {
+      throw new KeyError(`'${parts.length === 1 ? String(parts[0]) : `(${parts.join(", ")})`}'`);
+    }
+    if (parts.length === nlevels) {
+      if (positions.length === 1) {
+        return this._values[positions[0]!];
+      }
+      return this.withIndexAndValues(
+        positions.map((position) => this._index[position]!),
+        positions.map((position) => this._values[position]!),
+        this._indexNames
+      );
+    }
+    const dropped = new Set(range(parts.length));
+    const nextNames = this.index_names.filter((_, i) => !dropped.has(i));
+    return this.withIndexAndValues(
+      positions.map((position) => dropTupleLevels(indexTuple(this._index[position]!), dropped)),
+      positions.map((position) => this._values[position]!),
+      nextNames
+    );
+  }
+
+  /** `.loc[list]` — flat labels select exactly; on a MultiIndex scalars match level 0. */
+  private locList(selector: IndexLabel[]): Series<T> {
+    const nlevels = this.nlevels;
+    if (nlevels <= 1 || selector.some((element) => Array.isArray(element))) {
+      // Full-key matching: every element must match a complete label.
+      const index: IndexLabel[] = [];
+      const values: T[] = [];
+      for (const element of selector) {
+        if (nlevels > 1 && !Array.isArray(element)) {
+          throw new KeyError(`'[${JSON.stringify(element)}] not in index'`);
+        }
+        const position = this._index.findIndex((entry) => indexLabelEquals(entry, element));
+        if (position < 0) {
+          throw new KeyError(`'[${JSON.stringify(element)}] not in index'`);
+        }
+        index.push(this._index[position]!);
+        values.push(this._values[position]!);
+      }
+      return this.withIndexAndValues(index, values, this._indexNames);
+    }
+
+    const tuples = indexTuples(this._index);
+    const missing = selector.filter((label) =>
+      !tuples.some((tuple) => indexLabelEquals(tuple[0] as IndexLabel, label))
+    );
+    if (missing.length > 0) {
+      throw new KeyError(`'[${missing.map((label) => JSON.stringify(label)).join(", ")}] not in index'`);
+    }
+    const index: IndexLabel[] = [];
+    const values: T[] = [];
+    for (const label of selector) {
+      tuples.forEach((tuple, position) => {
+        if (indexLabelEquals(tuple[0] as IndexLabel, label)) {
+          index.push(this._index[position]!);
+          values.push(this._values[position]!);
+        }
+      });
+    }
+    return this.withIndexAndValues(index, values, this._indexNames);
+  }
+
+  /** Rebuild this series over a new index, keeping dtype/name metadata. */
+  private withIndexAndValues(index: IndexLabel[], values: T[], indexNames?: (string | undefined)[]): Series<T> {
+    return new Series(values, {
+      index,
+      indexName: indexNames?.[0] ?? this._indexName,
+      indexNames: indexNames ?? this._indexNames,
+      name: this.name,
+      dtype: this._dtype,
+    });
   }
 
   head(n = 5): Series<T> {
@@ -217,7 +339,30 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(values, { index, name: this.name, dtype: this._dtype });
   }
 
+  /**
+   * pandas `Series.fillna`: a scalar fills every missing cell; a plain
+   * object fills cells whose *index label* matches a key; lists raise the
+   * pandas TypeError.
+   */
   fillna(value: T): Series<T> {
+    if (Array.isArray(value)) {
+      throw new TypeError(`"value" parameter must be a scalar or dict, but you passed a "list"`);
+    }
+    if (typeof value === "object" && value !== null && !(value instanceof Date)) {
+      const mapping = value as Record<string, CellValue>;
+      const filled = this._values.map((entry, i) => {
+        if (!isMissing(entry)) return entry;
+        const key = String(this._index[i]!);
+        return key in mapping ? (mapping[key] as T) : entry;
+      }) as T[];
+      // pandas str/string dtypes store missing as NaN, so widening to
+      // object keeps NaN (not the NA sentinel other nullable dtypes use).
+      const widened = (this._dtype === "string" || this._dtype === "str") &&
+        replacementDType(this._dtype, filled) === "object"
+        ? filled.map((entry) => (isMissing(entry) ? (NaN as T) : entry))
+        : filled;
+      return this.withReplacement(widened);
+    }
     return this.withReplacement(this._values.map(entry => isMissing(entry) ? value : entry));
   }
 
@@ -485,7 +630,13 @@ export class Series<T extends CellValue = CellValue> {
   to_frame(name?: string): DataFrame {
     return new DataFrame(
       this._values.map((value) => ({ [name ?? this.name ?? "0"]: value })),
-      { columns: [name ?? this.name ?? "0"], index: [...this._index], dtype: this._dtype }
+      {
+        columns: [name ?? this.name ?? "0"],
+        index: [...this._index],
+        dtype: this._dtype,
+        indexName: this._indexName,
+        indexNames: this._indexNames,
+      }
     );
   }
 
@@ -1077,14 +1228,18 @@ export class Series<T extends CellValue = CellValue> {
   /**
    * Rolling window aggregations (pandas rolling): `rolling(3).mean()`.
    * Windows at the start shorter than `min_periods ?? window` are null.
+   * Numeric aggregations raise the pandas `DataError` equivalent when a
+   * present cell is not number-like; `count` tallies any non-missing value.
    */
   rolling(window: number, minPeriods?: number): RollingWindow {
-    return computeRolling(this._values, window, minPeriods);
+    const rolling = computeRolling(this._values, window, minPeriods);
+    return wrapWindowAggregations(rolling, this._values as CellValue[], this._dtype);
   }
 
   /** Expanding (cumulative) window aggregations. */
   expanding(minPeriods = 1): RollingWindow {
-    return computeExpanding(this._values, minPeriods);
+    const expanding = computeExpanding(this._values, minPeriods);
+    return wrapWindowAggregations(expanding, this._values as CellValue[], this._dtype);
   }
 
   // ---- selection helpers ----
@@ -1129,7 +1284,7 @@ export class Series<T extends CellValue = CellValue> {
    * pandas-style `.str` accessor for element-wise string operations.
    */
   get str(): StringMethods {
-    return new StringMethods(this._values as CellValue[]);
+    return new StringMethods(this._values as CellValue[], this._dtype);
   }
 
   /**
@@ -1137,7 +1292,7 @@ export class Series<T extends CellValue = CellValue> {
    * Accepts Date values and parseable date strings.
    */
   get dt(): DatetimeMethods {
-    return new DatetimeMethods(this._values as CellValue[]);
+    return new DatetimeMethods(this._values as CellValue[], this._dtype);
   }
 
   /**
@@ -1313,15 +1468,42 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  sort_index(ascending = true): Series<T> {
+  /**
+   * Sort by index label (pandas sort_index). On a MultiIndex the full tuple
+   * sorts lexicographically; `options.level` restricts the sort key to the
+   * given level position/name(s) first, then the remaining levels in order.
+   */
+  sort_index(
+    ascendingOrOptions: boolean | { ascending?: boolean; level?: number | string | (number | string)[] } = true
+  ): Series<T> {
+    const ascending = typeof ascendingOrOptions === "boolean"
+      ? ascendingOrOptions
+      : (ascendingOrOptions.ascending ?? true);
+    const levelOption = typeof ascendingOrOptions === "boolean" ? undefined : ascendingOrOptions.level;
+
+    let keyOf: (label: IndexLabel) => IndexLabel = (label) => label;
+    if (levelOption !== undefined) {
+      const nlevels = this.nlevels;
+      const names = this.index_names;
+      const lead = (Array.isArray(levelOption) ? levelOption : [levelOption])
+        .map((level) => resolveIndexLevel(level, nlevels, names));
+      const rest = range(nlevels).filter((i) => !lead.includes(i));
+      const order = [...lead, ...rest];
+      keyOf = (label) => {
+        const tuple = indexTuple(label);
+        const projected = order.map((i) => tuple[i] ?? "");
+        return projected.length === 1 ? projected[0]! : projected;
+      };
+    }
+
     const indexed = this._values.map((value, position) => ({ value, position, label: this._index[position]! }));
     indexed.sort((a, b) => {
-      const cmp = compareCellValues(a.label as CellValue, b.label as CellValue);
+      const cmp = compareIndexLabels(keyOf(a.label), keyOf(b.label));
       return ascending ? cmp : -cmp;
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, indexName: this._indexName, dtype: this._dtype,
+      name: this.name, indexName: this._indexName, indexNames: this._indexNames, dtype: this._dtype,
     });
   }
 
@@ -1510,7 +1692,18 @@ export class Series<T extends CellValue = CellValue> {
   last_valid_index(): IndexLabel | null { return seriesApi.last_valid_index(this.view()); }
   factorize(): [number[], CellValue[]] { return seriesApi.factorize(this.view()); }
   explode(): Series<CellValue> { return seriesApi.explode(this.view()); }
-  groupby(by: string | string[]): unknown { return seriesApi.groupby(this.view(), by); }
+  /**
+   * pandas `Series.groupby`: `by` names column(s) of the backing frame;
+   * `options.level` groups by index level(s) instead, like
+   * `s.groupby(level=0)`.
+   */
+  groupby(by?: string | string[] | null, options?: { level?: number | string | (number | string)[] }): unknown {
+    if (options?.level !== undefined) {
+      return (this.to_frame() as unknown as { groupby: (b: null, o: unknown) => unknown })
+        .groupby(null, options);
+    }
+    return seriesApi.groupby(this.view(), by ?? []);
+  }
   to_numpy(): CellValue[] { return seriesApi.to_numpy(this.view()); }
   to_string(): string { return seriesApi.to_string(this.view()); }
   to_csv(): string { return seriesApi.to_csv(this.view()); }
@@ -1522,7 +1715,31 @@ export class Series<T extends CellValue = CellValue> {
   pop(label: IndexLabel): CellValue | undefined { return seriesApi.pop(this.view(), label); }
   repeat(repeats: number): Series<CellValue> { return seriesApi.repeat(this.view(), repeats) as Series<CellValue>; }
   rename(name: string): Series<CellValue> { return seriesApi.rename(this.view(), name) as Series<CellValue>; }
-  rename_axis(name: string): Series<CellValue> { return seriesApi.rename_axis(this.view(), name) as Series<CellValue>; }
+  /**
+   * pandas `Series.rename_axis` renames the *index*. On a MultiIndex pass a
+   * list with one name per level (or a single name for level 0).
+   */
+  rename_axis(name: string | (string | undefined)[]): Series<CellValue> {
+    if (Array.isArray(name)) {
+      return new Series([...this._values], {
+        index: [...this._index],
+        indexName: name[0],
+        indexNames: [...name],
+        name: this.name,
+        dtype: this._dtype,
+      }) as unknown as Series<CellValue>;
+    }
+    if (this.nlevels > 1) {
+      return new Series([...this._values], {
+        index: [...this._index],
+        indexName: name,
+        indexNames: this.index_names.map((existing, i) => (i === 0 ? name : existing)),
+        name: this.name,
+        dtype: this._dtype,
+      }) as unknown as Series<CellValue>;
+    }
+    return seriesApi.rename_axis(this.view(), name) as Series<CellValue>;
+  }
   reset_index(drop = false): unknown { return seriesApi.reset_index(this.view(), drop); }
   set_axis(labels: IndexLabel[]): Series<CellValue> { return seriesApi.set_axis(this.view(), labels) as Series<CellValue>; }
   squeeze(): CellValue | Series<CellValue> { return seriesApi.squeeze(this.view()) as CellValue | Series<CellValue>; }
@@ -1550,8 +1767,104 @@ export class Series<T extends CellValue = CellValue> {
   reindex_like(other: Series<CellValue>, fill_value: CellValue | null = null): Series<CellValue> {
     return seriesApi.reindex_like(this.view(), other, fill_value);
   }
-  unstack(columnName?: string): DataFrame { return seriesApi.unstack(this.view(), columnName); }
-  xs(key: IndexLabel): CellValue | undefined | Series<CellValue> { return seriesApi.xs(this.view(), key); }
+  /**
+   * pandas `Series.unstack`: move one index level (default the last) into
+   * the columns of a DataFrame. Row index = remaining levels (sorted unique
+   * tuples), columns = sorted unique moved-level values; absent
+   * combinations fill with `fill_value ?? NaN`. Single-level series keep
+   * the legacy single-column frame wrap (pandas would raise there).
+   */
+  unstack(level: number | string = -1, fillValue?: CellValue): DataFrame {
+    if (this.nlevels <= 1) {
+      return seriesApi.unstack(this.view(), typeof level === "string" ? level : undefined);
+    }
+    const names = this.index_names;
+    const levelPos = resolveIndexLevel(level, this.nlevels, names);
+    const grid = unstackGrid(this._index, levelPos);
+    const fill = fillValue === undefined ? NaN : fillValue;
+
+    const storageColumns = grid.colKeys.map((colKey, i) => `__mi_col_${i}_${String(colKey)}`);
+    const displayColumns: IndexLabel[] = grid.colKeys.map((colKey) => colKey);
+    const rows = grid.rowLabels.map(() => ({}) as Record<string, CellValue>);
+    grid.rowLabels.forEach((rowLabel, rowIdx) => {
+      const rawRow = Array.isArray(rowLabel) ? rowLabel : [rowLabel];
+      grid.colKeys.forEach((colKey, colIdx) => {
+        const sourcePosition = grid.cellPosition.get(unstackCellKey(rawRow, colKey));
+        const cell = sourcePosition === undefined ? undefined : this._values[sourcePosition];
+        rows[rowIdx]![storageColumns[colIdx]!] = cell === undefined ? fill : cell;
+      });
+    });
+
+    const nextNames = names.filter((_, i) => grid.remainingLevels.includes(i));
+    const frame = DataFrame.createInternal(
+      rows,
+      storageColumns,
+      grid.rowLabels,
+      {},
+      {},
+      nextNames[0],
+      nextNames,
+      displayColumns
+    );
+    return DataFrame.markUnstacked(frame, names[levelPos], [...grid.colKeys]);
+  }
+
+  /**
+   * pandas `Series.xs` — cross-section by index label. With `options.level`
+   * (position or name; a list pairs with a tuple key) selects entries whose
+   * level equals `key`; `options.drop_level` (default true) removes the
+   * matched level(s). A fully-specified key returns the value itself.
+   */
+  xs(
+    key: IndexLabel,
+    options: { level?: number | string | (number | string)[]; drop_level?: boolean } = {}
+  ): CellValue | undefined | Series<CellValue> {
+    if (this.nlevels <= 1 && options.level === undefined) {
+      return seriesApi.xs(this.view(), key);
+    }
+    const tuples = indexTuples(this._index);
+    const nlevels = this.nlevels;
+    let levelPositions: number[];
+    let keyParts: (string | number)[];
+    if (options.level !== undefined) {
+      const levelRefs = Array.isArray(options.level) ? options.level : [options.level];
+      levelPositions = levelRefs.map((level) => resolveIndexLevel(level, nlevels, this.index_names));
+      keyParts = Array.isArray(key) ? [...key] : [key as string | number];
+      if (keyParts.length !== levelPositions.length) {
+        throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+      }
+    } else {
+      keyParts = Array.isArray(key) ? [...key] : [key as string | number];
+      if (keyParts.length > nlevels) {
+        throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+      }
+      levelPositions = range(keyParts.length);
+    }
+
+    const positions = crossSectionPositions(tuples, levelPositions, keyParts);
+    if (positions.length === 0) {
+      throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+    }
+    if (positions.length === 1 && levelPositions.length === nlevels) {
+      return this._values[positions[0]!];
+    }
+    const dropLevel = options.drop_level ?? true;
+    const dropped = dropLevel ? new Set(levelPositions) : new Set<number>();
+    const nextIndex = positions.map((position) =>
+      dropLevel ? dropTupleLevels(tuples[position]!, dropped) : this._index[position]!
+    );
+    const nextNames = this.index_names.filter((_, i) => !dropped.has(i));
+    return new Series(
+      positions.map((position) => this._values[position]!) as CellValue[],
+      {
+        index: nextIndex,
+        indexName: nextNames[0],
+        indexNames: nextNames.length === nlevels ? this._indexNames : nextNames,
+        name: this.name,
+        dtype: this._dtype,
+      }
+    );
+  }
   align(other: Series<CellValue>, join: "outer" | "inner" = "outer"): [Series<T>, Series<CellValue>] {
     return seriesApi.align(this.view(), other as never, join) as never;
   }
@@ -1569,9 +1882,71 @@ export class Series<T extends CellValue = CellValue> {
   resample(rule: string): ReturnType<typeof seriesApi.resample> {
     return seriesApi.resample(this.view(), rule);
   }
-  droplevel(level = 0): Series<T> { return seriesApi.droplevel(this.view(), level) as never; }
-  reorder_levels(...order: number[]): Series<T> { return (seriesApi.reorder_levels(this.view(), ...order)) as never; }
-  swaplevel(): Series<T> { return seriesApi.swaplevel(this.view()) as never; }
+  /**
+   * pandas `droplevel`: remove one index level by position or name. On a
+   * single-level index it stays an honest no-op copy.
+   */
+  droplevel(level: number | string = 0): Series<T> {
+    if (this.nlevels <= 1) {
+      return seriesApi.droplevel(this.view(), 0) as never;
+    }
+    const position = resolveIndexLevel(level, this.nlevels, this.index_names);
+    const dropped = new Set([position]);
+    const nextNames = this.index_names.filter((_, i) => i !== position);
+    return new Series(this._values.map((value) => value) as T[], {
+      index: this._index.map((label) => dropTupleLevels(indexTuple(label), dropped)),
+      indexName: nextNames[0],
+      indexNames: nextNames.length === 1 ? undefined : nextNames,
+      name: this.name,
+      dtype: this._dtype,
+    });
+  }
+
+  /** pandas `reorder_levels`: permute the index levels in `order`. */
+  reorder_levels(...order: (number | number[])[]): Series<T> {
+    const list = (order.length === 1 && Array.isArray(order[0]) ? order[0] : order) as number[];
+    if (this.nlevels <= 1 || list.length === 0) {
+      return seriesApi.reorder_levels(this.view(), ...list) as never;
+    }
+    const nlevels = this.nlevels;
+    const positions = list.map((level) => resolveIndexLevel(level, nlevels, this.index_names));
+    const nextNames = positions.map((position) => this.index_names[position]);
+    return new Series(this._values.map((value) => value) as T[], {
+      index: this._index.map((label) => {
+        const tuple = indexTuple(label);
+        const projected = positions.map((position) => tuple[position] ?? "");
+        return projected.length === 1 ? projected[0]! : projected;
+      }),
+      indexName: nextNames[0],
+      indexNames: nextNames.length === 1 ? undefined : nextNames,
+      name: this.name,
+      dtype: this._dtype,
+    });
+  }
+
+  /** pandas `swaplevel`: swap the last two levels (defaults i=-2, j=-1). */
+  swaplevel(i = -2, j = -1): Series<T> {
+    if (this.nlevels <= 1) {
+      return seriesApi.swaplevel(this.view()) as never;
+    }
+    const nlevels = this.nlevels;
+    const a = resolveIndexLevel(i, nlevels, this.index_names);
+    const b = resolveIndexLevel(j, nlevels, this.index_names);
+    const order = range(nlevels).map((position) =>
+      position === a ? b : position === b ? a : position
+    );
+    const nextNames = order.map((position) => this.index_names[position]);
+    return new Series(this._values.map((value) => value) as T[], {
+      index: this._index.map((label) => {
+        const tuple = indexTuple(label);
+        return order.map((position) => tuple[position] ?? "");
+      }),
+      indexName: nextNames[0],
+      indexNames: nextNames,
+      name: this.name,
+      dtype: this._dtype,
+    });
+  }
   set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> { return seriesApi.set_flags(this.view(), options) as never; }
   tz_localize(tz: string | null): Series<T> { return seriesApi.tz_localize(this.view(), tz) as never; }
   tz_convert(tz: string | null): Series<T> { return seriesApi.tz_convert(this.view(), tz) as never; }
@@ -1610,3 +1985,24 @@ export class Series<T extends CellValue = CellValue> {
 
 /** Renders a cell for text exports ("nan" for missing, ISO for dates). */
 /** Escapes LaTeX special characters in plain text. */
+
+/**
+ * Wrap a computed window so numeric aggregations assert pandas' DataError
+ * on non-numeric values; `count` tallies any non-missing cell (pandas exempts it).
+ */
+function wrapWindowAggregations(window: RollingWindow, values: CellValue[], dtype: DType): RollingWindow {
+  const aggregable = (fn: () => CellValue[]): (() => CellValue[]) =>
+    () => {
+      assertWindowAggregable(values, dtype ?? "object");
+      return fn();
+    };
+  return {
+    mean: aggregable(() => window.mean()),
+    sum: aggregable(() => window.sum()),
+    min: aggregable(() => window.min()),
+    max: aggregable(() => window.max()),
+    std: aggregable(() => window.std()),
+    median: aggregable(() => window.median()),
+    count: () => window.count(),
+  };
+}

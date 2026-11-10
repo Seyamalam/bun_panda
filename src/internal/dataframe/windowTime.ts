@@ -5,6 +5,7 @@ import {
   ewmValues,
   parseFreqMs,
   resampleBins,
+  windowNumber,
 } from "../shared";
 
 export type EwmKind = "mean" | "sum" | "std";
@@ -16,9 +17,7 @@ export function ewmColumn(
   minPeriods: number,
   kind: EwmKind
 ): (number | null)[] {
-  const nums = values.map((v) =>
-    typeof v === "number" && Number.isFinite(v) ? v : null
-  );
+  const nums = values.map(windowNumber);
   return ewmValues(nums, span, minPeriods, kind);
 }
 

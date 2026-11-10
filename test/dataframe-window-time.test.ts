@@ -42,7 +42,8 @@ describe("DataFrame ewm", () => {
     const means = df.ewm(3).mean();
     const col = (means.to_dict("list") as Record<string, (number | null)[]>).x;
     expect(col[0]).toBeCloseTo(1);
-    expect(col[1]).toBeCloseTo(1.5, 3);
+    // pandas adjust=True ewm mean, span=3 (alpha=0.5)
+    expect(col[1]).toBeCloseTo(1.6666666666666667, 3);
   });
 
   test("sum compounds per column", () => {
@@ -51,11 +52,15 @@ describe("DataFrame ewm", () => {
     expect(sums).toHaveLength(2);
   });
 
-  test("non-numeric columns are skipped", () => {
+  test("non-numeric columns raise pandas DataError", () => {
     const df = new DataFrame({ t: ["a"], n: [5] });
-    const means = df.ewm(2).mean();
-    // Non-numeric columns produce no ewm values; the frame keeps its shape.
-    expect((means.to_dict("list") as Record<string, number[]>).n).toBeDefined();
+    // pandas raises "Cannot aggregate non-numeric type: str" rather than
+    // silently dropping the column.
+    expect(() => df.ewm(2).mean()).toThrow(/non-numeric/);
+    const numeric = new DataFrame({ n: [5, 6] });
+    expect(
+      (numeric.ewm(2).mean().to_dict("list") as Record<string, number[]>).n
+    ).toBeDefined();
   });
 });
 

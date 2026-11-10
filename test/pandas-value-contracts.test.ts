@@ -43,7 +43,7 @@ for (const entry of fixture.cases) {
       if (entry.api === "get_dummies") {
         const frame = new DataFrame({ id: values.map((_,i)=>i), color: values }, { index: values.map((_,i)=>`row-${i}`) });
         const result = get_dummies(frame,"color",args);
-        return { columns: result.columns, index: result.index, data: result.to_records().map(row=>result.columns.map(column=>row[column])) };
+        return { columns: result.columns, index: result.index, data: result.to_records().map(row=>result.columns.map(column=>row[column as string])) };
       }
       throw new Error(`Missing adapter for ${entry.api}`);
     };

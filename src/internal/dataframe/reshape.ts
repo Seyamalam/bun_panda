@@ -1,4 +1,5 @@
 import type { CellValue, Row } from "../../types";
+import { compareCellValues } from "../../utils";
 
 /**
  * pandas-style `melt`: wide -> long. Each (id_var, variable, value)
@@ -36,10 +37,11 @@ export function computePivot(
   valuesCol: string,
   aggregate?: (values: CellValue[]) => CellValue
 ): { rows: Row[]; index: CellValue[] } {
-  const rowIndexOrder: CellValue[] = [];
+  let rowIndexOrder: CellValue[] = [];
   const rowIndexSeen = new Set<string>();
-  const colKeys: string[] = [];
+  let colKeys: string[] = [];
   const colKeySeen = new Set<string>();
+  const colValues = new Map<string, CellValue>();
   const cellIndex = new Map<string, CellValue[]>();
 
   for (const row of rows) {
@@ -57,6 +59,7 @@ export function computePivot(
     if (!colKeySeen.has(colKey)) {
       colKeySeen.add(colKey);
       colKeys.push(colKey);
+      colValues.set(colKey, col);
     }
     const key = `${idxKey}\u0000${colKey}`;
     const bucket = cellIndex.get(key);
@@ -66,6 +69,12 @@ export function computePivot(
       cellIndex.set(key, [row[valuesCol]]);
     }
   }
+
+  // pandas sorts both the row-index labels and the spread column keys.
+  rowIndexOrder = [...rowIndexOrder].sort(compareCellValues);
+  colKeys = [...colKeys].sort((a, b) =>
+    compareCellValues(colValues.get(a)!, colValues.get(b)!)
+  );
 
   const out: Row[] = rowIndexOrder.map((idx) => {
     const row: Row = {};

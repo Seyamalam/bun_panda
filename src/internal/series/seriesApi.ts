@@ -9,6 +9,7 @@ import {
   parseFreqMs,
   parseTimeOfDay,
   resampleBins,
+  windowNumber,
 } from "../shared";
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
@@ -552,7 +553,7 @@ export function at_time(s: SeriesHost, time: string): Series<CellValue> {
     return new Series(values, { index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() });
   }
 
-  /** Exponentially weighted windows (adjust=True). */
+  /** Exponentially weighted windows (pandas ewm, adjust=True). */
 export function ewm(s: SeriesHost, span: number, options: { min_periods?: number } = {}): {
     mean(): Series<number | null>;
     sum(): Series<number | null>;
@@ -561,15 +562,22 @@ export function ewm(s: SeriesHost, span: number, options: { min_periods?: number
     if (typeof span !== "number" || span < 1) {
       throw new Error("ewm: span must be a number >= 1.");
     }
-    const minPeriods = Math.max(1, options.min_periods ?? 1);
-    const nums = s.valuesSnapshot().map((v) =>
-      typeof v === "number" && Number.isFinite(v) ? v : null
-    );
-    const make = (kind: "mean" | "sum" | "std") =>
-      new Series(ewmValues(nums, span, minPeriods, kind), {
+    const minPeriods = Math.max(0, options.min_periods ?? 0);
+    const values = s.valuesSnapshot();
+    const nums = values.map(windowNumber);
+    const make = (kind: "mean" | "sum" | "std") => {
+      // pandas raises DataError("No numeric types to aggregate") for Series.
+      for (const v of values) {
+        if (!isMissing(v) && windowNumber(v) === null) {
+          throw new NotSupportedError("No numeric types to aggregate");
+        }
+      }
+      return new Series(ewmValues(nums, span, minPeriods, kind), {
         index: [...s.labelsSnapshot()],
         name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
+        dtype: "float64",
       });
+    };
     return { mean: () => make("mean"), sum: () => make("sum"), std: () => make("std") };
   }
 

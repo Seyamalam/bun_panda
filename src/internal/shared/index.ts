@@ -3,6 +3,7 @@ export {
   parseTimeOfDay,
   secondsOfDay,
   ewmValues,
+  windowNumber,
   parseFreqMs,
 } from "./time";
 export {

@@ -39,8 +39,8 @@ describe("Series ewm", () => {
     const means = s.ewm(3).mean().to_list();
     expect(means[0]).toBeCloseTo(1);
     expect(means[3]!).toBeGreaterThan(means[0]!);
-    // adjust=True mean of [1,2,3,4], span=3 (alpha=0.5)
-    expect(means[1]).toBeCloseTo(1.5, 3);
+    // pandas adjust=True mean of [1,2,3,4], span=3 (alpha=0.5)
+    expect(means[1]).toBeCloseTo(1.6666666666666667, 3);
   });
 
   test("ewm sum compounds with decay", () => {

@@ -100,11 +100,13 @@ describe("Series .str accessor", () => {
     expect(new Series<string>(["ab"]).str.pad(5, "both", "*").map((v) => v as string)).toEqual(["*ab**"]);
   });
 
-  test("predicates return boolean arrays with null propagation", () => {
+  test("predicates return boolean arrays following pandas str-dtype semantics", () => {
     const s = new Series<string | null>(["apple", "banana", null]);
-    expect(s.str.startswith("ap")).toEqual([true, false, null]);
-    expect(s.str.endswith("na")).toEqual([false, true, null]);
-    expect(s.str.contains("an")).toEqual([false, true, null]);
+    // pandas 3.0 infers dtype str here: boolean predicates report False on
+    // missing cells, while len still propagates the missing marker.
+    expect(s.str.startswith("ap")).toEqual([true, false, false]);
+    expect(s.str.endswith("na")).toEqual([false, true, false]);
+    expect(s.str.contains("an")).toEqual([false, true, false]);
     expect(s.str.len()).toEqual([5, 6, null]);
   });
 

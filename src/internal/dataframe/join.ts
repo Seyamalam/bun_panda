@@ -75,10 +75,13 @@ export function performJoin(
   // When joining `on` a column that exists on both sides, the merge
   // suffixes it (k_x/k_y). Build the output by keeping one copy under
   // the original name and dropping suffixed duplicates.
-  if (options.on !== undefined && !joined.columns.includes(options.on)) {
+  // joined.columns is IndexLabel[] after MultiIndex Phase 2 — joins only
+  // run on string-keyed frames.
+  const joinedColumns = joined.columns as string[];
+  if (options.on !== undefined && !joinedColumns.includes(options.on)) {
     const leftOnName = `${options.on}${suffixes[0]}`;
     const source = joined.select([leftOnName]).to_records();
-    const keptNoOn = joined.columns.filter(
+    const keptNoOn = joinedColumns.filter(
       (column) =>
         column !== "__join_key__" &&
         !column.startsWith("__join_key__") &&
@@ -121,7 +124,7 @@ export function performJoin(
   }
 
   const kept: string[] = [];
-  for (const column of joined.columns) {
+  for (const column of joinedColumns) {
     if (column === "__join_key__" || column.startsWith("__join_key__")) {
       continue;
     }

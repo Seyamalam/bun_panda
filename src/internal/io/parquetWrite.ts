@@ -14,14 +14,15 @@ export async function writeParquetFrame(
 
   const parquet = await import("parquetjs-lite");
   const dtypeMap = frame.dtypes();
-  const schemaDef = buildSchema(frame.columns, dtypeMap);
+  // Records are keyed by storage columns (tuple MultiColumns use their keys).
+  const schemaDef = buildSchema(frame.storageColumns, dtypeMap);
   const schema = new parquet.ParquetSchema(schemaDef);
   const writer = await parquet.ParquetWriter.openFile(schema, options.path);
 
   try {
     const records = frame.to_records();
     for (const record of records) {
-      await writer.appendRow(serializeRecord(record, frame.columns, dtypeMap));
+      await writer.appendRow(serializeRecord(record, frame.storageColumns, dtypeMap));
     }
   } finally {
     await writer.close();

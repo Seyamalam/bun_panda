@@ -1,4 +1,14 @@
 import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelKey, indexLabelsEqual, unionIndexLabels } from "./internal/shared/indexing";
+import {
+  crossSectionPositions,
+  dropTupleLevels,
+  indexTuple,
+  indexTuples,
+  prefixPositions,
+  resolveIndexLevel,
+  unstackCellKey,
+  unstackGrid,
+} from "./internal/shared/multiindex";
 import { NA, NaT } from "./missing";
 import { scalarEquals, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv, jsonBigintReplacer, scalarKey } from "./internal/shared/valueSemantics";
 import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, promoteDTypes, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType, widenDTypeForMissing } from "./dtypes";
@@ -85,7 +95,8 @@ import {
 } from "./internal/dataframe/core";
 import { computeMergeRows } from "./internal/dataframe/merge";
 import { computeMeltRows, computePivot } from "./internal/dataframe/reshape";
-import { computeRolling, computeExpanding } from "./internal/dataframe/rolling";
+import { assertWindowAggregable, computeRolling, computeExpanding } from "./internal/dataframe/rolling";
+import { windowNumber } from "./internal/shared";
 import { computePivotTable } from "./internal/dataframe/pivotTable";
 import { computeValueCountsRows } from "./internal/dataframe/valueCounts";
 import {
@@ -172,6 +183,8 @@ export interface DataFrameOptions {
   dtype?: DType;
   index?: IndexLabel[];
   indexName?: string;
+  /** One name per level for tuple-labeled MultiIndex frames. */
+  indexNames?: (string | undefined)[];
   columns?: string[];
 }
 
@@ -278,8 +291,14 @@ export class DataFrame {
   private readonly _indexNames: (string | undefined)[] | undefined;
   /** Dtype fallback used only when an output column has no present values. */
   private readonly _dtypeHints: Partial<Record<string, InferredDType>>;
-  /** pandas-visible column names when storage keys differ (duplicate labels). */
-  private _displayColumns: string[] | undefined;
+  /** pandas-visible column names when storage keys differ (duplicate labels, tuple MultiColumns). */
+  private _displayColumns: IndexLabel[] | undefined;
+  /**
+   * When the frame was produced by `unstack`, records the moved index
+   * level's name and the level value behind each storage column so
+   * `stack()` can invert the operation pandas-style.
+   */
+  private _unstackLevel: { name: string | undefined; values: (string | number)[] } | undefined;
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
   private _attrs: Record<string, unknown> = {};
 
@@ -295,6 +314,7 @@ export class DataFrame {
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
     this._indexName = options.indexName;
+    this._indexNames = options.indexNames;
     this._dtypeHints = {};
     this._dtypes = prepared.dtypes;
 
@@ -309,7 +329,7 @@ export class DataFrame {
     dtypes: Partial<Record<string, DType>> = {},
     indexName?: string,
     indexNames?: (string | undefined)[],
-    displayColumns?: string[]
+    displayColumns?: IndexLabel[]
   ): DataFrame {
     assertRowsShape(rows, index);
     const prepared = DataFrame.prepareColumns(rows, columns, dtypes, dtypeHints);
@@ -325,6 +345,15 @@ export class DataFrame {
     (frame as unknown as { _dtypes: Partial<Record<string, DType>> })._dtypes = prepared.dtypes;
     frame._displayColumns = displayColumns;
     frame._attrs = {};
+    return frame;
+  }
+
+  /**
+   * Internal hook used by `unstack`: records the moved index level so
+   * `stack()` can rebuild it pandas-style. Returns `frame` for chaining.
+   */
+  static markUnstacked(frame: DataFrame, name: string | undefined, values: (string | number)[]): DataFrame {
+    frame._unstackLevel = { name, values };
     return frame;
   }
 
@@ -411,10 +440,18 @@ export class DataFrame {
     return frame;
   }
 
-  get columns(): string[] {
-    // _displayColumns carries pandas-visible names when duplicate column
-    // labels (e.g. concat axis=1) are stored under unique storage keys.
+  get columns(): IndexLabel[] {
+    // _displayColumns carries pandas-visible names when storage keys differ
+    // (duplicate labels from concat axis=1, tuple MultiColumns from unstack).
     return [...(this._displayColumns ?? this._columns)];
+  }
+
+  /**
+   * Storage keys backing `columns` — identical to it except on frames with
+   * duplicate labels or tuple MultiColumns. Internal use for record lookups.
+   */
+  get storageColumns(): string[] {
+    return [...this._columns];
   }
 
   get index(): IndexLabel[] {
@@ -440,7 +477,7 @@ export class DataFrame {
   }
 
   /** Iterable of [columnName, Series] — alias of items for dict-like use. */
-  keys(): string[] {
+  keys(): IndexLabel[] {
     return [...(this._displayColumns ?? this._columns)];
   }
 
@@ -607,18 +644,19 @@ export class DataFrame {
     );
   }
 
-  get(column: string): Series<CellValue> {
-    this.assertColumnExists(column);
-    // With duplicate display names pandas returns the first matching column
-    // via getitem; resolve display names back to their storage key.
+  get(column: IndexLabel): Series<CellValue> {
+    // With duplicate display names or tuple MultiColumns pandas returns the
+    // first matching column via getitem; resolve the label to its storage key.
     const storageColumn = this._displayColumns
-      ? this._columns[this._displayColumns.indexOf(column)] ?? column
-      : column;
+      ? this._columns[this._displayColumns.findIndex((label) => indexLabelEquals(label, column))] ?? (column as string)
+      : (column as string);
+    this.assertColumnExists(storageColumn);
     return new Series(this._rows.map((row) => row[storageColumn]), {
-      name: column,
+      name: Array.isArray(column) ? column.join(",") : String(column),
       dtype: this._dtypes[storageColumn],
       index: this._index,
       indexName: this._indexName,
+      indexNames: this._indexNames,
     });
   }
 
@@ -628,7 +666,7 @@ export class DataFrame {
 
   at(index: IndexLabel, column: string): CellValue {
     this.assertColumnExists(column);
-    const rowPosition = this._index.findIndex((entry) => entry === index);
+    const rowPosition = this._index.findIndex((entry) => indexLabelEquals(entry, index));
     if (rowPosition < 0) {
       return undefined;
     }
@@ -657,13 +695,35 @@ export class DataFrame {
     return this.withSelection(rows, index, this._columns, true);
   }
 
-  loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame {
+  /**
+   * Label selection like pandas `df.loc[...]`:
+   * - `loc("a")` on a flat index returns the matching row record.
+   * - `loc("a")` on a MultiIndex takes the outer-level slice: rows whose
+   *   first level equals `"a"`, with that level dropped (pandas `loc["a"]`).
+   * - `loc("a", 1)` / `loc([["a", 1]])` address tuple keys; a full-length
+   *   tuple returns a row record, a prefix tuple a sub-frame with the
+   *   matched levels dropped.
+   * - `loc(["a", "b"])` is a label list: on a MultiIndex, scalars match
+   *   level 0 (keeping all levels); tuple elements match full keys.
+   */
+  loc(selector: IndexLabel | IndexLabel[], ...rest: (string | number)[]): Row | DataFrame {
+    if (rest.length > 0) {
+      // Variadic tuple form: df.loc("a", 1) addresses the ("a", 1) key path.
+      return this.locLevels([selector as string | number, ...rest]);
+    }
     if (!Array.isArray(selector)) {
+      if (this.nlevels > 1) {
+        return this.locLevels([selector as string | number]);
+      }
       const position = this._index.findIndex((entry) => indexLabelEquals(entry, selector));
       if (position < 0) {
         throw new KeyError(`'${String(selector)}'`);
       }
       return cloneRow(this._rows[position]!, this._columns);
+    }
+
+    if (this.nlevels > 1) {
+      return this.locList(selector);
     }
 
     const rows: Row[] = [];
@@ -675,6 +735,97 @@ export class DataFrame {
       }
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
+    }
+    return this.withSelection(rows, index, this._columns, true);
+  }
+
+  /**
+   * pandas MultiIndex `.loc` prefix selection: rows matching the leading
+   * `parts` levels. A full-length match yields the row record (pandas
+   * Series); a prefix yields a sub-frame with the matched levels dropped.
+   */
+  private locLevels(parts: (string | number)[]): Row | DataFrame {
+    const nlevels = this.nlevels;
+    if (parts.length > nlevels) {
+      throw new KeyError(`'(${parts.join(", ")})'`);
+    }
+    const positions = prefixPositions(indexTuples(this._index), parts);
+    if (positions.length === 0) {
+      throw new KeyError(`'${parts.length === 1 ? String(parts[0]) : `(${parts.join(", ")})`}'`);
+    }
+    if (parts.length === nlevels) {
+      if (positions.length === 1) {
+        return cloneRow(this._rows[positions[0]!]!, this._columns);
+      }
+      // Duplicate full labels: pandas returns the matching rows unchanged.
+      return this.withSelection(
+        positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+        positions.map((position) => this._index[position]!),
+        this._columns,
+        true
+      );
+    }
+    const dropped = new Set(range(parts.length));
+    const nextIndex = positions.map((position) =>
+      dropTupleLevels(indexTuple(this._index[position]!), dropped)
+    );
+    const nextNames = this.index_names.filter((_, i) => !dropped.has(i));
+    return DataFrame.createInternal(
+      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      [...this._columns],
+      nextIndex,
+      this._dtypeHints,
+      this._dtypes,
+      nextNames[0],
+      nextNames
+    );
+  }
+
+  /**
+   * pandas `.loc[list]` on a MultiIndex: scalar elements take the outer
+   * level (all levels kept); tuple elements must match complete keys —
+   * pandas rejects partial tuples and stray scalars inside mixed lists.
+   */
+  private locList(selector: IndexLabel[]): DataFrame {
+    const tuples = indexTuples(this._index);
+    if (selector.some((element) => Array.isArray(element))) {
+      // Tuple presence switches pandas to full-key matching for every element.
+      const rows: Row[] = [];
+      const index: IndexLabel[] = [];
+      for (const element of selector) {
+        if (!Array.isArray(element)) {
+          throw new KeyError(`'[${JSON.stringify(element)}] not in index'`);
+        }
+        if (element.length !== this.nlevels) {
+          throw new KeyError(`'(${element.join(", ")})'`);
+        }
+        const position = tuples.findIndex((tuple) =>
+          tuple.every((value, i) => indexLabelEquals(value as IndexLabel, element[i]! as IndexLabel))
+        );
+        if (position < 0) {
+          throw new KeyError(`'[${JSON.stringify(element)}] not in index'`);
+        }
+        rows.push(cloneRow(this._rows[position]!, this._columns));
+        index.push(this._index[position]!);
+      }
+      return this.withSelection(rows, index, this._columns, true);
+    }
+
+    const missing = selector.filter((label) =>
+      !tuples.some((tuple) => indexLabelEquals(tuple[0] as IndexLabel, label))
+    );
+    if (missing.length > 0) {
+      throw new KeyError(`'[${missing.map((label) => JSON.stringify(label)).join(", ")}] not in index'`);
+    }
+    const rows: Row[] = [];
+    const index: IndexLabel[] = [];
+    for (const label of selector) {
+      tuples.forEach((tuple, position) => {
+        if (indexLabelEquals(tuple[0] as IndexLabel, label)) {
+          rows.push(cloneRow(this._rows[position]!, this._columns));
+          index.push(this._index[position]!);
+        }
+      });
     }
     return this.withSelection(rows, index, this._columns, true);
   }
@@ -740,7 +891,13 @@ export class DataFrame {
   pop(column: string): Series<CellValue> {
     this.assertColumnExists(column);
     const values = this._rows.map((row) => row[column]);
-    const series = new Series(values, { name: column, index: this._index, dtype: this._dtypes[column] });
+    const series = new Series(values, {
+      name: column,
+      index: this._index,
+      indexName: this._indexName,
+      indexNames: this._indexNames,
+      dtype: this._dtypes[column],
+    });
 
     const nextColumns = this._columns.filter((entry) => entry !== column);
     (this as unknown as { _rows: Row[] })._rows = this._rows.map((row) =>
@@ -790,9 +947,19 @@ export class DataFrame {
   }
 
   /** pandas `rename_axis`: sets the index name. A mapper arg keeps the legacy label-mapping behavior. */
-  rename_axis(mapper: string | Record<string, IndexLabel> | ((label: IndexLabel) => IndexLabel)): DataFrame {
+  rename_axis(mapper: string | Record<string, IndexLabel> | ((label: IndexLabel) => IndexLabel) | (string | undefined)[]): DataFrame {
+    if (Array.isArray(mapper)) {
+      // pandas rename_axis([names]) on a MultiIndex renames every level.
+      return DataFrame.createInternal(
+        this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes,
+        mapper[0], [...mapper]
+      );
+    }
     if (typeof mapper === "string") {
-      return DataFrame.createInternal(this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes, mapper);
+      const names = this._indexNames
+        ? this._indexNames.map((existing, i) => (i === 0 ? mapper : existing))
+        : undefined;
+      return DataFrame.createInternal(this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes, mapper, names);
     }
     const mapLabel = (label: IndexLabel): IndexLabel => {
       if (typeof mapper === "function") {
@@ -1386,13 +1553,13 @@ export class DataFrame {
   }
 
   /** Returns [columnName, Series] pairs like pandas `DataFrame.items()`. */
-  items(): IterableIterator<[string, Series<CellValue>]> {
+  items(): IterableIterator<[IndexLabel, Series<CellValue>]> {
     return this.itemsGenerator();
   }
 
-  private *itemsGenerator(): Generator<[string, Series<CellValue>]> {
+  private *itemsGenerator(): Generator<[IndexLabel, Series<CellValue>]> {
     for (const column of this._columns) {
-      yield [column, this.columnSeries(column)];
+      yield [this._displayColumns?.[this._columns.indexOf(column)] ?? column, this.columnSeries(column)];
     }
   }
 
@@ -1446,19 +1613,66 @@ export class DataFrame {
   }
 
   /**
-   * Cross-section selector. A key naming a column returns that column as a
-   * Series (pandas `xs(key, axis=1)`); a key naming an index label returns
-   * that row as a record; anything else raises.
+   * Cross-section selector (pandas `xs`). A key naming a column returns that
+   * column as a Series; a key naming an index label returns that row.
+   * On a MultiIndex, `options.level` (position or name) selects rows where
+   * that level equals `key` — `level` may be a list paired with a tuple key —
+   * and `options.drop_level` (default true) removes the matched levels,
+   * unwrapping to scalars when one level remains.
    */
-  xs(key: IndexLabel): Series<CellValue> | Row {
-    if (this._columns.includes(key as string)) {
+  xs(
+    key: IndexLabel,
+    options: { level?: number | string | (number | string)[]; drop_level?: boolean } = {}
+  ): Series<CellValue> | Row | DataFrame {
+    if (options.level === undefined && this._columns.includes(key as string)) {
       return this.columnSeries(key as string);
     }
-    const rowPosition = this._index.findIndex((label) => indexLabelEquals(label, key));
-    if (rowPosition >= 0) {
-      return cloneRow(this._rows[rowPosition]!, this._columns);
+
+    const tuples = indexTuples(this._index);
+    const nlevels = this.nlevels;
+    let levelPositions: number[];
+    let keyParts: (string | number)[];
+    if (options.level !== undefined) {
+      const levelRefs = Array.isArray(options.level) ? options.level : [options.level];
+      levelPositions = levelRefs.map((level) => resolveIndexLevel(level, nlevels, this.index_names));
+      keyParts = Array.isArray(key) ? [...key] : [key as string | number];
+      if (keyParts.length !== levelPositions.length) {
+        throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+      }
+    } else {
+      // pandas default: a tuple key prefixes the leading levels, a scalar
+      // key matches level 0 (single level for flat indexes).
+      keyParts = Array.isArray(key) ? [...key] : [key as string | number];
+      if (keyParts.length > nlevels) {
+        throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+      }
+      levelPositions = range(keyParts.length);
     }
-    throw new Error(`Key '${String(key)}' not found in columns or index.`);
+
+    const positions = crossSectionPositions(tuples, levelPositions, keyParts);
+    if (positions.length === 0) {
+      throw new KeyError(`'${Array.isArray(key) ? `(${key.join(", ")})` : String(key)}'`);
+    }
+    if (positions.length === 1 && levelPositions.length === nlevels) {
+      // A fully-specified key returns the row record (pandas Series).
+      return cloneRow(this._rows[positions[0]!]!, this._columns);
+    }
+
+    const dropLevel = options.drop_level ?? true;
+    const dropped = dropLevel ? new Set(levelPositions) : new Set<number>();
+    const nextIndex = positions.map((position) =>
+      dropLevel ? dropTupleLevels(tuples[position]!, dropped) : this._index[position]!
+    );
+    const nextNames = this.index_names.filter((_, i) => !dropped.has(i));
+    return DataFrame.createInternal(
+      positions.map((position) => cloneRow(this._rows[position]!, this._columns)),
+      [...this._columns],
+      nextIndex,
+      this._dtypeHints,
+      this._dtypes,
+      nextNames[0],
+      nextNames.length === nlevels ? this._indexNames : nextNames
+    );
   }
 
   /**
@@ -1516,7 +1730,7 @@ export class DataFrame {
       });
       return row;
     });
-    return DataFrame.from_normalized(rows, other.columns, this.index);
+    return DataFrame.from_normalized(rows, other.columns as string[], this.index);
   }
 
   /**
@@ -1535,12 +1749,15 @@ export class DataFrame {
   }
 
   private columnSeries(column: string): Series<CellValue> {
+    const display = this._displayColumns?.[this._columns.indexOf(column)];
     return new Series(
       this._rows.map((row) => row[column]),
       {
         index: [...this._index],
-        name: column,
+        name: display === undefined ? column : (Array.isArray(display) ? display.join(",") : String(display)),
         dtype: this._dtypes[column],
+        indexName: this._indexName,
+        indexNames: this._indexNames,
       }
     );
   }
@@ -1622,8 +1839,10 @@ export class DataFrame {
   }
 
   /**
-   * Rolling window aggregations over numeric columns:
-   * `df.rolling(7).mean()`. Non-numeric columns are dropped.
+   * Rolling window aggregations: `df.rolling(7).mean()`.
+   * pandas applies `count` to every column (it tallies non-missing cells of
+   * any dtype) and raises `DataError` for the other aggregations when any
+   * column holds non-numeric data; every result column is float64.
    */
   rolling(window: number, minPeriods?: number): {
     mean(): DataFrame;
@@ -1635,35 +1854,38 @@ export class DataFrame {
     median(): DataFrame;
     aggregate(aggregator: (values: number[]) => number | null): DataFrame;
   } {
-    const numericCols = this._columns.filter((column) =>
-      this._rows.some((row) => typeof row[column] === "number" && Number.isFinite(row[column]))
-    );
-    const columnsByResult = new Map<string, Map<string, CellValue[]>>();
-    for (const column of numericCols) {
-      const rolling = computeRolling(
-        this._rows.map((row) => row[column]),
-        window,
-        minPeriods
-      );
-      for (const [name, fn] of Object.entries(rolling)) {
-        if (typeof fn !== "function") continue;
-        const result = (rolling as unknown as Record<string, () => CellValue[]>)[name]!();
-        if (!columnsByResult.has(name)) {
-          columnsByResult.set(name, new Map());
-        }
-        columnsByResult.get(name)!.set(column, result);
-      }
-    }
-
     const build = (name: string): DataFrame => {
-      const perColumn = columnsByResult.get(name)!;
+      if (name !== "count") {
+        for (const column of this._columns) {
+          assertWindowAggregable(
+            this._rows.map((row) => row[column]),
+            String(this._dtypes[column] ?? "object")
+          );
+        }
+      }
       const rows: Row[] = this._rows.map(() => ({}));
-      for (const [column, values] of perColumn) {
+      const dtypeMap: Record<string, DType> = {};
+      for (const column of this._columns) {
+        const rolling = computeRolling(
+          this._rows.map((row) => row[column]),
+          window,
+          minPeriods
+        );
+        const values = (rolling as unknown as Record<string, () => CellValue[]>)[name]!();
         values.forEach((value, i) => {
           rows[i]![column] = value;
         });
+        dtypeMap[column] = "float64";
       }
-      return this.withRows(rows, [...this._index], numericCols, true);
+      return DataFrame.createInternal(
+        rows,
+        [...this._columns],
+        [...this._index],
+        {},
+        dtypeMap,
+        this._indexName,
+        this._indexNames
+      );
     };
 
     return {
@@ -1675,36 +1897,29 @@ export class DataFrame {
       std: () => build("std"),
       median: () => build("median"),
       aggregate: (aggregator) => {
+        const numericCols = this._columns.filter((column) =>
+          this._rows.some((row) => windowNumber(row[column]) !== null)
+        );
         const rows: Row[] = this._rows.map(() => ({}));
         for (const column of numericCols) {
-          const _rolling = computeRolling(
-            this._rows.map((row) => row[column]),
-            window,
-            minPeriods
-          );
-          // Reuse the sum windows as raw slices via count/mean trick is
-          // lossy; instead recompute slices directly.
-          let index = 0;
           for (let i = 0; i < this._rows.length; i += 1) {
             const slice: number[] = [];
             for (let j = Math.max(0, i - window + 1); j <= i; j += 1) {
-              const v = this._rows[j]![column];
-              if (typeof v === "number" && Number.isFinite(v)) {
+              const v = windowNumber(this._rows[j]![column]);
+              if (v !== null) {
                 slice.push(v);
               }
             }
             const min = minPeriods ?? window;
             rows[i]![column] = slice.length >= min ? aggregator(slice) : null;
-            index += 1;
           }
-          void index;
         }
         return this.withRows(rows, [...this._index], numericCols, true);
       },
     };
   }
 
-  /** Expanding (cumulative from start) aggregations over numeric columns. */
+  /** Expanding (cumulative from start) aggregations, pandas-aligned. */
   expanding(minPeriods = 1): {
     mean(): DataFrame;
     sum(): DataFrame;
@@ -1714,34 +1929,37 @@ export class DataFrame {
     std(): DataFrame;
     median(): DataFrame;
   } {
-    const numericCols = this._columns.filter((column) =>
-      this._rows.some((row) => typeof row[column] === "number" && Number.isFinite(row[column]))
-    );
-    const results = new Map<string, Map<string, CellValue[]>>();
-    for (const column of numericCols) {
-      const expanding = computeExpanding(
-        this._rows.map((row) => row[column]),
-        minPeriods
-      );
-      for (const [name, fn] of Object.entries(expanding)) {
-        if (typeof fn !== "function") continue;
-        const result = (expanding as unknown as Record<string, () => CellValue[]>)[name]!();
-        if (!results.has(name)) {
-          results.set(name, new Map());
-        }
-        results.get(name)!.set(column, result);
-      }
-    }
-
     const build = (name: string): DataFrame => {
-      const perColumn = results.get(name)!;
+      if (name !== "count") {
+        for (const column of this._columns) {
+          assertWindowAggregable(
+            this._rows.map((row) => row[column]),
+            String(this._dtypes[column] ?? "object")
+          );
+        }
+      }
       const rows: Row[] = this._rows.map(() => ({}));
-      for (const [column, values] of perColumn) {
+      const dtypeMap: Record<string, DType> = {};
+      for (const column of this._columns) {
+        const expanding = computeExpanding(
+          this._rows.map((row) => row[column]),
+          minPeriods
+        );
+        const values = (expanding as unknown as Record<string, () => CellValue[]>)[name]!();
         values.forEach((value, i) => {
           rows[i]![column] = value;
         });
+        dtypeMap[column] = "float64";
       }
-      return this.withRows(rows, [...this._index], numericCols, true);
+      return DataFrame.createInternal(
+        rows,
+        [...this._columns],
+        [...this._index],
+        {},
+        dtypeMap,
+        this._indexName,
+        this._indexNames
+      );
     };
 
     return {
@@ -1811,7 +2029,25 @@ export class DataFrame {
       this.assertColumnExists(column);
     }
     const pivoted = computePivot(this._rows, index, columns, values, options.aggregate);
-    return new DataFrame(pivoted.rows, { index: pivoted.index as IndexLabel[] });
+    const spreadColumns = Object.keys(pivoted.rows[0] ?? {}).filter((column) => column !== index);
+    const source = this._dtypes[values];
+    const numericSource = source !== undefined && /^(u?int|float|Int|UInt|Float)/.test(source);
+    // pandas promotes a numeric spread column to float64 when the pivot
+    // leaves missing cells; otherwise the source dtype is preserved.
+    const dtypes: Partial<Record<string, DType>> = {};
+    if (this._dtypes[index]) dtypes[index] = this._dtypes[index];
+    for (const column of spreadColumns) {
+      const hasMissing = pivoted.rows.some((row) => isMissing(row[column]));
+      dtypes[column] = hasMissing && numericSource ? "float64" : source;
+    }
+    return DataFrame.createInternal(
+      pivoted.rows,
+      [index, ...spreadColumns],
+      pivoted.index as IndexLabel[],
+      {},
+      dtypes,
+      index
+    );
   }
 
   /**
@@ -2059,10 +2295,41 @@ export class DataFrame {
     );
   }
 
-  sort_index(ascending = true): DataFrame {
+  /**
+   * Sort rows by index label (pandas sort_index). On a MultiIndex the full
+   * tuple sorts lexicographically; `options.level` restricts the sort key to
+   * the given level position/name(s) first, then the remaining levels in
+   * order — matching pandas `sort_index(level=...)`.
+   */
+  sort_index(
+    ascendingOrOptions: boolean | { ascending?: boolean; level?: number | string | (number | string)[] } = true
+  ): DataFrame {
+    const ascending = typeof ascendingOrOptions === "boolean"
+      ? ascendingOrOptions
+      : (ascendingOrOptions.ascending ?? true);
+    const levelOption = typeof ascendingOrOptions === "boolean" ? undefined : ascendingOrOptions.level;
+
+    let keyOf: (label: IndexLabel) => IndexLabel = (label) => label;
+    if (levelOption !== undefined) {
+      const nlevels = this.nlevels;
+      const names = this.index_names;
+      const lead = (Array.isArray(levelOption) ? levelOption : [levelOption])
+        .map((level) => resolveIndexLevel(level, nlevels, names));
+      const rest = range(nlevels).filter((i) => !lead.includes(i));
+      const order = [...lead, ...rest];
+      keyOf = (label) => {
+        const tuple = indexTuple(label);
+        const projected = order.map((i) => tuple[i] ?? "");
+        return projected.length === 1 ? projected[0]! : projected;
+      };
+    }
+
     const positions = range(this._rows.length);
     positions.sort((leftPosition, rightPosition) => {
-      const compared = compareIndexLabels(this._index[leftPosition]!, this._index[rightPosition]!);
+      const compared = compareIndexLabels(
+        keyOf(this._index[leftPosition]!),
+        keyOf(this._index[rightPosition]!)
+      );
       return ascending ? compared : -compared;
     });
 
@@ -2074,11 +2341,21 @@ export class DataFrame {
     );
   }
 
+  /**
+   * pandas accepts `keep` positionally after `subset` — but a scalar keep
+   * value passed alone (`df.drop_duplicates("last")`, `...(false)`)
+   * is also interpreted as `keep` to mirror the Series-style call the
+   * pandas fixture generator encodes.
+   */
   drop_duplicates(
-    subset?: string | string[],
+    subset?: string | string[] | DropDuplicatesKeep,
     keep: DropDuplicatesKeep = "first",
     ignore_index = false
   ): DataFrame {
+    if (subset === false || subset === "first" || subset === "last") {
+      keep = subset;
+      subset = undefined;
+    }
     const columns = subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns;
     const missingSubset = columns.filter((column) => !this._columns.includes(column));
     if (missingSubset.length > 0) {
@@ -2136,7 +2413,20 @@ export class DataFrame {
       [...subset, counts.valueColumnName],
       range(counts.rows.length),
       {},
-      { [counts.valueColumnName]: normalize ? "float64" : "int64" }
+      {
+        // pandas preserves declared (nullable) dtypes on the key columns
+        // but re-infers plain object columns from their values.
+        ...Object.fromEntries(
+          subset.map((column) => {
+            const declared = this._dtypes[column];
+            const dtype = declared && declared !== "object"
+              ? declared
+              : convertedDType(counts.rows.map((row) => row[column]), undefined, false);
+            return [column, dtype];
+          })
+        ),
+        [counts.valueColumnName]: normalize ? "float64" : "int64",
+      }
     );
   }
 
@@ -2170,8 +2460,26 @@ export class DataFrame {
     );
   }
 
+  /**
+   * pandas `fillna`: a scalar fills every missing cell; a dict fills
+   * missing cells in the named columns. Lists raise the pandas TypeError;
+   * dict keys must be existing columns.
+   */
   fillna(value: CellValue | Record<string, CellValue>): DataFrame {
-    return this.withReplacement(fillnaRows(this._rows, this._columns, value), this._index, this._columns, true);
+    if (Array.isArray(value)) {
+      throw new TypeError(`"value" parameter must be a scalar or dict, but you passed a "list"`);
+    }
+    let rows = fillnaRows(this._rows, this._columns, value, this._index);
+    // pandas str/string dtypes store missing as NaN, so a column widening
+    // to object keeps NaN (not the NA sentinel other nullable dtypes use).
+    for (const column of this._columns) {
+      const source = this._dtypes[column];
+      if (source !== "string" && source !== "str") continue;
+      const columnValues = rows.map((row) => row[column]);
+      if (replacementDType(source, columnValues) !== "object") continue;
+      rows = rows.map((row) => (isMissing(row[column]) ? { ...row, [column]: NaN } : row));
+    }
+    return this.withReplacement(rows, this._index, this._columns, true);
   }
 
   set_index(column: string | string[], drop = true): DataFrame {
@@ -2194,7 +2502,14 @@ export class DataFrame {
 
   /** pandas `df.index.names` — one entry per index level. */
   get index_names(): (string | undefined)[] {
-    return this._indexNames ?? [this._indexName];
+    if (this._indexNames) {
+      return this._indexNames;
+    }
+    const levels = this.nlevels;
+    if (levels <= 1) {
+      return [this._indexName];
+    }
+    return Array.from({ length: levels }, (_, i) => (i === 0 ? this._indexName : undefined));
   }
 
   /** pandas `df.index.nlevels`. */
@@ -2448,8 +2763,29 @@ export class DataFrame {
     return DataFrame.createInternal(rows, objectColumns, labels as IndexLabel[], {}, objectDtypes);
   }
 
-  groupby(by: string | string[], options: GroupByOptions = {}): GroupBy {
-    return new GroupBy(this, Array.isArray(by) ? by : [by], this._rows, this._columns, options);
+  /**
+   * pandas-style groupby. `by` names column(s); `options.level` groups by
+   * index level(s) instead — a position, level name, or list of either —
+   * like pandas `df.groupby(level=0)`.
+   */
+  groupby(by?: string | string[] | null, options: GroupByOptions = {}): GroupBy {
+    if (options.level !== undefined) {
+      if (by !== undefined && by !== null && (!Array.isArray(by) || by.length > 0)) {
+        throw new Error("groupby: 'by' and 'level' are mutually exclusive.");
+      }
+      const names = this.index_names;
+      const levelPositions = (Array.isArray(options.level) ? options.level : [options.level])
+        .map((level) => resolveIndexLevel(level, this.nlevels, names));
+      const tuples = indexTuples(this._index);
+      const levelKeys = tuples.map((tuple) =>
+        levelPositions.map((position) => (tuple[position] ?? null) as CellValue)
+      );
+      const byNames = levelPositions.map((position) => names[position] ?? "index");
+      const levelIndexNames = levelPositions.map((position) => names[position]);
+      return new GroupBy(this, byNames, this._rows, this._columns, options, levelKeys, levelIndexNames);
+    }
+    const keys = by === undefined || by === null ? [] : (Array.isArray(by) ? by : [by]);
+    return new GroupBy(this, keys, this._rows, this._columns, options);
   }
 
   pivot_table(options: PivotTableOptions): DataFrame {
@@ -2467,20 +2803,59 @@ export class DataFrame {
       this.assertColumnExists(columns);
     }
 
+    const aggfunc = options.aggfunc ?? "mean";
+    const fillValue = options.fill_value;
     const result = computePivotTable({
       sourceRows: this._rows,
       index,
       values,
       columns,
-      aggfunc: options.aggfunc ?? "mean",
-      fillValue: options.fill_value,
+      aggfunc,
+      fillValue,
       margins: options.margins ?? false,
       marginsName: options.margins_name ?? "All",
       dropna: options.dropna ?? true,
       sort: options.sort ?? true,
     });
 
-    return new DataFrame(result.rows, { columns: result.columns });
+    // pandas dtype rules: mean-family always float64; count-family int64;
+    // the rest keep the source column's dtype — except numeric columns that
+    // end up holding NaN (unfilled missing cells), which promote to float64.
+    const numericRe = /^(u?int|float|Int|UInt|Float)/;
+    const dtypes: Partial<Record<string, DType>> = {};
+    for (const column of result.columns) {
+      if (index.includes(column)) {
+        if (this._dtypes[column]) dtypes[column] = this._dtypes[column];
+        continue;
+      }
+      const valueColumn =
+        values.find((v) => column === v || column.startsWith(`${v}_`)) ??
+        (values.length === 1 ? values[0] : undefined);
+      const source = valueColumn ? this._dtypes[valueColumn] : undefined;
+      const hasMissing = result.rows.some((row) => isMissing(row[column]));
+      if (typeof aggfunc !== "string") {
+        dtypes[column] = source;
+      } else if (aggfunc === "mean" || aggfunc === "median" || aggfunc === "std" || aggfunc === "var") {
+        dtypes[column] = "float64";
+      } else if (aggfunc === "count" || aggfunc === "nunique") {
+        dtypes[column] = hasMissing && fillValue === undefined ? "float64" : "int64";
+      } else {
+        dtypes[column] =
+          hasMissing && fillValue === undefined && source !== undefined && numericRe.test(source)
+            ? "float64"
+            : source;
+      }
+    }
+
+    return DataFrame.createInternal(
+      result.rows,
+      result.columns,
+      range(result.rows.length),
+      {},
+      dtypes,
+      index.length === 1 ? index[0] : undefined,
+      index.length > 1 ? [...index] : undefined
+    );
   }
 
   merge(right: DataFrame, options: MergeOptions): DataFrame {
@@ -2811,7 +3186,7 @@ export class DataFrame {
 
   private resolveAssignment(column: string, value: AssignmentValue, rowCount: number): CellValue[] {
     if (value instanceof Series) {
-      return this._index.map((label) => value.loc(label));
+      return this._index.map((label) => value.loc(label) as CellValue);
     }
     if (Array.isArray(value)) {
       if (value.length !== rowCount) {
@@ -2843,12 +3218,17 @@ export class DataFrame {
   private withReplacement(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
     const nextColumns = columns ?? this._columns;
     const dtypes = Object.fromEntries(nextColumns.map(column => [column, replacementDType(this._dtypes[column], rows.map(row => row[column]))]));
-    return DataFrame.createInternal(rows, [...nextColumns], index ? [...index] : range(rows.length), this._dtypeHints, dtypes);
+    return DataFrame.createInternal(rows, [...nextColumns], index ? [...index] : range(rows.length), this._dtypeHints, dtypes, index ? this._indexName : undefined, this.namesForIndex(index));
   }
 
   /** Row/column selection preserves each retained column's dtype before casting. */
   private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
-    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes, index ? this._indexName : undefined);
+    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes, index ? this._indexName : undefined, this.namesForIndex(index));
+  }
+
+  /** MultiIndex level names propagate while the selection keeps tuple labels. */
+  private namesForIndex(index?: IndexLabel[]): (string | undefined)[] | undefined {
+    return index && index.some((label) => Array.isArray(label)) ? this._indexNames : undefined;
   }
 
   private withRows(
@@ -2863,7 +3243,7 @@ export class DataFrame {
       : rows.map((row) => cloneRow(row, nextColumns));
     const nextIndex = index ? [...index] : range(nextRows.length);
     const nextIndexName = index ? this._indexName : undefined;
-    return DataFrame.createInternal(nextRows, nextColumns, nextIndex, {}, {}, nextIndexName);
+    return DataFrame.createInternal(nextRows, nextColumns, nextIndex, {}, {}, nextIndexName, this.namesForIndex(index));
   }
 
   private withIndex(index: IndexLabel[]): DataFrame {
@@ -3024,23 +3404,126 @@ export class DataFrame {
   // ---- reshaping: stack / unstack ----
 
   /**
-   * pandas-style `stack` (single-level columns): pivot each column into
-   * long rows `{ index, column, value }`; missing cells dropped unless
-   * `dropna` is false.
+   * pandas-style `stack`. For frames produced by `unstack` (tuple
+   * MultiColumns or a marked series-unstack) this inverts pandas-style:
+   * tuple-columned frames return a DataFrame with the column level folded
+   * back into the index, series-unstacked frames return a Series. Other
+   * frames keep the long-format `{ index, column, value }` pivot; missing
+   * cells dropped unless `dropna` is false.
    */
-  stack(dropna = true): DataFrame {
+  stack(dropna = true): DataFrame | Series<CellValue> {
+    const unstackLevel = this._unstackLevel;
+    if (unstackLevel) {
+      const tuples = indexTuples(this._index);
+      const nextNames = [...this.index_names, unstackLevel.name];
+      const hasTupleColumns = (this._displayColumns ?? []).some((label) => Array.isArray(label));
+      if (hasTupleColumns) {
+        // pandas stack on MultiColumns: fold the last column level into the
+        // index — one row per (index tuple, level value).
+        const topOrder: string[] = [];
+        const levelValues: (string | number)[] = [];
+        const storageAt = new Map<string, string>();
+        this._columns.forEach((storage, j) => {
+          const display = this._displayColumns![j]! as (string | number)[];
+          const top = String(display[0]);
+          const levelValue = unstackLevel.values[j]!;
+          if (!topOrder.includes(top)) topOrder.push(top);
+          if (!levelValues.some((v) => indexLabelEquals(v as IndexLabel, levelValue as IndexLabel))) {
+            levelValues.push(levelValue);
+          }
+          storageAt.set(`${top} ${indexLabelKey(levelValue as IndexLabel)}`, storage);
+        });
+        const outRows: Row[] = [];
+        const outIndex: IndexLabel[] = [];
+        this._rows.forEach((row, i) => {
+          for (const levelValue of levelValues) {
+            const next: Row = {};
+            for (const top of topOrder) {
+              const storage = storageAt.get(`${top} ${indexLabelKey(levelValue as IndexLabel)}`);
+              next[top] = storage === undefined ? null : (row[storage] ?? null);
+            }
+            outRows.push(next);
+            outIndex.push([...tuples[i]!, levelValue]);
+          }
+        });
+        return DataFrame.createInternal(outRows, topOrder, outIndex, {}, {}, undefined, nextNames);
+      }
+      // Series-unstacked frame: flat columns fold back into a Series whose
+      // index appends the recorded level value per column.
+      const values: CellValue[] = [];
+      const outIndex: IndexLabel[] = [];
+      this._rows.forEach((row, i) => {
+        this._columns.forEach((storage, j) => {
+          values.push(row[storage] ?? null);
+          outIndex.push([...tuples[i]!, unstackLevel.values[j]!]);
+        });
+      });
+      return new Series(values, { index: outIndex, indexNames: nextNames });
+    }
+
     const result = stackFrame(this._rows, this._columns, this._index, dropna);
     return this.withRows(result.rows, result.index, result.columns, true);
   }
 
   /**
-   * Inverse of `stack` for single-level long frames: expects exactly three
-   * columns `[row key, column key, value]`; distinct row keys become the
-   * wide frame's index and distinct column keys its columns.
+   * pandas-style `unstack` on a MultiIndex: move one index level (default
+   * the last) into the columns. Row index = remaining levels (sorted
+   * unique tuples), columns = `(column, level value)` tuple MultiColumns;
+   * absent combinations fill with `fill_value ?? NaN` like pandas.
+   * Single-level frames keep the legacy 3-column long-format inverse of
+   * `stack()` (pandas would return a Series there instead).
    */
-  unstack(): DataFrame {
-    const result = unstackFrame(this._rows, this._columns);
-    return this.withRows(result.rows, result.index, result.columns, true);
+  unstack(level: number | string = -1, fillValue?: CellValue): DataFrame {
+    if (this.nlevels <= 1) {
+      const result = unstackFrame(this._rows, this._columns);
+      return this.withRows(result.rows, result.index, result.columns, true);
+    }
+    const names = this.index_names;
+    const levelPos = resolveIndexLevel(level, this.nlevels, names);
+    const grid = unstackGrid(this._index, levelPos);
+    const fill = fillValue === undefined ? NaN : fillValue;
+
+    const storageColumns: string[] = [];
+    const displayColumns: IndexLabel[] = [];
+    const levelValues: (string | number)[] = [];
+    for (const column of this._columns) {
+      for (const colKey of grid.colKeys) {
+        storageColumns.push(`${column} ${JSON.stringify(colKey)}`);
+        displayColumns.push([column, colKey]);
+        levelValues.push(colKey);
+      }
+    }
+
+    const rows: Row[] = grid.rowLabels.map(() => ({}));
+    grid.rowLabels.forEach((rowLabel, rowIdx) => {
+      const rawRow = Array.isArray(rowLabel) ? rowLabel : [rowLabel];
+      grid.colKeys.forEach((colKey, colIdx) => {
+        const sourcePosition = grid.cellPosition.get(unstackCellKey(rawRow, colKey));
+        this._columns.forEach((column, j) => {
+          const storage = storageColumns[j * grid.colKeys.length + colIdx]!;
+          const cell = sourcePosition === undefined ? undefined : this._rows[sourcePosition]![column];
+          rows[rowIdx]![storage] = cell === undefined ? fill : cell;
+        });
+      });
+    });
+    for (const row of rows) {
+      for (const storage of storageColumns) {
+        if (row[storage] === undefined) row[storage] = fill;
+      }
+    }
+
+    const nextNames = names.filter((_, i) => grid.remainingLevels.includes(i));
+    const frame = DataFrame.createInternal(
+      rows,
+      storageColumns,
+      grid.rowLabels,
+      {},
+      {},
+      nextNames[0],
+      nextNames,
+      displayColumns
+    );
+    return DataFrame.markUnstacked(frame, names[levelPos], levelValues);
   }
 
   // ---- export / identity shims ----
@@ -3119,8 +3602,9 @@ export class DataFrame {
   droplevel(level = 0): DataFrame {
     return windowApi.droplevel(this.view(), level);
   }
-  reorder_levels(...order: number[]): DataFrame {
-    return windowApi.reorder_levels(this.view(), ...order);
+  reorder_levels(...order: (number | number[])[]): DataFrame {
+    const list = (order.length === 1 && Array.isArray(order[0]) ? order[0] : order) as number[];
+    return windowApi.reorder_levels(this.view(), ...list);
   }
   swaplevel(a = 0, b = -1): DataFrame {
     return windowApi.swaplevel(this.view(), a, b);
