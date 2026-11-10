@@ -110,6 +110,17 @@ export class Series<T extends CellValue = CellValue> {
     return this._indexName;
   }
 
+  /** pandas `series.index.names` — one entry per index level. */
+  get index_names(): (string | undefined)[] {
+    return [this._indexName];
+  }
+
+  /** pandas `series.index.nlevels`. */
+  get nlevels(): number {
+    const tuple = this._index.find(l => Array.isArray(l));
+    return tuple ? (tuple as (string | number)[]).length : 1;
+  }
+
   get length(): number {
     return this._values.length;
   }

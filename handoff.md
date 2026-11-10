@@ -137,11 +137,22 @@ comparisons. The strict audit now matches 2,499/2,500 pandas observations and
 exits nonzero for 1 mismatch (merge-valid-167: pandas inner-join match order is hashtable-iteration order, not replicable). No frozen
 paper timings were changed.
 
-The offline pandas evidence now includes 524 value/metadata cases, 2,419 dtype
-cases, 93 dtype queries, 105 default-frame cases, 1,566 assignment cases, 232
-update cases and 162 scalar-index cases. The inventory counts their primary
-operations separately. Mutation/return-value parity for insert/isetitem now
-matches pandas: both mutate in place and return `undefined`. Other unfinished areas include exact
-bigint storage, arithmetic dtype propagation, hierarchical indexes, index
-metadata, datetime/timezone storage, duplicate-label alignment and broad API
-signature/return/error compatibility. Continue with small tested commits.
+The offline pandas evidence now includes 2,926 dtype contracts (adding 507
+arithmetic/alignment contracts covering dtype promotion, IEEE comparisons,
+index union/broadcast alignment, bool/string/object op semantics) plus 585
+rank, 93 query, 105 frame-inference, 1,566 assignment and 232 update cases.
+
+Shipped since: pandas arithmetic dtype propagation (exact-width promotion,
+scalar width preservation, floordiv/mod zero-divisor rules, IEEE comparison
+semantics, string repetition/ordering TypeErrors, object ZeroDivisionError);
+index-name metadata on Series and DataFrame; duplicate-label arithmetic
+broadcast alignment; and a MultiIndex foundation — tuple index labels, level
+names (`index.names`/`nlevels`), multi-column `set_index`, multi-key
+`groupby(as_index=true)`, `droplevel`/`reorder_levels`/`swaplevel`, and
+per-level `reset_index`.
+
+Remaining long-term areas: exact bigint storage (unsafe ints currently raise
+a documented RangeError), datetime64/timezone storage (tz_localize/tz_convert
+are stubs), deeper MultiIndex surface (unstack/stack level ops, .loc tuple
+selection, xs), index metadata propagation through every operation, and broad
+API signature/return/error compatibility. Continue with small tested commits.
