@@ -71,9 +71,10 @@ describe("series compatibility helpers", () => {
     ]);
   });
 
-  test("clip applies numeric bounds and keeps non-numeric values", () => {
+  test("clip raises TypeError on string values like pandas", () => {
     const series = new Series([1, 5, null, "x"]);
-    expect(series.clip(2, 4).to_list()).toEqual([2, 4, null, "x"]);
+    // pandas raises when numeric bounds meet str values in an object column.
+    expect(() => series.clip(2, 4)).toThrow("not supported between instances of 'str'");
   });
 
   test("replace supports scalar, array, and mapping inputs", () => {

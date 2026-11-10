@@ -26,6 +26,13 @@ export class KeyError extends Error {
   }
 }
 
+export class IndexError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "IndexError";
+  }
+}
+
 export class ZeroDivisionError extends Error {
   constructor(message: string) {
     super(message);

@@ -1,7 +1,7 @@
 import updateFixture from "./fixtures/pandas-frame-update.json";
 import assignmentFixture from "./fixtures/pandas-frame-assignment.json";
 import { expect, test } from "bun:test";
-import { DataFrame, NA, Series } from "../src/index";
+import { concat, DataFrame, NA, Series } from "../src/index";
 import type { CellValue, DType } from "../src/types";
 import frameFixture from "./fixtures/pandas-frame-dtypes.json";
 import fixture from "./fixtures/pandas-dtype-contracts.json";
@@ -25,6 +25,27 @@ function decode(value: unknown): CellValue {
   return value as CellValue;
 }
 
+type FrameSpec = { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] };
+
+function buildFrame(spec: FrameSpec): DataFrame {
+  return new DataFrame(
+    Object.fromEntries(Object.entries(spec.columns).map(([column, columnValues]) => [column, columnValues.map(decode)])),
+    { dtype: "object", ...(spec.index ? { index: spec.index } : {}) }
+  ).astype(spec.dtypes);
+}
+
+function frameResult(frame: DataFrame): unknown {
+  return {
+    dtypes: frame.dtypes(),
+    columns: frame.columns,
+    index: frame.index,
+    indexName: frame.index_name ?? null,
+    // The oracle encodes via itertuples, which yields no rows for a
+    // zero-column frame, so normalize values() to [] in that case.
+    values: frame.columns.length === 0 ? [] : frame.values().map(row => row.map(encode)),
+  };
+}
+
 for (const [i, entry] of fixture.cases.entries()) {
   test(`pandas dtype ${i}: ${entry.mode} ${entry.dtype} ${JSON.stringify(entry.values)}`, () => {
     const dtype = entry.dtype as DType;
@@ -33,24 +54,36 @@ for (const [i, entry] of fixture.cases.entries()) {
       if (entry.mode === "inferred_constructor") return new Series<CellValue>(values);
       if (entry.mode === "astype") return new Series<CellValue>(values, { dtype: "object" }).astype(dtype);
       if (entry.mode === "frame_arithmetic") {
-        const buildFrame = (spec: { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] }) =>
-          new DataFrame(
-            Object.fromEntries(Object.entries(spec.columns).map(([column, columnValues]) => [column, columnValues.map(decode)])),
-            { dtype: "object", ...(spec.index ? { index: spec.index } : {}) }
-          ).astype(spec.dtypes);
-        const frameEntry = entry as unknown as { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[]; operand: Record<string, unknown> };
+        const frameEntry = entry as unknown as FrameSpec & { operand: Record<string, unknown> };
         const source = buildFrame(frameEntry);
         const operandSpec = frameEntry.operand;
         const operand: number | DataFrame = "scalar" in operandSpec
           ? operandSpec.scalar as number
-          : buildFrame(operandSpec as { dtypes: Record<string, DType>; columns: Record<string, unknown[]>; index?: (string | number)[] });
+          : buildFrame(operandSpec as FrameSpec);
         const operation: unknown = Reflect.get(source, entry.operation!);
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
         return operation.apply(source, [operand]) as unknown as Series<CellValue>;
       }
+      if (entry.mode === "frame_reduction" || entry.mode === "frame_selection" || entry.mode === "groupby") {
+        const frameEntry = entry as unknown as FrameSpec & { by?: string };
+        const source = buildFrame(frameEntry);
+        const target: unknown = entry.mode === "groupby" ? source.groupby(frameEntry.by!) : source;
+        const operation: unknown = Reflect.get(target as object, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(target, entry.args) as unknown as Series<CellValue>;
+      }
+      if (entry.mode === "frame_binary") {
+        const binaryEntry = entry as unknown as { left: FrameSpec; right: FrameSpec; args: Record<string, unknown>[] };
+        const left = buildFrame(binaryEntry.left);
+        const right = buildFrame(binaryEntry.right);
+        if (entry.operation === "concat") return concat([left, right], binaryEntry.args[0]!) as unknown as Series<CellValue>;
+        const operation: unknown = Reflect.get(left, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(left, [right, ...binaryEntry.args]) as unknown as Series<CellValue>;
+      }
       const source = new Series<CellValue>(values, {
         dtype,
-        ...((entry.mode === "selection" || entry.mode === "replacement") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
+        ...((entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view" || entry.mode === "series_reduction" || entry.mode === "series_array") ? { index: values.map((_: unknown, i: number) => `row-${i}`), name: "v" } : {}),
         ...((entry as { index?: unknown[] }).index ? { index: (entry as { index: (string | number)[] }).index } : {}),
       });
       if (entry.mode === "arithmetic") {
@@ -81,10 +114,59 @@ for (const [i, entry] of fixture.cases.entries()) {
     else if (entry.mode === "frame_arithmetic") {
       const frame = run() as unknown as DataFrame;
       expect<unknown>({ dtypes: frame.dtypes(), columns: frame.columns, index: frame.index, values: frame.values().map(row => row.map(encode)) }).toEqual(entry.expected!);
+    } else if (entry.mode === "frame_reduction") {
+      const record = run() as unknown as Record<string, CellValue>;
+      expect<unknown>({ index: Object.keys(record), values: Object.values(record).map(encode) }).toEqual(entry.expected!);
+    } else if (entry.mode === "frame_selection" || entry.mode === "frame_binary") {
+      const result = run() as unknown;
+      const rowExpected = (entry as { rowExpected?: { index: unknown[]; name: string | null; values: unknown[] } }).rowExpected;
+      if (rowExpected) {
+        if (result instanceof Series) {
+          expect<unknown>({ dtype: result.dtype, index: result.index, name: result.name ?? null, values: result.to_list().map(encode) }).toEqual(rowExpected);
+        } else {
+          const row = result as Record<string, CellValue>;
+          expect<unknown>({ index: Object.keys(row), values: Object.values(row).map(encode) }).toEqual({ index: rowExpected.index, values: rowExpected.values });
+        }
+      } else {
+        expect<unknown>(frameResult(result as DataFrame)).toEqual(entry.expected!);
+      }
+    } else if (entry.mode === "groupby") {
+      const result = run() as unknown as DataFrame;
+      const frameEntry = entry as unknown as { by: string; seriesExpected?: { dtype: string; values: unknown[]; index: unknown[] } };
+      // bun_panda keeps group keys as columns (as_index=false); pandas moves
+      // them into the index. Adapt before comparing.
+      if (frameEntry.seriesExpected) {
+        const keyValues = (result as unknown as DataFrame).get(frameEntry.by).to_list();
+        const size = result.get("size") as Series<CellValue>;
+        expect<unknown>({ dtype: size.dtype, values: size.to_list().map(encode), index: keyValues.map(encode) }).toEqual(frameEntry.seriesExpected);
+      } else {
+        const keyValues = result.get(frameEntry.by).to_list();
+        const dataColumns = result.columns.filter((column) => column !== frameEntry.by);
+        const positions = dataColumns.map((column) => result.columns.indexOf(column));
+        const expected = entry.expected as { dtypes: Record<string, string>; columns: string[]; index: unknown[]; indexName: string | null; values: unknown[][] };
+        expect<unknown>({
+          dtypes: Object.fromEntries(dataColumns.map((column) => [column, result.dtypes()[column]])),
+          columns: dataColumns,
+          index: keyValues.map(encode),
+          values: result.values().map((row) => positions.map((p) => encode(row[p]!))),
+        }).toEqual({ dtypes: expected.dtypes, columns: expected.columns, index: expected.index, values: expected.values });
+      }
+    } else if (entry.mode === "series_reduction") {
+      expect<unknown>(encode(run() as unknown as CellValue)).toEqual(entry.expected!);
+    } else if (entry.mode === "series_array") {
+      const result = run() as unknown;
+      if (entry.operation === "factorize") {
+        const [codes, uniques] = result as [number[], CellValue[]];
+        expect<unknown>({ codes, uniques: uniques.map(encode) }).toEqual(entry.expected!);
+      } else {
+        expect<unknown>({ values: (result as CellValue[]).map(encode) }).toEqual(entry.expected!);
+      }
     } else {
       const result = run();
-      const expectIndex = (entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "arithmetic") && entry.expected && "index" in entry.expected;
-      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(expectIndex ? { index: result.index } : {}), ...((entry.mode === "selection" || entry.mode === "replacement") ? { name: result.name } : {}) }).toEqual(entry.expected!);
+      const expectIndex = (entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "arithmetic" || entry.mode === "elementwise" || entry.mode === "series_view") && entry.expected && "index" in entry.expected;
+      const expectName = entry.mode === "selection" || entry.mode === "replacement" || entry.mode === "elementwise" || entry.mode === "series_view";
+      const expected = entry.expected as { indexName?: string | null };
+      expect({ dtype: result.dtype, values: result.to_list().map(encode), ...(expectIndex ? { index: result.index.map((label) => encode(label as CellValue)) } : {}), ...(expectName ? { name: result.name ?? null } : {}), ...(expected && "indexName" in expected ? { indexName: result.index_name ?? null } : {}) }).toEqual(entry.expected!);
       expect(result.copy().dtype).toBe(entry.expected!.dtype);
       expect(result.head(0).dtype).toBe(entry.expected!.dtype);
     }
@@ -128,7 +210,7 @@ test("frame inference preserves text and labels while selecting nullable dtypes"
 });
 
 for (const entry of fixture.cases) {
-  if (!("operation" in entry) || entry.mode === "arithmetic" || entry.mode === "frame_arithmetic" || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
+  if (!("operation" in entry) || !["selection", "replacement", "elementwise"].includes(entry.mode) || entry.operation === "repeat" || entry.operation === "rename" || entry.operation === "set_axis") continue;
   test(`frame selection preserves ${entry.dtype}: ${entry.operation} ${JSON.stringify(entry.args)} ${JSON.stringify(entry.values)}`, () => {
     const frame = new DataFrame({ v: entry.values.map(decode) }, { dtype: entry.dtype as DType, index: entry.values.map((_: unknown, i: number) => `row-${i}`) });
     const operation: unknown = Reflect.get(frame, entry.operation!);
@@ -137,9 +219,10 @@ for (const entry of fixture.cases) {
     if (entry.operation === "sort_values") args = ["v"];
     if (entry.operation === "reindex") args = [{ index: entry.args![0] }];
     const run = () => operation.apply(frame, args) as DataFrame;
+    if ("frameError" in entry && entry.frameError) { expect(run).toThrow(); return; }
     if (entry.error && !("frameExpected" in entry)) { expect(run).toThrow(); return; }
     const result = run();
-    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index, name: "v" }).toEqual("frameExpected" in entry ? entry.frameExpected! : entry.expected!);
+    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index.map((label) => encode(label as CellValue)), name: "v" }).toEqual("frameExpected" in entry ? entry.frameExpected! : entry.expected!);
   });
 }
 

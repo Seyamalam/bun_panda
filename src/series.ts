@@ -6,13 +6,10 @@ import { DataFrame } from "./dataframe";
 import {
   compareCellValues,
   isMissing,
-  isSubtractableOperand,
   numericValues,
-  pythonOperandTypeName,
   range,
 } from "./utils";
 import {
-  computeSeriesClip,
   computeSeriesIsin,
   computeSeriesReplace,
   type SeriesReplaceInput,
@@ -21,30 +18,42 @@ import {
   adjustedSkew,
   autocorrelation,
   excessKurtosis,
-  semOfMean,
-  seriesAll,
-  seriesAny,
-  seriesArgmax,
-  seriesArgmin,
   seriesCount,
   seriesDescribe,
   seriesEquals,
-  seriesProd,
   seriesStd,
   seriesVariance,
 } from "./internal/series/stats";
 import { samplePositions } from "./internal/dataframe/compat";
-import { normalizeKeyCell } from "./internal/dataframe/keys";
 import {
   cumcountValues,
-  cummaxValues,
-  cumminValues,
-  cumprodValues,
-  cumsumValues,
 } from "./internal/series/cumulative";
 import { computeRank, type RankOptions } from "./internal/series/rank";
 import { KeyError, NotSupportedError, ValueError, ZeroDivisionError } from "./errors";
 import * as seriesApi from "./internal/series/seriesApi";
+import {
+  isMaskedDType,
+  missingScalar,
+  pandasAllAny,
+  pandasArgExtreme,
+  pandasIdxExtreme,
+  pandasMinMax,
+  pandasMode,
+  pandasProd,
+  pandasSum,
+  requireComparable,
+  requireNumeric,
+  requireQuantileable,
+} from "./internal/series/pandasOps";
+import {
+  pandasAbs,
+  pandasClip,
+  pandasCumMinMax,
+  pandasCumSumProd,
+  pandasDiff,
+  pandasPctChange,
+} from "./internal/series/pandasElementwise";
+import { NA } from "./missing";
 import {
   asciiBoxplot,
   asciiHistogram,
@@ -253,10 +262,18 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   /** q-quantile of the numeric values (linear interpolation). */
-  quantile(q = 0.5): number | null {
-    const values = numericValues(this._values).sort((a, b) => a - b);
+  quantile(q = 0.5): CellValue {
+    if (this._dtype === "string" || this._dtype === "str") {
+      // pandas: empty string series raises ValueError, non-empty TypeError.
+      if (this._values.every((value) => isMissing(value))) {
+        throw new ValueError("cannot do a non-empty take from an empty axes.");
+      }
+      throw new TypeError("'quantile' is not supported for string dtype");
+    }
+    requireQuantileable(this._values as CellValue[], this._dtype);
+    const values = requireNumeric(this._values as CellValue[], this._dtype, "quantile").sort((a, b) => a - b);
     if (values.length === 0) {
-      return null;
+      return missingScalar(this._dtype);
     }
     const pos = (values.length - 1) * q;
     const lower = Math.floor(pos);
@@ -264,29 +281,9 @@ export class Series<T extends CellValue = CellValue> {
     return values[lower]! + (values[upper]! - values[lower]!) * (pos - lower);
   }
 
-  /** Most frequent value(s); ties return all of them in first-seen order. */
+  /** Most frequent value(s); pandas returns them sorted ascending. */
   mode(): T[] {
-    const counts = new Map<string, { value: T; count: number; first: number }>();
-    this._values.forEach((value, i) => {
-      if (isMissing(value)) {
-        return;
-      }
-      const key = this.valueKey(value);
-      const entry = counts.get(key);
-      if (entry) {
-        entry.count += 1;
-      } else {
-        counts.set(key, { value, count: 1, first: i });
-      }
-    });
-    let max = 0;
-    for (const entry of counts.values()) {
-      max = Math.max(max, entry.count);
-    }
-    return [...counts.values()]
-      .filter((entry) => entry.count === max)
-      .sort((a, b) => a.first - b.first)
-      .map((entry) => entry.value);
+    return pandasMode(this._values as CellValue[], (v) => this.valueKey(v as T)) as T[];
   }
 
   /** Functional chaining helper (pandas pipe). */
@@ -294,32 +291,14 @@ export class Series<T extends CellValue = CellValue> {
     return fn(this, ...args);
   }
 
-  /** Index label of the maximum numeric value (pandas idxmax). */
-  idxmax(): IndexLabel | null {
-    let best: number | bigint | null = null;
-    let bestIndex: IndexLabel | null = null;
-    this._values.forEach((value, i) => {
-      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint")) return;
-      if (best === null || value > best) {
-        best = value;
-        bestIndex = this._index[i]!;
-      }
-    });
-    return bestIndex;
+  /** Index label of the maximum value (pandas idxmax). */
+  idxmax(): IndexLabel {
+    return pandasIdxExtreme(this._values as CellValue[], this._index, "max");
   }
 
-  /** Index label of the minimum numeric value (pandas idxmin). */
-  idxmin(): IndexLabel | null {
-    let best: number | bigint | null = null;
-    let bestIndex: IndexLabel | null = null;
-    this._values.forEach((value, i) => {
-      if (isMissing(value) || (typeof value !== "number" && typeof value !== "bigint")) return;
-      if (best === null || value < best) {
-        best = value;
-        bestIndex = this._index[i]!;
-      }
-    });
-    return bestIndex;
+  /** Index label of the minimum value (pandas idxmin). */
+  idxmin(): IndexLabel {
+    return pandasIdxExtreme(this._values as CellValue[], this._index, "min");
   }
 
   /**
@@ -327,11 +306,41 @@ export class Series<T extends CellValue = CellValue> {
    * Stable; missing values go last.
    */
   argsort(): number[] {
+    // pandas argsort keeps missing values, placing them last in original order.
+    this.requireSortable();
     const indexed = this._values
-      .map((value, position) => ({ value, position }))
-      .filter((entry) => !isMissing(entry.value));
-    indexed.sort((a, b) => compareCellValues(a.value, b.value));
-    return indexed.map((entry) => entry.position);
+      .map((value, position) => ({ value, position }));
+    const present = indexed.filter((entry) => !isMissing(entry.value));
+    present.sort((a, b) => compareCellValues(a.value, b.value));
+    return [
+      ...present.map((entry) => entry.position),
+      ...indexed.filter((entry) => isMissing(entry.value)).map((entry) => entry.position),
+    ];
+  }
+
+  /** object dtype with incomparable mixed kinds raises TypeError, like Python. */
+  private requireSortable(): void {
+    if (this._dtype !== "object") {
+      return;
+    }
+    const kinds = new Set<string>();
+    for (const value of this._values) {
+      if (isMissing(value)) {
+        continue;
+      }
+      if (typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
+        kinds.add("numeric");
+      } else if (typeof value === "string") {
+        kinds.add("string");
+      } else if (value instanceof Date) {
+        kinds.add("date");
+      } else {
+        kinds.add("other");
+      }
+    }
+    if (kinds.size > 1) {
+      throw new TypeError("'<' not supported between instances of different types");
+    }
   }
 
   /**
@@ -386,40 +395,60 @@ export class Series<T extends CellValue = CellValue> {
     return seriesCount(this._values);
   }
 
-  median(): number | null {
-    return this.quantile(0.5);
+  /** pandas float32 reductions round to single precision. */
+  private maybeF32(value: CellValue): CellValue {
+    return (this._dtype === "float32" || this._dtype === "Float32") && typeof value === "number"
+      ? Math.fround(value)
+      : value;
   }
 
-  var(): number | null {
-    return seriesVariance(numericValues(this._values));
-  }
-
-  prod(): number | bigint | null {
-    const cells = this._values.filter((value) => !isMissing(value));
-    if (cells.length > 0 && cells.every((value) => typeof value === "bigint")) {
-      return (cells as bigint[]).reduce((acc, value) => acc * value, 1n);
+  median(): CellValue {
+    // Unlike quantile(), bool values participate: pandas bool median -> float.
+    const values = requireNumeric(this._values as CellValue[], this._dtype, "median").sort((a, b) => a - b);
+    if (values.length === 0) {
+      return missingScalar(this._dtype);
     }
-    return seriesProd(numericValues(this._values));
+    const pos = (values.length - 1) * 0.5;
+    const lower = Math.floor(pos);
+    const upper = Math.ceil(pos);
+    return this.maybeF32(values[lower]! + (values[upper]! - values[lower]!) * (pos - lower));
   }
 
-  product(): number | bigint | null {
+  var(ddof = 1): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "var");
+    return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(seriesVariance(numbers, ddof) ?? missingScalar(this._dtype)));
+  }
+
+  prod(): CellValue {
+    return this.maybeF32(pandasProd(this._values as CellValue[], this._dtype));
+  }
+
+  product(): CellValue {
     return this.prod();
   }
 
   /** Unbiased skewness (Fisher-Pearson with sample correction G1). */
-  skew(): number | null {
-    return adjustedSkew(numericValues(this._values));
+  skew(): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "skew");
+    return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(adjustedSkew(numbers) ?? missingScalar(this._dtype)));
   }
 
 
   /** Excess kurtosis (Fisher definition; normal distribution = 0). */
-  kurt(): number | null {
-    return excessKurtosis(numericValues(this._values));
+  kurt(): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "kurt");
+    return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(excessKurtosis(numbers) ?? missingScalar(this._dtype)));
   }
 
   /** Standard error of the mean (sample std / sqrt(n)). */
-  sem(): number | null {
-    return semOfMean(numericValues(this._values));
+  sem(ddof = 1): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "sem");
+    if (numbers.length === 0) return missingScalar(this._dtype);
+    const std = seriesStd(numbers, ddof);
+    if (std === null) return missingScalar(this._dtype);
+    // float32 dtypes round the std to f32 before dividing by sqrt(n).
+    const roundedStd = this.maybeF32(std) as number;
+    return this.maybeF32(roundedStd / Math.sqrt(numbers.length));
   }
 
   /** Lag-N autocorrelation (default lag 1). */
@@ -464,77 +493,109 @@ export class Series<T extends CellValue = CellValue> {
     return this.filter((entry) => !isMissing(entry));
   }
 
-  sum(): number | bigint | null {
-    // an all-bigint column sums exactly (pandas int64 scalar semantics).
-    const cells = this._values.filter((value) => !isMissing(value));
-    if (cells.length > 0 && cells.every((value) => typeof value === "bigint")) {
-      return (cells as bigint[]).reduce((acc, value) => acc + value, 0n);
-    }
-    const numbers = numericValues(this._values);
-    return numbers.reduce((acc, value) => acc + value, 0);
+  sum(): CellValue {
+    return this.maybeF32(pandasSum(this._values as CellValue[], this._dtype));
   }
 
-  mean(): number | null {
-    const numbers = numericValues(this._values);
+  mean(): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "mean");
     if (numbers.length === 0) {
-      return null;
+      return missingScalar(this._dtype);
     }
-    return numbers.reduce((acc, value) => acc + value, 0) / numbers.length;
+    return this.maybeF32(numbers.reduce((acc, value) => acc + value, 0) / numbers.length);
   }
 
-  min(): T | null {
-    const nonMissing = this._values.filter((value) => !isMissing(value));
-    if (nonMissing.length === 0) {
-      return null;
-    }
-    return [...nonMissing].sort(compareCellValues)[0] as T;
+  min(): CellValue {
+    return this.maybeF32(pandasMinMax(this._values as CellValue[], this._dtype, "min"));
   }
 
-  max(): T | null {
-    const nonMissing = this._values.filter((value) => !isMissing(value));
-    if (nonMissing.length === 0) {
-      return null;
-    }
-    return [...nonMissing].sort(compareCellValues).at(-1) as T;
+  max(): CellValue {
+    return this.maybeF32(pandasMinMax(this._values as CellValue[], this._dtype, "max"));
   }
 
   unique(): T[] {
     const seen = new Set<string>();
     const out: T[] = [];
+    // pandas np.asarray() on a nullable numeric/boolean EA converts to
+    // float64/object, so unique() surfaces NaN there while string/boolean
+    // and object keep their stored sentinel (NA / None).
+    const numericMissing = /^[UIF]/.test(this._dtype);
     for (const value of this._values) {
       const key = this.valueKey(value);
       if (!seen.has(key)) {
         seen.add(key);
-        out.push(value);
+        out.push((numericMissing && isMissing(value) ? NaN : value) as T);
       }
     }
     return out;
   }
 
-  value_counts(dropna = true): Series<number> {
-    const counts = new Map<string, { value: T; count: number }>();
+  value_counts(
+    options: boolean | { normalize?: boolean; sort?: boolean; ascending?: boolean; dropna?: boolean } = true
+  ): Series<CellValue> {
+    const opts = typeof options === "boolean" ? { dropna: options } : options;
+    const dropna = opts.dropna ?? true;
+    const normalize = opts.normalize ?? false;
+    const sort = opts.sort ?? true;
+    const ascending = opts.ascending ?? false;
+    const masked = isMaskedDType(this._dtype);
 
-    for (const value of this._values) {
-      if (dropna && isMissing(value)) {
-        continue;
+    const counts = new Map<string, { value: CellValue; count: number; first: number }>();
+    let missingCount = 0;
+    let missingFirst = -1;
+    this._values.forEach((value, i) => {
+      if (isMissing(value)) {
+        if (missingCount === 0) missingFirst = i;
+        missingCount += 1;
+        return;
       }
       const key = this.valueKey(value);
       const entry = counts.get(key);
-      if (!entry) {
-        counts.set(key, { value, count: 1 });
-      } else {
-        entry.count += 1;
+      if (!entry) counts.set(key, { value, count: 1, first: i });
+      else entry.count += 1;
+    });
+
+    // pandas orders entries by first occurrence; for masked dtypes the NA
+    // bucket always trails the non-NA buckets.
+    const entries = [...counts.values()];
+    // pandas uses the dtype-appropriate missing sentinel in the index:
+    // pd.NA for masked dtypes, None for object, NaN otherwise.
+    const missingValue: CellValue = (masked ? NA : this._dtype === "object" ? null : NaN) as CellValue;
+    const missingEntry: { value: CellValue; count: number; first: number } | null = !dropna && missingCount > 0
+      ? { value: missingValue, count: missingCount, first: missingFirst }
+      : null;
+    const ordered: { value: CellValue; count: number; first: number }[] = [];
+    // Nullable Int/Float/boolean dtypes append the NA bucket last; all other
+    // dtypes (numpy, string, object) keep it at its first-occurrence slot.
+    if (missingEntry && (!masked || this._dtype === "string")) {
+      // the missing bucket occupies its first-occurrence slot
+      let inserted = false;
+      for (const entry of entries) {
+        if (!inserted && missingEntry.first < entry.first) { ordered.push(missingEntry); inserted = true; }
+        ordered.push(entry);
       }
+      if (!inserted) ordered.push(missingEntry);
+    } else {
+      ordered.push(...entries);
+      if (missingEntry) ordered.push(missingEntry);
+    }
+    if (sort) {
+      ordered.sort((a, b) => ascending ? a.count - b.count : b.count - a.count);
     }
 
-    const sorted = [...counts.values()].sort((left, right) => right.count - left.count);
-    return new Series(
-      sorted.map((entry) => entry.count),
-      {
-        index: sorted.map((entry) => String(entry.value)),
-        name: this.name ? `${this.name}_counts` : "counts",
-      }
-    );
+    const total = ordered.reduce((acc, entry) => acc + entry.count, 0);
+    const values = normalize
+      ? ordered.map((entry) => entry.count / total)
+      : ordered.map((entry) => entry.count);
+    const dtype = normalize
+      ? (masked ? "Float64" : "float64")
+      : (masked ? "Int64" : "int64");
+    return new Series(values as CellValue[], {
+      index: ordered.map((entry) => entry.value as IndexLabel),
+      name: normalize ? "proportion" : "count",
+      indexName: this.name,
+      dtype,
+    });
   }
 
   astype(dtype: SeriesDType): Series<CellValue> {
@@ -543,20 +604,23 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   isin(values: CellValue[]): Series<boolean> {
+    // pandas returns a plain bool dtype for string/str inputs (StringDtype's
+    // isin lands on a numpy bool array) and masked boolean only for the
+    // nullable numeric/boolean dtypes.
+    const masked = isMaskedDType(this._dtype) && this._dtype !== "string";
     return new Series(computeSeriesIsin(this._values, values), {
       index: this._index, indexName: this._indexName,
       name: this.name,
+      dtype: masked ? "boolean" : "bool",
     });
   }
 
-  clip(lower?: number, upper?: number): Series<CellValue> {
-    if (lower !== undefined && upper !== undefined && lower > upper) {
+  clip(lower?: number | null, upper?: number | null): Series<CellValue> {
+    if (lower != null && upper != null && lower > upper) {
       throw new Error("clip lower bound cannot exceed upper bound.");
     }
-    return new Series(computeSeriesClip(this._values, lower, upper), {
-      index: this._index, indexName: this._indexName,
-      name: this.name,
-    });
+    const { values, dtype } = pandasClip(this._values as CellValue[], this._dtype, lower, upper);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   replace(toReplace: SeriesReplaceInput, value?: CellValue): Series<CellValue> {
@@ -813,13 +877,8 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   abs(): Series<CellValue> {
-    const out: CellValue[] = this._values.map((value) => {
-      if (isMissing(value)) {
-        return null;
-      }
-      return typeof value === "bigint" ? (value < 0n ? -value : value) : Math.abs(typeof value === "number" ? value : Number(value));
-    });
-    return new Series(out as unknown as CellValue[], { index: this._index, indexName: this._indexName, name: this.name }) as unknown as Series<CellValue>;
+    const { values, dtype } = pandasAbs(this._values as CellValue[], this._dtype);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   round(decimals = 0): Series<CellValue> {
@@ -914,32 +973,24 @@ export class Series<T extends CellValue = CellValue> {
 
   // ---- cumulative ----
 
-  cumsum(): Series<number | bigint> {
-    return new Series(cumsumValues(this._values) as unknown as (number | bigint)[], {
-      index: this._index, indexName: this._indexName,
-      name: this.name,
-    });
+  cumsum(): Series<CellValue> {
+    const { values, dtype } = pandasCumSumProd(this._values as CellValue[], this._dtype, false);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
-  cummax(): Series<T> {
-    return new Series(cummaxValues(this._values) as unknown as T[], {
-      index: this._index, indexName: this._indexName,
-      name: this.name,
-    });
+  cummax(): Series<CellValue> {
+    const { values, dtype } = pandasCumMinMax(this._values as CellValue[], this._dtype, true);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
-  cummin(): Series<T> {
-    return new Series(cumminValues(this._values) as unknown as T[], {
-      index: this._index, indexName: this._indexName,
-      name: this.name,
-    });
+  cummin(): Series<CellValue> {
+    const { values, dtype } = pandasCumMinMax(this._values as CellValue[], this._dtype, false);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
-  cumprod(): Series<number | bigint> {
-    return new Series(cumprodValues(this._values) as unknown as (number | bigint)[], {
-      index: this._index, indexName: this._indexName,
-      name: this.name,
-    });
+  cumprod(): Series<CellValue> {
+    const { values, dtype } = pandasCumSumProd(this._values as CellValue[], this._dtype, true);
+    return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   /** 0-based position within the run of non-null values (pandas cumcount). */
@@ -992,33 +1043,35 @@ export class Series<T extends CellValue = CellValue> {
     return this._values[pos];
   }
 
-  all(skipna = true): boolean {
-    return seriesAll(this._values as CellValue[], skipna);
+  all(skipna = true): CellValue {
+    return pandasAllAny(this._values as CellValue[], this._dtype, skipna, "all");
   }
 
-  any(skipna = true): boolean {
-    return seriesAny(this._values as CellValue[], skipna);
+  any(skipna = true): CellValue {
+    return pandasAllAny(this._values as CellValue[], this._dtype, skipna, "any");
   }
 
-  argmax(): number | null {
-    return seriesArgmax(this._values as CellValue[]);
+  argmax(): number {
+    return pandasArgExtreme(this._values as CellValue[], "max");
   }
 
-  argmin(): number | null {
-    return seriesArgmin(this._values as CellValue[]);
+  argmin(): number {
+    return pandasArgExtreme(this._values as CellValue[], "min");
   }
 
   copy(): Series<T> {
     return new Series([...this._values], { index: [...this._index], name: this.name, dtype: this._dtype });
   }
 
-  std(ddof = 1): number | null {
-    return seriesStd(numericValues(this._values as CellValue[]), ddof);
+  std(ddof = 1): CellValue {
+    const numbers = requireNumeric(this._values as CellValue[], this._dtype, "std");
+    const result = seriesStd(numbers, ddof);
+    return result === null || result === undefined ? missingScalar(this._dtype) : this.maybeF32(result);
   }
 
   describe(): Series<CellValue> {
-    const result = seriesDescribe(this._values as CellValue[]);
-    return new Series(result.values, { index: result.keys, name: this.name });
+    const result = seriesDescribe(this._values as CellValue[], this._dtype);
+    return new Series(result.values, { index: result.keys, name: this.name, dtype: result.dtype as DType });
   }
 
   /**
@@ -1036,28 +1089,40 @@ export class Series<T extends CellValue = CellValue> {
 
   // ---- selection helpers ----
 
-  nlargest(n = 5): Series<T> {
-    const pairs = this._values
-      .map((value, i) => ({ value, index: this._index[i]!, num: Number(value) }))
-      .filter((pair) => !isMissing(pair.value) && Number.isFinite(pair.num))
-      .sort((a, b) => b.num - a.num)
-      .slice(0, Math.max(0, n));
+  private nlargestSmallest(n: number, largest: boolean): Series<T> {
+    // pandas only supports nlargest/nsmallest on ordered dtypes; strings and
+    // arbitrary objects raise TypeError.
+    requireComparable(this._values as CellValue[], this._dtype, largest ? "nlargest" : "nsmallest");
+    if (this._dtype === "string" || this._dtype === "str" || this._dtype === "object") {
+      throw new TypeError(`Column '${this.name ?? ""}' has dtype ${this._dtype}, cannot use method '${largest ? "nlargest" : "nsmallest"}' with this dtype`);
+    }
+    // Missing values sort behind every present value and fill the tail when
+    // fewer than n valid entries exist.
+    const valid = this._values
+      .map((value, i) => ({ value, index: this._index[i]! }))
+      .filter((pair) => !isMissing(pair.value))
+      .sort((a, b) => {
+        const cmp = compareCellValues(a.value as CellValue, b.value as CellValue);
+        return largest ? -cmp : cmp;
+      });
+    const missing = this._values
+      .map((value, i) => ({ value, index: this._index[i]! }))
+      .filter((pair) => isMissing(pair.value));
+    const pairs = [...valid, ...missing].slice(0, Math.max(0, n));
     return new Series(pairs.map((p) => p.value), {
       index: pairs.map((p) => p.index),
+      indexName: this._indexName,
       name: this.name,
+      dtype: this._dtype,
     });
   }
 
+  nlargest(n = 5): Series<T> {
+    return this.nlargestSmallest(n, true);
+  }
+
   nsmallest(n = 5): Series<T> {
-    const pairs = this._values
-      .map((value, i) => ({ value, index: this._index[i]!, num: Number(value) }))
-      .filter((pair) => !isMissing(pair.value) && Number.isFinite(pair.num))
-      .sort((a, b) => a.num - b.num)
-      .slice(0, Math.max(0, n));
-    return new Series(pairs.map((p) => p.value), {
-      index: pairs.map((p) => p.index),
-      name: this.name,
-    });
+    return this.nlargestSmallest(n, false);
   }
 
   /**
@@ -1140,7 +1205,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   /** Alias for kurt — pandas has both kurt and kurtosis. */
-  kurtosis(): number | null {
+  kurtosis(): CellValue {
     return this.kurt();
   }
 
@@ -1183,7 +1248,8 @@ export class Series<T extends CellValue = CellValue> {
       sum: () => this.sum(), mean: () => this.mean(), min: () => this.min() as CellValue,
       max: () => this.max() as CellValue, count: () => this.count(), std: () => this.std(),
       var: () => this.var(), median: () => this.median(), skew: () => this.skew(), kurt: () => this.kurt(),
-      sem: () => this.sem(), prod: () => this.prod(),
+      sem: () => this.sem(), prod: () => this.prod(), size: () => this.length,
+      nunique: () => this.nunique(),
     };
     if (!(fn in map)) throw new Error(`agg: unknown aggregator '${fn}'`);
     return map[fn]!();
@@ -1197,13 +1263,18 @@ export class Series<T extends CellValue = CellValue> {
     const seen = new Set<string>();
     for (const value of this._values) {
       if (dropna && isMissing(value)) continue;
-      seen.add(JSON.stringify(normalizeKeyCell(value as CellValue)));
+      seen.add(scalarKey(value as CellValue));
     }
     return seen.size;
   }
 
   drop(labels: IndexLabel | IndexLabel[]): Series<T> {
     const toRemove = new Set(Array.isArray(labels) ? labels : [labels]);
+    // pandas raises KeyError when a requested label is absent from the axis.
+    const missing = [...toRemove].filter((label) => !this._index.some((entry) => indexLabelEquals(entry, label)));
+    if (missing.length > 0) {
+      throw new KeyError(`${JSON.stringify(missing)} not found in axis`);
+    }
     const values: T[] = [];
     const index: IndexLabel[] = [];
     for (let i = 0; i < this.length; i += 1) {
@@ -1211,8 +1282,7 @@ export class Series<T extends CellValue = CellValue> {
       values.push(this._values[i]!);
       index.push(this._index[i]!);
     }
-    // Mirror pandas: if no label matched, return copy unchanged
-    return new Series(values, { index, name: this.name, dtype: this._dtype });
+    return new Series(values, { index, indexName: this._indexName, name: this.name, dtype: this._dtype });
   }
 
   sort_values(options: { ascending?: boolean; na_position?: "first" | "last" } | boolean = true): Series<T> {
@@ -1221,6 +1291,7 @@ export class Series<T extends CellValue = CellValue> {
     if (naPosition !== "first" && naPosition !== "last") {
       throw new Error("na_position must be 'first' or 'last'.");
     }
+    this.requireSortable();
     const indexed = this._values.map((value, position) => ({ value, position, label: this._index[position]! }));
     indexed.sort((a, b) => {
       const aMiss = isMissing(a.value);
@@ -1231,9 +1302,14 @@ export class Series<T extends CellValue = CellValue> {
       const cmp = compareCellValues(a.value as CellValue, b.value as CellValue);
       return ascending ? cmp : -cmp;
     });
+    // pandas 3 re-infers a sorted all-string object column as str.
+    const present = indexed.map((e) => e.value).filter((v) => !isMissing(v));
+    const outDtype = this._dtype === "object" && present.length > 0 && present.every((v) => typeof v === "string")
+      ? "str"
+      : this._dtype;
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, indexName: this._indexName, dtype: this._dtype,
+      name: this.name, indexName: this._indexName, dtype: outDtype,
     });
   }
 
@@ -1317,64 +1393,16 @@ export class Series<T extends CellValue = CellValue> {
     return this.withReplacement(out as T[], this._index, periods !== 0 && this.length === 0 ? replacementDType(this._dtype, [NaN]) : this._dtype) as Series<T | null>;
   }
 
-  diff(periods = 1): Series<number | null> {
+  diff(periods = 1): Series<CellValue> {
     if (!Number.isInteger(periods)) throw new ValueError("periods must be an integer");
-    if (this._dtype === "object" || this._dtype === "str" || this._dtype === "string") {
-      for (let i = Math.max(0, periods); i < Math.min(this.length, this.length + periods); i++) {
-        const left = this._values[i] as unknown as CellValue;
-        const right = this._values[i - periods] as unknown as CellValue;
-        if (!isSubtractableOperand(left) || !isSubtractableOperand(right)) {
-          throw new TypeError(`unsupported operand type(s) for -: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
-        }
-      }
-    }
-    const out: (number | bigint | null)[] = new Array(this.length).fill(null);
-    for (let i = 0; i < this.length; i += 1) {
-      const src = i - periods;
-      if (src < 0 || src >= this.length) { out[i] = null; continue; }
-      const a = this._values[i] as unknown as CellValue;
-      const b = this._values[src] as unknown as CellValue;
-      if (typeof a === "number" && Number.isFinite(a) && typeof b === "number" && Number.isFinite(b)) {
-        out[i] = a - b;
-      } else if (
-        (typeof a === "bigint" || (typeof a === "number" && Number.isInteger(a))) &&
-        (typeof b === "bigint" || (typeof b === "number" && Number.isInteger(b)))
-      ) {
-        // integer pairs subtract exactly; inference still reports float64 like pandas.
-        out[i] = BigInt(a as number | bigint) - BigInt(b as number | bigint);
-      } else {
-        out[i] = null;
-      }
-    }
-    return new Series(out as unknown as CellValue[], { index: [...this._index], name: this.name }) as unknown as Series<number | null>;
+    const { values, dtype } = pandasDiff(this._values as CellValue[], this._dtype, periods);
+    return new Series(values, { index: [...this._index], indexName: this._indexName, name: this.name, dtype });
   }
 
-  pct_change(periods = 1): Series<number | null> {
+  pct_change(periods = 1): Series<CellValue> {
     if (!Number.isInteger(periods)) throw new TypeError("slice indices must be integers or None or have an __index__ method");
-    if (this._dtype === "object" || this._dtype === "str" || this._dtype === "string") {
-      for (let i = Math.max(0, periods); i < Math.min(this.length, this.length + periods); i++) {
-        const left = this._values[i] as unknown as CellValue;
-        const right = this._values[i - periods] as unknown as CellValue;
-        if ((!isMissing(left) && !isSubtractableOperand(left)) || (!isMissing(right) && !isSubtractableOperand(right))) {
-          throw new TypeError(`unsupported operand type(s) for /: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
-        }
-      }
-    }
-    const out: (number | null)[] = new Array(this.length).fill(null);
-    for (let i = 0; i < this.length; i += 1) {
-      const src = i - periods;
-      if (src < 0 || src >= this.length) { out[i] = null; continue; }
-      const a = this._values[i] as unknown as CellValue;
-      const b = this._values[src] as unknown as CellValue;
-      const an = typeof a === "bigint" ? Number(a) : a;
-      const bn = typeof b === "bigint" ? Number(b) : b;
-      if (typeof an === "number" && Number.isFinite(an) && typeof bn === "number" && Number.isFinite(bn) && bn !== 0) {
-        out[i] = (an - bn) / bn;
-      } else {
-        out[i] = null;
-      }
-    }
-    return new Series(out as unknown as CellValue[], { index: [...this._index], name: this.name }) as unknown as Series<number | null>;
+    const { values, dtype } = pandasPctChange(this._values as CellValue[], this._dtype, periods);
+    return new Series(values, { index: [...this._index], indexName: this._indexName, name: this.name, dtype });
   }
 
   drop_duplicates(keep: "first" | "last" | false = "first"): Series<T> {
@@ -1393,7 +1421,9 @@ export class Series<T extends CellValue = CellValue> {
     const keepFlags = this.duplicateKeepFlags(keep);
     return new Series(keepFlags.map((f) => !f) as unknown as boolean[], {
       index: [...this._index],
+      indexName: this._indexName,
       name: this.name,
+      dtype: "bool",
     });
   }
 
@@ -1402,23 +1432,23 @@ export class Series<T extends CellValue = CellValue> {
     if (keep === false) {
       const counts = new Map<string, number>();
       for (const v of this._values) {
-        const k = JSON.stringify(normalizeKeyCell(v as CellValue));
+        const k = scalarKey(v as CellValue);
         counts.set(k, (counts.get(k) ?? 0) + 1);
       }
       for (let i = 0; i < this.length; i += 1) {
-        const k = JSON.stringify(normalizeKeyCell(this._values[i] as CellValue));
+        const k = scalarKey(this._values[i] as CellValue);
         include[i] = (counts.get(k) ?? 0) === 1;
       }
     } else if (keep === "last") {
       const seen = new Set<string>();
       for (let i = this.length - 1; i >= 0; i -= 1) {
-        const k = JSON.stringify(normalizeKeyCell(this._values[i] as CellValue));
+        const k = scalarKey(this._values[i] as CellValue);
         if (!seen.has(k)) { seen.add(k); include[i] = true; }
       }
     } else {
       const seen = new Set<string>();
       for (let i = 0; i < this.length; i += 1) {
-        const k = JSON.stringify(normalizeKeyCell(this._values[i] as CellValue));
+        const k = scalarKey(this._values[i] as CellValue);
         if (!seen.has(k)) { seen.add(k); include[i] = true; }
       }
     }

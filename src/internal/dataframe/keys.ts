@@ -11,10 +11,13 @@ export function normalizeKeyCell(value: CellValue): NormalizedKey {
   if (value === undefined) {
     return null;
   }
+  // pandas membership/key semantics treat True == 1 and False == 0.
+  if (typeof value === "boolean") {
+    return value ? 1 : 0;
+  }
   if (
     typeof value === "string" ||
     typeof value === "number" ||
-    typeof value === "boolean" ||
     value === null
   ) {
     return value;

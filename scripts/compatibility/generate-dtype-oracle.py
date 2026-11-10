@@ -296,5 +296,465 @@ for right_dtypes,right_index in misaligned:
         frame_arith_cases.append(frame_entry(left,op,right=right,right_index=right_index))
 cases.extend(frame_arith_cases)
 print(f'added {len(frame_arith_cases)} frame arithmetic contracts')
+
+# ---------------------------------------------------------------------------
+# Reduction contracts: scalar-returning Series ops and per-column frame ops.
+# entry.args are the bun_panda positional args; pandas is called with kwargs.
+# ---------------------------------------------------------------------------
+reduction_calls = {
+  'sum': [({}, [])], 'mean': [({}, [])], 'median': [({}, [])],
+  'min': [({}, [])], 'max': [({}, [])], 'prod': [({}, [])],
+  'count': [({}, [])], 'nunique': [({}, []), ({'dropna': False}, [False])],
+  'all': [({}, []), ({'skipna': False}, [False])],
+  'any': [({}, []), ({'skipna': False}, [False])],
+  'std': [({}, []), ({'ddof': 0}, [0])], 'var': [({}, []), ({'ddof': 0}, [0])],
+  'sem': [({}, []), ({'ddof': 0}, [0])],
+  'skew': [({}, [])], 'kurt': [({}, [])],
+  'idxmax': [({}, [])], 'idxmin': [({}, [])],
+  'argmax': [({}, [])], 'argmin': [({}, [])],
+  'quantile': [({'q': 0.25}, [0.25]), ({'q': 0.5}, [0.5])],
+  'first_valid_index': [({}, [])], 'last_valid_index': [({}, [])],
+  'agg': [({'func': 'sum'}, ['sum']), ({'func': 'min'}, ['min']),
+          ({'func': 'mean'}, ['mean']), ({'func': 'count'}, ['count'])],
+}
+reduction_inputs = {
+  'int8': [[3,1,2],[3,2,2],[]],
+  'int16': [[3,1,2],[3,2,2],[]],
+  'Int16': [[3,1,2],[3,None,2],[],[None,None]],
+  'int64': [[3,1,2],[3,2,2],[]],
+  'float32': [[3.5,1.5,2.5],[3.5,None,2.5],[]],
+  'Float32': [[3.5,1.5,2.5],[3.5,None,2.5],[],[None,None]],
+  'float64': [[3.5,1.5,2.5],[3.5,None,2.5],[np.inf,-np.inf],[]],
+  'Float64': [[3.5,1.5,2.5],[3.5,None,2.5],[],[None,None]],
+  'bool': [[True,False,True],[False,False],[]],
+  'boolean': [[True,False,True],[True,None,False],[],[None,None]],
+  'string': [['b','a','c'],['b',None,'c'],[]],
+  'object': [[3,1,2],[1,'a',2],[None,None],[],['b','a','c'],[1.5,2.5]],
+}
+reduction_cases = []
+for dtype, value_lists in reduction_inputs.items():
+    for values in value_lists:
+        try:
+            source = pd.Series(values, dtype=dtype, index=[f'row-{i}' for i in range(len(values))], name='v')
+        except Exception:
+            continue
+        for operation, variants in reduction_calls.items():
+            for kwargs, args in variants:
+                entry = {'mode': 'series_reduction', 'dtype': dtype,
+                         'values': [encode(x) for x in values],
+                         'operation': operation, 'args': args}
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore')
+                        result = getattr(source, operation)(**kwargs)
+                    entry['expected'] = encode(result)
+                except Exception as e:
+                    entry['error'] = type(e).__name__
+                reduction_cases.append(entry)
+cases.extend(reduction_cases)
+print(f'added {len(reduction_cases)} series reduction contracts')
+
+# Frame reductions: pandas returns a Series indexed by column; the harness
+# compares the per-column record to {index, values}.
+frame_reduce_specs = [
+  {'a':('int16',[3,1,2]),'b':('float32',[1.5,None,0.5])},
+  {'a':('Int16',[3,None,2]),'b':('Float32',[None,2.5,0.5]),'c':('boolean',[True,False,None])},
+  {'a':('bool',[True,False,True]),'b':('string',['x','y','z'])},
+  {'a':('float64',[np.inf,-np.inf,1.5]),'b':('object',[1,'x',2])},
+  {'a':('int64',[1,2,3]),'b':('int64',[4,5,6])},
+  {'a':('string',['x','y','x']),'b':('string',['p','q','p'])},
+  {'a':('float64',[]),'b':('Int16',[])},
+]
+frame_reduction_ops = [
+  ('sum', []), ('mean', []), ('median', []), ('min', []), ('max', []),
+  ('prod', []), ('count', []), ('nunique', []), ('all', []), ('any', []),
+  ('std', []), ('var', []), ('sem', []), ('skew', []), ('kurt', []),
+  ('idxmax', []), ('idxmin', []), ('quantile', [0.5]), ('quantile', [0.25]),
+]
+frame_reduction_cases = []
+for spec in frame_reduce_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    for operation, args in frame_reduction_ops:
+        entry = {'mode': 'frame_reduction',
+                 'dtypes': {c: d for c, (d, v) in spec.items()},
+                 'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                 'index': index,
+                 'operation': operation, 'args': args}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = getattr(source, operation)(*args)
+            entry['expected'] = {'index': result.index.tolist(),
+                                 'values': [encode(x) for x in result.tolist()]}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        frame_reduction_cases.append(entry)
+cases.extend(frame_reduction_cases)
+print(f'added {len(frame_reduction_cases)} frame reduction contracts')
+
+# ---------------------------------------------------------------------------
+# Series-returning ops whose frame counterparts differ (or don't exist):
+# value_counts, drop, duplicated, isin, nlargest, nsmallest, describe,
+# sort_values with na_position.
+# ---------------------------------------------------------------------------
+series_view_ops = [
+  ('value_counts', [({'normalize': False, 'sort': True, 'ascending': False, 'dropna': True},
+                     [{'normalize': False, 'sort': True, 'ascending': False, 'dropna': True}]),
+                    ({'normalize': True, 'sort': True, 'ascending': False, 'dropna': True},
+                     [{'normalize': True, 'sort': True, 'ascending': False, 'dropna': True}]),
+                    ({'normalize': False, 'sort': True, 'ascending': False, 'dropna': False},
+                     [{'normalize': False, 'sort': True, 'ascending': False, 'dropna': False}]),
+                    ({'normalize': False, 'sort': True, 'ascending': True, 'dropna': True},
+                     [{'normalize': False, 'sort': True, 'ascending': True, 'dropna': True}]),
+                    ({'normalize': False, 'sort': False, 'ascending': False, 'dropna': True},
+                     [{'normalize': False, 'sort': False, 'ascending': False, 'dropna': True}])]),
+  ('duplicated', [({'keep': 'first'}, []), ({'keep': 'last'}, ['last']), ({'keep': False}, [False])]),
+  ('isin', [({}, [[1, 2]]), ({}, [['a']])]),
+  ('nlargest', [({}, [1]), ({}, [2]), ({}, [9])]),
+  ('nsmallest', [({}, [1]), ({}, [2]), ({}, [9])]),
+  ('describe', [({}, [])]),
+  ('drop', [({'labels': ['row-1']}, [['row-1']]),
+            ({'labels': 'row-2'}, ['row-2']),
+            ({'labels': ['row-9']}, [['row-9']])]),
+  ('sort_values', [({'ascending': False, 'na_position': 'first'}, [{'ascending': False, 'na_position': 'first'}]),
+                   ({'ascending': True, 'na_position': 'first'}, [{'ascending': True, 'na_position': 'first'}])]),
+]
+series_view_inputs = {
+  'int16': [[3,1,1],[3,None,1],[],[None,None]],
+  'Int16': [[3,1,1],[3,None,1],[],[None,None]],
+  'float32': [[3.5,1.5,1.5],[3.5,None,1.5],[]],
+  'Float32': [[3.5,1.5,1.5],[3.5,None,1.5],[],[None,None]],
+  'float64': [[3.5,1.5,1.5],[3.5,np.nan,1.5],[]],
+  'bool': [[True,False,True],[True,False],[]],
+  'boolean': [[True,False,True],[True,None,False],[]],
+  'string': [['b','a','b'],['b',None,'a'],[]],
+  'str': [['b','a','b'],[]],
+  'object': [[3,1,1],[1,'a',2],[None,None],[],['b','a','b']],
+}
+series_view_cases = []
+for dtype, value_lists in series_view_inputs.items():
+    for values in value_lists:
+        try:
+            source = pd.Series(values, dtype=dtype, index=[f'row-{i}' for i in range(len(values))], name='v')
+        except Exception:
+            continue
+        for operation, variants in series_view_ops:
+            for kwargs, args in variants:
+                entry = {'mode': 'series_view', 'dtype': dtype,
+                         'values': [encode(x) for x in values],
+                         'operation': operation, 'args': args}
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore')
+                        if operation == 'sort_values':
+                            result = source.sort_values(**kwargs)
+                        else:
+                            result = getattr(source, operation)(*args) if not kwargs else getattr(source, operation)(**kwargs)
+                    if isinstance(result, pd.Series):
+                        entry['expected'] = {'dtype': str(result.dtype),
+                                             'values': [encode(x) for x in result.tolist()],
+                                             'index': [encode(x) for x in result.index.tolist()],
+                                             'indexName': result.index.name,
+                                             'name': result.name}
+                    else:
+                        entry['expected'] = encode(result)
+                except Exception as e:
+                    entry['error'] = type(e).__name__
+                series_view_cases.append(entry)
+cases.extend(series_view_cases)
+print(f'added {len(series_view_cases)} series view contracts')
+
+# Array-returning Series ops: unique/argsort/mode return arrays (or lists);
+# factorize returns (codes, uniques).
+series_array_ops = ['unique', 'argsort', 'mode']
+series_array_cases = []
+for dtype, value_lists in series_view_inputs.items():
+    for values in value_lists:
+        try:
+            source = pd.Series(values, dtype=dtype, index=[f'row-{i}' for i in range(len(values))], name='v')
+        except Exception:
+            continue
+        for operation in series_array_ops:
+            entry = {'mode': 'series_array', 'dtype': dtype,
+                     'values': [encode(x) for x in values],
+                     'operation': operation, 'args': []}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source, operation)()
+                if isinstance(result, pd.Series):
+                    entry['expected'] = {'values': [encode(x) for x in result.tolist()]}
+                else:
+                    entry['expected'] = {'values': [encode(x) for x in np.asarray(result).tolist()]}
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            series_array_cases.append(entry)
+        entry = {'mode': 'series_array', 'dtype': dtype,
+                 'values': [encode(x) for x in values],
+                 'operation': 'factorize', 'args': []}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                codes, uniques = source.factorize()
+            entry['expected'] = {'codes': [int(c) for c in codes.tolist()],
+                                 'uniques': [encode(x) for x in np.asarray(uniques).tolist()]}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        series_array_cases.append(entry)
+cases.extend(series_array_cases)
+print(f'added {len(series_array_cases)} series array contracts')
+
+# ---------------------------------------------------------------------------
+# Elementwise ops: identical semantics on Series and single-column frames.
+# Entries ride the existing 'selection' mode and add frameExpected/frameError.
+# ---------------------------------------------------------------------------
+elementwise_inputs = {
+  'int16': [[3,1,2],[3,None,2],[],[None,None]],
+  'Int16': [[3,1,2],[3,None,2],[],[None,None]],
+  'int64': [[3,1,2],[3,None,2],[]],
+  'float32': [[3.5,1.5,2.5],[3.5,None,2.5],[]],
+  'Float32': [[3.5,1.5,2.5],[3.5,None,2.5],[],[None,None]],
+  'float64': [[3.5,1.5,2.5],[3.5,np.nan,2.5],[np.inf,-np.inf,np.inf],[]],
+  'Float64': [[3.5,1.5,2.5],[3.5,None,2.5],[],[None,None]],
+  'bool': [[True,False,True],[False,False],[]],
+  'boolean': [[True,False,True],[True,None,False],[],[None,None]],
+  'string': [['b','a','c'],['b',None,'c'],[]],
+  'object': [[3,1,2],[1,'a',2],[None,None],[],[1.5,2.5]],
+}
+elementwise_ops = [
+  ('diff', [1]), ('diff', [2]), ('diff', [-1]),
+  ('pct_change', []), ('pct_change', [2]),
+  ('cumsum', []), ('cumprod', []), ('cummin', []), ('cummax', []),
+  ('abs', []), ('clip', [1.5]), ('clip', [None, 2.0]),
+]
+elementwise_cases = []
+for dtype, value_lists in elementwise_inputs.items():
+    for values in value_lists:
+        try:
+            source = pd.Series(values, dtype=dtype, index=[f'row-{i}' for i in range(len(values))], name='v')
+        except Exception:
+            continue
+        frame = source.to_frame()
+        for operation, args in elementwise_ops:
+            entry = {'mode': 'elementwise', 'dtype': dtype,
+                     'values': [encode(x) for x in values],
+                     'operation': operation, 'args': args}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(source, operation)(*args)
+                entry['expected'] = {'dtype': str(result.dtype),
+                                     'values': [encode(x) for x in result.tolist()],
+                                     'index': [encode(x) for x in result.index.tolist()],
+                                     'name': result.name}
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    frame_result = getattr(frame, operation)(*args)['v']
+                entry['frameExpected'] = {'dtype': str(frame_result.dtype),
+                                          'values': [encode(x) for x in frame_result.tolist()],
+                                          'index': [encode(x) for x in frame_result.index.tolist()],
+                                          'name': frame_result.name}
+            except Exception as e:
+                entry['frameError'] = type(e).__name__
+            elementwise_cases.append(entry)
+cases.extend(elementwise_cases)
+print(f'added {len(elementwise_cases)} elementwise contracts')
+
+# ---------------------------------------------------------------------------
+# Frame selection: iloc/loc (frame + row forms), drop columns, set_index,
+# reset_index, describe, duplicated, isin, nlargest/nsmallest, mode,
+# transpose, truncate.
+# ---------------------------------------------------------------------------
+frame_sel_specs = [
+  {'a':('int16',[3,1,2]),'b':('string',['x','y','z']),'c':('boolean',[True,False,None])},
+  {'a':('Int16',[3,None,2]),'b':('Float32',[None,2.5,0.5])},
+  {'a':('string',['x','y','x']),'b':('string',['p','q','p'])},
+  {'a':('bool',[True,False,True]),'b':('float64',[3.5,None,2.5])},
+  {'a':('object',[1,'x',2]),'b':('int64',[4,5,6])},
+  {'a':('int16',[]),'b':('string',[])},
+]
+def frame_expected(result):
+    return {'dtypes': {str(c): str(t) for c, t in result.dtypes.items()},
+            'columns': result.columns.tolist(),
+            'index': [encode(x) for x in result.index.tolist()],
+            'indexName': result.index.name,
+            'values': [[encode(v) for v in row] for row in result.itertuples(index=False, name=None)]}
+frame_selection_cases = []
+for spec in frame_sel_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    n = len(index)
+    ops = []
+    ops += [('iloc', [p], {'positions': p}) for p in ([[n-1,0]] if n else [[]]) ]
+    ops += [('iloc', [0], {'positions': 0}), ('iloc', [n+3], {'positions': n+3}), ('iloc', [-1], {'positions': -1})]
+    if n:
+        ops += [('loc', [['row-2','row-0'][:min(n,2)]], {'labels': ['row-2','row-0'][:min(n,2)]}),
+                ('loc', ['row-1'], {'labels': 'row-1'}),
+                ('loc', [['row-9']], {'labels': ['row-9']})]
+    ops += [('drop', [['b']], {'columns': ['b']}),
+            ('drop', [['b','missing']], {'columns': ['b','missing']})]
+    if 'b' in spec and spec['b'][0] == 'string':
+        ops += [('set_index', ['b'], {'keys': 'b'}),
+                ('set_index', ['b', False], {'keys': 'b', 'drop': False})]
+    ops += [('reset_index', [], {}), ('describe', [], {}), ('mode', [], {}), ('transpose', [], {})]
+    ops += [('duplicated', [], {}), ('duplicated', [['a']], {'subset': 'a'}),
+            ('duplicated', [None, 'last'], {'keep': 'last'}),
+            ('duplicated', [None, False], {'keep': False})]
+    ops += [('isin', [{'a': [1, 3]}], {'values': {'a': [1, 3]}}),
+            ('isin', [[1, 'x']], {'values': [1, 'x']})]
+    if any(d in ('int16','Int16','int64','float64','Float32') for d,_ in spec.values()):
+        ops += [('nlargest', [1, 'a'], {'n': 1, 'columns': 'a'}),
+                ('nsmallest', [2, 'a'], {'n': 2, 'columns': 'a'})]
+    if n:
+        ops += [('truncate', ['row-1','row-2'], {'before': 'row-1', 'after': 'row-2'})]
+    for operation, args, kwargs in ops:
+        entry = {'mode': 'frame_selection',
+                 'dtypes': {c: d for c, (d, v) in spec.items()},
+                 'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                 'index': index, 'operation': operation, 'args': args}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                if operation == 'iloc': result = source.iloc[kwargs['positions']]
+                elif operation == 'loc': result = source.loc[kwargs['labels']]
+                elif operation == 'drop': result = source.drop(columns=kwargs['columns'])
+                elif operation == 'set_index': result = source.set_index(kwargs['keys'], drop=kwargs.get('drop', True))
+                elif operation == 'duplicated': result = source.duplicated(**kwargs)
+                elif operation == 'isin': result = source.isin(kwargs['values'])
+                elif operation == 'nlargest': result = source.nlargest(kwargs['n'], columns=kwargs['columns'])
+                elif operation == 'nsmallest': result = source.nsmallest(kwargs['n'], columns=kwargs['columns'])
+                elif operation == 'truncate': result = source.truncate(before=kwargs['before'], after=kwargs['after'])
+                else: result = getattr(source, operation)(*args)
+            if isinstance(result, pd.Series):
+                entry['rowExpected'] = {'index': [encode(x) for x in result.index.tolist()],
+                                        'name': result.name,
+                                        'values': [encode(x) for x in result.tolist()],
+                                        'dtype': str(result.dtype)}
+            else:
+                entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        frame_selection_cases.append(entry)
+cases.extend(frame_selection_cases)
+print(f'added {len(frame_selection_cases)} frame selection contracts')
+
+# ---------------------------------------------------------------------------
+# GroupBy aggregations: pandas puts keys into the index (as_index=True
+# semantics); the harness adapts bun_panda's as_index=False output.
+# ---------------------------------------------------------------------------
+groupby_specs = [
+  ({'k':('string',['a','b','a','b']),'v':('int16',[3,1,2,4])}),
+  ({'k':('string',['a','b','a',None]),'v':('Int16',[3,None,2,1])}),
+  ({'k':('string',['b','a','b','a']),'v':('Float32',[1.5,None,2.5,0.5]),'w':('boolean',[True,False,None,True])}),
+  ({'k':('int16',[2,1,2,1]),'v':('boolean',[True,False,None,True])}),
+  ({'k':('string',['b','a','b','a']),'v':('string',['x','y','z',None])}),
+  ({'k':('string',['a','b','a','b']),'v':('object',[1,'x',2,3])}),
+  ({'k':('string',['a','b','a','b']),'v':('float64',[1.5,np.nan,2.5,0.5])}),
+]
+groupby_ops = ['sum','mean','median','min','max','prod','count','nunique',
+               'std','var','sem','first','last','size','skew','kurt']
+groupby_cases = []
+for spec in groupby_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    grouped = source.groupby('k')
+    for operation in groupby_ops:
+        entry = {'mode': 'groupby',
+                 'dtypes': {c: d for c, (d, v) in spec.items()},
+                 'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                 'index': index, 'by': 'k', 'operation': operation, 'args': []}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = getattr(grouped, operation)()
+            if isinstance(result, pd.Series):
+                entry['seriesExpected'] = {'dtype': str(result.dtype),
+                                           'values': [encode(x) for x in result.tolist()],
+                                           'index': [encode(x) for x in result.index.tolist()]}
+            else:
+                entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        groupby_cases.append(entry)
+cases.extend(groupby_cases)
+print(f'added {len(groupby_cases)} groupby contracts')
+
+# ---------------------------------------------------------------------------
+# Frame binary ops: concat (rows/axis=1/ignore_index/join), join, merge.
+# ---------------------------------------------------------------------------
+binary_specs = {
+  'plain': ({'x':('int16',[1,2]),'y':('string',['p','q'])},
+            {'x':('int16',[3]),'y':('string',['r'])}),
+  'outer': ({'x':('int16',[1,2]),'y':('string',['p','q'])},
+            {'x':('int64',[3]),'z':('boolean',[True])}),
+  'misaligned': ({'x':('Int16',[1,None]),'y':('Float32',[1.5,2.5])},
+                 {'x':('int64',[3,4]),'w':('string',['r','s'])}),
+}
+binary_index = {
+  'plain': (['a','b'], ['c']),
+  'outer': (['a','b'], ['c']),
+  'misaligned': (['a','b'], ['b','c']),
+}
+binary_cases = []
+for label, (left_spec, right_spec) in binary_specs.items():
+    li, ri = binary_index[label]
+    left = frame_spec({c: (d, v) for c, (d, v) in left_spec.items()}, index=li)
+    right = frame_spec({c: (d, v) for c, (d, v) in right_spec.items()}, index=ri)
+    def spec_columns(s): return {c: [encode(x) for x in v] for c, (d, v) in s.items()}
+    def spec_dtypes(s): return {c: d for c, (d, v) in s.items()}
+    concat_variants = [
+      ('concat', {}, {}),
+      ('concat', {'ignore_index': True}, {'ignore_index': True}),
+      ('concat', {'join': 'inner'}, {'join': 'inner'}),
+      ('concat', {'axis': 1}, {'axis': 1}),
+    ]
+    for operation, opts, pandas_kwargs in concat_variants:
+        entry = {'mode': 'frame_binary', 'left': {'dtypes': spec_dtypes(left_spec), 'columns': spec_columns(left_spec), 'index': li},
+                 'right': {'dtypes': spec_dtypes(right_spec), 'columns': spec_columns(right_spec), 'index': ri},
+                 'operation': operation, 'args': [opts]}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = pd.concat([left, right], **pandas_kwargs)
+            entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        binary_cases.append(entry)
+    for how in ['left', 'inner', 'outer', 'right']:
+        for suffixes in [None, ['_l', '_r']]:
+            entry = {'mode': 'frame_binary', 'left': {'dtypes': spec_dtypes(left_spec), 'columns': spec_columns(left_spec), 'index': li},
+                     'right': {'dtypes': spec_dtypes(right_spec), 'columns': spec_columns(right_spec), 'index': ri},
+                     'operation': 'join', 'args': [{'how': how, **({'suffixes': suffixes} if suffixes else {})}]}
+            try:
+                kwargs = {'how': how}
+                if suffixes: kwargs.update({'lsuffix': suffixes[0], 'rsuffix': suffixes[1]})
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = left.join(right, **kwargs)
+                entry['expected'] = frame_expected(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            binary_cases.append(entry)
+    shared = [c for c in left_spec if c in right_spec]
+    if shared:
+        for how in ['inner', 'left', 'outer', 'right']:
+            entry = {'mode': 'frame_binary', 'left': {'dtypes': spec_dtypes(left_spec), 'columns': spec_columns(left_spec), 'index': li},
+                     'right': {'dtypes': spec_dtypes(right_spec), 'columns': spec_columns(right_spec), 'index': ri},
+                     'operation': 'merge', 'args': [{'on': shared[0], 'how': how}]}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = left.merge(right, on=shared[0], how=how)
+                entry['expected'] = frame_expected(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            binary_cases.append(entry)
+cases.extend(binary_cases)
+print(f'added {len(binary_cases)} frame binary contracts')
+
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

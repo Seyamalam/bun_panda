@@ -40,25 +40,21 @@ describe("DataFrame numeric contracts", () => {
     });
   }
 
-  test("reductions exclude missing and nonnumeric cells", () => {
+  test("reductions exclude missing and follow pandas string-column semantics", () => {
     const frame = new DataFrame({ x: [1, 2, 3, null], text: ["a", "b", "c", null] }, { index: ["a", "b", "c", "d"] });
-    expect(frame.sum()).toEqual({ x: 6, text: null });
-    expect(frame.mean()).toEqual({ x: 2, text: null });
-    expect(frame.median()).toEqual({ x: 2, text: null });
-    expect(frame.min()).toEqual({ x: 1, text: null });
-    expect(frame.max()).toEqual({ x: 3, text: null });
-    expect(frame.prod()).toEqual({ x: 6, text: null });
-    expect(frame.var()).toEqual({ x: 1, text: null });
-    expect(frame.std()).toEqual({ x: 1, text: null });
+    // pandas concatenates string values on sum and orders them on min/max.
+    expect(frame.sum()).toEqual({ x: 6, text: "abc" });
+    expect(frame.min()).toEqual({ x: 1, text: "a" });
+    expect(frame.max()).toEqual({ x: 3, text: "c" });
     expect(frame.count()).toEqual({ x: 3, text: 3 });
-    expect(frame.quantile(0.25)).toEqual({ x: 1.5, text: null });
-    expect(frame.idxmax()).toEqual({ x: "c", text: null });
-    expect(frame.idxmin()).toEqual({ x: "a", text: null });
-    expect(frame.sem().x).toBeCloseTo(1 / Math.sqrt(3));
-    expect(frame.skew()).toEqual({ x: 0, text: null });
-    expect(frame.kurt()).toEqual({ x: null, text: null });
-    expect(frame.kurtosis()).toEqual(frame.kurt());
-    expect(frame.describe().get("x").to_list()).toEqual([3, 2, 1, 1, 3]);
+    expect(frame.idxmax()).toEqual({ x: "c", text: "c" });
+    expect(frame.idxmin()).toEqual({ x: "a", text: "a" });
+    // pandas raises TypeError for numeric-only reductions on str columns.
+    for (const op of ["mean", "median", "prod", "var", "std", "sem", "skew", "kurt", "kurtosis"] as const) {
+      expect(() => frame[op]()).toThrow(TypeError);
+    }
+    expect(() => frame.quantile(0.25)).toThrow(TypeError);
+    expect(frame.describe().get("x").to_list()).toEqual([3, 2, 1, 1, 1.5, 2, 2.5, 3]);
   });
 
   test("cumulative values skip gaps and retain their positions", () => {
@@ -69,10 +65,12 @@ describe("DataFrame numeric contracts", () => {
     expect(frame.cumsum("y").get("y").to_list()).toEqual([1, 3, 6, 10]);
   });
 
-  test("modes include ties in first-seen order and pad shorter columns", () => {
+  test("modes include ties in sorted order and pad shorter columns", () => {
     const date = new Date("2026-01-01T00:00:00Z");
+    // pandas mode() sorts tied modes ascending and pads shorter columns
+    // (the legacy `date` dtype stores null as its missing scalar).
     expect(new DataFrame({ x: [2, 1, 2, 1], y: ["a", "a", "a", "b"], z: [null, null, null, null], d: [date, date, null, null] }).mode().to_records()).toEqual([
-      { x: 2, y: "a", z: null, d: date }, { x: 1, y: NaN, z: null, d: null },
+      { x: 1, y: "a", z: NaN, d: date }, { x: 2, y: NaN, z: NaN, d: null },
     ]);
     expect(new DataFrame({ x: [null] }).mode().shape).toEqual([0, 1]);
   });

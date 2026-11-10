@@ -63,11 +63,13 @@ export function compareCellValues(left: CellValue, right: CellValue): number {
 
   // bigint participates in exact mixed numeric ordering; mixed bigint/number
   // pairs cannot use subtraction (which would throw or lose precision).
-  if ((typeof left === "number" || typeof left === "bigint") &&
-      (typeof right === "number" || typeof right === "bigint")) {
+  // Booleans are numeric too (pandas: True == 1).
+  const leftNumeric = typeof left === "number" || typeof left === "bigint" || typeof left === "boolean";
+  const rightNumeric = typeof right === "number" || typeof right === "bigint" || typeof right === "boolean";
+  if (leftNumeric && rightNumeric) {
     return typeof left === "bigint" || typeof right === "bigint"
       ? left < right ? -1 : left > right ? 1 : 0
-      : left - right;
+      : Number(left) - Number(right);
   }
 
   const leftString = String(left);

@@ -148,6 +148,27 @@ const dtypeCounts = new Map<string, number>();
 const indexCounts = new Map<string, number>();
 const count = (counts: Map<string, number>, api: string) => counts.set(api, (counts.get(api) ?? 0) + 1);
 for (const entry of readCases<{ mode: string; operation?: string }>("pandas-dtype-contracts")) {
+  // Mode-aware attribution: series_* modes cover the Series API only;
+  // frame_* modes cover the DataFrame API; elementwise cases exercise both;
+  // groupby cases cover the GroupBy aggregation plus DataFrame.groupby.
+  if (["series_reduction", "series_view", "series_array"].includes(entry.mode)) {
+    if (entry.operation) count(dtypeCounts, `Series.${entry.operation}`);
+    continue;
+  }
+  if (["frame_reduction", "frame_selection"].includes(entry.mode)) {
+    if (entry.operation) count(dtypeCounts, `DataFrame.${entry.operation}`);
+    continue;
+  }
+  if (entry.mode === "groupby") {
+    if (entry.operation) count(dtypeCounts, `GroupBy.${entry.operation}`);
+    count(dtypeCounts, "DataFrame.groupby");
+    continue;
+  }
+  if (entry.mode === "frame_binary") {
+    if (entry.operation === "concat") count(dtypeCounts, "concat");
+    else if (entry.operation) count(dtypeCounts, `DataFrame.${entry.operation}`);
+    continue;
+  }
   const api = entry.operation ? `Series.${entry.operation}` : ["constructor", "inferred_constructor"].includes(entry.mode) ? "Series" : `Series.${entry.mode}`;
   count(dtypeCounts, api);
   if (entry.operation && !["repeat", "rename", "set_axis"].includes(entry.operation)) count(dtypeCounts, `DataFrame.${entry.operation}`);

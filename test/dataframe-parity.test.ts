@@ -299,13 +299,15 @@ describe("DataFrame numeric parity methods", () => {
     expect(df.get("v").values).toEqual([2, 2]);
   });
 
-  test("abs applies to all numeric columns by default", () => {
+  test("abs applies to all columns and raises on str like pandas", () => {
     const df = new DataFrame([
-      { a: -1, b: -2.5, s: "x" },
-      { a: 3, b: null, s: "y" },
+      { a: -1, b: -2.5 },
+      { a: 3, b: null },
     ]).abs();
     expect(df.get("a").values).toEqual([1, 3]);
     expect(df.get("b").values).toEqual([2.5, NaN]);
+    // pandas raises TypeError for abs() on str columns.
+    expect(() => new DataFrame([{ a: -1, s: "x" }, { a: 3, s: "y" }]).abs()).toThrow("bad operand type for abs()");
   });
 
   test("abs restricts to given columns", () => {
@@ -341,13 +343,13 @@ describe("DataFrame numeric parity methods", () => {
     expect(df.std()["b"]).toBeCloseTo(2);
   });
 
-  test("median/std/var return null for all-missing columns", () => {
+  test("median/std/var return NaN for all-missing columns", () => {
     const df = new DataFrame([{ a: null }, { a: null }]);
-    expect(df.median()).toEqual({ a: null });
-    expect(df.std()).toEqual({ a: null });
-    expect(df.var()).toEqual({ a: null });
-    expect(df.min()).toEqual({ a: null });
-    expect(df.max()).toEqual({ a: null });
+    expect(df.median()).toEqual({ a: NaN });
+    expect(df.std()).toEqual({ a: NaN });
+    expect(df.var()).toEqual({ a: NaN });
+    expect(df.min()).toEqual({ a: NaN });
+    expect(df.max()).toEqual({ a: NaN });
   });
 
   test("cumsum accumulates skipping nulls which stay null", () => {

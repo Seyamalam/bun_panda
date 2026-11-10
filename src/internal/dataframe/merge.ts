@@ -1,6 +1,7 @@
 import { buildMergedRow } from "./core";
 import { keyForColumns } from "./keys";
-import type { Row } from "../../types";
+import type { CellValue, Row } from "../../types";
+import { compareCellValues, isMissing } from "../../utils";
 
 export interface ComputeMergeOptions {
   leftRows: Row[];
@@ -145,6 +146,22 @@ export function computeMergeRows(options: ComputeMergeOptions): MergeResult {
         )
       );
     }
+    // pandas outer merges sort by the join keys, missing labels last.
+    const keyOf = (row: Row, key: string): CellValue => row[key] as CellValue;
+    rows.sort((a, b) => {
+      for (const key of keys) {
+        const av = keyOf(a, key);
+        const bv = keyOf(b, key);
+        const aMiss = isMissing(av);
+        const bMiss = isMissing(bv);
+        if (aMiss && bMiss) continue;
+        if (aMiss) return 1;
+        if (bMiss) return -1;
+        const cmp = compareCellValues(av, bv);
+        if (cmp !== 0) return cmp;
+      }
+      return 0;
+    });
   }
 
   return {

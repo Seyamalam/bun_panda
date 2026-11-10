@@ -764,7 +764,10 @@ describe("pandas-style compatibility helpers", () => {
       { a: 3, b: 99, c: "y" },
     ]);
 
-    expect(df.clip(0, 20).to_records()).toEqual([
+    // pandas raises TypeError when numeric bounds meet a str column.
+    expect(() => df.clip(0, 20)).toThrow("not supported between instances of 'str'");
+
+    expect(df.clip(0, 20, ["a", "b"]).to_records()).toEqual([
       { a: 0, b: 10, c: "x" },
       { a: 3, b: 20, c: "y" },
     ]);

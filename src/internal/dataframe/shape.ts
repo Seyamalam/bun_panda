@@ -9,13 +9,13 @@ export function transposeFrame(
 ): { rows: Row[]; columns: string[]; index: string[] } {
   const outRows: Row[] = columns.map((column) => {
     const row: Row = {};
-    row["index"] = column;
     for (let i = 0; i < rows.length; i += 1) {
       row[String(index[i])] = rows[i]![column];
     }
     return row;
   });
-  const outColumns = ["index", ...index.map((label) => String(label))];
+  // pandas df.T puts the old column names in the new index, not a column.
+  const outColumns = index.map((label) => String(label));
   return { rows: outRows, columns: outColumns, index: columns.map((c) => String(c)) };
 }
 

@@ -341,3 +341,48 @@ export function scalarOperandDType(column: DType, scalar: number | bigint, narro
   if (column === "bool") return narrowBool ? "int8" : "int64";
   return column;
 }
+
+/** Width rank across the integer/float family for dtype promotion. */
+const numericPromoteRank: Record<string, number> = {
+  int8: 1, uint8: 1,
+  int16: 2, uint16: 2,
+  int32: 3, uint32: 3,
+  int64: 4, uint64: 4,
+  float16: 5, float32: 6, float64: 7, number: 7,
+};
+
+const isMaskedNullable = (dtype: string): boolean => /^[UIF]/.test(dtype);
+
+/**
+ * pandas dtype promotion across frames (concat/merge/align): same dtypes
+ * stay, numeric pairs take the wider width, and if either side is a
+ * nullable masked dtype the result is masked. Mixed kinds yield object.
+ */
+export function promoteDTypes(a: string | undefined, b: string | undefined): DType {
+  if (a === undefined || a === "unknown" || a === "mixed") return b === undefined || b === "unknown" || b === "mixed" ? "object" : b as DType;
+  if (b === undefined || b === "unknown" || b === "mixed") return a as DType;
+  if (a === b) return a as DType;
+  const rankA = numericPromoteRank[a.toLowerCase()];
+  const rankB = numericPromoteRank[b.toLowerCase()];
+  if (rankA !== undefined && rankB !== undefined) {
+    const widerBase = (rankA >= rankB ? a : b).toLowerCase();
+    if (isMaskedNullable(a) || isMaskedNullable(b)) {
+      return (widerBase[0]!.toUpperCase() + widerBase.slice(1)) as DType;
+    }
+    return widerBase as DType;
+  }
+  // bool+numeric, strings with numbers, and everything else collapse to object.
+  return "object";
+}
+
+/**
+ * pandas dtype change when rows that lack a value for the column are
+ * introduced (concat axis=1, outer merges, joins): nullable masked dtypes
+ * tolerate pd.NA and stay, unmasked ints widen to float64 for NaN, and
+ * unmasked bool becomes object. Text/object keep their dtype (NaN slots).
+ */
+export function widenDTypeForMissing(dtype: DType): DType {
+  if (/^u?int/.test(dtype)) return "float64";
+  if (dtype === "bool") return "object";
+  return dtype;
+}

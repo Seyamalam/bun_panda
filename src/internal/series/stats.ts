@@ -3,15 +3,16 @@ import { scalarEquals } from "../shared/valueSemantics";
 // Numeric statistics for Series — pure functions over raw value arrays.
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
+import { NA } from "../../missing";
 
 export function seriesCount(values: CellValue[]): number {
   return values.filter((value) => !isMissing(value)).length;
 }
 
-export function seriesVariance(values: number[]): number | null {
-  if (values.length < 2) return null;
+export function seriesVariance(values: number[], ddof = 1): number | null {
+  if (values.length <= ddof) return null;
   const mean = values.reduce((s, v) => s + v, 0) / values.length;
-  return values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - 1);
+  return values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - ddof);
 }
 
 export function seriesProd(values: number[]): number | null {
@@ -42,13 +43,13 @@ export function excessKurtosis(numbers: number[]): number | null {
 }
 
 /** Standard error of the mean (sample std / sqrt(n)). */
-export function semOfMean(numbers: number[]): number | null {
-  if (numbers.length < 2) return null;
+export function semOfMean(numbers: number[], ddof = 1): number | null {
+  if (numbers.length <= ddof) return null;
   const mean = numbers.reduce((s, v) => s + v, 0) / numbers.length;
-  const sampleStd = Math.sqrt(
-    numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - 1)
+  const std = Math.sqrt(
+    numbers.reduce((s, v) => s + (v - mean) ** 2, 0) / (numbers.length - ddof)
   );
-  return sampleStd / Math.sqrt(numbers.length);
+  return std / Math.sqrt(numbers.length);
 }
 
 export function seriesStd(values: number[], ddof = 1): number | null {
@@ -133,51 +134,70 @@ export function seriesEquals(
   return true;
 }
 
-export function seriesDescribe(values: CellValue[]): { keys: string[]; values: CellValue[] } {
-  const numeric = values
-    .filter((value) => (typeof value === "number" && Number.isFinite(value)) || typeof value === "bigint")
-    .map((value) => Number(value));
-  const count = values.filter((value) => !isMissing(value) && !(typeof value === "number" && Number.isNaN(value as number))).length;
-  if (numeric.length > 0 && numeric.length === count) {
+export function seriesDescribe(values: CellValue[], dtype = "object"): { keys: string[]; values: CellValue[]; dtype: string } {
+  const masked = /^[UIF]/.test(dtype) || dtype === "boolean";
+  const numericDtype = /^([u?]?int|float|[UIF])/.test(dtype) && dtype !== "boolean" && dtype !== "bool";
+  const count = values.filter((value) => !isMissing(value)).length;
+  if (numericDtype) {
+    const miss = masked ? (NA as CellValue) : NaN;
+    const numeric = values
+      .filter((value) => (typeof value === "number" && Number.isFinite(value)) || typeof value === "bigint")
+      .map((value) => Number(value));
+    const keys = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"];
+    if (numeric.length === 0) {
+      return { keys, values: [count, miss, miss, miss, miss, miss, miss, miss], dtype: masked ? "Float64" : "float64" };
+    }
     const sorted = [...numeric].sort((a, b) => a - b);
-    const meanVal = numeric.reduce((s, v) => s + v, 0) / numeric.length;
-    const stdVal = seriesStd(numeric, 1);
+    const f32 = dtype === "float32" || dtype === "Float32";
+    const round = (v: number): number => (f32 ? Math.fround(v) : v);
+    const meanVal = round(numeric.reduce((s, v) => s + v, 0) / numeric.length);
+    const stdVal = numeric.length < 2 ? miss : round(seriesStd(numeric, 1) ?? NaN);
     const q = (p: number): number => {
       const pos = (sorted.length - 1) * p;
       const lower = Math.floor(pos);
       const upper = Math.ceil(pos);
-      return sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (pos - lower);
+      return round(sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (pos - lower));
     };
     return {
-      keys: ["count", "mean", "std", "min", "25%", "50%", "75%", "max"],
+      keys,
       values: [count, meanVal, stdVal, sorted[0]!, q(0.25), q(0.5), q(0.75), sorted[sorted.length - 1]!],
+      dtype: masked ? "Float64" : "float64",
     };
   }
-  // object / mixed fallback similar to pandas describe for non-numeric
+  // non-numeric: pandas reports count/unique/top/freq; top is the smallest
+  // of the most-frequent values; result dtype is int64 when all-integer.
   const nonMissing = values.filter((value) => !isMissing(value) && !(typeof value === "number" && Number.isNaN(value as number)));
-  const unique = new Set(nonMissing.map((value) => (value instanceof Date ? value.toISOString() : String(value)))).size;
-  let top: CellValue = null as unknown as CellValue;
+  const counts = new Map<string, { value: CellValue; count: number }>();
+  for (const value of nonMissing) {
+    const key = value instanceof Date ? `date:${value.toISOString()}` : `${typeof value}:${String(value)}`;
+    const entry = counts.get(key);
+    if (entry) entry.count += 1;
+    else counts.set(key, { value, count: 1 });
+  }
+  const unique = counts.size;
+  // pandas picks top via value_counts().idxmax(): the first-encountered
+  // value among those sharing the max count, not the sorted smallest.
+  let top: CellValue = NaN;
   let freq = 0;
-  if (nonMissing.length > 0) {
-    const counts = new Map<string, { value: CellValue; count: number }>();
-    for (const value of nonMissing) {
-      const key = value instanceof Date ? `date:${value.toISOString()}` : `${typeof value}:${String(value)}`;
-      const entry = counts.get(key);
-      if (entry) entry.count += 1;
-      else counts.set(key, { value, count: 1 });
-    }
-    let best: { value: CellValue; count: number } | null = null;
-    for (const entry of counts.values()) {
-      if (!best || entry.count > best.count) best = entry;
-    }
-    if (best) {
-      top = best.value;
-      freq = best.count;
+  for (const entry of counts.values()) {
+    if (entry.count > freq) {
+      freq = entry.count;
+      top = entry.value;
     }
   }
+  // pandas reports NaN for top/freq when there are no non-missing values.
+  const out: CellValue[] = [count, unique, top, freq > 0 ? freq : NaN];
+  // pandas object-dtype describe infers the result dtype from the produced
+  // values (all-integer output -> int64, otherwise object); dedicated
+  // dtypes always yield object.
+  const outDtype =
+    dtype === "object" && out.every((v) => typeof v === "number" && Number.isInteger(v))
+      ? "int64"
+      : "object";
   return {
     keys: ["count", "unique", "top", "freq"],
-    values: [count, unique, top, freq],
+    values: out,
+    dtype: outDtype,
   };
 }
 

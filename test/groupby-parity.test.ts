@@ -258,31 +258,36 @@ describe("groupby transform", () => {
 });
 
 describe("groupby convenience methods", () => {
-  test("min/max default to numeric columns", () => {
+  test("min/max aggregate every non-key column like pandas", () => {
     const grouped = parityFrame().groupby("team");
+    // pandas groupby min/max include string columns (lexicographic order).
     expect(grouped.min().to_records()).toEqual([
-      { team: "A", points: 10, assists: 2 },
-      { team: "B", points: 40, assists: 4 },
-      { team: "C", points: NaN, assists: 6 },
+      { team: "A", player: "x", points: 10, assists: 2 },
+      { team: "B", player: "v", points: 40, assists: 4 },
+      { team: "C", player: "u", points: NaN, assists: 6 },
     ]);
     expect(grouped.max().to_records()).toEqual([
-      { team: "A", points: 30, assists: 5 },
-      { team: "B", points: 50, assists: 8 },
-      { team: "C", points: NaN, assists: 6 },
+      { team: "A", player: "z", points: 30, assists: 5 },
+      { team: "B", player: "w", points: 50, assists: 8 },
+      { team: "C", player: "u", points: NaN, assists: 6 },
     ]);
   });
 
-  test("median/std/var default to numeric columns", () => {
+  test("median/std/var raise TypeError on str columns", () => {
     const grouped = parityFrame().groupby("team");
-    expect(grouped.median().to_records()).toEqual([
+    // pandas raises for str columns; restrict to numeric columns instead.
+    expect(() => grouped.median()).toThrow(TypeError);
+    expect(() => grouped.std()).toThrow(TypeError);
+    expect(() => grouped.var()).toThrow(TypeError);
+    expect(grouped.median(["points", "assists"]).to_records()).toEqual([
       { team: "A", points: 20, assists: 3.5 },
       { team: "B", points: 45, assists: 6 },
       { team: "C", points: NaN, assists: 6 },
     ]);
-    const stdRows = grouped.std().to_records();
+    const stdRows = grouped.std(["points", "assists"]).to_records();
     expect(stdRows[0]!.points).toBeCloseTo(10, 10);
     expect(stdRows[0]!.assists).toBeCloseTo(Math.sqrt(4.5), 10);
-    const varRows = grouped.var().to_records();
+    const varRows = grouped.var(["points", "assists"]).to_records();
     expect(varRows[0]!.points).toBeCloseTo(100, 10);
   });
 

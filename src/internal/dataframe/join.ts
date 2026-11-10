@@ -2,7 +2,9 @@
 // then rebuild output columns/index. Pure over frame accessors passed
 // in as a small context so it stays testable without class internals.
 import { DataFrame } from "../../dataframe";
-import type { IndexLabel, Row } from "../../types";
+import { ValueError } from "../../errors";
+import type { DType, IndexLabel, Row } from "../../types";
+import { range } from "../../utils";
 
 export interface JoinOptions {
   on?: string;
@@ -30,6 +32,13 @@ export function performJoin(
   options: JoinOptions = {}
 ): DataFrame {
   const how = options.how ?? "left";
+  // pandas raises when non-key columns overlap and no suffix is given.
+  const overlapping = ctx.columns().filter(
+    (column) => column !== options.on && right.columns.includes(column)
+  );
+  if (options.suffixes === undefined && options.on === undefined && overlapping.length > 0) {
+    throw new ValueError(`columns overlap but no suffix specified: ${overlapping.map((c) => `'${c}'`).join(", ")}`);
+  }
   const suffixes = options.suffixes ?? ["_x", "_y"];
 
   // Both sides must be keyed on comparable values: when joining on a
@@ -91,9 +100,22 @@ export function performJoin(
         return next;
       });
     const columns = [options.on as string, ...keptNoOn];
-    const fixed = new DataFrame(rows, { columns });
+    const joinedDtypes = joined.dtypes() as Record<string, DType>;
+    const fixedDtypes: Record<string, DType> = {};
+    fixedDtypes[options.on as string] = joinedDtypes[leftOnName] ?? "object";
+    for (const column of keptNoOn) {
+      fixedDtypes[column] = joinedDtypes[column] ?? "object";
+    }
+    const fixed = DataFrame.createInternal(rows, columns, range(rows.length), {}, fixedDtypes);
     if (how === "left") {
-      return ctx.withRows(fixed.to_records(), [...ctx.index()], fixed.columns as string[], true);
+      // Keep the merge result's dtypes, not the source frame's.
+      return DataFrame.createInternal(
+        fixed.to_records(),
+        columns,
+        [...ctx.index()],
+        {},
+        fixedDtypes
+      );
     }
     return fixed;
   }
@@ -114,7 +136,14 @@ export function performJoin(
       .select(["__join_key__"])
       .to_records()
       .map((row) => row.__join_key__ as IndexLabel);
-    return ctx.withRows(result.to_records(), labels, result.columns as string[], true);
+    // Preserve the merge result's dtypes across the index restore.
+    return DataFrame.createInternal(
+      result.to_records(),
+      result.columns as string[],
+      labels,
+      {},
+      result.dtypes() as Record<string, DType>
+    );
   }
   return result;
 }

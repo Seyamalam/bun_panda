@@ -1,6 +1,6 @@
 import { DataFrame } from "./dataframe";
 import { Series } from "./series";
-import type { AggFn, AggName, AggSpec, CellValue, Row } from "./types";
+import type { AggFn, AggName, AggSpec, CellValue, DType, Row } from "./types";
 import { hasCachedColumns } from "./wasm/columns";
 import {
   compareKeyValues,
@@ -23,10 +23,19 @@ import {
 import {
   adjustedSkew,
   excessKurtosis,
-  semOfMean,
+  seriesVariance,
 } from "./internal/series/stats";
+import {
+  isMaskedDType,
+  missingScalar,
+  pandasMinMax,
+  pandasProd,
+  pandasSum,
+  requireNumeric,
+} from "./internal/series/pandasOps";
+import { scalarKey } from "./internal/shared/valueSemantics";
 import { computeRank } from "./internal/series/rank";
-import { KeyError } from "./errors";
+import { KeyError, ValueError } from "./errors";
 import { computeRolling } from "./internal/dataframe/rolling";
 import { covariance, pearson } from "./internal/dataframe/stats";
 
@@ -403,62 +412,51 @@ export class GroupBy {
   }
 
   count(columns?: string[]): DataFrame {
-    const candidates = columns ?? this.source.columns.filter((column) => !this.by.includes(column));
-    const spec: AggSpec = {};
-    for (const column of candidates) {
-      spec[column] = "count";
-    }
-    return this.agg(spec);
+    return this.aggregatePandas("count", columns);
   }
 
   sum(columns?: string[]): DataFrame {
-    const candidates = columns ?? this.numericColumns();
-    const spec: AggSpec = {};
-    for (const column of candidates) {
-      spec[column] = "sum";
-    }
-    return this.agg(spec);
+    return this.aggregatePandas("sum", columns);
   }
 
   mean(columns?: string[]): DataFrame {
-    const candidates = columns ?? this.numericColumns();
-    const spec: AggSpec = {};
-    for (const column of candidates) {
-      spec[column] = "mean";
-    }
-    return this.agg(spec);
+    return this.aggregatePandas("mean", columns);
+  }
+
+  prod(columns?: string[]): DataFrame {
+    return this.aggregatePandas("prod", columns);
   }
 
   min(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("min", columns ?? this.numericColumns());
+    return this.aggregatePandas("min", columns);
   }
 
   max(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("max", columns ?? this.numericColumns());
+    return this.aggregatePandas("max", columns);
   }
 
   median(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("median", columns ?? this.numericColumns());
+    return this.aggregatePandas("median", columns);
   }
 
   std(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("std", columns ?? this.numericColumns());
+    return this.aggregatePandas("std", columns);
   }
 
   var(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("var", columns ?? this.numericColumns());
+    return this.aggregatePandas("var", columns);
   }
 
   nunique(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("nunique", columns ?? this.nonKeyColumns());
+    return this.aggregatePandas("nunique", columns);
   }
 
   first(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("first", columns ?? this.nonKeyColumns());
+    return this.aggregatePandas("first", columns);
   }
 
   last(columns?: string[]): DataFrame {
-    return this.namedColumnAgg("last", columns ?? this.nonKeyColumns());
+    return this.aggregatePandas("last", columns);
   }
 
   /** Cumulative sums within each group, aligned to source rows. */
@@ -747,7 +745,7 @@ export class GroupBy {
 
   /** Per-group unbiased skewness (sample-corrected Fisher-Pearson G1). */
   skew(columns?: string[]): DataFrame {
-    return this.groupAggNumeric(columns, (nums) => adjustedSkew(nums));
+    return this.aggregatePandas("skew", columns);
   }
 
   /** Per-group excess kurtosis (Fisher, kurtosis() alias). */
@@ -756,12 +754,12 @@ export class GroupBy {
   }
 
   kurtosis(columns?: string[]): DataFrame {
-    return this.groupAggNumeric(columns, (nums) => excessKurtosis(nums));
+    return this.aggregatePandas("kurt", columns);
   }
 
   /** Per-group standard error of the mean (sample std / sqrt(n)). */
   sem(columns?: string[]): DataFrame {
-    return this.groupAggNumeric(columns, (nums) => semOfMean(nums));
+    return this.aggregatePandas("sem", columns);
   }
 
   /** Per-group percentage change within each group (same periods as pct_change). */
@@ -1010,6 +1008,37 @@ export class GroupBy {
     return this.sourceColumns.filter((column) => !this.by.includes(column));
   }
 
+  /**
+   * pandas-faithful named aggregation: every non-key column is attempted
+   * (a column that can't be aggregated raises, like pandas), the declared
+   * source dtype drives both the value semantics and the result dtype.
+   */
+  private aggregatePandas(op: PandasAggOp, columns?: string[]): DataFrame {
+    const candidates = columns ?? this.nonKeyColumns();
+    const srcDtypes = this.source.dtypes() as Record<string, DType>;
+    const groups = this.sortGroups([...this.getGroups().values()]);
+    const rows: Row[] = [];
+    for (const group of groups) {
+      const row: Row = {};
+      for (let i = 0; i < this.by.length; i += 1) {
+        row[this.by[i]!] = group.keyValues[i];
+      }
+      for (const col of candidates) {
+        const dtype = (srcDtypes[col] ?? "object") as DType;
+        row[col] = groupbyAggValue(op, group.rows.map((r) => r[col]), dtype);
+      }
+      rows.push(row);
+    }
+    const declared: Record<string, DType> = {};
+    for (const key of this.by) {
+      if (srcDtypes[key]) declared[key] = srcDtypes[key]!;
+    }
+    for (const col of candidates) {
+      declared[col] = groupbyResultDType(op, (srcDtypes[col] ?? "object") as DType);
+    }
+    return DataFrame.createInternal(rows, [...this.by, ...candidates], range(rows.length), {}, declared);
+  }
+
   size(): DataFrame {
     const rows: Row[] = [];
     const groups = this.sortGroups([...this.getGroups().values()]);
@@ -1217,6 +1246,118 @@ export class GroupBy {
   }
 }
 
+
+type PandasAggOp =
+  | "sum" | "prod" | "mean" | "median" | "min" | "max"
+  | "count" | "nunique" | "first" | "last"
+  | "std" | "var" | "sem" | "skew" | "kurt";
+
+/** pandas groupby result dtype per (op, source dtype). */
+function groupbyResultDType(op: PandasAggOp, src: DType): DType {
+  switch (op) {
+    case "sum":
+    case "prod":
+      if (src === "bool") return "int64";
+      if (src === "boolean") return "Int64";
+      return src;
+    case "mean":
+    case "median":
+    case "std":
+    case "var":
+    case "sem":
+    case "skew":
+    case "kurt":
+      if (src === "float32") return "float32";
+      if (src === "Float32") return "Float32";
+      return isMaskedDType(src) ? "Float64" : "float64";
+    case "count":
+      // Nullable numeric/boolean columns count into Int64; the StringDtype
+      // column counts into plain int64.
+      return isMaskedDType(src) && src !== "string" ? "Int64" : "int64";
+    case "nunique":
+      return "int64";
+    default:
+      // min/max/first/last preserve the source dtype.
+      return src;
+  }
+}
+
+/** Per-group value for a column, following pandas Series semantics. */
+function groupbyAggValue(op: PandasAggOp, values: CellValue[], dtype: DType): CellValue {
+  const resDtype = groupbyResultDType(op, dtype);
+  const sentinel = (): CellValue => missingScalar(resDtype);
+  const f32 = resDtype === "float32" || resDtype === "Float32";
+  const round = (v: number | null | undefined): CellValue =>
+    v === null || v === undefined ? sentinel() : (f32 ? Math.fround(v) : v);
+  switch (op) {
+    case "sum": {
+      const v = pandasSum(values, dtype);
+      return typeof v === "number" && f32 ? Math.fround(v) : v;
+    }
+    case "prod": {
+      const v = pandasProd(values, dtype);
+      return typeof v === "number" && f32 ? Math.fround(v) : v;
+    }
+    case "count":
+      return values.filter((v) => !isMissing(v)).length;
+    case "nunique": {
+      const seen = new Set<string>();
+      for (const v of values) if (!isMissing(v)) seen.add(scalarKey(v));
+      return seen.size;
+    }
+    case "first": {
+      const first = values.find((v) => !isMissing(v));
+      return first === undefined ? missingScalar(dtype) : first;
+    }
+    case "last": {
+      for (let i = values.length - 1; i >= 0; i -= 1) {
+        if (!isMissing(values[i])) return values[i]!;
+      }
+      return missingScalar(dtype);
+    }
+    case "min":
+      return pandasMinMax(values, dtype, "min");
+    case "max":
+      return pandasMinMax(values, dtype, "max");
+    case "mean": {
+      const nums = requireNumeric(values, dtype, "mean");
+      return nums.length === 0 ? sentinel() : round(nums.reduce((a, b) => a + b, 0) / nums.length);
+    }
+    case "median": {
+      const nums = requireNumeric(values, dtype, "median").sort((a, b) => a - b);
+      if (nums.length === 0) return sentinel();
+      const pos = (nums.length - 1) * 0.5;
+      const lo = Math.floor(pos);
+      const hi = Math.ceil(pos);
+      return round(nums[lo]! + (nums[hi]! - nums[lo]!) * (pos - lo));
+    }
+    case "std": {
+      if (dtype === "object") throw new ValueError("could not convert string to float");
+      const nums = requireNumeric(values, dtype, "std");
+      return nums.length <= 1 ? sentinel() : round(std(nums));
+    }
+    case "var": {
+      const nums = requireNumeric(values, dtype, "var");
+      return nums.length <= 1 ? sentinel() : round(seriesVariance(nums, 1));
+    }
+    case "sem": {
+      if (dtype === "object") throw new ValueError("could not convert string to float");
+      const nums = requireNumeric(values, dtype, "sem");
+      const variance = seriesVariance(nums, 1);
+      return nums.length <= 1 || variance === null ? sentinel() : round(Math.sqrt(variance / nums.length));
+    }
+    case "skew": {
+      if (dtype === "object") throw new ValueError("could not convert string to float");
+      const nums = requireNumeric(values, dtype, "skew");
+      return round(adjustedSkew(nums));
+    }
+    case "kurt": {
+      if (dtype === "object") throw new ValueError("could not convert string to float");
+      const nums = requireNumeric(values, dtype, "kurt");
+      return round(excessKurtosis(nums));
+    }
+  }
+}
 
 const FAST_AGG_NAMES = new Set<AggName>(["count", "sum", "mean", "min", "max"]);
 

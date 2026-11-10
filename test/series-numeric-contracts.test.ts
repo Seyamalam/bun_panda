@@ -15,14 +15,16 @@ describe("Series numeric contracts", () => {
     expect(new Series<CellValue>([5, 5, 5, 5]).skew()).toBe(0);
     expect(new Series<CellValue>([5, 5, 5, 5]).kurt()).toBe(0);
     const empty = new Series<CellValue>([]);
-    for (const reduce of ["mean", "min", "max", "median", "var", "std", "skew", "kurt", "sem", "autocorr"] as const) {
-      expect(empty[reduce]()).toBeNull();
+    // pandas reductions on an empty series return NaN.
+    for (const reduce of ["mean", "min", "max", "median", "var", "std", "skew", "kurt", "sem"] as const) {
+      expect(empty[reduce]()).toBeNaN();
     }
+    expect(empty.autocorr()).toBeNull();
     expect(empty.sum()).toBe(0);
     expect(empty.prod()).toBe(1);
     expect(empty.product()).toBe(1);
-    expect(new Series<CellValue>([1]).var()).toBeNull();
-    expect(new Series<CellValue>([1]).sem()).toBeNull();
+    expect(new Series<CellValue>([1]).var()).toBeNaN();
+    expect(new Series<CellValue>([1]).sem()).toBeNaN();
   });
 
   test("autocorrelation handles aligned pairs and degenerate inputs", () => {
@@ -45,7 +47,7 @@ describe("Series numeric contracts", () => {
     expect(description.get("max")).toBe(4);
     expect(description.name).toBe("x");
     expect(new Series<CellValue>(["b", "a", "b", null]).describe().to_dict()).toEqual({ count: 3, unique: 2, top: "b", freq: 2 });
-    expect(new Series<CellValue>([]).describe().to_dict()).toEqual({ count: 0, unique: 0, top: NaN, freq: 0 });
+    expect(new Series<CellValue>([]).describe().to_dict()).toEqual({ count: 0, unique: 0, top: NaN, freq: NaN });
     const date = new Date("2026-01-01T00:00:00Z");
     expect(new Series<CellValue>([date, new Date(date)]).describe().get("freq")).toBe(2);
   });
@@ -68,19 +70,28 @@ describe("Series numeric contracts", () => {
     expect(new Series<CellValue>([false, null]).any()).toBe(false);
     expect(new Series<CellValue>([null, true]).any(false)).toBe(true);
     expect(new Series<CellValue>([0, 1]).all()).toBe(false);
-    expect(new Series<CellValue>([NaN, false]).any(false)).toBe(false);
+    // pandas treats NaN as truthy under skipna=False, so any() is True.
+    expect(new Series<CellValue>([NaN, false]).any(false)).toBe(true);
     expect(new Series<CellValue>([]).all()).toBe(true);
     const series = new Series<CellValue>([null, "text", 4, 1, 4], { index: ["a", "b", "c", "d", "e"] });
-    expect(series.argmax()).toBe(2);
-    expect(series.argmin()).toBe(3);
-    expect(series.idxmax()).toBe("c");
-    expect(series.idxmin()).toBe("d");
-    expect(new Series<CellValue>([null]).argmax()).toBeNull();
-    expect(new Series<CellValue>([null]).argmin()).toBeNull();
-    expect(new Series<CellValue>([null]).idxmax()).toBeNull();
-    expect(new Series<CellValue>([null]).idxmin()).toBeNull();
+    // pandas raises TypeError comparing str with float on mixed object data.
+    expect(() => series.argmax()).toThrow(TypeError);
+    expect(() => series.argmin()).toThrow(TypeError);
+    expect(() => series.idxmax()).toThrow(TypeError);
+    expect(() => series.idxmin()).toThrow(TypeError);
+    const numeric = new Series<CellValue>([null, 4, 1, 4], { index: ["a", "b", "c", "d"] });
+    expect(numeric.argmax()).toBe(1);
+    expect(numeric.argmin()).toBe(2);
+    expect(numeric.idxmax()).toBe("b");
+    expect(numeric.idxmin()).toBe("c");
+    // pandas raises ValueError for arg extremes on all-missing series.
+    expect(() => new Series<CellValue>([null]).argmax()).toThrow("empty sequence");
+    expect(() => new Series<CellValue>([null]).argmin()).toThrow("empty sequence");
+    expect(() => new Series<CellValue>([null]).idxmax()).toThrow("empty sequence");
+    expect(() => new Series<CellValue>([null]).idxmin()).toThrow("empty sequence");
     expect(series.mode()).toEqual([4]);
-    expect(new Series<CellValue>([2, 1, 2, 1]).mode()).toEqual([2, 1]);
+    // pandas mode() sorts tied modes ascending.
+    expect(new Series<CellValue>([2, 1, 2, 1]).mode()).toEqual([1, 2]);
     expect(new Series<CellValue>([null]).mode()).toEqual([]);
     expect(series.is_unique()).toBe(false);
     expect(new Series<CellValue>([1, 2, null]).is_unique()).toBe(true);
@@ -101,7 +112,8 @@ describe("Series numeric contracts", () => {
     expect(series.sort_values(false).to_list()).toEqual([3, 3, 1, NaN, NaN]);
     expect(series.sort_index().index).toEqual(["a", "b", "c", "d", "e"]);
     expect(series.sort_index(false).index).toEqual(series.index);
-    expect(series.argsort()).toEqual([2, 0, 3]);
+    // pandas argsort keeps missing positions at the end.
+    expect(series.argsort()).toEqual([2, 0, 3, 1, 4]);
     expect(series.searchsorted(3)).toBe(1);
     expect(series.searchsorted(3, "right")).toBe(3);
     expect(series.searchsorted(0)).toBe(0);
@@ -122,7 +134,8 @@ describe("Series numeric contracts", () => {
     expect(() => series.mask([])).toThrow("length");
     expect(series.drop("b").index).toEqual(["a", "c"]);
     expect(series.drop(["a", "c"]).to_list()).toEqual([2]);
-    expect(series.drop("absent").equals(series)).toBe(true);
+    // pandas raises KeyError when a dropped label is absent.
+    expect(() => series.drop("absent")).toThrow("not found in axis");
   });
 
   test("sampling is deterministic, respects replacement and validates size", () => {
@@ -144,7 +157,8 @@ describe("Series numeric contracts", () => {
     expect(series.shift(-1).to_list()).toEqual([2, 4, NaN, 0, 5, NaN]);
     expect(series.diff().to_list()).toEqual([NaN, 1, 2, NaN, NaN, 5]);
     expect(series.diff(-1).to_list()).toEqual([-1, -2, NaN, NaN, -5, NaN]);
-    expect(series.pct_change().to_list()).toEqual([NaN, 1, 1, NaN, NaN, NaN]);
+    // pandas divides curr/prev: 5/0 yields inf, not NaN.
+    expect(series.pct_change().to_list()).toEqual([NaN, 1, 1, NaN, NaN, Infinity]);
     expect(series.pct_change(-1).to_list()).toEqual([-0.5, -0.5, NaN, NaN, -1, NaN]);
     expect(series.shift(0).equals(series)).toBe(true);
   });
@@ -190,7 +204,8 @@ describe("Series numeric contracts", () => {
     ] as const;
     for (const [method, expected] of cases) expect<CellValue[]>(series[method](3).to_list()).toEqual([...expected]);
     expect<CellValue[]>(new Series<CellValue>(["2", null]).neg().to_list()).toEqual([-2, NaN]);
-    expect(new Series<CellValue>(["-2.25", null]).abs().to_list()).toEqual([2.25, NaN]);
+    // pandas raises TypeError for abs() on string values.
+    expect(() => new Series<CellValue>(["-2.25", null]).abs()).toThrow("bad operand type for abs()");
     expect(new Series<CellValue>(["2.25", null]).round(1).to_list()).toEqual(["2.25", NaN]);
     // pandas IEEE semantics: NaN >= 3 is False for plain (non-nullable) dtypes.
     expect<CellValue[]>(series.ge(3).to_list()).toEqual([false, true, false]);

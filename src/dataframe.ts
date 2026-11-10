@@ -1,7 +1,8 @@
 import { alignedPositions, compareIndexLabels, indexLabelEquals, indexLabelKey, indexLabelsEqual, unionIndexLabels } from "./internal/shared/indexing";
-import { NA } from "./missing";
-import { scalarEquals, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv, jsonBigintReplacer } from "./internal/shared/valueSemantics";
-import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType } from "./dtypes";
+import { NA, NaT } from "./missing";
+import { scalarEquals, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv, jsonBigintReplacer, scalarKey } from "./internal/shared/valueSemantics";
+import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, promoteDTypes, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType, widenDTypeForMissing } from "./dtypes";
+import { isDatetime64DType } from "./internal/shared/timezone";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
 import {
@@ -11,19 +12,23 @@ import {
   dataFrameToExcel,
 } from "./internal/dataframe/io";
 import {
+  columnAllAny,
   columnCount,
+  columnKurtPandas,
   columnMax,
   columnMean,
   columnMedian,
   columnMin,
+  columnNunique,
   columnProd,
   columnQuantile,
+  columnSem as columnSemPandas,
+  columnSkewPandas,
   columnStd,
   columnSum,
   columnVariance,
   columnIdx,
   covariance,
-  describeStatRows,
   pairwiseNumericMatrix,
   pearson,
 } from "./internal/dataframe/stats";
@@ -35,8 +40,19 @@ import {
 } from "./internal/dataframe/selection";
 import { performJoin } from "./internal/dataframe/join";
 import {
-  diffRows,
-  pctChangeRows,
+  isMaskedDType,
+  pandasMode,
+  requireNumeric,
+} from "./internal/series/pandasOps";
+import {
+  pandasAbs,
+  pandasClip,
+  pandasCumMinMax,
+  pandasCumSumProd,
+  pandasDiff,
+  pandasPctChange,
+} from "./internal/series/pandasElementwise";
+import {
   shiftRows,
 } from "./internal/dataframe/deltas";
 import {
@@ -51,15 +67,8 @@ import {
 import { bfillRows, ffillRows, interpolateRows } from "./internal/dataframe/fill";
 import {
   aggFrame,
-  columnKurt,
-  columnSem,
-  columnSkew,
-  cumminRows,
-  cummaxRows,
-  cumprodRows,
   frameInfo,
   frameMemoryUsage,
-  modeRows,
   reindexRows,
   squeezeResult,
   takeRowsWithIndex,
@@ -97,7 +106,6 @@ import {
 import { computeExplodeRows } from "./internal/dataframe/explode";
 import { compileFrameExpression } from "./internal/dataframe/evalExpr";
 import {
-  computeClipRows,
   computeIsinRows,
   computeRankRows,
   computeReplaceRows,
@@ -130,7 +138,7 @@ import {
   unstackFrame,
   type FrameCombineFn,
 } from "./internal/dataframe/combine";
-import { KeyError, NotSupportedError, ValueError } from "./errors";
+import { IndexError, KeyError, NotSupportedError, ValueError } from "./errors";
 import * as windowApi from "./internal/dataframe/windowApi";
 import {
   asciiBoxplot,
@@ -152,12 +160,11 @@ import type {
 import {
   cloneRow,
   compareCellValues,
-  inferColumnDType,
   isMissing,
   isNumber,
-  isSubtractableOperand,
   pythonOperandTypeName,
   range,
+  std,
 } from "./utils";
 import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
 
@@ -271,6 +278,8 @@ export class DataFrame {
   private readonly _indexNames: (string | undefined)[] | undefined;
   /** Dtype fallback used only when an output column has no present values. */
   private readonly _dtypeHints: Partial<Record<string, InferredDType>>;
+  /** pandas-visible column names when storage keys differ (duplicate labels). */
+  private _displayColumns: string[] | undefined;
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
   private _attrs: Record<string, unknown> = {};
 
@@ -299,7 +308,8 @@ export class DataFrame {
     dtypeHints: Partial<Record<string, InferredDType>> = {},
     dtypes: Partial<Record<string, DType>> = {},
     indexName?: string,
-    indexNames?: (string | undefined)[]
+    indexNames?: (string | undefined)[],
+    displayColumns?: string[]
   ): DataFrame {
     assertRowsShape(rows, index);
     const prepared = DataFrame.prepareColumns(rows, columns, dtypes, dtypeHints);
@@ -313,6 +323,7 @@ export class DataFrame {
       ...dtypeHints,
     };
     (frame as unknown as { _dtypes: Partial<Record<string, DType>> })._dtypes = prepared.dtypes;
+    frame._displayColumns = displayColumns;
     frame._attrs = {};
     return frame;
   }
@@ -401,7 +412,9 @@ export class DataFrame {
   }
 
   get columns(): string[] {
-    return [...this._columns];
+    // _displayColumns carries pandas-visible names when duplicate column
+    // labels (e.g. concat axis=1) are stored under unique storage keys.
+    return [...(this._displayColumns ?? this._columns)];
   }
 
   get index(): IndexLabel[] {
@@ -428,7 +441,7 @@ export class DataFrame {
 
   /** Iterable of [columnName, Series] — alias of items for dict-like use. */
   keys(): string[] {
-    return [...this._columns];
+    return [...(this._displayColumns ?? this._columns)];
   }
 
   /** Index label of the first row with any non-missing value. */
@@ -500,18 +513,20 @@ export class DataFrame {
   }
 
   dtypes(): Record<string, InferredDType> {
-    return Object.fromEntries(this._columns.map(column => [column, this._dtypes[column]!]));
+    return Object.fromEntries(
+      this._columns.map((column, i) => [(this._displayColumns?.[i] ?? column), this._dtypes[column]!])
+    );
   }
 
   nunique(dropna = true): Record<string, number> {
+    if (dropna) {
+      return columnNunique(this._columns, this._rows);
+    }
     const out: Record<string, number> = {};
     for (const column of this._columns) {
       const seen = new Set<string>();
       for (const row of this._rows) {
         const value = row[column];
-        if (dropna && isMissing(value)) {
-          continue;
-        }
         seen.add(JSON.stringify(normalizeKeyCell(value)));
       }
       out[column] = seen.size;
@@ -594,9 +609,14 @@ export class DataFrame {
 
   get(column: string): Series<CellValue> {
     this.assertColumnExists(column);
-    return new Series(this._rows.map((row) => row[column]), {
+    // With duplicate display names pandas returns the first matching column
+    // via getitem; resolve display names back to their storage key.
+    const storageColumn = this._displayColumns
+      ? this._columns[this._displayColumns.indexOf(column)] ?? column
+      : column;
+    return new Series(this._rows.map((row) => row[storageColumn]), {
       name: column,
-      dtype: this._dtypes[column],
+      dtype: this._dtypes[storageColumn],
       index: this._index,
       indexName: this._indexName,
     });
@@ -615,11 +635,11 @@ export class DataFrame {
     return this._rows[rowPosition]?.[column];
   }
 
-  iloc(selector: number | number[]): Row | DataFrame | undefined {
+  iloc(selector: number | number[]): Row | DataFrame {
     if (typeof selector === "number") {
       const position = resolvePosition(selector, this._rows.length);
       if (position === undefined) {
-        return undefined;
+        throw new IndexError("single positional indexer is out-of-bounds");
       }
       return cloneRow(this._rows[position]!, this._columns);
     }
@@ -629,7 +649,7 @@ export class DataFrame {
     for (const requestedPosition of selector) {
       const position = resolvePosition(requestedPosition, this._rows.length);
       if (position === undefined) {
-        continue;
+        throw new IndexError("positional indexers are out-of-bounds");
       }
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
@@ -637,11 +657,11 @@ export class DataFrame {
     return this.withSelection(rows, index, this._columns, true);
   }
 
-  loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame | undefined {
+  loc(selector: IndexLabel | IndexLabel[]): Row | DataFrame {
     if (!Array.isArray(selector)) {
       const position = this._index.findIndex((entry) => indexLabelEquals(entry, selector));
       if (position < 0) {
-        return undefined;
+        throw new KeyError(`'${String(selector)}'`);
       }
       return cloneRow(this._rows[position]!, this._columns);
     }
@@ -651,7 +671,7 @@ export class DataFrame {
     for (const label of selector) {
       const position = this._index.findIndex((entry) => indexLabelEquals(entry, label));
       if (position < 0) {
-        continue;
+        throw new KeyError(`[${JSON.stringify(label)}] not found in axis`);
       }
       rows.push(cloneRow(this._rows[position]!, this._columns));
       index.push(this._index[position]!);
@@ -815,27 +835,13 @@ export class DataFrame {
   }
 
   /** True for every numeric column (skipping nulls); false otherwise. */
-  all(): Record<string, boolean> {
-    const out: Record<string, boolean> = {};
-    for (const column of this._columns) {
-      out[column] = this._rows.every((row) => {
-        const value = row[column];
-        return value !== null && value !== undefined && value !== 0 && value !== false;
-      });
-    }
-    return out;
+  all(skipna = true): Record<string, CellValue> {
+    return columnAllAny(this._columns, this._rows, this._dtypes, skipna, "all");
   }
 
-  /** True for at least one truthy entry per numeric column. */
-  any(): Record<string, boolean> {
-    const out: Record<string, boolean> = {};
-    for (const column of this._columns) {
-      out[column] = this._rows.some((row) => {
-        const value = row[column];
-        return value !== null && value !== undefined && value !== 0 && value !== false;
-      });
-    }
-    return out;
+  /** True for at least one truthy entry per column. */
+  any(skipna = true): Record<string, CellValue> {
+    return columnAllAny(this._columns, this._rows, this._dtypes, skipna, "any");
   }
 
   /** Index labels of the maximum in each numeric column. */
@@ -850,12 +856,40 @@ export class DataFrame {
 
   /** First `n` rows ordered by `by` descending (pandas nlargest). */
   nlargest(n: number, by: string | string[]): DataFrame {
-    return this.orderByColumns(by, false).head(n);
+    this.requireOrderableColumns(by, "nlargest");
+    // pandas excludes rows whose ordering column is missing entirely.
+    const kept = this.dropMissingInColumns(by);
+    return kept.orderByColumns(by, false).head(n);
   }
 
   /** First `n` rows ordered by `by` ascending (pandas nsmallest). */
   nsmallest(n: number, by: string | string[]): DataFrame {
-    return this.orderByColumns(by, true).head(n);
+    this.requireOrderableColumns(by, "nsmallest");
+    const kept = this.dropMissingInColumns(by);
+    return kept.orderByColumns(by, true).head(n);
+  }
+
+  private dropMissingInColumns(by: string | string[]): DataFrame {
+    const columns = Array.isArray(by) ? by : [by];
+    const keep: number[] = [];
+    for (let i = 0; i < this._rows.length; i += 1) {
+      if (columns.every((column) => !isMissing(this._rows[i]![column]))) keep.push(i);
+    }
+    return this.withSelection(
+      keep.map((position) => this._rows[position]!),
+      keep.map((position) => this._index[position]!),
+      this._columns,
+      true
+    );
+  }
+
+  private requireOrderableColumns(by: string | string[], method: string): void {
+    for (const column of Array.isArray(by) ? by : [by]) {
+      const dtype = this._dtypes[column];
+      if (dtype === "object" || dtype === "string" || dtype === "str") {
+        throw new TypeError(`Column '${column}' has dtype ${dtype}, cannot use method '${method}' with this dtype`);
+      }
+    }
   }
 
   private orderByColumns(by: string | string[], ascendingFirst: boolean): DataFrame {
@@ -1536,34 +1570,30 @@ export class DataFrame {
   }
 
   /** First discrete difference of numeric columns. */
+  /**
+   * Applies a pandas column kernel (Series elementwise semantics) to every
+   * column, preserving the resulting dtype per column.
+   */
+  private applyColumnKernel(
+    kernel: (values: CellValue[], dtype: DType, column: string) => { values: CellValue[]; dtype: DType }
+  ): DataFrame {
+    const dtypes: Record<string, DType> = {};
+    const columns: CellValue[][] = this._columns.map((column) => {
+      const dtype = (this._dtypes[column] ?? "object") as DType;
+      const result = kernel(this._rows.map((row) => row[column]!), dtype, column);
+      dtypes[column] = result.dtype;
+      return result.values;
+    });
+    const rows: Row[] = this._rows.map((_row, i) =>
+      Object.fromEntries(this._columns.map((column, j) => [column, columns[j]![i]!])) as Row);
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, dtypes, this._indexName);
+  }
+
   diff(periods = 1): DataFrame {
     if (!Number.isInteger(periods)) {
       throw new ValueError("periods must be an integer");
     }
-    if (this._rows.length > Math.abs(periods)) {
-      for (const column of this._columns) {
-        const values = this._rows.map((row) => row[column]);
-        const inferred = inferColumnDType(values);
-        if (inferred === "number" || inferred === "boolean" || inferred === "date") continue;
-        for (let i = Math.max(0, periods); i < Math.min(values.length, values.length + periods); i++) {
-          const left = values[i]!;
-          const right = values[i - periods]!;
-          if (!isSubtractableOperand(left) || !isSubtractableOperand(right)) {
-            throw new TypeError(`unsupported operand type(s) for -: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
-          }
-        }
-      }
-    }
-    const rows = diffRows(this._rows, this._columns, periods);
-    const dtypes = Object.fromEntries(
-      this._columns.map((column) => [
-        column,
-        inferColumnDType(this._rows.map((row) => row[column])) === "number"
-          ? "float64" as const
-          : "object" as const,
-      ])
-    );
-    return DataFrame.createInternal(rows, [...this._columns], [...this._index], {}, dtypes);
+    return this.applyColumnKernel((values, dtype) => pandasDiff(values, dtype, periods));
   }
 
   /** Percentage change between the current and prior row (numeric columns). */
@@ -1571,22 +1601,14 @@ export class DataFrame {
     if (!Number.isInteger(periods)) {
       throw new TypeError("slice indices must be integers or None or have an __index__ method");
     }
-    if (this._rows.length > Math.abs(periods)) {
-      for (const column of this._columns) {
-        const values = this._rows.map((row) => row[column]);
-        const inferred = inferColumnDType(values);
-        if (inferred !== "string" && inferred !== "mixed") continue;
-        for (let i = Math.max(0, periods); i < Math.min(values.length, values.length + periods); i++) {
-          const left = values[i]!;
-          const right = values[i - periods]!;
-          if ((!isMissing(left) && !isSubtractableOperand(left)) || (!isMissing(right) && !isSubtractableOperand(right))) {
-            throw new TypeError(`unsupported operand type(s) for /: '${pythonOperandTypeName(left)}' and '${pythonOperandTypeName(right)}'`);
-          }
-        }
+    return this.applyColumnKernel((values, dtype) => {
+      // pandas raises NotImplementedError for empty bool columns on frames,
+      // while a bool Series returns an empty object-dtype result.
+      if (dtype === "bool" && values.every((value) => isMissing(value))) {
+        throw new NotSupportedError("cannot apply pct_change to bool dtype");
       }
-    }
-    const rows = pctChangeRows(this._rows, this._columns, periods);
-    return this.withRows(rows, [...this._index], this._columns, true);
+      return pandasPctChange(values, dtype, periods);
+    });
   }
 
   // ---- window functions ----
@@ -1798,7 +1820,12 @@ export class DataFrame {
    */
   transpose(): DataFrame {
     const shaped = transposeFrame(this._rows, this._columns, this._index);
-    return DataFrame.createInternal(shaped.rows, shaped.columns, shaped.index);
+    // A transposed column mixes the source dtypes: pandas keeps a uniform
+    // source dtype and falls back to object for mixed frames.
+    const sourceDtypes = new Set(this._columns.map((column) => this._dtypes[column] ?? "object"));
+    const transposed: DType = sourceDtypes.size === 1 ? [...sourceDtypes][0]! as DType : "object";
+    const dtypes = Object.fromEntries(shaped.columns.map((column) => [column, transposed]));
+    return DataFrame.createInternal(shaped.rows, shaped.columns, shaped.index, {}, dtypes);
   }
 
   /** Select columns by stored dtype, numeric family, and optional exclusions. */
@@ -1876,31 +1903,33 @@ export class DataFrame {
 
   isin(values: CellValue[] | Record<string, CellValue[]>): DataFrame {
     const rows = computeIsinRows(this._rows, this._columns, values);
-    return this.withRows(rows, this._index, this._columns, true);
+    // pandas df.isin(): nullable numeric/boolean columns stay BooleanDtype;
+    // everything else (including StringDtype) yields plain bool columns.
+    const dtypes = Object.fromEntries(this._columns.map((column) => {
+      const src = this._dtypes[column] ?? "object";
+      return [column, (isMaskedDType(src) && src !== "string" ? "boolean" : "bool") as DType];
+    }));
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, dtypes, this._indexName);
   }
 
   clip(
-    lower?: number,
-    upper?: number,
+    lower?: number | null,
+    upper?: number | null,
     columns?: string | string[]
   ): DataFrame {
-    if (lower !== undefined && upper !== undefined && lower > upper) {
+    if (lower != null && upper != null && lower > upper) {
       throw new Error("clip lower bound cannot exceed upper bound.");
     }
-    const targetColumns = columns
+    const targetColumns = new Set(columns
       ? (Array.isArray(columns) ? columns : [columns])
-      : this._columns;
+      : this._columns);
     for (const column of targetColumns) {
       this.assertColumnExists(column);
     }
-    const rows = computeClipRows(
-      this._rows,
-      this._columns,
-      lower,
-      upper,
-      new Set(targetColumns)
-    );
-    return this.withRows(rows, this._index, this._columns, true);
+    return this.applyColumnKernel((values, dtype, column) =>
+      targetColumns.has(column)
+        ? pandasClip(values, dtype, lower, upper)
+        : { values, dtype });
   }
 
   replace(toReplace: ReplaceInput, value?: CellValue): DataFrame {
@@ -2066,9 +2095,10 @@ export class DataFrame {
 
   duplicated(subset?: string | string[], keep: DropDuplicatesKeep = "first"): Series<boolean> {
     const include = computeDuplicateKeepFlags(this._rows, subset ? (Array.isArray(subset) ? subset : [subset]) : this._columns, keep);
+    // pandas df.duplicated() yields an unnamed bool Series.
     return new Series(
       include.map((flag) => !flag),
-      { name: "duplicated", index: this._index }
+      { index: this._index, dtype: "bool" }
     );
   }
 
@@ -2147,7 +2177,7 @@ export class DataFrame {
 
     const frame = drop
       ? this.drop(columns).withIndex(index)
-      : this.withRows(this.to_records(), index, this._columns, true);
+      : this.withSelection(this.to_records(), index, this._columns, true);
     return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame._dtypes, columns[0], columns);
   }
 
@@ -2183,50 +2213,61 @@ export class DataFrame {
         names.forEach((columnName, level) => { out[columnName] = tuple[level] as CellValue; });
         return out;
       });
-      return new DataFrame(rows, { columns: [...names, ...this._columns] });
+      return DataFrame.createInternal(rows, [...names, ...this._columns], range(rows.length), {}, this._dtypes);
     }
     const columnName = name ?? this._indexName ?? "index";
     if (this._columns.includes(columnName)) {
       throw new Error(`Column '${columnName}' already exists.`);
     }
     const rows = resetIndexRows(this._rows, this._columns, this._index, columnName);
-    return new DataFrame(rows, { columns: [columnName, ...this._columns] });
+    // Existing columns keep their declared dtype; the new index column's
+    // dtype is inferred from the labels (str for strings, object if empty).
+    return DataFrame.createInternal(rows, [columnName, ...this._columns], range(rows.length), {}, this._dtypes);
   }
 
-  sum(): Record<string, number | bigint | null> {
-    return columnSum(this._columns, this._rows);
+  /**
+   * pandas unifies a frame reduction's result Series dtype: any nullable
+   * (masked) column makes the whole result nullable, so a missing result
+   * surfaces as pd.NA rather than NaN.
+   */
+  private reductionMissing(): CellValue {
+    return this._columns.some((column) => isMaskedDType(this._dtypes[column])) ? NA : NaN;
   }
 
-  mean(): Record<string, number | null> {
-    return columnMean(this._columns, this._rows);
+  sum(): Record<string, CellValue> {
+    return columnSum(this._columns, this._rows, this._dtypes);
   }
 
-  median(): Record<string, number | null> {
-    return columnMedian(this._columns, this._rows);
+  mean(): Record<string, CellValue> {
+    return columnMean(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  std(): Record<string, number | null> {
-    return columnStd(this._columns, this._rows);
+  median(): Record<string, CellValue> {
+    return columnMedian(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  var(): Record<string, number | null> {
-    return columnVariance(this._columns, this._rows);
+  std(ddof = 1): Record<string, CellValue> {
+    return columnStd(this._columns, this._rows, this._dtypes, this.reductionMissing(), ddof);
   }
 
-  min(): Record<string, number | bigint | null> {
-    return columnMin(this._columns, this._rows);
+  var(ddof = 1): Record<string, CellValue> {
+    return columnVariance(this._columns, this._rows, this._dtypes, this.reductionMissing(), ddof);
   }
 
-  max(): Record<string, number | bigint | null> {
-    return columnMax(this._columns, this._rows);
+  min(): Record<string, CellValue> {
+    return columnMin(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  /** Product of numeric column values (pandas prod/product). */
-  prod(): Record<string, number | bigint | null> {
-    return columnProd(this._columns, this._rows);
+  max(): Record<string, CellValue> {
+    return columnMax(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  product(): Record<string, number | bigint | null> {
+  /** Product of column values (pandas prod/product). */
+  prod(): Record<string, CellValue> {
+    return columnProd(this._columns, this._rows, this._dtypes);
+  }
+
+  product(): Record<string, CellValue> {
     return this.prod();
   }
 
@@ -2234,15 +2275,15 @@ export class DataFrame {
    * Quantile of each numeric column. `q` in [0, 1] (default 0.5 = median),
    * or an array of quantiles to get a frame indexed by q.
    */
-  quantile(q: number | number[] = 0.5): Record<string, number | null> | DataFrame {
+  quantile(q: number | number[] = 0.5): Record<string, CellValue> | DataFrame {
     if (!Array.isArray(q)) {
-      return columnQuantile(this._columns, this._rows, q);
+      return columnQuantile(this._columns, this._rows, q, this._dtypes, this.reductionMissing());
     }
     const rows: Row[] = [];
     const index: IndexLabel[] = [];
     for (const qValue of q) {
       const record: Row = { q: qValue };
-      for (const [column, value] of Object.entries(columnQuantile(this._columns, this._rows, qValue))) {
+      for (const [column, value] of Object.entries(columnQuantile(this._columns, this._rows, qValue, this._dtypes, this.reductionMissing()))) {
         if (column !== "q") record[column] = value;
       }
       rows.push(record);
@@ -2287,61 +2328,17 @@ export class DataFrame {
 
   abs(columns?: string | string[]): DataFrame {
     const targets = new Set(this.resolveTargetColumns(columns));
-    const rows = this._rows.map((row) => {
-      const next = cloneRow(row, this._columns);
-      for (const column of targets) {
-        const value = row[column];
-        if (isNumber(value)) {
-          next[column] = Math.abs(value);
-        } else if (typeof value === "bigint") {
-          next[column] = value < 0n ? -value : value;
-        }
-      }
-      return next;
-    });
-    return this.withRows(rows, this._index, this._columns, true);
+    return this.applyColumnKernel((values, dtype, column) =>
+      targets.has(column) ? pandasAbs(values, dtype) : { values, dtype });
   }
 
   cumsum(columns?: string | string[]): DataFrame {
-    const targets = this.resolveTargetColumns(columns);
-    // Each column accumulates in number until a bigint cell appears, then in
-    // bigint while subsequent cells stay integer-representable.
-    const running = new Map<string, number>();
-    const runningWide = new Map<string, bigint | null>();
-    const rows = this._rows.map((row) => {
-      const next = cloneRow(row, this._columns);
-      for (const column of targets) {
-        const value = row[column];
-        const wide = bigintOperand(value);
-        const accWide = runningWide.get(column) ?? null;
-        if (accWide !== null && wide !== null) {
-          const total = accWide + wide;
-          runningWide.set(column, total);
-          next[column] = total;
-          continue;
-        }
-        if (accWide !== null) {
-          running.set(column, Number(accWide));
-          runningWide.set(column, null);
-        }
-        if (typeof value === "bigint") {
-          runningWide.set(column, value);
-          next[column] = value;
-          continue;
-        }
-        if (!isNumber(value)) {
-          next[column] = null;
-          continue;
-        }
-        const total = (running.get(column) ?? 0) + value;
-        running.set(column, total);
-        next[column] = total;
-      }
-      return next;
-    });
-    return this.withRows(rows, this._index, this._columns, true);
+    const targets = new Set(this.resolveTargetColumns(columns));
+    return this.applyColumnKernel((values, dtype, column) =>
+      targets.has(column) ? pandasCumSumProd(values, dtype, false) : { values, dtype });
   }
 
+  /** pandas `equals`: same shape, labels, column dtypes and cell values. */
   equals(other: DataFrame): boolean {
     for (const column of this._columns) {
       const mine = this._dtypes[column] ?? convertedDType(this._rows.map(row => row[column]), undefined, false);
@@ -2369,12 +2366,80 @@ export class DataFrame {
     return true;
   }
 
+  /**
+   * pandas `describe`: when any numeric (non-bool) column exists the result
+   * covers only those columns with the 8 numeric stats; otherwise object-like
+   * columns are described by [count, unique, top, freq].
+   */
   describe(): DataFrame {
-    const { rows, numericColumns } = describeStatRows(this._columns, this._rows);
-    return new DataFrame(rows, {
-      columns: ["stat", ...numericColumns],
-      index: rows.map((row) => row.stat as string),
-    });
+    const isNumericDtype = (dtype: DType | undefined): boolean =>
+      dtype !== undefined && (/^(u?int|float)/.test(dtype) || /^(U?Int|Float)/.test(dtype));
+    const numericColumns = this._columns.filter((column) => isNumericDtype(this._dtypes[column]));
+    if (numericColumns.length > 0) {
+      const labels = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"];
+      const rows: Row[] = labels.map(() => ({}));
+      const dtypes: Record<string, DType> = {};
+      for (const column of numericColumns) {
+        const dtype = this._dtypes[column] ?? "object";
+        dtypes[column] = isMaskedDType(dtype) ? "Float64" : "float64";
+        const values = requireNumeric(this._rows.map((row) => row[column]!), dtype, "describe").sort((a, b) => a - b);
+        rows[0]![column] = values.length;
+        const quantile = (q: number): number => {
+          const pos = (values.length - 1) * q;
+          const lower = Math.floor(pos);
+          const upper = Math.ceil(pos);
+          return values[lower]! + (values[upper]! - values[lower]!) * (pos - lower);
+        };
+        // Float32/float32 source columns report float32-rounded statistics.
+        const round = (v: number): number =>
+          dtype === "float32" || dtype === "Float32" ? Math.fround(v) : v;
+        const cells = [NaN, NaN, NaN, NaN, NaN, NaN, NaN];
+        if (values.length > 0) {
+          cells[0] = round(values.reduce((acc, value) => acc + value, 0) / values.length);
+          cells[1] = values.length > 1 ? (round(std(values) ?? NaN)) : NaN;
+          cells[2] = values[0]!;
+          cells[3] = round(quantile(0.25));
+          cells[4] = round(quantile(0.5));
+          cells[5] = round(quantile(0.75));
+          cells[6] = values[values.length - 1]!;
+        }
+        for (let i = 0; i < 7; i += 1) rows[i + 1]![column] = cells[i]!;
+      }
+      return DataFrame.createInternal(rows, numericColumns, labels as IndexLabel[], {}, dtypes);
+    }
+    const objectColumns = this._columns.filter((column) => !isNumericDtype(this._dtypes[column]));
+    const labels = ["count", "unique", "top", "freq"];
+    const rows: Row[] = labels.map(() => ({}));
+    for (const column of objectColumns) {
+      const present = this._rows.map((row) => row[column]!).filter((value) => !isMissing(value));
+      rows[0]![column] = present.length;
+      const counts = new Map<string, { value: CellValue; count: number }>();
+      for (const value of present) {
+        const key = scalarKey(value);
+        const entry = counts.get(key);
+        if (entry) entry.count += 1;
+        else counts.set(key, { value, count: 1 });
+      }
+      rows[1]![column] = counts.size;
+      if (counts.size === 0) {
+        rows[2]![column] = NaN;
+        rows[3]![column] = NaN;
+      } else {
+        // pandas top = first-encountered value among the max-count ties.
+        let top: CellValue = NaN;
+        let maxCount = 0;
+        for (const entry of counts.values()) {
+          if (entry.count > maxCount) {
+            maxCount = entry.count;
+            top = entry.value;
+          }
+        }
+        rows[2]![column] = top;
+        rows[3]![column] = maxCount;
+      }
+    }
+    const objectDtypes = Object.fromEntries(objectColumns.map((column) => [column, "object" as DType]));
+    return DataFrame.createInternal(rows, objectColumns, labels as IndexLabel[], {}, objectDtypes);
   }
 
   groupby(by: string | string[], options: GroupByOptions = {}): GroupBy {
@@ -2437,17 +2502,12 @@ export class DataFrame {
     );
     const dtypeHints: Partial<Record<string, InferredDType>> = {};
     const declaredDTypes: Partial<Record<string, DType>> = {};
-    // pandas preserves a column's dtype through merges, upcasting only
-    // non-nullable ints to float64 and bool to object when missing values
-    // are introduced. Columns our inference marked nullable (Int64/Float64/
-    // boolean) correspond to pandas' float64/object sources.
+    // pandas preserves a column's dtype through merges; nullable masked
+    // dtypes tolerate pd.NA and stay, while non-nullable ints widen to
+    // float64 and bool to object only when missing values are introduced.
     const mergedColumnDType = (source: DType | "mixed", hasMissing: boolean): DType => {
       if (source === "mixed") return "object";
-      if (/^(U?Int|Float)$/.test(source)) return "float64";
-      if (source === "boolean") return "object";
-      if (/^u?int/.test(source)) return hasMissing ? "float64" : source;
-      if (source === "bool") return hasMissing ? "object" : source;
-      return source;
+      return hasMissing ? widenDTypeForMissing(source) : source;
     };
 
     for (const column of this._columns) {
@@ -2503,7 +2563,12 @@ export class DataFrame {
         dtype === "unknown" && rows.every((row) => isMissing(row[key])) ? "object" : dtype;
       const leftKey = effectiveKeyDtype(leftDtypes[key] ?? "unknown", this._rows);
       const rightKey = effectiveKeyDtype(rightDtypes[key] ?? "unknown", right._rows);
-      const leader = how === "right" ? rightKey : leftKey;
+      // Outer merges promote both contributing key dtypes (int16+int64 ->
+      // int64, Int16+Int64 -> Int64); one-sided joins keep the leading key.
+      const leader = how === "right" ? rightKey
+        : how === "outer" && leftContributes && rightContributes
+          ? promoteDTypes(leftKey as DType, rightKey as DType) as InferredDType
+          : leftKey;
       const isObjectLike = (dtype: InferredDType) => dtype === "object" || dtype === "mixed";
       const anyObject =
         (leftContributes && isObjectLike(leftKey)) ||
@@ -2568,7 +2633,8 @@ export class DataFrame {
         sourceColumn !== undefined ? row[sourceColumn] : (labels ? labels[i] : this._index[i]) as CellValue;
       return next;
     });
-    return DataFrame.createInternal(rows, [...this._columns, keyColumn], [...this._index]);
+    // Preserve declared dtypes so index-joins merge with the source's dtypes.
+    return DataFrame.createInternal(rows, [...this._columns, keyColumn], [...this._index], this._dtypeHints, this._dtypes, this._indexName);
   }
 
   to_string(maxRows = 10): string {
@@ -2589,42 +2655,68 @@ export class DataFrame {
   }
 
   interpolate(method = "linear"): DataFrame {
-    return this.withRows(interpolateRows(this._rows, this._columns, method), [...this._index], this._columns, true);
+    return this.withReplacement(interpolateRows(this._rows, this._columns, method), [...this._index], this._columns, true);
   }
 
   // ---- extended stats ----
-  skew(): Record<string, number | null> {
-    return columnSkew(this._columns, this._rows);
+  skew(): Record<string, CellValue> {
+    return columnSkewPandas(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  kurt(): Record<string, number | null> {
-    return columnKurt(this._columns, this._rows);
+  kurt(): Record<string, CellValue> {
+    return columnKurtPandas(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
-  kurtosis(): Record<string, number | null> {
+  kurtosis(): Record<string, CellValue> {
     return this.kurt();
   }
 
-  sem(): Record<string, number | null> {
-    return columnSem(this._columns, this._rows);
+  sem(): Record<string, CellValue> {
+    return columnSemPandas(this._columns, this._rows, this._dtypes, this.reductionMissing());
   }
 
+  /** pandas `mode`: per-column modes, sorted ascending, padded missing. */
   mode(): DataFrame {
-    const result = modeRows(this._rows, this._columns);
-    return this.withRows(result.rows, undefined, result.columns, true);
+    const perCol = new Map<string, CellValue[]>();
+    let maxLen = 0;
+    for (const column of this._columns) {
+      const modes = pandasMode(this._rows.map((row) => row[column]!), (v) => scalarKey(v));
+      perCol.set(column, modes);
+      maxLen = Math.max(maxLen, modes.length);
+    }
+    const rows: Row[] = [];
+    for (let i = 0; i < maxLen; i += 1) {
+      const row: Row = {};
+      for (const column of this._columns) {
+        const modes = perCol.get(column)!;
+        // Padding follows the column's missing scalar: NA for nullable
+        // dtypes, NaT for datetime64, NaN otherwise.
+        const colDtype = this._dtypes[column] ?? "object";
+        row[column] = i < modes.length
+          ? modes[i]!
+          : (isMaskedDType(colDtype) ? NA : isDatetime64DType(colDtype) ? NaT : NaN);
+      }
+      rows.push(row);
+    }
+    // pandas df.mode() upcasts a bool column to object; everything else
+    // keeps its declared dtype.
+    const dtypes = Object.fromEntries(
+      this._columns.map((column) => [column, this._dtypes[column] === "bool" ? "object" as DType : (this._dtypes[column] ?? "object" as DType)])
+    );
+    return DataFrame.createInternal(rows, [...this._columns], range(maxLen), {}, dtypes);
   }
 
   // ---- cumulative ----
   cummax(): DataFrame {
-    return this.withRows(cummaxRows(this._rows, this._columns), [...this._index], this._columns, true);
+    return this.applyColumnKernel((values, dtype) => pandasCumMinMax(values, dtype, true));
   }
 
   cummin(): DataFrame {
-    return this.withRows(cumminRows(this._rows, this._columns), [...this._index], this._columns, true);
+    return this.applyColumnKernel((values, dtype) => pandasCumMinMax(values, dtype, false));
   }
 
   cumprod(): DataFrame {
-    return this.withRows(cumprodRows(this._rows, this._columns), [...this._index], this._columns, true);
+    return this.applyColumnKernel((values, dtype) => pandasCumSumProd(values, dtype, true));
   }
 
   // ---- export ----

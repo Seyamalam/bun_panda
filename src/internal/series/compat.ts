@@ -1,4 +1,4 @@
-import { normalizeKeyCell } from "../dataframe/keys";
+import { scalarKey } from "../shared/valueSemantics";
 import type { CellValue } from "../../types";
 
 export type SeriesReplaceInput = CellValue | CellValue[] | Record<string, CellValue>;
@@ -50,7 +50,8 @@ function buildLookup(values: CellValue[]): Set<string> {
 }
 
 function normalizeLookupKey(value: CellValue): string {
-  return JSON.stringify(normalizeKeyCell(value));
+  // canonical numeric key: True==1, bigint 1==1, +/-Infinity distinct.
+  return scalarKey(value);
 }
 
 function buildReplacer(

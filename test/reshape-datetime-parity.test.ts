@@ -80,10 +80,12 @@ describe("DataFrame transpose + select_dtypes", () => {
       { a: 3, b: 4 },
     ], { index: ["r1", "r2"] });
     const t = df.transpose();
-    expect(t.columns).toEqual(["index", "r1", "r2"]);
+    // pandas df.T puts the original columns in the index (no index column).
+    expect(t.columns).toEqual(["r1", "r2"]);
+    expect(t.index).toEqual(["a", "b"]);
     expect(t.to_records()).toEqual([
-      { index: "a", r1: 1, r2: 3 },
-      { index: "b", r1: 2, r2: 4 },
+      { r1: 1, r2: 3 },
+      { r1: 2, r2: 4 },
     ]);
   });
 

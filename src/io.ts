@@ -14,7 +14,9 @@ import { parseJsonText } from "./internal/io/json";
 import { BunPandaValidationError } from "./errors";
 import { readParquetFile } from "./internal/io/parquetRead";
 import { writeParquetFrame } from "./internal/io/parquetWrite";
-import type { IndexLabel, Row } from "./types";
+import { promoteDTypes, widenDTypeForMissing } from "./dtypes";
+import type { DType, IndexLabel, Row } from "./types";
+import { range } from "./utils";
 
 export interface ReadCSVOptions {
   sep?: string;
@@ -29,6 +31,7 @@ export type ReadTableOptions = ReadCSVOptions;
 export interface ConcatOptions {
   axis?: 0 | 1;
   ignore_index?: boolean;
+  join?: "outer" | "inner";
 }
 
 export interface ReadJSONOptions {
@@ -170,7 +173,7 @@ export function concat(frames: DataFrame[], options: ConcatOptions = {}): DataFr
   }
 
   if (axis === 0) {
-    return concatRows(frames, ignoreIndex);
+    return concatRows(frames, ignoreIndex, options.join ?? "outer");
   }
   return concatColumns(frames, ignoreIndex);
 }
@@ -190,19 +193,39 @@ function withTableSep(options: ReadTableOptions): ReadCSVOptions {
   };
 }
 
-function concatRows(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
-  const columns: string[] = [];
-  const records: Row[] = [];
-  const index: IndexLabel[] = [];
-
+function concatRows(frames: DataFrame[], ignoreIndex: boolean, join: "outer" | "inner"): DataFrame {
+  const union: string[] = [];
   for (const frame of frames) {
     for (const column of frame.columns) {
-      if (!columns.includes(column)) {
-        columns.push(column);
+      if (!union.includes(column)) {
+        union.push(column);
       }
     }
   }
+  const columns = join === "inner"
+    ? union.filter((column) => frames.every((frame) => frame.columns.includes(column)))
+    : union;
 
+  // pandas concat promotes each column's dtype across the inputs; a column
+  // absent from a frame introduces missing cells, which only non-nullable
+  // ints/bools must widen for (masked dtypes tolerate pd.NA).
+  const declared: Record<string, DType> = {};
+  for (const column of columns) {
+    let promoted: DType | undefined;
+    let absent = false;
+    for (const frame of frames) {
+      if (!frame.columns.includes(column)) {
+        absent = true;
+        continue;
+      }
+      promoted = promoteDTypes(promoted, (frame.dtypes() as Record<string, DType>)[column]);
+    }
+    const dtype = promoted ?? "object";
+    declared[column] = absent ? widenDTypeForMissing(dtype) : dtype;
+  }
+
+  const records: Row[] = [];
+  const index: IndexLabel[] = [];
   for (const frame of frames) {
     const frameRows = frame.to_records();
     const frameIndex = frame.index;
@@ -212,24 +235,32 @@ function concatRows(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
     }
   }
 
-  return new DataFrame(records, {
+  return DataFrame.createInternal(
+    records,
     columns,
-    index: ignoreIndex ? undefined : index,
-  });
+    ignoreIndex ? range(records.length) : index,
+    {},
+    declared
+  );
 }
 
 function concatColumns(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
-  const outputColumns: string[] = [];
+  // pandas keeps duplicate column labels: storage keys stay unique while the
+  // public `columns` view repeats the label.
+  const displayColumns: string[] = [];
+  const storageKeys: string[] = [];
   const perFrameMappings: Array<Array<{ source: string; target: string }>> = [];
   const seenColumns = new Map<string, number>();
+
 
   for (const frame of frames) {
     const mappings: Array<{ source: string; target: string }> = [];
     for (const column of frame.columns) {
       const seen = seenColumns.get(column) ?? 0;
-      const target = seen === 0 ? column : `${column}_${seen}`;
+      const target = seen === 0 ? column : `${column}__dup${seen}`;
       seenColumns.set(column, seen + 1);
-      outputColumns.push(target);
+      displayColumns.push(column);
+      storageKeys.push(target);
       mappings.push({ source: column, target });
     }
     perFrameMappings.push(mappings);
@@ -237,14 +268,18 @@ function concatColumns(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
 
   const outputIndex: IndexLabel[] = [];
   const seenIndex = new Set<string>();
+  const frameIndexLabels: Set<string>[] = [];
   for (const frame of frames) {
+    const labels = new Set<string>();
     for (const label of frame.index) {
+      labels.add(String(label));
       const key = String(label);
       if (!seenIndex.has(key)) {
         seenIndex.add(key);
         outputIndex.push(label);
       }
     }
+    frameIndexLabels.push(labels);
   }
 
   const perFrameRows = frames.map((frame) => {
@@ -270,8 +305,26 @@ function concatColumns(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
     records.push(row);
   }
 
-  return new DataFrame(records, {
-    columns: outputColumns,
-    index: ignoreIndex ? undefined : outputIndex,
+  // Each output column keeps its source dtype, widened when the frame
+  // doesn't cover every output index label (missing cells are introduced).
+  const declared: Record<string, DType> = {};
+  frames.forEach((frame, frameIndex) => {
+    const frameDtypes = frame.dtypes() as Record<string, DType>;
+    const coversAll = outputIndex.every((label) => frameIndexLabels[frameIndex]!.has(String(label)));
+    for (const mapping of perFrameMappings[frameIndex]!) {
+      const source = frameDtypes[mapping.source] ?? "object";
+      declared[mapping.target] = coversAll ? source : widenDTypeForMissing(source);
+    }
   });
+
+  return DataFrame.createInternal(
+    records,
+    storageKeys,
+    ignoreIndex ? range(records.length) : outputIndex,
+    {},
+    declared,
+    undefined,
+    undefined,
+    displayColumns
+  );
 }
