@@ -33,7 +33,9 @@ function parseExcelBytes(bytes: Uint8Array, options: ReadExcelOptions): DataFram
     header: 1,
     raw: true,
     defval: null,
-    blankrows: false,
+    // pandas read_excel keeps rows whose cells are all empty inside the
+    // sheet's used range — blankrows:false would silently drop them.
+    blankrows: true,
   }) as unknown[][];
 
   if (matrix.length === 0) {

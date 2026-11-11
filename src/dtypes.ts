@@ -1,5 +1,6 @@
 import { NA, NaT, isMissingScalar } from "./missing";
 import { dtypeZone, isDatetime64DType, isDatetimeAwareDType, zoneOffsetMinutes } from "./internal/shared/timezone";
+import { Period, isPeriodDType, parsePeriodValue, periodFreqOf } from "./period";
 import type { CellValue, DType } from "./types";
 
 const integerPattern = /^(U?Int|u?int)(8|16|32|64)$/;
@@ -10,7 +11,7 @@ const supported = new Set<string>([
 ]);
 
 export function assertDType(dtype: string): asserts dtype is DType {
-  if (!supported.has(dtype) && !isDatetime64DType(dtype)) throw new TypeError(`data type '${dtype}' not understood`);
+  if (!supported.has(dtype) && !isDatetime64DType(dtype) && !isPeriodDType(dtype)) throw new TypeError(`data type '${dtype}' not understood`);
 }
 
 /** True for the pandas `category`/`Categorical` dtype spellings. */
@@ -93,6 +94,19 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
         : typeof value === "number" ? new Date(value) : new Date(String(value));
       return Number.isNaN(parsed.getTime()) ? NaT : parsed;
     }
+    // pandas period[<freq>]: cells hold Period scalars; missing is NaT.
+    // Strings/Dates/ordinals parse at the declared freq (UTC fields). A
+    // Period at another freq raises pandas' IncompatibleFrequency on
+    // construction, while astype between period dtypes re-bases via asfreq.
+    if (isPeriodDType(dtype)) {
+      if (isMissingScalar(value)) return NaT;
+      const freq = periodFreqOf(dtype)!;
+      if (value instanceof Period && value.freq !== freq) {
+        if (isPeriodDType(sourceDType)) return value.asfreq(freq, "E");
+        throw new TypeError(`Input has different freq=${value.freqstr} from dtype ${dtype}`);
+      }
+      return parsePeriodValue(value as string | number | Date | Period, freq);
+    }
     const nullable = dtype[0] === dtype[0]!.toUpperCase();
     if (isMissingScalar(value)) {
       if (nullable) return NA;
@@ -154,7 +168,7 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
   // pandas convert_dtypes/infer_objects keep categorical dtype as category.
   if (isCategoricalDType(source)) return "category";
   if (source && source !== "object" && source !== "number" && source !== "date") {
-    if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string" || isDatetime64DType(source)) return source;
+    if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string" || isDatetime64DType(source) || isPeriodDType(source)) return source;
     if (/^u?int/.test(source)) return source.replace(/^uint/, "UInt").replace(/^int/, "Int") as DType;
     if (source === "bool") return "boolean";
     if (source === "str") return "string";
@@ -174,6 +188,12 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
     if (nullable) return integral ? "Int64" : source === "float32" ? "Float32" : "Float64";
     return integral && present.length === values.length ? "int64" : "float64";
   }
+  if (present.every(value => value instanceof Period)) {
+    // Homogeneous-freq Period cells infer `period[<freq>]`; mixed freqs widen
+    // to object (pandas dtype has different freq).
+    const freq = (present[0] as Period).freq;
+    return present.every(value => (value as Period).freq === freq) ? `period[${freq}]` as DType : "object";
+  }
   if (present.every(value => value instanceof Date)) return "date";
   return "object";
 }
@@ -188,6 +208,11 @@ export function replacementDType(dtype: DType | undefined, values: readonly Cell
   if (isDatetime64DType(dtype)) {
     // Datetime64 keeps its dtype (incl. tz metadata) while replacements stay datetime-like.
     return present.every(value => value instanceof Date) ? dtype : "object";
+  }
+  if (isPeriodDType(dtype)) {
+    // period[<freq>] keeps its dtype while replacements are same-freq Periods.
+    const freq = periodFreqOf(dtype);
+    return present.every(value => value instanceof Period && value.freq === freq) ? dtype : "object";
   }
   if (dtype === "string" || dtype === "str") return present.every(value => typeof value === "string") ? dtype : "object";
   if (dtype === "boolean") {
@@ -241,12 +266,13 @@ export function dtypeSelector(include?: DTypeSelector | DTypeSelector[], exclude
 }
 
 /** Broad scalar family for consumers that do not distinguish numeric widths. */
-export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "datetime" | "categorical" | "unknown" | "mixed" {
+export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "datetime" | "categorical" | "period" | "unknown" | "mixed" {
   if (isCategoricalDType(dtype)) return "categorical";
   if (dtype === "number" || /^(u?int|float)/i.test(dtype)) return "number";
   if (dtype === "bool" || dtype === "boolean") return "boolean";
   if (dtype === "str" || dtype === "string") return "string";
   if (dtype === "date" || isDatetime64DType(dtype)) return "datetime";
+  if (isPeriodDType(dtype)) return "period";
   return dtype === "unknown" ? "unknown" : "mixed";
 }
 
@@ -264,6 +290,10 @@ export function updatedDType(dtype: DType, incoming: DType, values: readonly Cel
   } else if (isDatetime64DType(dtype)) {
     // pandas datetime64 update validation: present values must stay datetime-like.
     if (present.some(value => !(value instanceof Date))) invalid();
+  } else if (isPeriodDType(dtype)) {
+    // period[<freq>] update validation: present values must stay same-freq Periods.
+    const freq = periodFreqOf(dtype);
+    if (present.some(value => !(value instanceof Period) || value.freq !== freq)) invalid();
   } else if (/^(u?int|float)/.test(dtype)) {
     if (present.some(value => typeof value !== "number" && typeof value !== "bigint")) invalid();
     if (/^u?int/.test(dtype)) {

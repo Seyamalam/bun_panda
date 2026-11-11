@@ -66,7 +66,8 @@ import {
   pandasDiff,
   pandasPctChange,
 } from "./internal/series/pandasElementwise";
-import { NA } from "./missing";
+import { NA, NaT } from "./missing";
+import { Period, isPeriodDType } from "./period";
 import {
   asciiBoxplot,
   asciiHistogram,
@@ -365,7 +366,7 @@ export class Series<T extends CellValue = CellValue> {
     if (Array.isArray(value)) {
       throw new TypeError(`"value" parameter must be a scalar or dict, but you passed a "list"`);
     }
-    if (typeof value === "object" && value !== null && !(value instanceof Date)) {
+    if (typeof value === "object" && value !== null && !(value instanceof Date) && !(value instanceof Period)) {
       const mapping = value as Record<string, CellValue>;
       const filled = this._values.map((entry, i) => {
         if (!isMissing(entry)) return entry;
@@ -546,7 +547,8 @@ export class Series<T extends CellValue = CellValue> {
       const numeric = (typeof a === "number" || typeof a === "boolean") && (typeof b === "number" || typeof b === "boolean");
       const strings = typeof a === "string" && typeof b === "string";
       const dates = a instanceof Date && b instanceof Date;
-      if (!numeric && !strings && !dates) return false;
+      const periods = a instanceof Period && b instanceof Period;
+      if (!numeric && !strings && !dates && !periods) return false;
       const cmp = numeric ? Number(a) - Number(b) : strings ? (a < b ? -1 : a > b ? 1 : 0) : compareCellValues(a,b);
       if (increasing ? cmp > 0 : cmp < 0) return false;
     }
@@ -1051,15 +1053,74 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
-  add(other: number | bigint | Series<T>): Series<number | bigint> {
-    return this.numericOp(other, (a, b) => a + b, undefined, false, true, false, false, false, (a, b) => a + b);
+  add(other: number | bigint | Period | Series<T>): Series<number | bigint | Period> {
+    // pandas `period series + int` shifts each cell by whole freq units.
+    if (isPeriodDType(this._dtype)) return this.periodAddSub(other, "add") as Series<number | bigint | Period>;
+    return this.numericOp(other as number | bigint | Series<T>, (a, b) => a + b, undefined, false, true, false, false, false, (a, b) => a + b) as Series<number | bigint | Period>;
   }
 
-  sub(other: number | bigint | Series<T>): Series<number | bigint> {
+  sub(other: number | bigint | Period | Series<T>): Series<number | bigint | Period> {
+    if (isPeriodDType(this._dtype)) return this.periodAddSub(other, "sub") as Series<number | bigint | Period>;
     if (this._dtype === "bool" && other instanceof Series && other._dtype === "bool") {
       throw new TypeError("numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.");
     }
-    return this.numericOp(other, (a, b) => a - b, undefined, false, false, false, false, false, (a, b) => a - b);
+    return this.numericOp(other as number | bigint | Series<T>, (a, b) => a - b, undefined, false, false, false, false, false, (a, b) => a - b) as Series<number | bigint | Period>;
+  }
+
+  /**
+   * pandas period arithmetic: `s ± int` shifts every cell by whole freq
+   * units (NaT propagates, `period[<f>]` dtype kept); `s - period operand`
+   * yields the ordinal difference in freq steps (pandas returns an offset
+   * object — the integer step count is the honest scalar form here).
+   */
+  private periodAddSub(other: number | bigint | Period | Series<T>, op: "add" | "sub"): Series<CellValue> {
+    const sign = op === "add" ? 1 : -1;
+    // period - period → integer ordinal differences.
+    if (op === "sub" && (other instanceof Period || (other instanceof Series && isPeriodDType(other._dtype)))) {
+      const { leftValues, rightValues, resultIndex } = this.alignBinary(other as CellValue | Series<T>);
+      const out = leftValues.map((value, i): number | typeof NaT => {
+        const right = rightValues[i];
+        if (isMissing(value) || isMissing(right)) return NaN;
+        const l = value as Period; const r = right as Period;
+        if (r.freq !== l.freq) {
+          throw new TypeError(`Input has different freq=${r.freqstr} from Period(freq=${l.freqstr})`);
+        }
+        return l.ordinal - r.ordinal;
+      });
+      return new Series(out as CellValue[], {
+        index: resultIndex, indexName: this._indexName, name: this.name,
+      });
+    }
+    if (other instanceof Period) {
+      throw new TypeError(`unsupported operand type(s) for +: 'Period' and 'Period'`);
+    }
+    const intOperand = (v: CellValue | null): number | null => {
+      if (typeof v === "number" && Number.isInteger(v)) return v;
+      if (typeof v === "bigint") return Number(v);
+      return null;
+    };
+    if (other instanceof Series) {
+      const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
+      const out = leftValues.map((value, i): CellValue => {
+        const right = rightValues[i];
+        if (isMissing(value) || isMissing(right)) return NaT;
+        const n = intOperand(right as CellValue | null);
+        if (n === null) throw new TypeError(`unsupported operand type(s) for ${op === "add" ? "+" : "-"}: 'Period' and '${pythonOperandTypeName(right as CellValue)}'`);
+        return new Period((value as Period).ordinal + sign * n, (value as Period).freq);
+      });
+      return new Series(out, {
+        index: resultIndex, indexName: this._indexName, name: this.name, dtype: this._dtype,
+      });
+    }
+    const n = intOperand(other as CellValue | null);
+    if (n === null) {
+      throw new TypeError(`unsupported operand type(s) for ${op === "add" ? "+" : "-"}: 'Period' and '${pythonOperandTypeName(other as CellValue)}'`);
+    }
+    const out = this._values.map((value): CellValue =>
+      isMissing(value) ? NaT : new Period((value as Period).ordinal + sign * n, (value as Period).freq));
+    return new Series(out, {
+      index: [...this._index], indexName: this._indexName, name: this.name, dtype: this._dtype,
+    });
   }
 
   rsub(other: number | bigint | Series<T>): Series<number | bigint> {
@@ -1105,7 +1166,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   // pandas long-form aliases
-  subtract(other: number | bigint | Series<T>): Series<number | bigint> {
+  subtract(other: number | bigint | Period | Series<T>): Series<number | bigint | Period> {
     return this.sub(other);
   }
   multiply(other: number | bigint | Series<T>): Series<number | bigint> {
@@ -1126,7 +1187,7 @@ export class Series<T extends CellValue = CellValue> {
       ? (a, b) => (b === 0n ? 0n : bigintFloorDiv(a, b))
       : (a, b) => (b === 0n ? null : bigintFloorDiv(a, b)));
   }
-  radd(other: number | bigint | Series<T>): Series<number | bigint> {
+  radd(other: number | bigint | Period | Series<T>): Series<number | bigint | Period> {
     return this.add(other);
   }
   rmul(other: number | bigint | Series<T>): Series<number | bigint> {
@@ -1312,8 +1373,54 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(out, { index: resultIndex, indexName: this._indexName, name: this.name, dtype: "bool" });
   }
 
+  /** True when the comparison should run through the Period kernel. */
+  private isPeriodCompare(other: CellValue | Series<T>): boolean {
+    return isPeriodDType(this._dtype) || other instanceof Period ||
+      (other instanceof Series && isPeriodDType(other._dtype));
+  }
+
+  /**
+   * pandas period comparisons: eq/ne compare (freq, ordinal) identity
+   * (cross-freq is simply unequal); ordering compares ordinals and raises
+   * pandas `IncompatibleFrequency` on a freq mismatch. NaT operands follow
+   * pandas NaT semantics: False for eq/ordering, True for ne.
+   */
+  private periodCompare(
+    other: CellValue | Series<T>,
+    op: "eq" | "ne" | "lt" | "le" | "gt" | "ge"
+  ): Series<boolean> {
+    const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
+    const out = leftValues.map((value, i): boolean => {
+      const right = rightValues[i];
+      const aMiss = isMissing(value);
+      const bMiss = isMissing(right);
+      if (aMiss || bMiss) return op === "ne";
+      if (!(value instanceof Period) || !(right instanceof Period)) {
+        // Period vs non-Period scalar: eq is False, ordering raises.
+        if (op === "eq") return false;
+        if (op === "ne") return true;
+        throw new TypeError("unsupported operand type(s) for Series comparison");
+      }
+      if (op === "eq" || op === "ne") {
+        const equal = value.equals(right);
+        return op === "eq" ? equal : !equal;
+      }
+      const cmp = value.compareTo(right); // freq mismatch → ValueError
+      switch (op) {
+        case "lt": return cmp < 0;
+        case "le": return cmp <= 0;
+        case "gt": return cmp > 0;
+        default: return cmp >= 0;
+      }
+    });
+    return new Series(out, {
+      index: resultIndex, indexName: this._indexName, name: this.name, dtype: "bool",
+    });
+  }
+
   eq(other: CellValue | Series<T>): Series<boolean> {
     if (this._catDtype !== undefined) return this.categoricalCompare(other, "eq");
+    if (this.isPeriodCompare(other)) return this.periodCompare(other, "eq");
     // numberOrBigintEqual keeps bigint/number comparisons exact (=== is false
     // for mixed types even when the values are numerically equal).
     return this.compareOp(other, (a, b) => numberOrBigintEqual(a, b));
@@ -1321,21 +1428,25 @@ export class Series<T extends CellValue = CellValue> {
 
   ne(other: CellValue | Series<T>): Series<boolean> {
     if (this._catDtype !== undefined) return this.categoricalCompare(other, "ne");
+    if (this.isPeriodCompare(other)) return this.periodCompare(other, "ne");
     return this.compareOp(other, (a, b) => !numberOrBigintEqual(a, b));
   }
 
   lt(other: CellValue | Series<T>): Series<boolean> {
     if (this._catDtype !== undefined) return this.categoricalCompare(other, "lt");
+    if (this.isPeriodCompare(other)) return this.periodCompare(other, "lt");
     return this.compareOp(other, (a, b) => (a as number) < (b as number), true);
   }
 
   le(other: CellValue | Series<T>): Series<boolean> {
     if (this._catDtype !== undefined) return this.categoricalCompare(other, "le");
+    if (this.isPeriodCompare(other)) return this.periodCompare(other, "le");
     return this.compareOp(other, (a, b) => (a as number) <= (b as number), true);
   }
 
   gt(other: CellValue | Series<T>): Series<boolean> {
     if (this._catDtype !== undefined) return this.categoricalCompare(other, "gt");
+    if (this.isPeriodCompare(other)) return this.periodCompare(other, "gt");
     return this.compareOp(other, (a, b) => (a as number) > (b as number), true);
   }
 
@@ -1996,7 +2107,13 @@ export class Series<T extends CellValue = CellValue> {
   to_string(): string { return seriesApi.to_string(this.view()); }
   to_csv(): string { return seriesApi.to_csv(this.view()); }
   to_json(): string { return seriesApi.to_json(this.view()); }
-  to_period(): Series<T> { return seriesApi.to_period(this.view()) as never; }
+  /**
+   * pandas `Series.to_period(freq)`: converts period-capable index labels
+   * (Dates → Periods, Periods → `asfreq(freq)`); `period[<f>]` values also
+   * re-base to `freq`. For value conversion on datetime cells see
+   * `s.dt.to_period(freq)`.
+   */
+  to_period(freq = "D"): Series<CellValue> { return seriesApi.to_period(this.view(), freq); }
   info(): string { return seriesApi.info(this.view()); }
   items(): [IndexLabel, CellValue][] { return seriesApi.items(this.view()); }
   keys(): IndexLabel[] { return seriesApi.keys(this.view()); }
@@ -2242,7 +2359,12 @@ export class Series<T extends CellValue = CellValue> {
   to_hdf(): Buffer { return seriesApi.to_hdf(this.view()); }
   to_pickle(): Buffer { return seriesApi.to_pickle(this.view()); }
   to_sql(tableName: string): string { return seriesApi.to_sql(this.view(), tableName); }
-  to_timestamp(): Series<T> { return seriesApi.to_timestamp(this.view()) as never; }
+  /**
+   * Reverse of `to_period`: Period index labels become boundary Dates and
+   * `period[<f>]` values become `datetime64[ns]` instants (`how='S'` start,
+   * `how='E'` end). Non-period content returns a copy.
+   */
+  to_timestamp(how: "S" | "E" = "S"): Series<CellValue> { return seriesApi.to_timestamp(this.view(), how); }
   to_xarray(): Record<string, CellValue> { return seriesApi.to_xarray(this.view()); }
   to_excel(columnName?: string): string { return seriesApi.to_excel(this.view(), columnName); }
   to_markdown(columnName?: string): string { return seriesApi.to_markdown(this.view(), columnName); }

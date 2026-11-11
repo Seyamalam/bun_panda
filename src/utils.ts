@@ -1,5 +1,6 @@
 import { castColumn } from "./dtypes";
 import { isMissingScalar } from "./missing";
+import { Period, comparePeriods } from "./period";
 import type { CellValue, DType, InferredDType, Row } from "./types";
 
 export function range(count: number): number[] {
@@ -33,6 +34,7 @@ export function pythonOperandTypeName(value: CellValue): string {
   if (typeof value === "boolean") return "bool";
   if (typeof value === "string") return "str";
   if (value instanceof Date) return "datetime.datetime";
+  if (value instanceof Period) return "Period";
   return "object";
 }
 
@@ -59,6 +61,12 @@ export function compareCellValues(left: CellValue, right: CellValue): number {
 
   if (left instanceof Date && right instanceof Date) {
     return left.getTime() - right.getTime();
+  }
+
+  // Periods order by (freq grain, ordinal) — pandas ordering for same-freq,
+  // deterministic coarser-first fallback where pandas would raise.
+  if (left instanceof Period && right instanceof Period) {
+    return comparePeriods(left, right);
   }
 
   // bigint participates in exact mixed numeric ordering; mixed bigint/number
@@ -149,6 +157,12 @@ export function inferColumnDType(values: CellValue[]): InferredDType {
   }
   if (isAll((value) => value instanceof Date)) {
     return "date";
+  }
+  if (isAll((value) => value instanceof Period)) {
+    const freq = (nonMissing[0] as Period).freq;
+    return nonMissing.every((value) => (value as Period).freq === freq)
+      ? (`period[${freq}]` as InferredDType)
+      : "mixed";
   }
 
   return "mixed";

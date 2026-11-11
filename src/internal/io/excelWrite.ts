@@ -1,6 +1,8 @@
 import * as XLSX from "xlsx";
 import type { ToExcelOptions } from "../../dataframe";
-import type { CellValue } from "../../types";
+import type { CellValue, InferredDType } from "../../types";
+import { isMissingScalar } from "../../missing";
+import { dtypeZone, isDatetimeAwareDType, zoneOffsetMs } from "../shared/timezone";
 import type { FrameLike } from "./frameLike";
 
 export function writeExcelFrame(frame: FrameLike, options: ToExcelOptions): void {
@@ -9,19 +11,45 @@ export function writeExcelFrame(frame: FrameLike, options: ToExcelOptions): void
   }
 
   const includeIndex = options.index ?? false;
+  const dtypeMap = frame.dtypes;
+  // Aware datetime columns hold UTC instants; Excel has no tz, so cells get
+  // the wall-clock time pandas users produce via tz_localize(None) (pandas
+  // itself raises on tz-aware writes — wall time is the practical analogue).
+  const zoneOffsets = frame.storageColumns.map((column) => {
+    const dtype: InferredDType | undefined = dtypeMap[column];
+    return dtype !== undefined && isDatetimeAwareDType(dtype) && dtypeZone(dtype) !== null
+      ? zoneOffsetMs(dtypeZone(dtype)!)
+      : 0;
+  });
+
+  // pandas writes one column per index level, headed by the level names.
+  const index = frame.index;
+  const indexLevels = index.map((label) => (Array.isArray(label) ? [...label] : [label]));
+  const levelCount = Math.max(1, ...indexLevels.map((levels) => levels.length));
+  const indexNames: (string | undefined)[] =
+    "index_names" in frame && Array.isArray(frame.index_names)
+      ? (frame.index_names as (string | undefined)[])
+      : [];
+
   // Records are keyed by storage columns; tuple MultiColumn headers stringify.
-  const header = includeIndex
-    ? ["index", ...frame.columns.map((column) => String(column))]
-    : frame.columns.map((column) => String(column));
+  const header: CellValue[] = frame.columns.map((column) => String(column));
+  if (includeIndex) {
+    for (let level = levelCount - 1; level >= 0; level -= 1) {
+      header.unshift(indexNames[level] ?? "");
+    }
+  }
   const matrix: CellValue[][] = [header];
   const records = frame.to_records();
-  const index = frame.index;
 
   for (let i = 0; i < records.length; i += 1) {
     const record = records[i]!;
-    const row = frame.storageColumns.map((column) => normalizeExcelCell(record[column]));
+    const row = frame.storageColumns.map((column, position) =>
+      normalizeExcelCell(record[column], zoneOffsets[position] ?? 0));
     if (includeIndex) {
-      row.unshift(index[i]! as never);
+      const levels = indexLevels[i] ?? [];
+      for (let level = levelCount - 1; level >= 0; level -= 1) {
+        row.unshift((levels[level] ?? "") as CellValue);
+      }
     }
     matrix.push(row);
   }
@@ -36,17 +64,20 @@ export function writeExcelFrame(frame: FrameLike, options: ToExcelOptions): void
   XLSX.writeFile(workbook, options.path);
 }
 
-function normalizeExcelCell(value: CellValue): CellValue {
-  if (value === null || value === undefined) {
+function normalizeExcelCell(value: CellValue, zoneOffset = 0): CellValue {
+  // NA/NaT/NaN write as empty cells, matching pandas na_rep="" for Excel.
+  if (isMissingScalar(value)) {
     return null;
   }
   if (
     typeof value === "string" ||
     typeof value === "number" ||
-    typeof value === "boolean" ||
-    value instanceof Date
+    typeof value === "boolean"
   ) {
     return value;
+  }
+  if (value instanceof Date) {
+    return zoneOffset === 0 ? value : new Date(value.getTime() + zoneOffset);
   }
   // Excel cells cannot hold 64-bit integers; write the decimal text when the
   // value exceeds the safe range so it is never silently rounded.

@@ -4,7 +4,8 @@ import { jsonBigintReplacer } from "./internal/shared/valueSemantics";
 // Top-level pandas module surface: options registry, scalar/index types,
 // range builders, and reshape/merge wrappers.
 import { DataFrame } from "./dataframe";
-import type { CellValue, IndexLabel, Row } from "./types";
+import { Period, normalizePeriodFreq, periodDTypeName, type PeriodFreq } from "./period";
+import type { CellValue, DType, IndexLabel, Row } from "./types";
 
 // ---------------------------------------------------------------------------
 // Options registry
@@ -135,6 +136,15 @@ export class Timestamp {
     return new Date(this.date.getTime() + shift);
   }
 
+  /**
+   * pandas `Timestamp.to_period`: the Period containing this timestamp's
+   * wall-clock reading (zone fields for aware timestamps, UTC fields for
+   * naive — matching `toString`'s naive reading).
+   */
+  to_period(freq: string): Period {
+    return new Period(this.wallClock(), freq);
+  }
+
   add(other: Timedelta | number): Timestamp {
     const ms = other instanceof Timedelta ? other.ms : other;
     return new Timestamp(this.date.getTime() + ms, this.tz);
@@ -209,26 +219,10 @@ export class Timedelta {
   }
 }
 
-export class Period {
-  constructor(
-    readonly start: Date,
-    /** Frequency in milliseconds; keeps Period honest without full freq algebra. */
-    readonly freqMs: number = 86_400_000
-  ) {}
-
-  get end(): Date {
-    return new Date(this.start.getTime() + this.freqMs);
-  }
-
-  contains(t: Date | Timestamp): boolean {
-    const time = t instanceof Timestamp ? t.date.getTime() : t.getTime();
-    return time >= this.start.getTime() && time < this.end.getTime();
-  }
-
-  toString(): string {
-    return `[${this.start.toISOString()}, ${this.end.toISOString()})`;
-  }
-}
+// pandas `Period` scalar: (ordinal, freq) identity with calendar math in
+// src/period.ts. Re-exported so `import { Period } from "./top-level"` and
+// the package barrel keep working.
+export { Period };
 
 export class Index {
   constructor(readonly labels: IndexLabel[]) {}
@@ -333,9 +327,53 @@ export class TimedeltaIndex extends Index {
   }
 }
 
+/**
+ * pandas `PeriodIndex`: an Index of Period scalars at one shared freq.
+ * `labels` holds the Period objects (they flow through Series/DataFrame
+ * index options like DatetimeIndex labels do); `.periods` exposes them
+ * directly for compat with the earlier stub.
+ */
 export class PeriodIndex extends Index {
-  constructor(readonly periods: Period[]) {
-    super(periods.map((p) => p.start.getTime()));
+  readonly periods: Period[];
+  /** Canonical shared freq code ('Y'|'Q'|'M'|'W'|'D'|'H'). */
+  readonly freq: PeriodFreq;
+
+  constructor(
+    values: (Period | string | number | Date | { date?: unknown; wallClock?: unknown })[],
+    freq?: string
+  ) {
+    const target = freq === undefined ? undefined : normalizePeriodFreq(freq);
+    const periods = values.map((v) => (v instanceof Period ? v : new Period(v, target)));
+    const freqs = new Set(periods.map((p) => p.freq));
+    if (freqs.size > 1) {
+      throw new TypeError(`PeriodIndex requires a single freq; got ${[...freqs].join(", ")}`);
+    }
+    if (target !== undefined && periods.some((p) => p.freq !== target)) {
+      throw new TypeError(`PeriodIndex freq mismatch: values are ${[...freqs].join(", ")}, freq is ${target}`);
+    }
+    super(periods as unknown as IndexLabel[]);
+    this.periods = periods;
+    this.freq = periods[0]?.freq ?? target ?? "D";
+  }
+
+  /** Canonical code of the shared freq (pandas `freqstr` spelling via `freqstr`). */
+  get freqstr(): string {
+    return this.periods[0]?.freqstr ?? this.freq;
+  }
+
+  /** pandas dtype spelling of the index (`period[M]`). */
+  get dtype(): DType {
+    return periodDTypeName(this.freq);
+  }
+
+  /** pandas `PeriodIndex.to_timestamp`: boundary instants as a DatetimeIndex. */
+  to_timestamp(how: "S" | "E" = "S"): DatetimeIndex {
+    return new DatetimeIndex(this.periods.map((p) => p.to_timestamp(how)));
+  }
+
+  toString(): string {
+    // pandas repr spells the dtype with the freqstr ('period[Q-DEC]').
+    return `PeriodIndex([${this.periods.map((p) => `'${p.toString()}'`).join(", ")}], dtype='period[${this.freqstr}]')`;
   }
 }
 
@@ -412,16 +450,37 @@ export function interval_range(
   return out;
 }
 
+/**
+ * pandas `period_range`: consecutive Periods starting at `start`.
+ * `period_range(start, n, freq)` counts forward `n` steps;
+ * `period_range(start, end, freq)` runs through the end period inclusive.
+ * String/Date/Timestamp starts parse at `freq` (Date/Timestamp read UTC
+ * fields); a Period start keeps its own freq unless `freq` overrides.
+ */
 export function period_range(
-  start: Date | string | Timestamp,
-  periods: number,
-  freq = "D"
+  start: Period | Date | string | Timestamp | number,
+  periodsOrEnd: number | Period | Date | string | Timestamp,
+  freq?: string
 ): PeriodIndex {
-  const step = parseFreqToMs(freq);
-  const startMs = start instanceof Timestamp ? start.date.getTime() : new Date(start as Date).getTime();
+  const resolved = freq === undefined
+    ? (start instanceof Period ? start.freq : periodsOrEnd instanceof Period ? periodsOrEnd.freq : "D")
+    : normalizePeriodFreq(freq);
+  const first = start instanceof Period && freq === undefined ? start : new Period(start, resolved);
   const out: Period[] = [];
-  for (let i = 0; i < periods; i += 1) {
-    out.push(new Period(new Date(startMs + i * step), step));
+  if (typeof periodsOrEnd === "number") {
+    for (let i = 0; i < Math.max(0, periodsOrEnd); i += 1) {
+      out.push(new Period(first.ordinal + i, resolved));
+    }
+    return new PeriodIndex(out);
+  }
+  const last = periodsOrEnd instanceof Period && freq === undefined
+    ? periodsOrEnd
+    : new Period(periodsOrEnd, resolved);
+  for (let ord = first.ordinal; ord <= last.ordinal; ord += 1) {
+    out.push(new Period(ord, resolved));
+    if (out.length > 1_000_000) {
+      throw new Error("period_range produced over 1,000,000 periods; check freq.");
+    }
   }
   return new PeriodIndex(out);
 }

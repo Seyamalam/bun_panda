@@ -1,4 +1,5 @@
 import { ValueError } from "../../errors";
+import { Period } from "../../period";
 import type { CellValue, IndexLabel } from "../../types";
 import { compareCellValues } from "../../utils";
 
@@ -30,6 +31,10 @@ export function indexLabelEquals(left: IndexLabel | readonly (string | number)[]
   if (isIndexTuple(left) || isIndexTuple(right)) {
     return isIndexTuple(left) && isIndexTuple(right) &&
       left.length === right.length && left.every((v, i) => indexLabelEquals(v as IndexLabel, right[i]!));
+  }
+  // Period labels compare by (freq, ordinal) identity, not object identity.
+  if (left instanceof Period || right instanceof Period) {
+    return left instanceof Period && right instanceof Period && left.equals(right);
   }
   return left === right || (typeof left === "number" && Number.isNaN(left) && typeof right === "number" && Number.isNaN(right));
 }

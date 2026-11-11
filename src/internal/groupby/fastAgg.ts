@@ -9,6 +9,7 @@ import {
 import { buildColumnStore } from "../../wasm/columns";
 import { chooseExecutionPath } from "../../wasm/dispatch";
 import type { AggName, CellValue, IndexLabel, Row } from "../../types";
+import { Period } from "../../period";
 import {
   compareCellValues,
   isMissing,
@@ -291,5 +292,7 @@ export function compareKeyValues(left: CellValue[], right: CellValue[]): number 
 
 export function toIndexLabel(value: CellValue, fallback: number): IndexLabel {
   if (typeof value === "number" || typeof value === "string") return value;
+  // Period group keys stay Period labels (pandas emits a PeriodIndex).
+  if (value instanceof Period) return value as unknown as IndexLabel;
   return String(value ?? fallback);
 }

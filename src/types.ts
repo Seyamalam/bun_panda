@@ -1,9 +1,10 @@
 import type { MissingScalar } from "./missing";
+import type { Period } from "./period";
 
 /** A scalar index label or a MultiIndex tuple (one scalar per level). */
 export type IndexLabel = string | number | readonly (string | number)[];
 
-export type CellValue = string | number | bigint | boolean | MissingScalar | Date;
+export type CellValue = string | number | bigint | boolean | MissingScalar | Date | Period;
 
 export type Row = Record<string, CellValue>;
 
@@ -29,7 +30,11 @@ export type IntegerDType = `${"int" | "uint" | "Int" | "UInt"}${8 | 16 | 32 | 64
 export type DatetimeDType = "datetime64" | "Datetime64" | `datetime64[${string}]`;
 /** pandas `category` / `Categorical` dtype spellings (both normalize to `category`). */
 export type CategoricalDType = "category" | "Categorical";
+/** pandas period dtype spellings: `period[M]`, `period[Q]`, `period[D]`, `period[Y]`,
+ * `period[W]`, `period[H]`, plus anchored pandas spellings (`period[Q-DEC]`). */
+export type PeriodDType = `period[${string}]`;
 export type DType = "number" | "string" | "str" | "boolean" | "date" | "bool" | "object"
-  | "float32" | "float64" | "Float32" | "Float64" | IntegerDType | DatetimeDType | CategoricalDType;
+  | "float32" | "float64" | "Float32" | "Float64" | IntegerDType | DatetimeDType | CategoricalDType
+  | PeriodDType;
 
 export type InferredDType = DType | "mixed" | "unknown";

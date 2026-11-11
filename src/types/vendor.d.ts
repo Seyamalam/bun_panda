@@ -10,8 +10,15 @@ declare module "parquetjs-lite" {
   }
 
   export class ParquetReader {
-    static openFile(path: string): Promise<ParquetReader>;
+    static openFile(path: string, options?: { rawStatistics?: boolean }): Promise<ParquetReader>;
     getCursor(): { next(): Promise<Record<string, unknown> | null> };
     close(): Promise<void>;
   }
+}
+
+declare module "parquetjs-lite/lib/types.js" {
+  export const PARQUET_LOGICAL_TYPES: Record<
+    string,
+    { toPrimitive(value: unknown): unknown }
+  >;
 }

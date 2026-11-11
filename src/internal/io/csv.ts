@@ -135,6 +135,12 @@ function inferValue(value: string, naValues: Set<string>): CellValue {
   if (NUMERIC_PATTERN.test(trimmed)) {
     const parsed = Number(trimmed);
     if (Number.isFinite(parsed)) {
+      // Integer literals beyond the safe range keep exact bigint cells —
+      // pandas read_csv keeps them in an int64 column where a double would
+      // silently round (e.g. "9007199254740993" -> 9007199254740992).
+      if (INTEGER_PATTERN.test(trimmed) && !Number.isSafeInteger(parsed)) {
+        return BigInt(trimmed);
+      }
       return parsed;
     }
   }
@@ -192,6 +198,7 @@ function parseCsvRows(text: string, sep: string): string[][] {
 }
 
 const NUMERIC_PATTERN = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+const INTEGER_PATTERN = /^[+-]?\d+$/;
 
 function firstNonEmptyLineIndex(lines: string[], start = 0): number {
   for (let i = start; i < lines.length; i += 1) {

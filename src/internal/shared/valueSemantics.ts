@@ -1,4 +1,5 @@
 import { isMissingScalar, NA, NaT } from "../../missing";
+import { Period, comparePeriods } from "../../period";
 import type { CellValue } from "../../types";
 
 export function isAbsent(value: CellValue): boolean {
@@ -13,6 +14,9 @@ export function scalarKey(value: CellValue): string {
   if (typeof value === "boolean" || typeof value === "number") return `number:${Number(value)}`;
   if (typeof value === "bigint") return `number:${value.toString()}`;
   if (value instanceof Date) return `date:${value.getTime()}`;
+  // Periods key on their (freq, ordinal) identity so groupby/dedup treat
+  // equal periods as one key regardless of the instance.
+  if (value instanceof Period) return `period:${value.freq}:${value.ordinal}`;
   return `${typeof value}:${String(value)}`;
 }
 
@@ -39,12 +43,38 @@ export function bigintFloorDiv(left: bigint, right: bigint): bigint {
  * JSON.stringify replacer for cells that may hold bigint. Safe-range values
  * serialize as plain JSON numbers (pandas parity); out-of-range values
  * serialize as their exact decimal string since JSON has no 64-bit integer.
+ * Missing markers (NA/NaT) have no JSON form and serialize as null — without
+ * this, a symbol-valued record property would be dropped entirely.
  */
 export function jsonBigintReplacer(_key: string, value: unknown): unknown {
+  if (typeof value === "symbol") return null;
   if (typeof value !== "bigint") return value;
   return value >= BigInt(Number.MIN_SAFE_INTEGER) && value <= BigInt(Number.MAX_SAFE_INTEGER)
     ? Number(value)
     : value.toString();
+}
+
+// pandas to_json writes out-of-range integers as raw JSON digits
+// ("big":9007199254740993) even though a JS parser rounds them. JSON.stringify
+// cannot emit raw number tokens, so the replacer tags unsafe bigints with a
+// NUL-prefixed sentinel that unquoteRawIntTokens strips to bare digits. A real
+// string cell can only collide if it literally contains "\u0000bunpanda:int64:"
+// followed by digits — a deliberate payload rather than an accident.
+const RAW_INT_SENTINEL = "\u0000bunpanda:int64:";
+
+export function jsonPandasReplacer(key: string, value: unknown): unknown {
+  if (
+    typeof value === "bigint" &&
+    (value < BigInt(Number.MIN_SAFE_INTEGER) || value > BigInt(Number.MAX_SAFE_INTEGER))
+  ) {
+    return `${RAW_INT_SENTINEL}${value.toString()}`;
+  }
+  return jsonBigintReplacer(key, value);
+}
+
+/** Strips the raw-int sentinels emitted by jsonPandasReplacer to bare digits. */
+export function unquoteRawIntTokens(json: string): string {
+  return json.replace(/"\\u0000bunpanda:int64:(-?\d+)"/g, "$1");
 }
 
 /** Strict equality extended with exact cross-type number/bigint comparison. */
@@ -68,6 +98,11 @@ export function scalarEquals(left: CellValue, right: CellValue): boolean {
   if (isNaT(left) || isNaT(right)) return isNaT(left) && isNaT(right);
   if (isAbsent(left) || isAbsent(right)) return isAbsent(left) && isAbsent(right);
   if (left instanceof Date && right instanceof Date) return left.getTime() === right.getTime();
+  // Period equality is (freq, ordinal) identity; a Period never equals a
+  // non-Period operand (pandas cross-freq == is False).
+  if (left instanceof Period || right instanceof Period) {
+    return left instanceof Period && right instanceof Period && left.equals(right);
+  }
   if ((typeof left === "number" || typeof left === "boolean") && (typeof right === "number" || typeof right === "boolean")) return Number(left) === Number(right);
   if (typeof left === "bigint" || typeof right === "bigint") return numberOrBigintEqual(left, right);
   return left === right;
@@ -90,6 +125,7 @@ export function sortedCategories(values: CellValue[]): CellValue[] {
     }
     if (an !== bn) return an ? -1 : 1;
     if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
+    if (a instanceof Period && b instanceof Period) return comparePeriods(a, b);
     return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
   });
 }

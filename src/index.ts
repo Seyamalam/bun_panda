@@ -152,6 +152,7 @@ export {
   type SeriesOptions,
   type SeriesReplaceInput,
 } from "./series";
+export { isPeriodDType, normalizePeriodFreq, type PeriodFreq } from "./period";
 export type {
   AggFn,
   AggName,
@@ -161,6 +162,7 @@ export type {
   IntegerDType,
   IndexLabel,
   InferredDType,
+  PeriodDType,
   Row,
 } from "./types";
 

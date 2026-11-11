@@ -14,7 +14,10 @@ export async function readParquetFile(
   options: ReadParquetOptions = {}
 ): Promise<DataFrame> {
   const parquet = await import("parquetjs-lite");
-  const reader = (await parquet.ParquetReader.openFile(path)) as unknown as {
+  // rawStatistics skips the reader's statistics decode, which crashes on
+  // INT64-backed values (TIMESTAMP_MILLIS min/max arrive as bigint and the
+  // fromPrimitive path applies `+value` — a TypeError on bigint).
+  const reader = (await parquet.ParquetReader.openFile(path, { rawStatistics: true })) as unknown as {
     metadata: { row_groups: unknown[] };
     envelopeReader: {
       readRowGroup(

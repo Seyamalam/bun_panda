@@ -1,6 +1,8 @@
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
 import { dtypeZone } from "../shared/timezone";
+import { NaT } from "../../missing";
+import { Period, normalizePeriodFreq, periodOrdinalFromFields } from "../../period";
 
 const DAY_MS = 86_400_000;
 
@@ -192,6 +194,31 @@ export class DatetimeMethods {
       );
       const offset = wall.getTime() - this.instants[i]!.getTime();
       return new Date(flooredWall - offset);
+    });
+  }
+
+  /**
+   * pandas `Series.dt.to_period`: each cell becomes the Period containing
+   * its calendar reading (zone-local fields for aware dtypes, the naive
+   * wall-clock fields — consistent with `year()`/`day()` — otherwise).
+   * Missing cells propagate as NaT.
+   */
+  to_period(freq: string): CellValue[] {
+    const resolved = normalizePeriodFreq(freq);
+    return this.values.map((d) => {
+      if (d === null) return NaT;
+      const wall = d as Date;
+      return new Period(
+        periodOrdinalFromFields(resolved, {
+          year: this.yearOf(wall),
+          month: this.monthOf(wall) + 1,
+          day: this.dayOf(wall),
+          hour: this.hourOf(wall),
+          minute: this.minuteOf(wall),
+          second: this.secondOf(wall),
+        }),
+        resolved
+      );
     });
   }
 }

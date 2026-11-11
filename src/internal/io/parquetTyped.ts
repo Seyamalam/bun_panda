@@ -81,7 +81,21 @@ export function buildTypedColumns(
       continue;
     }
 
-    const numeric = isFlatNumericField(field) && field.dLevelMax <= 1;
+    // INT64 columns decode to bigint values. The f64 fast path would round
+    // anything beyond 2^53, so a column containing out-of-range integers is
+    // routed to the per-cell path where bigint cells stay exact (pandas
+    // keeps them in int64).
+    const int64Values =
+      field.primitiveType === "INT64" &&
+      field.originalType !== "TIMESTAMP_MILLIS" &&
+      field.originalType !== "TIMESTAMP_MICROS";
+    const hasWideInt64 =
+      int64Values &&
+      data.values.some(
+        (v) => typeof v === "bigint" && !Number.isSafeInteger(Number(v))
+      );
+
+    const numeric = isFlatNumericField(field) && field.dLevelMax <= 1 && !hasWideInt64;
 
     if (numeric) {
       const values = new Float64Array(rowCount);
@@ -140,12 +154,24 @@ export function buildTypedColumns(
       let cell: CellValue;
       if (typeof raw === "string") {
         cell = raw;
+      } else if (typeof raw === "bigint") {
+        // Raw INT64 decodes as bigint — the shredded path skips fromPrimitive,
+        // so logical timestamp types and wide ints are resolved here.
+        if (field.originalType === "TIMESTAMP_MILLIS") {
+          cell = new Date(Number(raw));
+        } else if (field.originalType === "TIMESTAMP_MICROS") {
+          cell = new Date(Number(raw / 1000n));
+        } else {
+          const asNumber = Number(raw);
+          cell = Number.isSafeInteger(asNumber) ? asNumber : raw;
+        }
+      } else if (typeof raw === "number" && field.originalType === "DATE") {
+        // DATE is INT32 days since epoch; the shredded path skips fromPrimitive.
+        cell = new Date(raw * 86_400_000);
       } else if (typeof raw === "boolean" || typeof raw === "number" || raw instanceof Date) {
         cell = raw as CellValue;
       } else if (typeof Buffer !== "undefined" && Buffer.isBuffer(raw)) {
         cell = raw.toString("utf8");
-      } else if (typeof raw === "bigint") {
-        cell = Number(raw);
       } else {
         cell = String(raw) as CellValue;
       }

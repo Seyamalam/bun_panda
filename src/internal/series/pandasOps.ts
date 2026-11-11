@@ -9,26 +9,29 @@
 //     skipna=false follow truthiness (NaN truthy, None falsy) for
 //     unmasked dtypes, and yield NA for masked dtypes.
 import { ValueError } from "../../errors";
+import { Period, isPeriodDType } from "../../period";
 import type { CellValue, DType, IndexLabel } from "../../types";
 import { compareCellValues, isMissing, pythonOperandTypeName } from "../../utils";
-import { NA } from "../../missing";
+import { NA, NaT } from "../../missing";
 
 /** pandas masked dtypes: nullable Int/UInt/Float/boolean/string carry a real pd.NA. */
 export function isMaskedDType(dtype: string | undefined): boolean {
   return dtype !== undefined && (/^(U?Int|Float)/.test(dtype) || dtype === "boolean" || dtype === "string");
 }
 
-/** Missing scalar for reduction results: NA for masked dtypes, NaN else. */
+/** Missing scalar for reduction results: NA for masked dtypes, NaT for period, NaN else. */
 export function missingScalar(dtype: string | undefined): CellValue {
+  if (isPeriodDType(dtype)) return NaT;
   return isMaskedDType(dtype) ? NA : NaN;
 }
 
-type ValueKind = "numeric" | "string" | "date" | "other";
+type ValueKind = "numeric" | "string" | "date" | "period" | "other";
 
 function valueKind(value: CellValue): ValueKind {
   if (typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") return "numeric";
   if (typeof value === "string") return "string";
   if (value instanceof Date) return "date";
+  if (value instanceof Period) return "period";
   return "other";
 }
 
@@ -56,7 +59,7 @@ function typeNameOf(values: CellValue[]): string {
 export function requireNumeric(values: CellValue[], dtype: string, op: string): number[] {
   const kinds = valueKinds(values);
   const name = typeNameOf(values);
-  if (dtype === "string" || dtype === "str" || kinds.has("string") || kinds.has("date") || kinds.has("other") || kinds.size > 1) {
+  if (dtype === "string" || dtype === "str" || kinds.has("string") || kinds.has("date") || kinds.has("period") || kinds.has("other") || kinds.size > 1) {
     throw new TypeError(`'${op}' is not supported for ${name} dtype`);
   }
   return values
@@ -128,7 +131,7 @@ export function pandasSum(values: CellValue[], dtype: string): number | bigint |
     return out;
   }
   const kinds = valueKinds(values);
-  if (kinds.has("date") || kinds.has("other") || (kinds.size > 1)) {
+  if (kinds.has("date") || kinds.has("period") || kinds.has("other") || (kinds.size > 1)) {
     throw new TypeError(`'sum' is not supported for ${typeNameOf(values)} dtype`);
   }
   if (kinds.has("string")) {

@@ -1,4 +1,5 @@
 import { isMissingScalar } from "../../missing";
+import { Period } from "../../period";
 import type { CellValue, Row } from "../../types";
 
 export type NormalizedKey = string | number | boolean | null;
@@ -7,6 +8,11 @@ export function normalizeKeyCell(value: CellValue): NormalizedKey {
   if (isMissingScalar(value)) return null;
   if (value instanceof Date) {
     return value.toISOString();
+  }
+  if (value instanceof Period) {
+    // Tagged (freq, ordinal) identity: never collides with an equal-looking
+    // string key like '2024-01'.
+    return `period:${value.freq}:${value.ordinal}`;
   }
   if (value === undefined) {
     return null;

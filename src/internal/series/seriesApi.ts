@@ -16,8 +16,11 @@ import { isMissing } from "../../utils";
 import { arithResultDType, asNumber } from "../../dtypes";
 import { corrcoef } from "./stats";
 import { datetime64Name, dtypeUnit, dtypeZone, isDatetimeDType, zoneOffsetMinutes } from "../shared/timezone";
+import { Period, isPeriodDType, normalizePeriodFreq, periodDTypeName } from "../../period";
 import { compareIndexLabels, indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
-import { jsonBigintReplacer } from "../shared/valueSemantics";
+import { jsonBigintReplacer, jsonPandasReplacer, unquoteRawIntTokens } from "../shared/valueSemantics";
+import { escapeCsvValue } from "../dataframe/core";
+import { csvDatetimeFormatter } from "../io/shared";
 import { DataFrame } from "../../dataframe";
 import type { GroupByOptions } from "../../groupby";
 import { range } from "../../utils";
@@ -157,9 +160,66 @@ export function groupby(s: SeriesHost, by: string | string[], options?: GroupByO
 export function to_numpy(s: SeriesHost, ): CellValue[] { return [...s.valuesSnapshot()]; }
 
 export function to_string(s: SeriesHost, ): string { return s.valuesSnapshot().map((v) => String(v)).join("\\n"); }
-export function to_csv(s: SeriesHost, ): string { return s.valuesSnapshot().map((v) => String(v ?? "")).join("\\n"); }
-export function to_json(s: SeriesHost, ): string { return JSON.stringify(s.valuesSnapshot(), jsonBigintReplacer); }
-export function to_period(_s: SeriesHost): Series<CellValue> { return _s.copy() as Series<CellValue>; }
+export function to_csv(s: SeriesHost, ): string {
+    // Same cell rules as DataFrame.to_csv: missing -> empty field, datetime
+    // columns use the pandas per-column resolution, bigint prints digits.
+    const values = s.valuesSnapshot();
+    const dtype = s.dtypeSnapshot();
+    const datetimeFormat = dtype !== undefined && isDatetimeDType(dtype)
+      ? csvDatetimeFormatter(values, dtype)
+      : undefined;
+    return values.map((v) => escapeCsvValue(datetimeFormat?.(v) ?? v, ",")).join("\n");
+  }
+export function to_json(s: SeriesHost, ): string {
+    // pandas to_json date_format="iso": naive datetimes drop the "Z" suffix.
+    const values = s.valuesSnapshot();
+    const dtype = s.dtypeSnapshot();
+    const naiveDatetime = dtype !== undefined && isDatetimeDType(dtype) && dtypeZone(dtype) === null;
+    const cells = naiveDatetime
+      ? values.map((v) => (v instanceof Date && Number.isFinite(v.getTime()) ? v.toISOString().slice(0, -1) : v))
+      : values;
+    return unquoteRawIntTokens(JSON.stringify(cells, jsonPandasReplacer));
+  }
+/**
+ * pandas `Series.to_period(freq)`: converts a period-capable *index* —
+ * Date labels become Period labels at `freq`, Period labels re-base via
+ * `asfreq(freq)`. For `period[<f2>]` values the cells also re-base to
+ * `freq` (pandas Series.to_period only re-bases the index; extending it to
+ * period values keeps index/value freqs consistent). Raises TypeError when
+ * neither labels nor values are period-convertible, mirroring pandas
+ * `unsupported Type RangeIndex`.
+ */
+export function to_period(s: SeriesHost, freq = "D"): Series<CellValue> {
+  const resolved = normalizePeriodFreq(freq);
+  const labels = s.labelsSnapshot();
+  const values = s.valuesSnapshot();
+  const dtype = s.dtypeSnapshot();
+  const present = labels.filter((l) => !isMissing(l as CellValue));
+  let index = [...labels];
+  let converted = false;
+  if (present.length > 0 && present.every((l) => l instanceof Date)) {
+    index = labels.map((l) => (l instanceof Date && !isMissing(l as CellValue)
+      ? new Period(l as Date, resolved) as unknown as IndexLabel
+      : l));
+    converted = true;
+  } else if (present.length > 0 && present.every((l) => l instanceof Period)) {
+    index = labels.map((l) => (l instanceof Period ? l.asfreq(resolved) as unknown as IndexLabel : l));
+    converted = true;
+  }
+  let outValues = values;
+  let outDtype = dtype;
+  if (isPeriodDType(dtype)) {
+    outValues = values.map((v) => (v instanceof Period ? v.asfreq(resolved) : v));
+    outDtype = periodDTypeName(resolved);
+  }
+  if (!converted) {
+    throw new TypeError(`to_period: unsupported index type for conversion (labels are neither dates nor periods)`);
+  }
+  return new Series(outValues, {
+    index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
+    ...(outDtype !== undefined ? { dtype: outDtype } : {}),
+  });
+}
 
 export function info(s: SeriesHost): string {
     return `Series: ${s.lengthSnapshot()} entries, hasNaN=${s.hasnans()}`;
@@ -743,8 +803,38 @@ export function to_sql(s: SeriesHost, tableName: string): string {
       .join("\n");
   }
 
-export function to_timestamp(_s: SeriesHost): Series<CellValue> {
-    return _s.copy() as Series<CellValue>;
+/**
+ * Reverse of {@link to_period}: Period index labels become boundary Date
+ * labels (`how='S'` start, `how='E'` end); `period[<f>]` values become
+ * `datetime64[ns]` Dates at the same boundary (pandas converts the index
+ * only — converting values too makes period series round-trip usable).
+ * Non-period content returns a copy, matching the prior shim behavior.
+ */
+export function to_timestamp(s: SeriesHost, how: "S" | "E" = "S"): Series<CellValue> {
+    const labels = s.labelsSnapshot();
+    const values = s.valuesSnapshot();
+    const dtype = s.dtypeSnapshot();
+    const present = labels.filter((l) => !isMissing(l as CellValue));
+    let index = [...labels];
+    let converted = false;
+    if (present.length > 0 && present.every((l) => l instanceof Period)) {
+      index = labels.map((l) => (l instanceof Period ? l.to_timestamp(how) as unknown as IndexLabel : l));
+      converted = true;
+    }
+    let outValues = values;
+    let outDtype = dtype;
+    if (isPeriodDType(dtype)) {
+      outValues = values.map((v) => (v instanceof Period ? v.to_timestamp(how) : v));
+      outDtype = "datetime64[ns]";
+      converted = true;
+    }
+    if (!converted) {
+      return s.copy() as Series<CellValue>;
+    }
+    return new Series(outValues, {
+      index, name: s.nameSnapshot(), indexName: s.indexNameSnapshot(),
+      ...(outDtype !== undefined ? { dtype: outDtype } : {}),
+    });
   }
 
 export function to_xarray(s: SeriesHost): Record<string, CellValue> {

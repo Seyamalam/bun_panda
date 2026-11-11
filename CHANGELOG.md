@@ -30,6 +30,10 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 - Oracle grows to 8,318 pandas 3.0.5 contracts: pairwise `corr`/`cov`/`corrwith`/`autocorr` with label alignment, `clip` bound semantics, `.str.cat` modes, and `diff`/`pct_change`/cumulative dtype rules.
 
+- Add `Period` support: `Period(value, freq)` with pandas-exact epoch ordinals for `Y`/`Q`/`M`/`W`/`D`/`h` frequencies, `period[<freq>]` dtypes, `PeriodIndex`, `period_range`, `Timestamp.to_period`/`Series.dt.to_period`/`Series.to_period`/`to_timestamp`, ordinal comparisons/sorting/shift arithmetic, `NaT` propagation, and period-keyed groupby/join.
+
+- Fix IO roundtrips for wide and typed values: CSV parses >2^53 integers as exact `bigint`, writes MultiIndex levels as separate columns with index-name headers, and formats datetimes pandas-style per resolution; JSON emits unsafe bigints as raw digits and `NaT`/`NA` as `null`; Parquet writes `int64` as `INT64` (was `DOUBLE`) and datetime as `TIMESTAMP_MILLIS` with exact round-trip; Excel no longer drops interior empty rows.
+
 ## [0.5.0] - 2026-11-09
 
 - Raise pandas-typed errors with pandas-exact messages: `KeyError` for missing labels (including `Index([...], dtype='str')` and subset-list formats), `ValueError` for invalid rank options and non-integer `diff` periods, and `TypeError` slice/operand errors for `shift`, `pct_change` and `diff` on non-subtractable columns. New exported `KeyError` class. `diff` and `pct_change` now reject string/mixed columns the way pandas does instead of returning nulls.
