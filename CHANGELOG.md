@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-11
+
+- Add MultiIndex support: tuple index labels, per-level names (`index.names`/`nlevels`), multi-column `set_index`, multi-key `groupby(as_index=true)`, `droplevel`/`reorder_levels`/`swaplevel`, per-level `reset_index`, `.loc` tuple/outer-level selection, `xs`, `unstack`/`stack`, `sort_index level=`, and `groupby(level=)`.
+
+- Add timezone-aware `datetime64` storage: `datetime64[ns[, zone]]` dtypes, `NaT` sentinel, real `tz_localize`/`tz_convert` on Series, DataFrame, `Timestamp` and `DatetimeIndex`, and zone-aware `.dt` accessors using `Intl.DateTimeFormat` (real DST rules). Naive-zone coverage is a documented static-offset table; precision is milliseconds.
+
+- Add exact bigint-backed `int64`/`Int64`/`uint64`/`UInt64` storage: values beyond 2^53 store exactly as `bigint` (replacing the previous `RangeError`), with BigInt arithmetic through add/sub/mul and wide-sum accumulators in groupby reductions.
+
+- Expand the pandas 3.0.5 oracle to 7,966 generated dtype/value contracts across seventeen mode families (arithmetic promotion, label alignment, window/string/datetime accessors, pivots, merges, rank, inference). All cases converge. Suite now runs 12,926 tests.
+
+- Apply pandas-faithful arithmetic and alignment semantics: exact-width dtype promotion, scalar width preservation, IEEE comparison rules, duplicate-label broadcast alignment, bool/string/object op tables, `floordiv`/`mod` zero-divisor rules, and `combine`/`combine_first` reindex semantics.
+
+- Fix groupby `as_index` (was silently ignored for all groupbys), merge masked-dtype preservation and outer-merge key ordering, `isin`/`value_counts`/`fillna` dtype propagation, `pivot`/`pivot_table` dtype rules and sorted output, float32 `sem`/`describe` rounding, exact bigint subtraction (`2^60+7 - 2^60`), and `wrapWindowAggregations` on rolling/ewm paths.
+
+- `DataFrame.sort_values` now accepts an options object (`{ascending, na_position, limit}`) alongside the positional signature.
+
 ## [0.5.0] - 2026-11-09
 
 - Raise pandas-typed errors with pandas-exact messages: `KeyError` for missing labels (including `Index([...], dtype='str')` and subset-list formats), `ValueError` for invalid rank options and non-integer `diff` periods, and `TypeError` slice/operand errors for `shift`, `pct_change` and `diff` on non-subtractable columns. New exported `KeyError` class. `diff` and `pct_change` now reject string/mixed columns the way pandas does instead of returning nulls.
