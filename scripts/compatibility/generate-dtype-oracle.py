@@ -527,6 +527,8 @@ elementwise_ops = [
   ('pct_change', []), ('pct_change', [2]),
   ('cumsum', []), ('cumprod', []), ('cummin', []), ('cummax', []),
   ('abs', []), ('clip', [1.5]), ('clip', [None, 2.0]),
+  ('clip', [0.5, 2.0]), ('clip', [2.0, 0.5]),
+  ('clip', [0.1]), ('clip', [None, 0.1]),
 ]
 elementwise_cases = []
 for dtype, value_lists in elementwise_inputs.items():
@@ -922,6 +924,43 @@ for dtype, values in str_inputs:
         except Exception as e:
             entry['error'] = type(e).__name__
         str_cases.append(entry)
+# str.cat needs length-matched `others`, so it gets its own loop. Without
+# `others` pandas joins the whole series into a scalar.
+for dtype, values in str_inputs:
+    try:
+        source = pd.Series(values, dtype=dtype, name='v')
+    except Exception:
+        continue
+    others = ['x', 'y', 'z', 'w'][:len(values)]
+    others_none = (['x', None, 'z', 'w'])[:len(values)]
+    short = others[:-1]
+    cat_variants = [
+        ([], {}),
+        ([None, '-'], {'sep': '-'}),
+        ([None, '-', 'MISS'], {'sep': '-', 'na_rep': 'MISS'}),
+        ([others], {'others': others}),
+        ([others, '-'], {'others': others, 'sep': '-'}),
+        ([others, '-', 'MISS'], {'others': others, 'sep': '-', 'na_rep': 'MISS'}),
+        ([others_none], {'others': others_none}),
+        ([others_none, None, 'MISS'], {'others': others_none, 'na_rep': 'MISS'}),
+    ]
+    if len(values):
+        cat_variants.append(([short], {'others': short}))
+    for args, kwargs in cat_variants:
+        entry = {'mode': 'str', 'dtype': dtype,
+                 'values': [encode(x) for x in values],
+                 'operation': 'cat', 'args': args}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = source.str.cat(**kwargs)
+            if isinstance(result, pd.Series):
+                entry['expected'] = {'values': [encode_nested(x) for x in result.tolist()]}
+            else:
+                entry['expected'] = {'values': encode_nested(result)}
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        str_cases.append(entry)
 cases.extend(str_cases)
 print(f'added {len(str_cases)} str accessor contracts')
 
@@ -1243,6 +1282,178 @@ for dtype, values in [('Int16', [1, None, 1]), ('float64', [1.5, 1.5, np.nan]),
                                              'name': result.name}})
 cases.extend(series_dd_cases)
 print(f'added {len(series_dd_cases)} series drop_duplicates contracts')
+
+# ---------------------------------------------------------------------------
+# Pairwise contracts: Series.corr/cov align on the index (inner join) then
+# coerce aligned cells to float (raising on non-numeric values); autocorr
+# correlates the series with its lag. bun_panda returns null where pandas
+# emits NaN, so the harness compares these scalars missing-aware.
+# ---------------------------------------------------------------------------
+pairwise_cases = []
+pair_inputs = [
+  ('int16', [1, 2, 3], 'int64', [4, 5, 6]),
+  ('float64', [1.5, None, 3.5], 'float32', [0.5, 2.5, 4.5]),
+  ('Int16', [1, None, 3], 'Int16', [4, 5, 6]),
+  ('boolean', [True, False, True], 'int16', [1, 0, 1]),
+  ('bool', [True, False], 'float64', [1.5, 2.5]),
+  ('float64', [np.inf, 1, 2], 'float64', [1, 2, 3]),
+  ('float64', [2, 2, 2], 'float64', [1, 2, 3]),
+  ('float64', [1], 'float64', [2]),
+  ('int16', [], 'int16', []),
+  ('object', [1, '2', 3], 'int16', [1, 2, 3]),
+  ('object', [1, 'x', 3], 'int16', [1, 2, 3]),
+  ('string', ['1', '2', '3'], 'float64', [1, 2, 3]),
+  ('string', ['a', 'b', 'c'], 'int16', [1, 2, 3]),
+  ('float64', [1, 2, 3], 'object', [1, 'x', 3]),
+]
+for left_dtype, left_vals, right_dtype, right_vals in pair_inputs:
+    index_variants = [
+      ([f'row-{i}' for i in range(len(left_vals))],
+       [f'row-{i}' for i in range(len(right_vals))]),
+      ([f'row-{i}' for i in range(len(left_vals))],
+       [f'row-{i + 1}' for i in range(len(right_vals))]),
+      ([f'row-{i}' for i in range(len(left_vals))],
+       [f'other-{i}' for i in range(len(right_vals))]),
+    ]
+    for left_index, right_index in index_variants:
+        try:
+            left = pd.Series(left_vals, dtype=left_dtype, index=left_index)
+            right = pd.Series(right_vals, dtype=right_dtype, index=right_index)
+        except Exception:
+            continue
+        for operation in ['corr', 'cov']:
+            entry = {'mode': 'pairwise', 'dtype': left_dtype,
+                     'values': [encode(x) for x in left_vals], 'index': left_index,
+                     'operand': {'dtype': right_dtype,
+                                 'values': [encode(x) for x in right_vals],
+                                 'index': right_index},
+                     'operation': operation, 'args': []}
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    result = getattr(left, operation)(right)
+                entry['expected'] = encode(result)
+            except Exception as e:
+                entry['error'] = type(e).__name__
+            pairwise_cases.append(entry)
+for dtype, values in [('int16', [1, 2, 3, 4]), ('float64', [1.5, np.nan, 3.5, 4.5]),
+                      ('Int16', [1, None, 3, 4]), ('float64', [np.inf, 1.0, 2.0, 3.0]),
+                      ('boolean', [True, False, True, False]), ('bool', [True, False, True]),
+                      ('int16', []), ('float64', [1.5]),
+                      ('string', ['a', 'b', 'c']), ('object', [1, 2, 3, 4]),
+                      ('object', [1, 'x', 3, 4])]:
+    try:
+        source = pd.Series(values, dtype=dtype,
+                           index=[f'row-{i}' for i in range(len(values))])
+    except Exception:
+        continue
+    for lag in [1, 2]:
+        entry = {'mode': 'pairwise', 'dtype': dtype,
+                 'values': [encode(x) for x in values],
+                 'index': [f'row-{i}' for i in range(len(values))],
+                 'operation': 'autocorr', 'args': [lag]}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = source.autocorr(lag)
+            entry['expected'] = encode(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        pairwise_cases.append(entry)
+cases.extend(pairwise_cases)
+print(f'added {len(pairwise_cases)} pairwise correlation contracts')
+
+# ---------------------------------------------------------------------------
+# Frame correlation contracts: df.corr()/cov() coerce every column to float
+# (raising on non-numeric cells), compute pairwise-complete statistics, and
+# return a float64 matrix indexed by column name.
+# ---------------------------------------------------------------------------
+frame_corr_specs = [
+  {'a': ('int16', [1, 2, 3]), 'b': ('float64', [4.5, None, 6.5]),
+   'c': ('Int16', [None, 2, 3])},
+  {'a': ('float64', [np.inf, 1.5, 2.5]), 'b': ('boolean', [True, None, False])},
+  {'a': ('bool', [True, False, True]), 'b': ('int64', [1, 2, 3]),
+   'c': ('Float32', [None, 1.5, 2.5])},
+  {'a': ('object', [1, '2', 3]), 'b': ('float64', [1.5, 2.5, 3.5])},
+  {'a': ('Int16', [None, None, None]), 'b': ('float64', [1.5, 2.5, 3.5])},
+  {'a': ('str', ['1', '2', '3']), 'b': ('float64', [1.0, 2.0, 3.0])},
+  {'a': ('int16', [1, 2, 3]), 'b': ('string', ['x', 'y', 'z'])},
+  {'a': ('int16', []), 'b': ('float64', [])},
+]
+frame_corr_cases = []
+for spec in frame_corr_specs:
+    index = [f'row-{i}' for i in range(len(next(iter(spec.values()))[1]))]
+    source = frame_spec({c: (d, v) for c, (d, v) in spec.items()}, index=index)
+    for operation in ['corr', 'cov']:
+        entry = {'mode': 'frame_selection',
+                 'dtypes': {c: d for c, (d, v) in spec.items()},
+                 'columns': {c: [encode(x) for x in v] for c, (d, v) in spec.items()},
+                 'index': index, 'operation': operation, 'args': []}
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                result = getattr(source, operation)()
+            entry['expected'] = frame_expected(result)
+        except Exception as e:
+            entry['error'] = type(e).__name__
+        frame_corr_cases.append(entry)
+cases.extend(frame_corr_cases)
+print(f'added {len(frame_corr_cases)} frame corr/cov contracts')
+
+# ---------------------------------------------------------------------------
+# corrwith contracts: pandas inner-joins the index, unions the columns
+# (one-sided columns produce NaN), and raises when a shared column is not
+# numeric. Rides frame_binary; the harness compares {index, values}.
+# ---------------------------------------------------------------------------
+corrwith_pairs = [
+  ({'x': ('int16', [1, 2, 3]), 'y': ('float64', [4.5, 5.5, 6.5])},
+   {'x': ('int64', [3, 1, 2]), 'y': ('float64', [1.5, 2.5, 3.5]),
+    'z': ('int16', [7, 8, 9])},
+   ['a', 'b', 'c'], ['b', 'c', 'd']),
+  ({'x': ('Int16', [1, None, 3])},
+   {'x': ('Int16', [4, 5, None])},
+   ['a', 'b', 'c'], ['a', 'b', 'c']),
+  ({'x': ('int16', [1, 2, 3]), 's': ('str', ['p', 'q', 'r'])},
+   {'x': ('int64', [3, 2, 1])},
+   ['a', 'b', 'c'], ['a', 'b', 'c']),
+  ({'x': ('int16', [1, 2, 3]), 's': ('object', ['p', 'q', 'r'])},
+   {'x': ('int64', [3, 2, 1])},
+   ['a', 'b', 'c'], ['a', 'b', 'c']),
+  ({'x': ('int16', [1, 2, 3])},
+   {'x': ('int64', [3, 2, 1]), 's': ('str', ['p', 'q', 'r'])},
+   ['a', 'b', 'c'], ['a', 'b', 'c']),
+  ({'x': ('str', ['p', 'q', 'r']), 'y': ('int16', [1, 2, 3])},
+   {'x': ('str', ['u', 'v', 'w']), 'y': ('int64', [3, 2, 1])},
+   ['a', 'b', 'c'], ['a', 'b', 'c']),
+  ({'x': ('float64', [1.5, 2.5])},
+   {'x': ('float64', [3.5, 4.5])},
+   ['a', 'b'], ['c', 'd']),
+]
+corrwith_cases = []
+for left_spec, right_spec, left_index, right_index in corrwith_pairs:
+    left = frame_spec({c: (d, v) for c, (d, v) in left_spec.items()}, index=left_index)
+    right = frame_spec({c: (d, v) for c, (d, v) in right_spec.items()}, index=right_index)
+    entry = {'mode': 'frame_binary',
+             'left': {'dtypes': {c: d for c, (d, v) in left_spec.items()},
+                      'columns': {c: [encode(x) for x in v] for c, (d, v) in left_spec.items()},
+                      'index': left_index},
+             'right': {'dtypes': {c: d for c, (d, v) in right_spec.items()},
+                       'columns': {c: [encode(x) for x in v] for c, (d, v) in right_spec.items()},
+                       'index': right_index},
+             'operation': 'corrwith', 'args': []}
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            result = left.corrwith(right)
+        entry['rowExpected'] = {'index': [encode(x) for x in result.index.tolist()],
+                                'name': result.name,
+                                'values': [encode(x) for x in result.tolist()],
+                                'dtype': str(result.dtype)}
+    except Exception as e:
+        entry['error'] = type(e).__name__
+    corrwith_cases.append(entry)
+cases.extend(corrwith_cases)
+print(f'added {len(corrwith_cases)} corrwith contracts')
 
 Path('test/fixtures/pandas-dtype-contracts.json').write_text(json.dumps({'pandasVersion':pd.__version__,'cases':cases},indent=2,allow_nan=False)+'\n')
 print(f'added {len(rank_cases)} rank contracts; {len(cases)} total dtype contracts')

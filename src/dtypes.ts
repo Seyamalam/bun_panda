@@ -5,12 +5,17 @@ import type { CellValue, DType } from "./types";
 const integerPattern = /^(U?Int|u?int)(8|16|32|64)$/;
 const supported = new Set<string>([
   "number", "date", "string", "str", "boolean", "bool", "object",
-  "float32", "float64", "Float32", "Float64",
+  "float32", "float64", "Float32", "Float64", "category", "Categorical",
   ...["int", "uint", "Int", "UInt"].flatMap(prefix => [8, 16, 32, 64].map(bits => `${prefix}${bits}`)),
 ]);
 
 export function assertDType(dtype: string): asserts dtype is DType {
   if (!supported.has(dtype) && !isDatetime64DType(dtype)) throw new TypeError(`data type '${dtype}' not understood`);
+}
+
+/** True for the pandas `category`/`Categorical` dtype spellings. */
+export function isCategoricalDType(dtype: string | undefined): boolean {
+  return dtype === "category" || dtype === "Categorical";
 }
 
 function pythonString(value: CellValue): string {
@@ -21,7 +26,11 @@ function pythonString(value: CellValue): string {
   return String(value);
 }
 
-function asNumber(value: CellValue): number {
+/** Python `float()` coercion: numbers/bigint/bool pass through, strings use
+ * Python literal syntax (inf/infinity/nan, scientific notation), anything
+ * else raises TypeError. Mirrors the coercion pandas applies inside
+ * corr/cov/clip-style numeric kernels. */
+export function asNumber(value: CellValue): number {
   if (typeof value === "number") return value;
   if (typeof value === "bigint") return Number(value);
   if (typeof value === "boolean") return Number(value);
@@ -50,6 +59,10 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
       (typeof value === "string" && /^[+-]?\d+$/.test(value.trim()) && !Number.isSafeInteger(Number(value)))));
   return values.map(value => {
     if (dtype === "object") return value;
+    // Categorical cells hold the category scalars themselves and missing is
+    // NaN; membership against the category list is enforced by the caller's
+    // CategoricalDtype (Series/DataFrame), not by this cast.
+    if (isCategoricalDType(dtype)) return isMissingScalar(value) ? NaN : value;
     // Compatibility aliases retained for existing bun_panda callers.
     if (dtype === "number") {
       if (isMissingScalar(value)) return null;
@@ -138,6 +151,8 @@ export function castColumn(values: readonly CellValue[], dtype: DType, sourceDTy
 
 /** Infer from scalar types; parsing text is exclusively an explicit cast. */
 export function convertedDType(values: readonly CellValue[], source: DType | undefined, nullable: boolean): DType {
+  // pandas convert_dtypes/infer_objects keep categorical dtype as category.
+  if (isCategoricalDType(source)) return "category";
   if (source && source !== "object" && source !== "number" && source !== "date") {
     if (!nullable || /^(U?Int|Float)/.test(source) || source === "boolean" || source === "string" || isDatetime64DType(source)) return source;
     if (/^u?int/.test(source)) return source.replace(/^uint/, "UInt").replace(/^int/, "Int") as DType;
@@ -166,6 +181,9 @@ export function convertedDType(values: readonly CellValue[], source: DType | und
 /** Select the result dtype after replacement, without coercing incompatible values. */
 export function replacementDType(dtype: DType | undefined, values: readonly CellValue[]): DType | undefined {
   if (!dtype || dtype === "number" || dtype === "date" || dtype === "object") return dtype;
+  // Categorical columns keep their declared dtype (pandas semantics); the
+  // accompanying CategoricalDtype enforces membership at construction.
+  if (isCategoricalDType(dtype)) return dtype;
   const present = values.filter(value => !isMissingScalar(value));
   if (isDatetime64DType(dtype)) {
     // Datetime64 keeps its dtype (incl. tz metadata) while replacements stay datetime-like.
@@ -193,6 +211,7 @@ function normalizedSelector(selector: DTypeSelector): string {
   if (selector === "integer" || selector === "floating" || selector === "datetime" || selector === "datetimetz") return selector;
   assertDType(selector);
   if (selector === "boolean") return "bool";
+  if (isCategoricalDType(selector)) return "category";
   if (selector === "string") return "str";
   if (selector === "date" || isDatetime64DType(selector)) {
     return dtypeZone(selector) !== null ? "datetimetz" : "datetime";
@@ -222,7 +241,8 @@ export function dtypeSelector(include?: DTypeSelector | DTypeSelector[], exclude
 }
 
 /** Broad scalar family for consumers that do not distinguish numeric widths. */
-export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "datetime" | "unknown" | "mixed" {
+export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "datetime" | "categorical" | "unknown" | "mixed" {
+  if (isCategoricalDType(dtype)) return "categorical";
   if (dtype === "number" || /^(u?int|float)/i.test(dtype)) return "number";
   if (dtype === "bool" || dtype === "boolean") return "boolean";
   if (dtype === "str" || dtype === "string") return "string";
@@ -232,6 +252,9 @@ export function dtypeFamily(dtype: string): "number" | "boolean" | "string" | "d
 
 /** Validate in-place updates without the permissive coercion of an explicit astype. */
 export function updatedDType(dtype: DType, incoming: DType, values: readonly CellValue[]): DType {
+  // Categorical columns stay categorical only when the incoming column is
+  // categorical too; otherwise the column widens to object.
+  if (isCategoricalDType(dtype)) return isCategoricalDType(incoming) ? dtype : "object";
   const present = values.filter(value => !isMissingScalar(value));
   const invalid = () => { throw new TypeError(`Invalid value for dtype '${dtype}'`); };
   if (dtype === "str" || dtype === "string") {

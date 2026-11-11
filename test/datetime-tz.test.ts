@@ -25,7 +25,7 @@ describe("datetime64 dtype declaration", () => {
     const df = new DataFrame([
       { t: "2021-01-01T00:00:00.000Z", n: 1 },
     ]).astype({ t: "datetime64[ns]" });
-    expect(df.dtypes().t).toBe("datetime64[ns]");
+    expect(df.dtypes.t).toBe("datetime64[ns]");
     const col = df.get("t");
     expect(col.dtype).toBe("datetime64[ns]");
     expect(col.iloc(0)).toBeInstanceOf(Date);
@@ -149,8 +149,8 @@ describe("DataFrame tz ops", () => {
       { t: null, n: 7, s: "y" },
     ]).astype({ t: "datetime64[ns]" });
     const localized = df.tz_localize("UTC-08:00");
-    expect(localized.dtypes().t).toBe("datetime64[ns, UTC-08:00]");
-    expect(localized.dtypes().n).toBe(df.dtypes().n);
+    expect(localized.dtypes.t).toBe("datetime64[ns, UTC-08:00]");
+    expect(localized.dtypes.n).toBe(df.dtypes.n);
     const t = localized.get("t").to_list();
     // 00:00 PST (UTC-08:00) == 08:00 UTC.
     expect((t[0] as Date).toISOString()).toBe("2021-01-01T08:00:00.000Z");
@@ -160,16 +160,16 @@ describe("DataFrame tz ops", () => {
 
   test("tz_localize works on the legacy date dtype", () => {
     const df = new DataFrame([{ t: NAIVE }]); // inferred "date"
-    expect(df.dtypes().t).toBe("date");
+    expect(df.dtypes.t).toBe("date");
     const localized = df.tz_localize("Asia/Tokyo");
-    expect(localized.dtypes().t).toBe("datetime64[ns, Asia/Tokyo]");
+    expect(localized.dtypes.t).toBe("datetime64[ns, Asia/Tokyo]");
     expect((localized.get("t").iloc(0) as Date).toISOString()).toBe("2020-12-31T15:00:00.000Z");
   });
 
   test("tz_convert relabels aware columns and preserves instants", () => {
     const df = new DataFrame([{ t: NAIVE }]).astype({ t: "datetime64[ns]" }).tz_localize("US/Central");
     const converted = df.tz_convert("Asia/Kolkata");
-    expect(converted.dtypes().t).toBe("datetime64[ns, Asia/Kolkata]");
+    expect(converted.dtypes.t).toBe("datetime64[ns, Asia/Kolkata]");
     expect((converted.get("t").iloc(0) as Date).getTime()).toBe((df.get("t").iloc(0) as Date).getTime());
   });
 
@@ -215,8 +215,8 @@ describe("select_dtypes datetime families", () => {
   test("naive and aware columns select separately", () => {
     const df = new DataFrame([{ a: NAIVE }]).astype({ a: "datetime64[ns]" });
     const mixed = df.assign({ b: df.get("a").tz_localize("US/Eastern") });
-    expect(mixed.dtypes().a).toBe("datetime64[ns]");
-    expect(mixed.dtypes().b).toBe("datetime64[ns, US/Eastern]");
+    expect(mixed.dtypes.a).toBe("datetime64[ns]");
+    expect(mixed.dtypes.b).toBe("datetime64[ns, US/Eastern]");
     // pandas np.datetime64 selects naive columns only; datetimetz selects aware.
     expect(mixed.select_dtypes("datetime").columns).toEqual(["a"]);
     expect(mixed.select_dtypes("datetimetz").columns).toEqual(["b"]);

@@ -11,7 +11,8 @@ import {
 } from "./internal/shared/multiindex";
 import { NA, NaT } from "./missing";
 import { scalarEquals, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv, jsonBigintReplacer, scalarKey } from "./internal/shared/valueSemantics";
-import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, promoteDTypes, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType, widenDTypeForMissing } from "./dtypes";
+import { arithResultDType, assertDType, castColumn, convertedDType, floordivResultDType, isCategoricalDType, promoteDTypes, replacementDType, dtypeSelector, type DTypeSelector, scalarOperandDType, updatedDType, widenDTypeForMissing } from "./dtypes";
+import { CategoricalDtype, castCategoricalValues, categoryIndex, inferCategoricalDtype } from "./categorical";
 import { isDatetime64DType } from "./internal/shared/timezone";
 import { roundToEven } from "./internal/shared/valueSemantics";
 import { GroupBy } from "./groupby";
@@ -115,7 +116,7 @@ import {
   computeDotMatrix,
 } from "./internal/dataframe/frameOps";
 import { computeExplodeRows } from "./internal/dataframe/explode";
-import { compileFrameExpression } from "./internal/dataframe/evalExpr";
+import { compileFrameExpression, type CompiledFrameExpr, type FrameExprScope } from "./internal/dataframe/evalExpr";
 import {
   computeIsinRows,
   computeRankRows,
@@ -133,6 +134,7 @@ import {
   type WhereOther,
 } from "./internal/dataframe/where";
 import {
+  buildCategoricalComparer,
   buildColumnComparer,
   fullSortPositions,
   normalizeSortAscending,
@@ -180,7 +182,8 @@ import {
 import { invalidateColumnStore, primeNumericColumns } from "./wasm/columns";
 
 export interface DataFrameOptions {
-  dtype?: DType;
+  /** pandas dtype spelling, or a CategoricalDtype carrying category metadata. */
+  dtype?: DType | CategoricalDtype;
   index?: IndexLabel[];
   indexName?: string;
   /** One name per level for tuple-labeled MultiIndex frames. */
@@ -278,10 +281,39 @@ export interface DataFrameFlagsOptions {
   allows_duplicate_labels?: boolean;
 }
 
+/**
+ * pandas `DataFrame.query`/`eval` keyword arguments. `@name` references in
+ * expressions resolve through `local_dict`, then `resolvers`, then
+ * `global_dict` (`env` is accepted as an alias of `local_dict`).
+ */
+export interface DataFrameQueryOptions {
+  /** Mutate this frame instead of returning a filtered copy (pandas inplace). */
+  inplace?: boolean;
+  /** Mapping used to resolve `@name` external variables. */
+  local_dict?: Record<string, unknown>;
+  /** Second-chance mapping for `@name` variables. */
+  global_dict?: Record<string, unknown>;
+  /** pandas-style resolver mappings, consulted in order. */
+  resolvers?: Record<string, unknown>[];
+  /** Alias of `local_dict`. */
+  env?: Record<string, unknown>;
+  /** Accepted for signature parity; only the built-in engine exists. */
+  engine?: string;
+  /** Accepted for signature parity; only the pandas-style parser exists. */
+  parser?: string;
+  /** Accepted for signature parity. */
+  level?: number;
+}
+
+/** pandas `DataFrame.eval` keyword arguments (same kwargs as query). */
+export type DataFrameEvalOptions = DataFrameQueryOptions;
+
 type AssignmentValue = CellValue[] | Series<CellValue> | CellValue;
 
 export class DataFrame {
   private readonly _dtypes: Partial<Record<string, DType>>;
+  /** Category metadata per column; set exactly where `_dtypes[col] === "category"`. */
+  private _categoricalDtypes: Partial<Record<string, CategoricalDtype>> = {};
   private readonly _rows: Row[];
   private readonly _columns: string[];
   private readonly _index: IndexLabel[];
@@ -302,14 +334,30 @@ export class DataFrame {
   /** Free-form metadata dict, matching pandas DataFrame.attrs. */
   private _attrs: Record<string, unknown> = {};
 
-  constructor(data: Row[] | Record<string, CellValue[]> = [], options: DataFrameOptions = {}) {
+  constructor(data: Row[] | Record<string, CellValue[] | Series<CellValue>> = [], options: DataFrameOptions = {}) {
+    // Columnar entries may be Series (pandas `pd.DataFrame({'c': s})`):
+    // unpack their values and keep their declared dtype — a categorical
+    // Series carries its CategoricalDtype into the frame.
+    const seriesDtypes: Record<string, DType | CategoricalDtype> = {};
+    const columnarData: Record<string, CellValue[]> = {};
+    if (!Array.isArray(data)) {
+      for (const [column, value] of Object.entries(data)) {
+        if (value instanceof Series) {
+          columnarData[column] = value.to_list();
+          seriesDtypes[column] = value.catDtype ?? value.dtype;
+        } else {
+          columnarData[column] = value;
+        }
+      }
+    }
     const normalized = Array.isArray(data)
       ? normalizeRecords(data, options.columns)
-      : normalizeColumnar(data);
+      : normalizeColumnar(columnarData);
 
+    const declaredDtype: DType | CategoricalDtype | undefined = options.dtype;
     const prepared = DataFrame.prepareColumns(normalized.rows, normalized.columns,
-      Object.fromEntries(normalized.columns.flatMap(column => options.dtype ? [[column, options.dtype]] : !Array.isArray(data) && data[column]?.length === 0 ? [[column, "float64" as DType]] : [])));
-    if (options.dtype) assertDType(options.dtype);
+      Object.fromEntries(normalized.columns.flatMap(column => declaredDtype ? [[column, declaredDtype]] : seriesDtypes[column] !== undefined ? [[column, seriesDtypes[column]!]] : !Array.isArray(data) && data[column]?.length === 0 ? [[column, "float64" as DType]] : [])));
+    if (options.dtype !== undefined && !(options.dtype instanceof CategoricalDtype)) assertDType(options.dtype);
     this._rows = prepared.rows;
     this._columns = normalized.columns;
     this._index = options.index ? [...options.index] : range(this._rows.length);
@@ -317,6 +365,7 @@ export class DataFrame {
     this._indexNames = options.indexNames;
     this._dtypeHints = {};
     this._dtypes = prepared.dtypes;
+    this._categoricalDtypes = prepared.categoricals;
 
     assertRowsShape(this._rows, this._index);
   }
@@ -326,7 +375,7 @@ export class DataFrame {
     columns: string[],
     index: IndexLabel[],
     dtypeHints: Partial<Record<string, InferredDType>> = {},
-    dtypes: Partial<Record<string, DType>> = {},
+    dtypes: Partial<Record<string, DType | CategoricalDtype>> = {},
     indexName?: string,
     indexNames?: (string | undefined)[],
     displayColumns?: IndexLabel[]
@@ -343,6 +392,7 @@ export class DataFrame {
       ...dtypeHints,
     };
     (frame as unknown as { _dtypes: Partial<Record<string, DType>> })._dtypes = prepared.dtypes;
+    frame._categoricalDtypes = prepared.categoricals;
     frame._displayColumns = displayColumns;
     frame._attrs = {};
     return frame;
@@ -358,20 +408,53 @@ export class DataFrame {
   }
 
   /** Establish physical missing values and dtype metadata together, before exposing a frame. */
-  private static prepareColumns(rows: Row[], columns: string[], declared: Partial<Record<string, DType>>, hints: Partial<Record<string, InferredDType>> = {}): { rows: Row[]; dtypes: Record<string, DType> } {
+  private static prepareColumns(
+    rows: Row[],
+    columns: string[],
+    declared: Partial<Record<string, DType | CategoricalDtype>>,
+    hints: Partial<Record<string, InferredDType>> = {}
+  ): { rows: Row[]; dtypes: Record<string, DType>; categoricals: Record<string, CategoricalDtype> } {
     const result = rows.map(row => cloneRow(row, columns));
     const dtypes: Record<string, DType> = {};
+    const categoricals: Record<string, CategoricalDtype> = {};
     for (const column of columns) {
       const values = rows.map(row => row[column]);
+      // A CategoricalDtype declaration carries category metadata with it; a
+      // bare "category"/"Categorical" spelling infers the categories pandas-style.
+      const declaredEntry = declared[column];
+      const catDtype = declaredEntry instanceof CategoricalDtype ? declaredEntry
+        : isCategoricalDType(declaredEntry as DType | undefined) ? inferCategoricalDtype(values) : undefined;
+      const declaredDtype = declaredEntry instanceof CategoricalDtype ? "category" as DType
+        : declaredEntry === "Categorical" ? "category" as DType : declaredEntry;
       const inferred = convertedDType(values, undefined, false);
       const hint = hints[column];
       const fallback = hint && hint !== "unknown" && hint !== "mixed" ? replacementDType(hint === "number" ? "float64" : hint, values) : undefined;
-      const dtype = declared[column] ?? (values.every(isMissing) ? fallback ?? inferred : inferred);
-      const cast = castColumn(values, dtype);
+      const dtype = declaredDtype ?? (values.every(isMissing) ? fallback ?? inferred : inferred);
+      // Categorical cells keep the category scalars; missing and out-of-category
+      // values both materialize as NaN (pandas semantics).
+      const cast = catDtype !== undefined ? castCategoricalValues(values, catDtype) : castColumn(values, dtype);
       result.forEach((row, i) => { row[column] = cast[i]; });
-      dtypes[column] = dtype;
+      dtypes[column] = catDtype !== undefined ? "category" : dtype;
+      if (catDtype !== undefined) categoricals[column] = catDtype;
     }
-    return { rows: result, dtypes };
+    return { rows: result, dtypes, categoricals };
+  }
+
+  /**
+   * The declared dtype map handed to createInternal: categorical columns pass
+   * their CategoricalDtype object so category metadata survives the rebuild.
+   */
+  private declaredDTypes(): Partial<Record<string, DType | CategoricalDtype>> {
+    const out: Partial<Record<string, DType | CategoricalDtype>> = {};
+    for (const column of this._columns) {
+      out[column] = this._categoricalDtypes[column] ?? this._dtypes[column];
+    }
+    return out;
+  }
+
+  /** Category metadata per categorical storage column (internal use; groupby/value_counts read this). */
+  categoricalDtypes(): Partial<Record<string, CategoricalDtype>> {
+    return { ...this._categoricalDtypes };
   }
 
   static from_records(records: Row[], options: DataFrameOptions = {}): DataFrame {
@@ -538,7 +621,7 @@ export class DataFrame {
   }
 
   copy(): DataFrame {
-    return DataFrame.createInternal(this.to_records(), [...this._columns], [...this._index], this._dtypeHints, this._dtypes);
+    return DataFrame.createInternal(this.to_records(), [...this._columns], [...this._index], this._dtypeHints, this.declaredDTypes());
   }
 
   to_records(): Row[] {
@@ -549,7 +632,8 @@ export class DataFrame {
     return this._rows.map((row) => this._columns.map((column) => row[column]));
   }
 
-  dtypes(): Record<string, InferredDType> {
+  /** pandas `df.dtypes` — per-column dtype map. */
+  get dtypes(): Record<string, InferredDType> {
     return Object.fromEntries(
       this._columns.map((column, i) => [(this._displayColumns?.[i] ?? column), this._dtypes[column]!])
     );
@@ -571,10 +655,11 @@ export class DataFrame {
     return out;
   }
 
-  astype(dtype: DType | Record<string, DType>): DataFrame {
-    const castMap: Record<string, DType> = {};
+  astype(dtype: DType | CategoricalDtype | Record<string, DType | CategoricalDtype>): DataFrame {
+    // A CategoricalDtype target carries category metadata into the cast map.
+    const castMap: Record<string, DType | CategoricalDtype> = {};
 
-    if (typeof dtype === "string") {
+    if (typeof dtype === "string" || dtype instanceof CategoricalDtype) {
       for (const column of this._columns) {
         castMap[column] = dtype;
       }
@@ -587,11 +672,13 @@ export class DataFrame {
 
     const rows = this.to_records();
     for (const [column, target] of Object.entries(castMap)) {
-      const values = castColumn(this._rows.map(row => row[column]), target, this.dtypes()[column]);
+      // Categorical casts keep the raw cells; membership is enforced when the
+      // frame rebuilds against the declared CategoricalDtype.
+      const values = castColumn(this._rows.map(row => row[column]), target instanceof CategoricalDtype ? "category" : target, this.dtypes[column]);
       rows.forEach((row, i) => { row[column] = values[i]; });
     }
     if (typeof dtype === "string") assertDType(dtype);
-    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, { ...this._dtypes, ...castMap });
+    return DataFrame.createInternal(rows, [...this._columns], [...this._index], this._dtypeHints, { ...this.declaredDTypes(), ...castMap });
   }
 
   to_dict(orient: "records" | "list" = "records"): Row[] | Record<string, CellValue[]> {
@@ -653,7 +740,7 @@ export class DataFrame {
     this.assertColumnExists(storageColumn);
     return new Series(this._rows.map((row) => row[storageColumn]), {
       name: Array.isArray(column) ? column.join(",") : String(column),
-      dtype: this._dtypes[storageColumn],
+      dtype: this._categoricalDtypes[storageColumn] ?? this._dtypes[storageColumn],
       index: this._index,
       indexName: this._indexName,
       indexNames: this._indexNames,
@@ -775,7 +862,7 @@ export class DataFrame {
       [...this._columns],
       nextIndex,
       this._dtypeHints,
-      this._dtypes,
+      this.declaredDTypes(),
       nextNames[0],
       nextNames
     );
@@ -833,7 +920,7 @@ export class DataFrame {
   assign(assignments: Record<string, AssignmentValue>): DataFrame {
     const rows = this.to_records();
     const columns = [...this._columns];
-    const dtypes = { ...this._dtypes };
+    const dtypes: Partial<Record<string, DType | CategoricalDtype>> = { ...this.declaredDTypes() };
     for (const [column, value] of Object.entries(assignments)) {
       const resolved = this.assignmentColumn(column, value);
       rows.forEach((row, i) => { row[column] = resolved.values[i]; });
@@ -843,10 +930,10 @@ export class DataFrame {
     return DataFrame.createInternal(rows, columns, [...this._index], {}, dtypes);
   }
 
-  private assignmentColumn(column: string, value: AssignmentValue): { values: CellValue[]; dtype: DType } {
+  private assignmentColumn(column: string, value: AssignmentValue): { values: CellValue[]; dtype: DType | CategoricalDtype } {
     if (value instanceof Series) {
       const aligned = value.reindex(this._index);
-      return { values: aligned.to_list(), dtype: aligned.dtype };
+      return { values: aligned.to_list(), dtype: aligned.catDtype ?? aligned.dtype };
     }
     const values = this.resolveAssignment(column, value, this._rows.length);
     // Empty arrays in pandas DataFrame assignment carry the float64 default.
@@ -881,11 +968,12 @@ export class DataFrame {
       return next;
     });
 
-    const prepared = DataFrame.prepareColumns(rows, nextColumns, { ...this._dtypes, [column]: assigned.dtype });
+    const prepared = DataFrame.prepareColumns(rows, nextColumns, { ...this.declaredDTypes(), [column]: assigned.dtype });
     invalidateColumnStore(this._rows);
     (this as unknown as { _rows: Row[] })._rows = prepared.rows;
     (this as unknown as { _columns: string[] })._columns = nextColumns;
     Object.assign(this._dtypes, prepared.dtypes);
+    Object.assign(this._categoricalDtypes, prepared.categoricals);
   }
 
   pop(column: string): Series<CellValue> {
@@ -896,7 +984,7 @@ export class DataFrame {
       index: this._index,
       indexName: this._indexName,
       indexNames: this._indexNames,
-      dtype: this._dtypes[column],
+      dtype: this._categoricalDtypes[column] ?? this._dtypes[column],
     });
 
     const nextColumns = this._columns.filter((entry) => entry !== column);
@@ -904,6 +992,7 @@ export class DataFrame {
       cloneRow(row, nextColumns)
     );
     (this as unknown as { _columns: string[] })._columns = nextColumns;
+    delete this._categoricalDtypes[column];
 
     return series;
   }
@@ -942,7 +1031,7 @@ export class DataFrame {
       return next;
     });
 
-    const dtypes = Object.fromEntries(this._columns.map(column => [columns[column] ?? column, this._dtypes[column]]));
+    const dtypes = Object.fromEntries(this._columns.map(column => [columns[column] ?? column, this._categoricalDtypes[column] ?? this._dtypes[column]]));
     return DataFrame.createInternal(nextRows, renamedColumns, [...this._index], {}, dtypes);
   }
 
@@ -951,7 +1040,7 @@ export class DataFrame {
     if (Array.isArray(mapper)) {
       // pandas rename_axis([names]) on a MultiIndex renames every level.
       return DataFrame.createInternal(
-        this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes,
+        this.to_records(), this._columns, [...this._index], this._dtypeHints, this.declaredDTypes(),
         mapper[0], [...mapper]
       );
     }
@@ -959,7 +1048,7 @@ export class DataFrame {
       const names = this._indexNames
         ? this._indexNames.map((existing, i) => (i === 0 ? mapper : existing))
         : undefined;
-      return DataFrame.createInternal(this.to_records(), this._columns, [...this._index], this._dtypeHints, this._dtypes, mapper, names);
+      return DataFrame.createInternal(this.to_records(), this._columns, [...this._index], this._dtypeHints, this.declaredDTypes(), mapper, names);
     }
     const mapLabel = (label: IndexLabel): IndexLabel => {
       if (typeof mapper === "function") {
@@ -984,7 +1073,7 @@ export class DataFrame {
         });
         return next;
       });
-      const dtypes = Object.fromEntries(this._columns.map((column, i) => [String(labels[i]), this._dtypes[column]]));
+      const dtypes = Object.fromEntries(this._columns.map((column, i) => [String(labels[i]), this._categoricalDtypes[column] ?? this._dtypes[column]]));
       return DataFrame.createInternal(nextRows, labels.map(String), [...this._index], {}, dtypes);
     }
     if (labels.length !== this._index.length) {
@@ -1516,8 +1605,120 @@ export class DataFrame {
   }
 
 
-  query(predicate: (row: Row, index: IndexLabel, position: number) => boolean): DataFrame {
-    return this.filter(predicate);
+  /**
+   * pandas `DataFrame.query(expr)`: filters rows with a string expression
+   * over column names — `df.query("qty > 5 and city == 'NYC'")`. Supports
+   * `and`/`or`/`not` (plus `&`/`|`/`~`), `in`/`not in`, backtick-quoted
+   * column names, `@name` variables via `local_dict`, `isna()`/`isin()`
+   * methods, `True`/`False`/`None`, and `inplace` mutation. A function
+   * argument keeps the earlier row-predicate behavior.
+   */
+  query(expr: string, options: DataFrameQueryOptions & { inplace: true }): undefined;
+  query(expr: string, options?: DataFrameQueryOptions): DataFrame;
+  query(predicate: (row: Row, index: IndexLabel, position: number) => boolean): DataFrame;
+  query(
+    arg: string | ((row: Row, index: IndexLabel, position: number) => boolean),
+    options?: DataFrameQueryOptions
+  ): DataFrame | undefined {
+    if (typeof arg === "function") {
+      return this.filter(arg);
+    }
+    const compiled = compileFrameExpression(arg, this.exprScope(options, "query"));
+    if (compiled.assignmentTarget !== undefined) {
+      throw new ValueError("cannot assign without a target object");
+    }
+    const result = this.queryResultFrame(compiled);
+    if (options?.inplace) {
+      invalidateColumnStore(this._rows);
+      (this as unknown as { _rows: Row[] })._rows = result._rows;
+      (this as unknown as { _index: IndexLabel[] })._index = result._index;
+      Object.assign(this._dtypes, result._dtypes);
+      return undefined;
+    }
+    return result;
+  }
+
+  /** Resolution scope handed to the expression compiler (columns, index, @vars, dtypes). */
+  private exprScope(options: DataFrameQueryOptions | undefined, mode: "eval" | "query"): FrameExprScope {
+    return {
+      columns: this._columns,
+      indexLabels: this._index,
+      indexNames: this._indexNames ?? (this._indexName !== undefined ? [this._indexName] : undefined),
+      dtypes: this._dtypes as Record<string, DType | undefined>,
+      localDict: options?.local_dict ?? options?.env,
+      globalDict: options?.global_dict,
+      resolvers: options?.resolvers,
+      mode,
+    };
+  }
+
+  /** Materialize full-column membership sets for `lhs in rhs_column` checks. */
+  private columnValueSetsFor(compiled: CompiledFrameExpr): Map<string, Set<string>> | undefined {
+    if (compiled.columnSetRefs.length === 0) {
+      return undefined;
+    }
+    const sets = new Map<string, Set<string>>();
+    for (const name of compiled.columnSetRefs) {
+      sets.set(name, new Set(this._rows.map((row) => scalarKey(row[name]!))));
+    }
+    return sets;
+  }
+
+  /**
+   * Turn a compiled query expression into a filtered frame. Boolean results
+   * form a mask; anything else goes through pandas `self.loc[result]`
+   * semantics — values are treated as index labels (KeyError when absent).
+   */
+  private queryResultFrame(compiled: CompiledFrameExpr): DataFrame {
+    const columnValueSets = this.columnValueSetsFor(compiled);
+    const labelKey = (value: unknown) => scalarKey(value as CellValue);
+    if (compiled.isScalar) {
+      const value = compiled.evaluate({}, { columnValueSets });
+      if (typeof value === "boolean") {
+        throw new KeyError(`'${value ? "True" : "False"}: boolean label can not be used without a boolean index'`);
+      }
+      const positions: number[] = [];
+      this._index.forEach((label, i) => {
+        if (scalarKey(label as CellValue) === labelKey(value)) {
+          positions.push(i);
+        }
+      });
+      if (positions.length === 0) {
+        throw new KeyError(`'${String(value)}'`);
+      }
+      return this.withSelection(
+        positions.map((i) => this._rows[i]!),
+        positions.map((i) => this._index[i]!),
+        this._columns,
+        true
+      );
+    }
+    const values = this._rows.map((row, i) =>
+      compiled.evaluate(row, { position: i, columnValueSets }));
+    if (values.every((v) => typeof v === "boolean" || isMissing(v))) {
+      return this.filter(values.map((v) => v === true));
+    }
+    const indexKeys = new Set(this._index.map((label) => scalarKey(label as CellValue)));
+    const missingLabels = values.filter((v) => !indexKeys.has(labelKey(v)));
+    const formatValue = (v: unknown) => typeof v === "string" ? `'${v}'` : String(v);
+    if (missingLabels.length === values.length) {
+      const dtype = values.every((v) =>
+        typeof v === "number" || typeof v === "bigint" || typeof v === "boolean") ? "int64" : "object";
+      throw new KeyError(
+        `"None of [Index([${values.map(formatValue).join(", ")}], dtype='${dtype}')] are in the [index]"`
+      );
+    }
+    if (missingLabels.length > 0) {
+      throw new KeyError(`'[${missingLabels.map(formatValue).join(", ")}] not in index'`);
+    }
+    const positions = values.map((v) =>
+      this._index.findIndex((label) => scalarKey(label as CellValue) === labelKey(v)));
+    return this.withSelection(
+      positions.map((i) => this._rows[i]!),
+      positions.map((i) => this._index[i]!),
+      this._columns,
+      true
+    );
   }
 
   // ---- iteration ----
@@ -1669,7 +1870,7 @@ export class DataFrame {
       [...this._columns],
       nextIndex,
       this._dtypeHints,
-      this._dtypes,
+      this.declaredDTypes(),
       nextNames[0],
       nextNames.length === nlevels ? this._indexNames : nextNames
     );
@@ -1689,10 +1890,15 @@ export class DataFrame {
       if (!other._columns.includes(column)) continue;
       dtypes[column] = updatedDType(this._dtypes[column]!, other._dtypes[column]!, rows.map(row => row[column]));
     }
-    const prepared = DataFrame.prepareColumns(rows, this._columns, dtypes);
+    const declared = Object.fromEntries(this._columns.map(column => [
+      column,
+      isCategoricalDType(dtypes[column]) ? (other._categoricalDtypes[column] ?? this._categoricalDtypes[column] ?? dtypes[column]) : dtypes[column],
+    ]));
+    const prepared = DataFrame.prepareColumns(rows, this._columns, declared);
     invalidateColumnStore(this._rows);
     (this as unknown as { _rows: Row[] })._rows = prepared.rows;
     Object.assign(this._dtypes, prepared.dtypes);
+    this._categoricalDtypes = prepared.categoricals;
   }
 
   /**
@@ -1734,17 +1940,54 @@ export class DataFrame {
   }
 
   /**
-   * Evaluates a simple column expression such as `"a + b"` or `"a > 2"`
-   * safely — tokenized and compiled by hand, no `eval()` involved.
-   * Returns a Series aligned to this frame's index; arithmetic/comparison
-   * touching a missing cell yields null.
+   * pandas `DataFrame.eval(expr)`: evaluates a column expression such as
+   * `"a + b"` or `"a > 2 and c.isna()"` safely — tokenized and compiled by
+   * hand, no `eval()` involved. Returns a Series aligned to this frame's
+   * index for column expressions (missing operands propagate as null), a
+   * scalar for constant expressions, and a new DataFrame for
+   * `"col = expr"` assignments (`inplace: true` mutates and returns
+   * undefined, matching pandas).
    */
-  eval(expr: string): Series<CellValue> {
-    const compiled = compileFrameExpression(expr);
-    for (const column of compiled.referencedColumns) {
-      this.assertColumnExists(column);
+  eval(expr: string): Series<CellValue>;
+  eval(expr: string, options: DataFrameEvalOptions & { inplace: true }): DataFrame | CellValue | undefined;
+  eval(expr: string, options?: DataFrameEvalOptions): Series<CellValue> | DataFrame | CellValue | undefined;
+  eval(expr: string, options?: DataFrameEvalOptions): Series<CellValue> | DataFrame | CellValue | undefined {
+    const compiled = compileFrameExpression(expr, this.exprScope(options, "eval"));
+    const columnValueSets = this.columnValueSetsFor(compiled);
+    if (compiled.assignmentTarget !== undefined) {
+      const target = compiled.assignmentTarget;
+      const values = compiled.isScalar
+        ? this._rows.map(() => compiled.evaluate({}, { columnValueSets }))
+        : this._rows.map((row, i) => compiled.evaluate(row, { position: i, columnValueSets }));
+      const nextColumns = this._columns.includes(target) ? [...this._columns] : [...this._columns, target];
+      if (options?.inplace) {
+        const rows = this._rows.map((row, i) => {
+          const next = cloneRow(row, nextColumns);
+          next[target] = values[i]!;
+          return next;
+        });
+        const prepared = DataFrame.prepareColumns(rows, nextColumns, { ...this.declaredDTypes() });
+        invalidateColumnStore(this._rows);
+        (this as unknown as { _rows: Row[] })._rows = prepared.rows;
+        (this as unknown as { _columns: string[] })._columns = nextColumns;
+        Object.assign(this._dtypes, prepared.dtypes);
+        this._categoricalDtypes = prepared.categoricals;
+        return undefined;
+      }
+      const rows = this._rows.map((row, i) => {
+        const next = cloneRow(row, this._columns);
+        next[target] = values[i]!;
+        return next;
+      });
+      return DataFrame.createInternal(rows, nextColumns, [...this._index], {}, { ...this.declaredDTypes() });
     }
-    const values = this._rows.map((row) => compiled.evaluate(row));
+    if (options?.inplace) {
+      throw new ValueError("Cannot operate inplace if there is no assignment");
+    }
+    if (compiled.isScalar) {
+      return compiled.evaluate({}, { columnValueSets });
+    }
+    const values = this._rows.map((row, i) => compiled.evaluate(row, { position: i, columnValueSets }));
     return new Series(values, { index: this.index, name: expr });
   }
 
@@ -1755,7 +1998,7 @@ export class DataFrame {
       {
         index: [...this._index],
         name: display === undefined ? column : (Array.isArray(display) ? display.join(",") : String(display)),
-        dtype: this._dtypes[column],
+        dtype: this._categoricalDtypes[column] ?? this._dtypes[column],
         indexName: this._indexName,
         indexNames: this._indexNames,
       }
@@ -2153,9 +2396,7 @@ export class DataFrame {
     upper?: number | null,
     columns?: string | string[]
   ): DataFrame {
-    if (lower != null && upper != null && lower > upper) {
-      throw new Error("clip lower bound cannot exceed upper bound.");
-    }
+    // pandas swaps scalar lower>upper bounds (GH 2747) inside pandasClip.
     const targetColumns = new Set(columns
       ? (Array.isArray(columns) ? columns : [columns])
       : this._columns);
@@ -2274,9 +2515,13 @@ export class DataFrame {
       }
     }
 
-    const comparers = columns.map((column, i) =>
-      buildColumnComparer(this._rows, column, ascendingPerColumn[i]!, na_position)
-    );
+    const comparers = columns.map((column, i) => {
+      const catDtype = this._categoricalDtypes[column];
+      // Categorical columns sort by category code order (pandas), not by cell.
+      return catDtype !== undefined
+        ? buildCategoricalComparer(this._rows, column, categoryIndex(catDtype), ascendingPerColumn[i]!, na_position)
+        : buildColumnComparer(this._rows, column, ascendingPerColumn[i]!, na_position);
+    });
     const normalizedLimit = normalizeSortLimit(limit, this._rows.length);
     if (normalizedLimit === 0) {
       return this.withSelection([], [], this._columns, true);
@@ -2406,6 +2651,9 @@ export class DataFrame {
       sort,
       ascending,
       limit,
+      // Single-column counts on a categorical include every declared
+      // category (pandas keeps unobserved categories with zero counts).
+      categoricalDtype: subset.length === 1 ? this._categoricalDtypes[subset[0]!] : undefined,
     });
 
     return DataFrame.createInternal(
@@ -2418,8 +2666,8 @@ export class DataFrame {
         // but re-infers plain object columns from their values.
         ...Object.fromEntries(
           subset.map((column) => {
-            const declared = this._dtypes[column];
-            const dtype = declared && declared !== "object"
+            const declared: DType | CategoricalDtype | undefined = this._categoricalDtypes[column] ?? this._dtypes[column];
+            const dtype = declared !== undefined && declared !== "object"
               ? declared
               : convertedDType(counts.rows.map((row) => row[column]), undefined, false);
             return [column, dtype];
@@ -2438,7 +2686,7 @@ export class DataFrame {
     }
 
     const result = this.filter((row) => columns.every((column) => !isMissing(row[column])));
-    const sourceDtypes = this.dtypes();
+    const sourceDtypes = this.dtypes;
     const dtypeHints = Object.fromEntries(
       this._columns.flatMap((column) => {
         const dtype = sourceDtypes[column] ?? "unknown";
@@ -2456,7 +2704,7 @@ export class DataFrame {
       result._columns,
       result._index,
       dtypeHints,
-      this._dtypes
+      this.declaredDTypes()
     );
   }
 
@@ -2492,7 +2740,7 @@ export class DataFrame {
     const frame = drop
       ? this.drop(columns).withIndex(index)
       : this.withSelection(this.to_records(), index, this._columns, true);
-    return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame._dtypes, columns[0], columns);
+    return DataFrame.createInternal(frame._rows, frame._columns, frame._index, frame._dtypeHints, frame.declaredDTypes(), columns[0], columns);
   }
 
   /** pandas `df.index.name` for single-level indexes. */
@@ -2534,7 +2782,7 @@ export class DataFrame {
         names.forEach((columnName, level) => { out[columnName] = tuple[level] as CellValue; });
         return out;
       });
-      return DataFrame.createInternal(rows, [...names, ...this._columns], range(rows.length), {}, this._dtypes);
+      return DataFrame.createInternal(rows, [...names, ...this._columns], range(rows.length), {}, this.declaredDTypes());
     }
     const columnName = name ?? this._indexName ?? "index";
     if (this._columns.includes(columnName)) {
@@ -2543,7 +2791,7 @@ export class DataFrame {
     const rows = resetIndexRows(this._rows, this._columns, this._index, columnName);
     // Existing columns keep their declared dtype; the new index column's
     // dtype is inferred from the labels (str for strings, object if empty).
-    return DataFrame.createInternal(rows, [columnName, ...this._columns], range(rows.length), {}, this._dtypes);
+    return DataFrame.createInternal(rows, [columnName, ...this._columns], range(rows.length), {}, this.declaredDTypes());
   }
 
   /**
@@ -2625,7 +2873,9 @@ export class DataFrame {
 
   private pairwiseNumeric(fn: (a: number[], b: number[]) => number): DataFrame {
     const result = pairwiseNumericMatrix(this._columns, this._rows, fn);
-    return DataFrame.createInternal(result.rows, result.columns, result.index);
+    // pandas corr()/cov() matrices are always float64.
+    const dtypes = Object.fromEntries(result.columns.map((column) => [column, "float64" as DType]));
+    return DataFrame.createInternal(result.rows, result.columns, result.index, {}, dtypes);
   }
 
   count(): Record<string, number> {
@@ -2875,8 +3125,8 @@ export class DataFrame {
       suffixes: options.suffixes ?? ["_x", "_y"],
     });
 
-    const leftDtypes = this.dtypes();
-    const rightDtypes = right.dtypes();
+    const leftDtypes = this.dtypes;
+    const rightDtypes = right.dtypes;
     const suffixes = options.suffixes ?? ["_x", "_y"];
     const duplicateNonKeys = new Set(
       this._columns.filter((column) => !keys.includes(column) && right._columns.includes(column))
@@ -3217,13 +3467,17 @@ export class DataFrame {
 
   private withReplacement(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
     const nextColumns = columns ?? this._columns;
-    const dtypes = Object.fromEntries(nextColumns.map(column => [column, replacementDType(this._dtypes[column], rows.map(row => row[column]))]));
+    const dtypes = Object.fromEntries(nextColumns.map(column => {
+      const dtype = replacementDType(this._dtypes[column], rows.map(row => row[column]));
+      // Categorical declarations carry the CategoricalDtype object through.
+      return [column, isCategoricalDType(dtype) ? (this._categoricalDtypes[column] ?? dtype) : dtype];
+    }));
     return DataFrame.createInternal(rows, [...nextColumns], index ? [...index] : range(rows.length), this._dtypeHints, dtypes, index ? this._indexName : undefined, this.namesForIndex(index));
   }
 
   /** Row/column selection preserves each retained column's dtype before casting. */
   private withSelection(rows: Row[], index?: IndexLabel[], columns?: string[], _normalized = false): DataFrame {
-    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this._dtypes, index ? this._indexName : undefined, this.namesForIndex(index));
+    return DataFrame.createInternal(rows, [...(columns ?? this._columns)], index ? [...index] : range(rows.length), this._dtypeHints, this.declaredDTypes(), index ? this._indexName : undefined, this.namesForIndex(index));
   }
 
   /** MultiIndex level names propagate while the selection keeps tuple labels. */
@@ -3384,7 +3638,9 @@ export class DataFrame {
       this._index,
       other._rows,
       other._columns,
-      other._index
+      other._index,
+      this._dtypes,
+      other._dtypes
     );
   }
 

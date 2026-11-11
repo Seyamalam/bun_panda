@@ -8,6 +8,7 @@ import {
 } from "./keys";
 import type { CellValue, Row } from "../../types";
 import { isMissing } from "../../utils";
+import type { CategoricalDtype } from "../../categorical";
 
 export interface ComputeValueCountsOptions {
   subset: string[];
@@ -16,6 +17,11 @@ export interface ComputeValueCountsOptions {
   sort: boolean;
   ascending: boolean;
   limit?: number;
+  /**
+   * Single-column counts on a categorical column include every declared
+   * category (pandas keeps unobserved categories with zero counts).
+   */
+  categoricalDtype?: CategoricalDtype;
 }
 
 export interface ValueCountsResult {
@@ -31,7 +37,36 @@ export function computeValueCountsRows(
   const entries: CountEntry[] = [];
   let consideredRows = 0;
 
-  if (subset.length === 1) {
+  if (subset.length === 1 && options.categoricalDtype !== undefined) {
+    // pandas categorical value_counts: one row per declared category in
+    // category order (zero counts for unobserved), plus a NaN row for the
+    // missing bucket when dropna is false.
+    const column = subset[0]!;
+    const counts = new Map<string | number | boolean | null, CountEntry>();
+    let missingCount = 0;
+    for (const row of sourceRows) {
+      const value = row[column];
+      if (isMissing(value)) {
+        missingCount += 1;
+        if (dropna) continue;
+      }
+      consideredRows += 1;
+      const key = normalizeCountKey(value);
+      const entry = counts.get(key);
+      if (!entry) {
+        counts.set(key, { values: [value], count: 1 });
+      } else {
+        entry.count += 1;
+      }
+    }
+    for (const category of options.categoricalDtype.categories) {
+      const entry = counts.get(normalizeCountKey(category));
+      entries.push({ values: [category], count: entry?.count ?? 0 });
+    }
+    if (!dropna && missingCount > 0) {
+      entries.push({ values: [NaN], count: missingCount });
+    }
+  } else if (subset.length === 1) {
     const column = subset[0]!;
     const counts = new Map<string | number | boolean | null, CountEntry>();
     for (const row of sourceRows) {

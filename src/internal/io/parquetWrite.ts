@@ -13,7 +13,7 @@ export async function writeParquetFrame(
   }
 
   const parquet = await import("parquetjs-lite");
-  const dtypeMap = frame.dtypes();
+  const dtypeMap = frame.dtypes;
   // Records are keyed by storage columns (tuple MultiColumns use their keys).
   const schemaDef = buildSchema(frame.storageColumns, dtypeMap);
   const schema = new parquet.ParquetSchema(schemaDef);

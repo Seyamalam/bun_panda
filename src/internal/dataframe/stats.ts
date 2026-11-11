@@ -6,6 +6,7 @@
 // nullable column surfaces pd.NA where a pure-numpy frame shows NaN.
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing, isNumber, numericValues, std } from "../../utils";
+import { asNumber } from "../../dtypes";
 import {
   pandasAllAny,
   pandasArgExtreme,
@@ -219,23 +220,40 @@ export function pairwiseNumericMatrix(
   rows: Row[],
   fn: (a: number[], b: number[]) => number
 ): { rows: Row[]; columns: string[]; index: IndexLabel[] } {
-  const numericColumns = columns.filter((column) =>
-    rows.some((row) => isNumber(row[column]) || typeof row[column] === "bigint")
-  );
+  // pandas corr()/cov() with numeric_only=False coerces every column to
+  // float first: missing cells become NaN and any non-convertible cell
+  // raises. Each column pair then uses pairwise-complete observations, so
+  // an all-missing or non-overlapping pair yields NaN rather than being
+  // dropped from the matrix.
   const vectors = new Map<string, number[]>(
-    numericColumns.map((column) => [column, numericValues(rows.map((row) => row[column]))])
+    columns.map((column) => [
+      column,
+      rows.map((row) => (isMissing(row[column]) ? NaN : asNumber(row[column]))),
+    ])
   );
   const outRows: Row[] = [];
-  for (const left of numericColumns) {
+  for (const left of columns) {
     const row: Row = {};
-    for (const right of numericColumns) {
-      const a = vectors.get(left)!;
-      const b = vectors.get(right)!;
-      row[right] = a.length > 1 && a.length === b.length ? fn(a, b) : NaN;
+    for (const right of columns) {
+      const leftVec = vectors.get(left)!;
+      const rightVec = vectors.get(right)!;
+      const a: number[] = [];
+      const b: number[] = [];
+      for (let i = 0; i < leftVec.length; i += 1) {
+        const x = leftVec[i]!;
+        const y = rightVec[i]!;
+        // pandas frame corr/cov masks non-finite cells pairwise-complete,
+        // so ±inf pairs drop out like missing values (Series.corr does not).
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+          a.push(x);
+          b.push(y);
+        }
+      }
+      row[right] = a.length === 0 ? NaN : fn(a, b);
     }
     outRows.push(row);
   }
-  return { rows: outRows, columns: numericColumns, index: [...numericColumns] };
+  return { rows: outRows, columns: [...columns], index: [...columns] };
 }
 
 export function pearson(a: number[], b: number[]): number {

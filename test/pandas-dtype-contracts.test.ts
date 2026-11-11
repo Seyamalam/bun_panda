@@ -65,7 +65,7 @@ function buildFrame(spec: FrameSpec): DataFrame {
 
 function frameResult(frame: DataFrame): unknown {
   return {
-    dtypes: frame.dtypes(),
+    dtypes: frame.dtypes,
     columns: frame.columns,
     index: frame.index,
     indexName: frame.index_name ?? null,
@@ -155,6 +155,21 @@ for (const [i, entry] of fixture.cases.entries()) {
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
         return operation.apply(source, [operand]) as Series<CellValue>;
       }
+      if (entry.mode === "pairwise") {
+        // corr/cov take an index-aligned operand Series; unary ops like
+        // autocorr only get args. Results are scalars compared missing-aware.
+        const operandSpec = (entry as { operand?: { dtype: DType; values: unknown[]; index?: (string | number)[] } }).operand;
+        const args: unknown[] = [...(entry.args ?? [])];
+        if (operandSpec) {
+          args.unshift(new Series<CellValue>(operandSpec.values.map(decode), {
+            dtype: operandSpec.dtype,
+            ...(operandSpec.index ? { index: operandSpec.index } : {}),
+          }));
+        }
+        const operation: unknown = Reflect.get(source, entry.operation!);
+        if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+        return operation.apply(source, args) as unknown as Series<CellValue>;
+      }
       if ("operation" in entry) {
         const operation: unknown = Reflect.get(source, entry.operation!);
         if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
@@ -167,7 +182,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     if (entry.error) expect(run).toThrow();
     else if (entry.mode === "frame_arithmetic") {
       const frame = run() as unknown as DataFrame;
-      expect<unknown>({ dtypes: frame.dtypes(), columns: frame.columns, index: frame.index, values: frame.values().map(row => row.map(encode)) }).toEqual(entry.expected!);
+      expect<unknown>({ dtypes: frame.dtypes, columns: frame.columns, index: frame.index, values: frame.values().map(row => row.map(encode)) }).toEqual(entry.expected!);
     } else if (entry.mode === "frame_reduction") {
       const record = run() as unknown as Record<string, CellValue>;
       expect<unknown>({ index: Object.keys(record), values: Object.values(record).map(encode) }).toEqual(entry.expected!);
@@ -208,7 +223,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     } else if (entry.mode === "frame_window") {
       const result = run() as unknown as DataFrame;
       expect<unknown>(normalizeActual({
-        dtypes: result.dtypes(),
+        dtypes: result.dtypes,
         columns: result.columns,
         index: result.index,
         indexName: result.index_name ?? null,
@@ -222,7 +237,7 @@ for (const [i, entry] of fixture.cases.entries()) {
       const keyValues = result.get(keyColumn).to_list();
       const dataColumns = result.columns.filter((column) => column !== keyColumn);
       const positions = dataColumns.map((column) => result.columns.indexOf(column));
-      const dtypes = result.dtypes() as Record<string, DType>;
+      const dtypes = result.dtypes as Record<string, DType>;
       expect<unknown>(normalizeActual({
         dtypes: Object.fromEntries(dataColumns.map((column) => [column, dtypes[String(column)]])),
         columns: dataColumns,
@@ -244,7 +259,7 @@ for (const [i, entry] of fixture.cases.entries()) {
         const dataColumns = result.columns.filter((column) => column !== frameEntry.by);
         const positions = dataColumns.map((column) => result.columns.indexOf(column));
         const expected = entry.expected as { dtypes: Record<string, string>; columns: string[]; index: unknown[]; indexName: string | null; values: unknown[][] };
-        const dtypes = result.dtypes() as Record<string, DType>;
+        const dtypes = result.dtypes as Record<string, DType>;
         expect<unknown>({
           dtypes: Object.fromEntries(dataColumns.map((column) => [column, dtypes[String(column)]])),
           columns: dataColumns,
@@ -254,6 +269,10 @@ for (const [i, entry] of fixture.cases.entries()) {
       }
     } else if (entry.mode === "series_reduction") {
       expect<unknown>(encode(run() as unknown as CellValue)).toEqual(entry.expected!);
+    } else if (entry.mode === "pairwise") {
+      // pandas emits NaN where bun_panda uses null for degenerate inputs;
+      // compare missing-aware like the accessor families.
+      expect<unknown>(normalizeActual(run())).toEqual(normalizeExpected(entry.expected));
     } else if (entry.mode === "series_array") {
       const result = run() as unknown;
       if (entry.operation === "factorize") {
@@ -277,14 +296,14 @@ for (const [i, entry] of fixture.cases.entries()) {
 test("explicit frame casts preserve source, metadata, and missing representations", () => {
   const source = new DataFrame({ id: ["1", null], score: [0.1, null] }, { index: ["a", "b"] });
   const typed = source.astype({ id: "Int16", score: "float32" });
-  expect(typed.dtypes()).toEqual({ id: "Int16", score: "float32" });
+  expect(typed.dtypes).toEqual({ id: "Int16", score: "float32" });
   expect(typed.get("id").to_list()).toEqual([1, NA]);
   expect(typed.get("score").to_list()).toEqual([Math.fround(0.1), NaN]);
-  expect(typed.copy().dtypes()).toEqual(typed.dtypes());
+  expect(typed.copy().dtypes).toEqual(typed.dtypes);
   expect(typed.get("id").dtype).toBe("Int16");
   expect(typed.index).toEqual(["a", "b"]);
   expect(source.get("id").to_list()).toEqual(["1", NaN]);
-  expect(new DataFrame([], { columns: ["id"], dtype: "UInt32" }).dtypes()).toEqual({ id: "UInt32" });
+  expect(new DataFrame([], { columns: ["id"], dtype: "UInt32" }).dtypes).toEqual({ id: "UInt32" });
 });
 
 test("integer ranges are checked and numpy integer casts wrap", () => {
@@ -300,13 +319,13 @@ test("integer ranges are checked and numpy integer casts wrap", () => {
 test("frame inference preserves text and labels while selecting nullable dtypes", () => {
   const frame = new DataFrame({ code: ["001", null], qty: [1, null], active: [true, null], mixed: [1, "1"] }, { dtype: "object", index: ["a", "b"] });
   const result = frame.convert_dtypes();
-  expect(result.dtypes()).toEqual({ code: "string", qty: "Int64", active: "boolean", mixed: "object" });
+  expect(result.dtypes).toEqual({ code: "string", qty: "Int64", active: "boolean", mixed: "object" });
   expect(result.to_records()).toEqual([
     { code: "001", qty: 1, active: true, mixed: 1 },
     { code: NA, qty: NA, active: NA, mixed: "1" },
   ]);
   expect(result.index).toEqual(["a", "b"]);
-  expect(frame.infer_objects().dtypes()).toEqual({ code: "str", qty: "float64", active: "object", mixed: "object" });
+  expect(frame.infer_objects().dtypes).toEqual({ code: "str", qty: "float64", active: "object", mixed: "object" });
   expect(frame.get("qty").to_list()).toEqual([1, null]);
 });
 
@@ -323,22 +342,22 @@ for (const entry of fixture.cases) {
     if ("frameError" in entry && entry.frameError) { expect(run).toThrow(); return; }
     if (entry.error && !("frameExpected" in entry)) { expect(run).toThrow(); return; }
     const result = run();
-    expect({ dtype: result.dtypes().v, values: result.get("v").to_list().map(encode), index: result.index.map((label) => encode(label as CellValue)), name: "v" }).toEqual("frameExpected" in entry ? entry.frameExpected! : entry.expected!);
+    expect({ dtype: result.dtypes.v, values: result.get("v").to_list().map(encode), index: result.index.map((label) => encode(label as CellValue)), name: "v" }).toEqual("frameExpected" in entry ? entry.frameExpected! : entry.expected!);
   });
 }
 
 test("column and index selection retain dtypes by column name", () => {
   const frame = new DataFrame({ a: [1, 2], b: [3, 4] }).astype({ a: "Int16", b: "float32" });
-  expect(frame.select(["b"]).dtypes()).toEqual({ b: "float32" });
-  expect(frame.drop("b").dtypes()).toEqual({ a: "Int16" });
-  expect(frame.filter([false, false]).dtypes()).toEqual(frame.dtypes());
+  expect(frame.select(["b"]).dtypes).toEqual({ b: "float32" });
+  expect(frame.drop("b").dtypes).toEqual({ a: "Int16" });
+  expect(frame.filter([false, false]).dtypes).toEqual(frame.dtypes);
   expect(frame.iloc([1, 0])).toBeInstanceOf(DataFrame);
-  expect((frame.iloc([1, 0]) as DataFrame).dtypes()).toEqual(frame.dtypes());
-  expect((frame.loc([1]) as DataFrame).dtypes()).toEqual(frame.dtypes());
-  expect(frame.rename({ a: "id" }).dtypes()).toEqual({ id: "Int16", b: "float32" });
-  expect(frame.get("a").to_frame().dtypes()).toEqual({ a: "Int16" });
-  expect(frame.set_axis(["id", "score"], "columns").dtypes()).toEqual({ id: "Int16", score: "float32" });
-  expect((frame.get("a").reset_index() as DataFrame).dtypes().a).toBe("Int16");
+  expect((frame.iloc([1, 0]) as DataFrame).dtypes).toEqual(frame.dtypes);
+  expect((frame.loc([1]) as DataFrame).dtypes).toEqual(frame.dtypes);
+  expect(frame.rename({ a: "id" }).dtypes).toEqual({ id: "Int16", b: "float32" });
+  expect(frame.get("a").to_frame().dtypes).toEqual({ a: "Int16" });
+  expect(frame.set_axis(["id", "score"], "columns").dtypes).toEqual({ id: "Int16", score: "float32" });
+  expect((frame.get("a").reset_index() as DataFrame).dtypes.a).toBe("Int16");
   expect(frame.pop("b").dtype).toBe("float32");
 });
 
@@ -349,7 +368,7 @@ for (const [i, entry] of frameFixture.cases.entries()) {
     const operation: unknown = Reflect.get(source, entry.operation);
     if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
     const result = operation.apply(source, entry.args) as DataFrame;
-    expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, index: result.index, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
+    expect<unknown>({ dtypes: result.dtypes, columns: result.columns, index: result.index, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
   });
 }
 
@@ -359,7 +378,7 @@ for (const [i, entry] of assignmentFixture.cases.entries()) {
     const incoming = entry.incoming.map(decode);
     const value = entry.inputDtype ? new Series<CellValue>(incoming, { dtype: entry.inputDtype as DType, index: [1, 0] }) : incoming;
     const result = entry.operation === "assign" ? source.assign({ v: value }) : entry.operation === "insert" ? (source.insert(1, "new", value), source) : (source.isetitem(0, value), source);
-    expect<unknown>({ dtypes: result.dtypes(), columns: result.columns, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
+    expect<unknown>({ dtypes: result.dtypes, columns: result.columns, values: result.values().map(row => row.map(encode)) }).toEqual(entry.expected);
   });
 }
 
@@ -371,7 +390,7 @@ for (const [i, entry] of updateFixture.cases.entries()) {
     if (entry.error) expect(run).toThrow();
     else {
       expect(run()).toBeUndefined();
-      expect<unknown>({ dtype: source.dtypes().v, values: source.get("v").to_list().map(encode) }).toEqual(entry.expected);
+      expect<unknown>({ dtype: source.dtypes.v, values: source.get("v").to_list().map(encode) }).toEqual(entry.expected);
     }
   });
 }

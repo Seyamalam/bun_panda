@@ -9,6 +9,8 @@ export {
   type DataFrameMapFn,
   type DataFrameOptions,
   type DropDuplicatesKeep,
+  type DataFrameEvalOptions,
+  type DataFrameQueryOptions,
   type JoinOptions,
   type MergeOptions,
   type PivotTableOptions,
@@ -25,8 +27,15 @@ export {
   type WhereCondition,
   type WhereOther,
 } from "./dataframe";
-export { GroupBy } from "./groupby";
-export { BunPandaValidationError, KeyError, ValueError } from "./errors";
+export { GroupBy, type GroupByOptions } from "./groupby";
+export {
+  AttributeError,
+  BunPandaValidationError,
+  KeyError,
+  NotImplementedError,
+  UndefinedVariableError,
+  ValueError,
+} from "./errors";
 export {
   concat,
   merge,
@@ -111,6 +120,7 @@ export {
   wide_to_long,
 } from "./top-level";
 export {
+  categorical,
   Categorical,
   CategoricalDtype,
 } from "./categorical";

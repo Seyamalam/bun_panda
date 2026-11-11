@@ -22,6 +22,14 @@ The format loosely follows Keep a Changelog and Semantic Versioning.
 
 - `DataFrame.sort_values` now accepts an options object (`{ascending, na_position, limit}`) alongside the positional signature.
 
+- Add `DataFrame.query(expr)` and pandas-faithful `DataFrame.eval(expr)`: string expressions over column names with comparisons, `and`/`or`/`not`, `in`/`not in`, `@var` resolvers, backtick-quoted column names, `.isna()`/`.isin()`/`.str.contains()` chains, `col = expr` assignment, and pandas error classes (`UndefinedVariableError`, `NotImplementedError`, `AttributeError`).
+
+- Add `Categorical` dtype support: `dtype: "category"`, `.cat` accessor (`categories`, `codes`, `ordered`, `rename_categories`, `set_categories`, `add_categories`, `remove_categories`, `reorder_categories`, `as_ordered`/`as_unordered`), ordered code-order comparisons, pandas unordered-comparison errors, and `astype("category")`.
+
+- **Breaking**: `DataFrame.dtypes` is now a pandas-style property (getter) instead of a method — `df.dtypes` replaces `df.dtypes()`.
+
+- Oracle grows to 8,318 pandas 3.0.5 contracts: pairwise `corr`/`cov`/`corrwith`/`autocorr` with label alignment, `clip` bound semantics, `.str.cat` modes, and `diff`/`pct_change`/cumulative dtype rules.
+
 ## [0.5.0] - 2026-11-09
 
 - Raise pandas-typed errors with pandas-exact messages: `KeyError` for missing labels (including `Index([...], dtype='str')` and subset-list formats), `ValueError` for invalid rank options and non-integer `diff` periods, and `TypeError` slice/operand errors for `shift`, `pct_change` and `diff` on non-subtractable columns. New exported `KeyError` class. `diff` and `pct_change` now reject string/mixed columns the way pandas does instead of returning nulls.

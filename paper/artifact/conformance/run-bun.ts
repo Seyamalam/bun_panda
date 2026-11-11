@@ -75,7 +75,7 @@ function frameFromSpec(spec: FrameSpec): DataFrame {
 
 function canonicalFrame(frame: DataFrame): Record<string, unknown> {
   const columns = frame.columns;
-  const nativeDtypes = frame.dtypes();
+  const nativeDtypes = frame.dtypes;
   return {
     kind: "frame",
     columns,

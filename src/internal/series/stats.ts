@@ -4,6 +4,7 @@ import { scalarEquals } from "../shared/valueSemantics";
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
 import { NA } from "../../missing";
+import { asNumber } from "../../dtypes";
 
 export function seriesCount(values: CellValue[]): number {
   return values.filter((value) => !isMissing(value)).length;
@@ -201,33 +202,49 @@ export function seriesDescribe(values: CellValue[], dtype = "object"): { keys: s
   };
 }
 
+/**
+ * np.corrcoef element [0,1], as used by pandas Series.corr/autocorr:
+ * cov entries are normalized by (n-1) first, then two sequential divisions
+ * by sqrt(diag) reproduce numpy's exact floats (2-point perfectly
+ * correlated pairs give 0.9999999999999999, not 1.0). corrcoef also clips
+ * the result to [-1, 1].
+ */
+export function corrcoef(a: number[], b: number[]): number {
+  const n = a.length;
+  const ma = a.reduce((s, v) => s + v, 0) / n;
+  const mb = b.reduce((s, v) => s + v, 0) / n;
+  let cxx = 0;
+  let cxy = 0;
+  let cyy = 0;
+  for (let i = 0; i < n; i += 1) {
+    cxx += (a[i]! - ma) ** 2;
+    cxy += (a[i]! - ma) * (b[i]! - mb);
+    cyy += (b[i]! - mb) ** 2;
+  }
+  const fact = n - 1;
+  cxx /= fact;
+  cxy /= fact;
+  cyy /= fact;
+  const r = (cxy / Math.sqrt(cxx)) / Math.sqrt(cyy);
+  return Math.min(1, Math.max(-1, r));
+}
+
 /** Lag-N autocorrelation over aligned non-missing numeric pairs. */
 export function autocorrelation(rawValues: CellValue[], lag: number): number | null {
+  // pandas autocorr coerces the whole series with float() first, so
+  // non-numeric cells raise even when they never join a pair.
+  const converted = rawValues.map((value) => (isMissing(value) ? NaN : asNumber(value)));
   const a: number[] = [];
   const b: number[] = [];
-  for (let i = lag; i < rawValues.length; i += 1) {
-    const x = rawValues[i];
-    const y = rawValues[i - lag];
-    if (
-      !isMissing(x) && typeof x === "number" &&
-      !isMissing(y) && typeof y === "number"
-    ) {
+  for (let i = lag; i < converted.length; i += 1) {
+    const x = converted[i]!;
+    const y = converted[i - lag]!;
+    if (!Number.isNaN(x) && !Number.isNaN(y)) {
       a.push(x);
       b.push(y);
     }
   }
-  const n = a.length;
-  if (n < 2) return null;
-  const ma = a.reduce((s, v) => s + v, 0) / n;
-  const mb = b.reduce((s, v) => s + v, 0) / n;
-  let cov = 0;
-  let va = 0;
-  let vb = 0;
-  for (let i = 0; i < n; i += 1) {
-    cov += (a[i]! - ma) * (b[i]! - mb);
-    va += (a[i]! - ma) ** 2;
-    vb += (b[i]! - mb) ** 2;
-  }
-  const denom = Math.sqrt(va) * Math.sqrt(vb);
-  return denom === 0 ? null : cov / denom;
+  if (a.length < 2) return null;
+  const r = corrcoef(a, b);
+  return Number.isNaN(r) ? null : r;
 }

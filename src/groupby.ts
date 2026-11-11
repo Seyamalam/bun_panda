@@ -1,5 +1,6 @@
 import { DataFrame } from "./dataframe";
 import { Series } from "./series";
+import { CategoricalDtype, categoryIndex } from "./categorical";
 import type { AggFn, AggName, AggSpec, CellValue, DType, Row } from "./types";
 import { hasCachedColumns } from "./wasm/columns";
 import {
@@ -15,6 +16,7 @@ import {
   updateFastGroupStates,
 } from "./internal/groupby/fastAgg";
 import {
+  compareCellValues,
   isMissing,
   isNumber,
   numericValues,
@@ -70,6 +72,12 @@ export interface GroupByOptions {
   dropna?: boolean;
   sort?: boolean;
   as_index?: boolean;
+  /**
+   * pandas `groupby(observed=...)`: only applies to categorical groupers.
+   * `true` (pandas 3.x default) keeps only observed categories; `false`
+   * emits a group row for every unobserved category combination too.
+   */
+  observed?: boolean;
   /**
    * pandas `groupby(level=...)`: index level position, name, or list of
    * either. Mutually exclusive with `by`.
@@ -127,7 +135,20 @@ export class GroupBy {
     dropna: boolean;
     sort: boolean;
     as_index: boolean;
+    observed: boolean;
   };
+  /**
+   * CategoricalDtype for each `by` position (undefined for non-categorical
+   * columns and every `groupby(level=...)` key).
+   */
+  private readonly catDtypes: (CategoricalDtype | undefined)[];
+  /**
+   * scalarKey -> category position per categorical `by` key; used to sort
+   * group keys in category order (pandas factorized code order).
+   */
+  private readonly catKeyIndexes: (Map<string, number> | undefined)[];
+  /** CategoricalDtype per source column (empty under `groupby(level=...)`). */
+  private readonly sourceCategoricals: Partial<Record<string, CategoricalDtype>>;
 
   constructor(
     source: DataFrame,
@@ -160,8 +181,15 @@ export class GroupBy {
       dropna: options.dropna ?? true,
       sort: options.sort ?? true,
       as_index: options.as_index ?? false,
+      observed: options.observed ?? true,
     };
-    this.groupedCacheKey = `${levelKeys ? "level|" : ""}${groupCacheKey(this.by, this.options.dropna)}`;
+    const categoricalMap = levelKeys ? {} : source.categoricalDtypes();
+    this.sourceCategoricals = categoricalMap;
+    this.catDtypes = by.map((column) => categoricalMap[column]);
+    this.catKeyIndexes = this.catDtypes.map((dtype) =>
+      dtype ? categoryIndex(dtype) : undefined
+    );
+    this.groupedCacheKey = `${levelKeys ? "level|" : ""}${groupCacheKey(this.by, this.options.dropna, this.options.observed)}`;
     this.grouped = this.readGroupCache();
   }
 
@@ -312,6 +340,19 @@ export class GroupBy {
       }
     }
 
+    this.forEachUnobservedCombination(states, (keyValues) => {
+      states.set(keyForValues(keyValues), {
+        keyValues: [...keyValues],
+        counts: new Array(namedPlans.length).fill(0),
+        sums: new Array(namedPlans.length).fill(0),
+        wideSums: new Array(namedPlans.length).fill(null),
+        comps: new Array(namedPlans.length).fill(0),
+        // pandas sums an unobserved categorical group to 0 (min_count=0).
+        hasAny: new Array(namedPlans.length).fill(true),
+        seen: new Array(namedPlans.length).fill(false),
+        best: new Array(namedPlans.length).fill(null),
+      });
+    });
     const groups = this.sortFastStates([...states.values()]);
     const rows: Row[] = [];
     for (const group of groups) {
@@ -352,6 +393,11 @@ export class GroupBy {
    * experiment path; BUN_PANDA_WASM=0 forces TypeScript.
    */
   private shouldTryWasm(namedPlans: NamedAggPlan[]): boolean {
+    // Categorical groupers take the TS path: unobserved-category groups and
+    // category-order key sorting aren't represented in the wasm kernel.
+    if (this.hasCategoricalKeys()) {
+      return false;
+    }
     const planColumns = [...new Set(namedPlans.map((plan) => plan.column))];
     return shouldTryWasmFast(
       this.options.dropna ?? true,
@@ -393,7 +439,7 @@ export class GroupBy {
     }
     const ordered = this.options.sort
       ? (groups as GroupResult[]).sort((left, right) =>
-          compareKeyValues(left.keyValues, right.keyValues)
+          this.compareGroupKeys(left.keyValues, right.keyValues)
         )
       : groups;
 
@@ -442,7 +488,7 @@ export class GroupBy {
       return groups;
     }
     return groups.sort((left, right) =>
-      compareKeyValues(left.keyValues, right.keyValues)
+      this.compareGroupKeys(left.keyValues, right.keyValues)
     );
   }
 
@@ -451,8 +497,118 @@ export class GroupBy {
       return states;
     }
     return states.sort((left, right) =>
-      compareKeyValues(left.keyValues, right.keyValues)
+      this.compareGroupKeys(left.keyValues, right.keyValues)
     );
+  }
+
+  private hasCategoricalKeys(): boolean {
+    return this.catKeyIndexes.some((index) => index !== undefined);
+  }
+
+  /**
+   * pandas observed=False with categorical groupers: emit an empty group for
+   * every unobserved category combination. Only applies to column groupers
+   * (level grouping has no category metadata).
+   */
+  private includeUnobservedCategories(): boolean {
+    return (
+      !this.options.observed &&
+      this.levelKeys === undefined &&
+      this.hasCategoricalKeys()
+    );
+  }
+
+  /**
+   * Group-key ordering: categorical keys compare by category position
+   * (pandas factorized code order), other keys by cell value. Missing keys
+   * sort after every category.
+   */
+  private compareGroupKeys(left: CellValue[], right: CellValue[]): number {
+    if (!this.hasCategoricalKeys()) {
+      return compareKeyValues(left, right);
+    }
+    const size = Math.min(left.length, right.length);
+    for (let i = 0; i < size; i += 1) {
+      const index = this.catKeyIndexes[i];
+      const compared = index
+        ? this.catKeyOrder(index, left[i]!) - this.catKeyOrder(index, right[i]!)
+        : compareCellValues(left[i]!, right[i]!);
+      if (compared !== 0) return compared;
+    }
+    return left.length - right.length;
+  }
+
+  private catKeyOrder(index: Map<string, number>, value: CellValue): number {
+    if (isMissing(value)) return index.size;
+    return index.get(scalarKey(value)) ?? index.size;
+  }
+
+  /**
+   * Every key combination in the categorical product, in pandas' factorized
+   * order (the LAST key iterates outermost). Non-categorical keys contribute
+   * their observed values in first-seen order. Used to emit unobserved groups
+   * for `observed: false`; pandas appends them after the observed groups.
+   */
+  private unobservedKeyCombinations(): CellValue[][] {
+    const levels = this.by.map((column, i) => {
+      const dtype = this.catDtypes[i];
+      if (dtype) return dtype.categories;
+      const seen = new Set<string>();
+      const values: CellValue[] = [];
+      for (const row of this.sourceRows) {
+        const value = row[column];
+        if (isMissing(value) && this.options.dropna) continue;
+        const key = scalarKey(value);
+        if (!seen.has(key)) {
+          seen.add(key);
+          values.push(value);
+        }
+      }
+      return values;
+    });
+    const combos: CellValue[][] = [];
+    const walk = (position: number, prefix: CellValue[]): void => {
+      if (position < 0) {
+        combos.push(prefix);
+        return;
+      }
+      for (const value of levels[position]!) {
+        walk(position - 1, [value, ...prefix]);
+      }
+    };
+    walk(levels.length - 1, []);
+    return combos;
+  }
+
+  /**
+   * Call `add` once per unobserved product combination when
+   * `observed: false`; a no-op otherwise. `existing` holds already-seen keys.
+   */
+  private forEachUnobservedCombination(
+    existing: Map<string, { keyValues: CellValue[] }>,
+    add: (keyValues: CellValue[]) => void
+  ): void {
+    if (!this.includeUnobservedCategories()) return;
+    for (const keyValues of this.unobservedKeyCombinations()) {
+      if (!existing.has(keyForValues(keyValues))) {
+        add(keyValues);
+      }
+    }
+  }
+
+  /**
+   * Declared dtypes for the group-key columns in non-as_index results:
+   * categorical keys keep their CategoricalDtype (pandas result key column
+   * stays `category`); other keys infer like before.
+   */
+  private keyDeclaredDTypes(): Record<string, DType | CategoricalDtype> {
+    const declared: Record<string, DType | CategoricalDtype> = {};
+    this.by.forEach((column, i) => {
+      if (this.catDtypes[i]) {
+        declared[column] = this.catDtypes[i]!;
+      }
+    });
+    return declared;
   }
 
   count(columns?: string[]): DataFrame {
@@ -1059,7 +1215,7 @@ export class GroupBy {
    */
   private aggregatePandas(op: PandasAggOp, columns?: string[]): DataFrame {
     const candidates = columns ?? this.nonKeyColumns();
-    const srcDtypes = this.source.dtypes() as Record<string, DType>;
+    const srcDtypes = this.source.dtypes as Record<string, DType>;
     const groups = this.sortGroups([...this.getGroups().values()]);
     const rows: Row[] = [];
     for (const group of groups) {
@@ -1073,12 +1229,18 @@ export class GroupBy {
       }
       rows.push(row);
     }
-    const declared: Record<string, DType> = {};
-    for (const key of this.by) {
-      if (srcDtypes[key]) declared[key] = srcDtypes[key]!;
-    }
+    const declared: Record<string, DType | CategoricalDtype> = {};
+    this.by.forEach((key, i) => {
+      const dtype = this.catDtypes[i] ?? srcDtypes[key];
+      if (dtype) declared[key] = dtype;
+    });
     for (const col of candidates) {
-      declared[col] = groupbyResultDType(op, (srcDtypes[col] ?? "object") as DType);
+      const srcDtype = (srcDtypes[col] ?? "object") as DType;
+      const resultDtype = groupbyResultDType(op, srcDtype);
+      // Category-preserving ops (first/last/min/max) keep the full
+      // CategoricalDtype so categories/order survive the result frame.
+      const catDtype = resultDtype === "category" ? this.sourceCategoricals[col] : undefined;
+      declared[col] = catDtype ?? resultDtype;
     }
     if (!this.options.as_index) {
       return DataFrame.createInternal(rows, [...this.by, ...candidates], range(rows.length), {}, declared);
@@ -1229,6 +1391,9 @@ export class GroupBy {
           groups.set(key, { keyValues: [keyValue], positions: [position] });
         }
       }
+      this.forEachUnobservedCombination(groups, (keyValues) => {
+        groups.set(keyForValues(keyValues), { keyValues: [...keyValues], positions: [] });
+      });
       return groups;
     }
 
@@ -1249,6 +1414,9 @@ export class GroupBy {
         groups.set(key, { keyValues, positions: [position] });
       }
     }
+    this.forEachUnobservedCombination(groups, (keyValues) => {
+      groups.set(keyForValues(keyValues), { keyValues: [...keyValues], positions: [] });
+    });
     return groups;
   }
 
@@ -1257,7 +1425,7 @@ export class GroupBy {
       return groups;
     }
     return groups.sort((left, right) =>
-      compareKeyValues(left.keyValues, right.keyValues)
+      this.compareGroupKeys(left.keyValues, right.keyValues)
     );
   }
 
@@ -1303,6 +1471,9 @@ export class GroupBy {
           });
         }
       }
+      this.forEachUnobservedCombination(groups, (keyValues) => {
+        groups.set(keyForValues(keyValues), { keyValues: [...keyValues], rows: [] });
+      });
       return groups;
     }
 
@@ -1325,6 +1496,9 @@ export class GroupBy {
         });
       }
     }
+    this.forEachUnobservedCombination(groups, (keyValues) => {
+      groups.set(keyForValues(keyValues), { keyValues: [...keyValues], rows: [] });
+    });
     return groups;
   }
 
@@ -1344,7 +1518,13 @@ export class GroupBy {
 
   private materializeGroupedRows(rows: Row[], valueColumns: string[]): DataFrame {
     if (!this.options.as_index) {
-      return DataFrame.from_normalized(rows, [...this.by, ...valueColumns]);
+      return DataFrame.createInternal(
+        rows,
+        [...this.by, ...valueColumns],
+        range(rows.length),
+        {},
+        this.keyDeclaredDTypes()
+      );
     }
     const outRows = rows.map((row) => {
       const out: Row = {};
@@ -1500,6 +1680,6 @@ function aggCodeForName(name: AggName): number {
   return AGG_MAX;
 }
 
-function groupCacheKey(by: string[], dropna: boolean): string {
-  return `${dropna ? "1" : "0"}|${by.join("\u001f")}`;
+function groupCacheKey(by: string[], dropna: boolean, observed: boolean): string {
+  return `${dropna ? "1" : "0"}${observed ? "1" : "0"}|${by.join("\u001f")}`;
 }

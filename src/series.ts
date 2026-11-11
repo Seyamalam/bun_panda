@@ -9,14 +9,17 @@ import {
   unstackCellKey,
   unstackGrid,
 } from "./internal/shared/multiindex";
-import { arithResultDType, castColumn, convertedDType, floordivResultDType, replacementDType, scalarOperandDType } from "./dtypes";
-import { isAbsent, scalarKey, roundToEven, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv } from "./internal/shared/valueSemantics";
+import { arithResultDType, castColumn, convertedDType, floordivResultDType, isCategoricalDType, replacementDType, scalarOperandDType } from "./dtypes";
+import { Categorical, CategoricalDtype, castCategoricalValues, categoryIndex, inferCategoricalDtype, sameCategorySet } from "./categorical";
+import { isAbsent, scalarEquals, scalarKey, roundToEven, numberOrBigintEqual, bigintOperand, bigintMod, bigintFloorDiv } from "./internal/shared/valueSemantics";
 import type { CellValue, DType, IndexLabel } from "./types";
+import type { GroupByOptions } from "./groupby";
 import { DataFrame } from "./dataframe";
 import {
   compareCellValues,
   isMissing,
   numericValues,
+  pythonOperandTypeName,
   range,
 } from "./utils";
 import {
@@ -75,12 +78,14 @@ import {
 } from "./internal/shared";
 import { StringMethods } from "./internal/series/stringMethods";
 import { DatetimeMethods } from "./internal/series/datetimeMethods";
+import { CategoricalMethods } from "./internal/series/categoricalMethods";
 import { assertWindowAggregable, computeExpanding, computeRolling, type RollingWindow } from "./internal/dataframe/rolling";
 
-export type SeriesDType = DType;
+export type SeriesDType = DType | CategoricalDtype;
 
 export interface SeriesOptions {
-  dtype?: DType;
+  /** pandas dtype spelling, or a CategoricalDtype carrying category metadata. */
+  dtype?: DType | CategoricalDtype;
   name?: string;
   index?: IndexLabel[];
   indexName?: string;
@@ -92,6 +97,8 @@ export type { SeriesReplaceInput };
 
 export class Series<T extends CellValue = CellValue> {
   private readonly _dtype: DType;
+  /** Category metadata; set exactly when `_dtype === "category"`. */
+  private readonly _catDtype: CategoricalDtype | undefined;
   private readonly _name: string | undefined;
   private readonly _values: T[];
   private readonly _index: IndexLabel[];
@@ -99,10 +106,20 @@ export class Series<T extends CellValue = CellValue> {
   /** pandas `series.index.names` — one per level; set for MultiIndex series. */
   private readonly _indexNames: (string | undefined)[] | undefined;
 
-  constructor(values: T[], options: SeriesOptions = {}) {
-    this._dtype = options.dtype ?? convertedDType(values, undefined, false);
-    this._values = castColumn(values, this._dtype) as T[];
-    this._index = options.index ? [...options.index] : range(values.length);
+  constructor(values: T[] | Categorical, options: SeriesOptions = {}) {
+    const sourceValues: T[] = (values instanceof Categorical ? values.to_list() : values) as T[];
+    // pandas `Series(values, dtype=pd.CategoricalDtype(...))` and
+    // `Series(pd.Categorical(...))` both produce category dtype.
+    const suppliedCat = options.dtype instanceof CategoricalDtype ? options.dtype
+      : (options.dtype === undefined || isCategoricalDType(options.dtype)) && values instanceof Categorical ? values.dtype
+      : undefined;
+    this._catDtype = suppliedCat ?? (isCategoricalDType(options.dtype as DType | undefined)
+      ? inferCategoricalDtype(sourceValues) : undefined);
+    this._dtype = this._catDtype !== undefined ? "category" : (options.dtype as DType | undefined ?? convertedDType(sourceValues, undefined, false));
+    this._values = (this._catDtype !== undefined
+      ? castCategoricalValues(sourceValues, this._catDtype)
+      : castColumn(sourceValues, this._dtype)) as T[];
+    this._index = options.index ? [...options.index] : range(sourceValues.length);
     this._indexName = options.indexName;
     this._indexNames = options.indexNames;
     this._name = options.name;
@@ -284,7 +301,7 @@ export class Series<T extends CellValue = CellValue> {
       indexName: indexNames?.[0] ?? this._indexName,
       indexNames: indexNames ?? this._indexNames,
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -293,7 +310,7 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(this._values.slice(0, count), {
       index: this._index.slice(0, count),
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -302,7 +319,7 @@ export class Series<T extends CellValue = CellValue> {
     return new Series(this._values.slice(start), {
       index: this._index.slice(start),
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -336,7 +353,7 @@ export class Series<T extends CellValue = CellValue> {
       }
     }
 
-    return new Series(values, { index, name: this.name, dtype: this._dtype });
+    return new Series(values, { index, name: this.name, dtype: this._catDtype ?? this._dtype });
   }
 
   /**
@@ -408,6 +425,7 @@ export class Series<T extends CellValue = CellValue> {
 
   /** q-quantile of the numeric values (linear interpolation). */
   quantile(q = 0.5): CellValue {
+    if (this._catDtype !== undefined) return this.catQuantile(q);
     if (this._dtype === "string" || this._dtype === "str") {
       // pandas: empty string series raises ValueError, non-empty TypeError.
       if (this._values.every((value) => isMissing(value))) {
@@ -438,11 +456,21 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Index label of the maximum value (pandas idxmax). */
   idxmax(): IndexLabel {
+    if (this._catDtype !== undefined) {
+      const extreme = this.catExtreme("max");
+      if (extreme === undefined) throw new ValueError("attempt to get argmax of an empty sequence");
+      return this._index[extreme.position]!;
+    }
     return pandasIdxExtreme(this._values as CellValue[], this._index, "max");
   }
 
   /** Index label of the minimum value (pandas idxmin). */
   idxmin(): IndexLabel {
+    if (this._catDtype !== undefined) {
+      const extreme = this.catExtreme("min");
+      if (extreme === undefined) throw new ValueError("attempt to get argmin of an empty sequence");
+      return this._index[extreme.position]!;
+    }
     return pandasIdxExtreme(this._values as CellValue[], this._index, "min");
   }
 
@@ -548,6 +576,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   median(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("median");
     // Unlike quantile(), bool values participate: pandas bool median -> float.
     const values = requireNumeric(this._values as CellValue[], this._dtype, "median").sort((a, b) => a - b);
     if (values.length === 0) {
@@ -560,11 +589,13 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   var(ddof = 1): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("var");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "var");
     return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(seriesVariance(numbers, ddof) ?? missingScalar(this._dtype)));
   }
 
   prod(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("prod");
     return this.maybeF32(pandasProd(this._values as CellValue[], this._dtype));
   }
 
@@ -574,6 +605,7 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Unbiased skewness (Fisher-Pearson with sample correction G1). */
   skew(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("skew");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "skew");
     return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(adjustedSkew(numbers) ?? missingScalar(this._dtype)));
   }
@@ -581,12 +613,14 @@ export class Series<T extends CellValue = CellValue> {
 
   /** Excess kurtosis (Fisher definition; normal distribution = 0). */
   kurt(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("kurt");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "kurt");
     return numbers.length === 0 ? missingScalar(this._dtype) : (this.maybeF32(excessKurtosis(numbers) ?? missingScalar(this._dtype)));
   }
 
   /** Standard error of the mean (sample std / sqrt(n)). */
   sem(ddof = 1): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("sem");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "sem");
     if (numbers.length === 0) return missingScalar(this._dtype);
     const std = seriesStd(numbers, ddof);
@@ -633,7 +667,7 @@ export class Series<T extends CellValue = CellValue> {
       {
         columns: [name ?? this.name ?? "0"],
         index: [...this._index],
-        dtype: this._dtype,
+        dtype: this._catDtype ?? this._dtype,
         indexName: this._indexName,
         indexNames: this._indexNames,
       }
@@ -645,10 +679,12 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   sum(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("sum");
     return this.maybeF32(pandasSum(this._values as CellValue[], this._dtype));
   }
 
   mean(): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("mean");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "mean");
     if (numbers.length === 0) {
       return missingScalar(this._dtype);
@@ -656,11 +692,91 @@ export class Series<T extends CellValue = CellValue> {
     return this.maybeF32(numbers.reduce((acc, value) => acc + value, 0) / numbers.length);
   }
 
+  /**
+   * pandas Categorical min/max/idxmin/idxmax/argmin/argmax: ordering ops on an
+   * unordered categorical raise TypeError; ordered categoricals resolve the
+   * extreme by category code (not cell value). Returns undefined when empty.
+   */
+  private catExtreme(mode: "min" | "max"): { value: CellValue; position: number } | undefined {
+    const cat = this._catDtype!;
+    if (!cat.ordered) {
+      throw new TypeError(
+        `Categorical is not ordered for operation ${mode}\nyou can use .as_ordered() to change the Categorical to an ordered one`
+      );
+    }
+    const index = categoryIndex(cat);
+    let best = -1;
+    let bestPos = -1;
+    this._values.forEach((value, i) => {
+      if (isMissing(value)) return;
+      const code = index.get(scalarKey(value)) ?? -1;
+      if (code < 0) return;
+      if (bestPos < 0 || (mode === "min" ? code < best : code > best)) {
+        best = code;
+        bestPos = i;
+      }
+    });
+    return bestPos < 0 ? undefined : { value: this._values[bestPos]!, position: bestPos };
+  }
+
+  /** pandas: numeric reductions on categorical raise TypeError naming the op. */
+  private catUnsupported(op: string): void {
+    throw new TypeError(`'Categorical' with dtype category does not support operation '${op}'`);
+  }
+
+  /** pandas Categorical quantile: interpolates category CODES and returns a float. */
+  private catQuantile(q: number): CellValue {
+    const cat = this._catDtype!;
+    if (!cat.ordered) {
+      throw new TypeError(
+        `Categorical is not ordered for operation quantile\nyou can use .as_ordered() to change the Categorical to an ordered one`
+      );
+    }
+    const index = categoryIndex(cat);
+    const codes = this._values
+      .map((value) => (isMissing(value) ? -1 : (index.get(scalarKey(value)) ?? -1)))
+      .filter((code) => code >= 0)
+      .sort((a, b) => a - b);
+    if (codes.length === 0) return NaN;
+    const pos = (codes.length - 1) * q;
+    const lower = Math.floor(pos);
+    const upper = Math.ceil(pos);
+    return codes[lower]! + (codes[upper]! - codes[lower]!) * (pos - lower);
+  }
+
+  /** pandas ordered-categorical cummax/cummin: running extreme of category codes. */
+  private catCumExtreme(mode: "cummax" | "cummin"): Series<CellValue> {
+    const cat = this._catDtype!;
+    if (!cat.ordered) {
+      throw new TypeError(
+        `Categorical is not ordered for operation ${mode}\nyou can use .as_ordered() to change the Categorical to an ordered one`
+      );
+    }
+    const index = categoryIndex(cat);
+    let best = -1;
+    const out = this._values.map((value): CellValue => {
+      if (isMissing(value)) return NaN;
+      const code = index.get(scalarKey(value)) ?? -1;
+      if (code >= 0) {
+        best = best < 0 ? code : (mode === "cummax" ? Math.max(best, code) : Math.min(best, code));
+      }
+      return best < 0 ? NaN : (cat.categories[best] as CellValue);
+    });
+    return new Series(out, {
+      index: this._index,
+      indexName: this._indexName,
+      name: this.name,
+      dtype: cat,
+    });
+  }
+
   min(): CellValue {
+    if (this._catDtype !== undefined) return this.catExtreme("min")?.value ?? NaN;
     return this.maybeF32(pandasMinMax(this._values as CellValue[], this._dtype, "min"));
   }
 
   max(): CellValue {
+    if (this._catDtype !== undefined) return this.catExtreme("max")?.value ?? NaN;
     return this.maybeF32(pandasMinMax(this._values as CellValue[], this._dtype, "max"));
   }
 
@@ -689,6 +805,34 @@ export class Series<T extends CellValue = CellValue> {
     const normalize = opts.normalize ?? false;
     const sort = opts.sort ?? true;
     const ascending = opts.ascending ?? false;
+    if (this._catDtype !== undefined) {
+      // pandas categorical value_counts lists every declared category
+      // (unobserved included with zero counts) in category order; sorting
+      // reorders by count with a stable tie-break on that order.
+      const counts = new Map<string, number>();
+      let missingCount = 0;
+      for (const value of this._values) {
+        if (isMissing(value)) { missingCount += 1; continue; }
+        const key = scalarKey(value);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      const ordered = this._catDtype.categories.map(category => ({
+        value: category,
+        count: counts.get(scalarKey(category)) ?? 0,
+      }));
+      if (!dropna && missingCount > 0) ordered.push({ value: NaN, count: missingCount });
+      if (sort) ordered.sort((a, b) => ascending ? a.count - b.count : b.count - a.count);
+      const total = ordered.reduce((acc, entry) => acc + entry.count, 0);
+      const values = normalize
+        ? ordered.map(entry => entry.count / total)
+        : ordered.map(entry => entry.count);
+      return new Series(values as CellValue[], {
+        index: ordered.map(entry => entry.value as IndexLabel),
+        name: normalize ? "proportion" : "count",
+        indexName: this.name,
+        dtype: normalize ? "float64" : "int64",
+      });
+    }
     const masked = isMaskedDType(this._dtype);
 
     const counts = new Map<string, { value: CellValue; count: number; first: number }>();
@@ -750,6 +894,15 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   astype(dtype: SeriesDType): Series<CellValue> {
+    if (dtype instanceof CategoricalDtype || isCategoricalDType(dtype as DType)) {
+      // pandas astype('category') keeps an existing categorical's categories;
+      // otherwise categories are inferred as the sorted unique observed values.
+      const catDtype = dtype instanceof CategoricalDtype ? dtype
+        : (this._catDtype ?? inferCategoricalDtype(this._values as CellValue[]));
+      return new Series(this._values as CellValue[], {
+        index: this._index, indexName: this._indexName, name: this.name, dtype: catDtype,
+      });
+    }
     const values = castColumn(this._values, dtype, this.dtype);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
@@ -767,9 +920,7 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   clip(lower?: number | null, upper?: number | null): Series<CellValue> {
-    if (lower != null && upper != null && lower > upper) {
-      throw new Error("clip lower bound cannot exceed upper bound.");
-    }
+    // pandas swaps scalar lower>upper bounds (GH 2747) inside pandasClip.
     const { values, dtype } = pandasClip(this._values as CellValue[], this._dtype, lower, upper);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
@@ -1028,6 +1179,9 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   abs(): Series<CellValue> {
+    if (this._catDtype !== undefined) {
+      throw new TypeError("Object with dtype category cannot perform the numpy op absolute");
+    }
     const { values, dtype } = pandasAbs(this._values as CellValue[], this._dtype);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
@@ -1041,7 +1195,7 @@ export class Series<T extends CellValue = CellValue> {
       });
       return new Series<CellValue>(values, { index: this._index, indexName: this._indexName, name: this.name, dtype: "object" });
     }
-    if (!/^(u?int|float|number)/i.test(this._dtype ?? "")) return new Series<CellValue>(this._values, { index: this._index, indexName: this._indexName, name: this.name, dtype: this._dtype });
+    if (!/^(u?int|float|number)/i.test(this._dtype ?? "")) return new Series<CellValue>(this._values, { index: this._index, indexName: this._indexName, name: this.name, dtype: this._catDtype ?? this._dtype });
     const out: CellValue[] = this._values.map((value) => {
       if (isMissing(value)) {
         return null;
@@ -1053,7 +1207,7 @@ export class Series<T extends CellValue = CellValue> {
       const n = typeof value === "number" ? value : Number(value as CellValue);
       return roundToEven(n, decimals);
     });
-    return new Series(out, { index: this._index, indexName: this._indexName, name: this.name, dtype: replacementDType(this._dtype, out) });
+    return new Series(out, { index: this._index, indexName: this._indexName, name: this.name, dtype: this.declaredDType(replacementDType(this._dtype, out)) });
   }
 
   // ---- comparisons (return boolean Series) ----
@@ -1096,50 +1250,126 @@ export class Series<T extends CellValue = CellValue> {
     });
   }
 
+  /**
+   * pandas Categorical comparison: equality compares decoded values (a scalar
+   * outside the categories is simply never equal); ordering comparisons run
+   * on category codes, require `ordered=True`, and reject non-categorical
+   * Series operands. Missing cells yield False for eq/ordering, True for ne.
+   */
+  private categoricalCompare(
+    other: CellValue | Series<T>,
+    op: "eq" | "ne" | "lt" | "le" | "gt" | "ge"
+  ): Series<boolean> {
+    const cat = this._catDtype!;
+    const equality = op === "eq" || op === "ne";
+    if (!equality && !cat.ordered) {
+      throw new TypeError("Unordered Categoricals can only compare equality or not");
+    }
+    const otherCat = other instanceof Series ? other._catDtype : undefined;
+    if (other instanceof Series && otherCat !== undefined) {
+      // pandas: when either side is ordered the dtypes must be identical
+      // (same categories in the same order); between two unordered
+      // categoricals the same category SET suffices for ==/!=.
+      const compatible = cat.ordered || otherCat.ordered
+        ? cat.equals(otherCat)
+        : sameCategorySet(cat, otherCat);
+      if (!compatible) {
+        throw new TypeError("Categoricals can only be compared if 'categories' are the same.");
+      }
+    }
+    if (!equality) {
+      if (other instanceof Series && otherCat === undefined) {
+        throw new TypeError(`Invalid comparison between dtype=category and ${other._dtype}`);
+      }
+      if (!(other instanceof Series) && (isMissing(other) || (categoryIndex(cat).get(scalarKey(other)) ?? -1) < 0)) {
+        throw new TypeError(`Invalid comparison between dtype=category and ${pythonOperandTypeName(other)}`);
+      }
+    }
+    const { leftValues, rightValues, resultIndex } = this.alignBinary(other);
+    const index = categoryIndex(cat);
+    const out = leftValues.map((value, i): boolean => {
+      const right = rightValues[i]!;
+      const aMiss = isMissing(value);
+      const bMiss = isMissing(right);
+      if (aMiss || bMiss) {
+        // pandas: NaN == x -> False, NaN != x -> True, ordered ops -> False.
+        return equality ? op === "ne" : false;
+      }
+      if (equality) {
+        const equal = scalarEquals(value, right);
+        return op === "eq" ? equal : !equal;
+      }
+      const leftCode = index.get(scalarKey(value)) ?? -1;
+      const rightCode = index.get(scalarKey(right)) ?? -1;
+      if (leftCode < 0 || rightCode < 0) return false;
+      switch (op) {
+        case "lt": return leftCode < rightCode;
+        case "le": return leftCode <= rightCode;
+        case "gt": return leftCode > rightCode;
+        default: return leftCode >= rightCode;
+      }
+    });
+    return new Series(out, { index: resultIndex, indexName: this._indexName, name: this.name, dtype: "bool" });
+  }
+
   eq(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "eq");
     // numberOrBigintEqual keeps bigint/number comparisons exact (=== is false
     // for mixed types even when the values are numerically equal).
     return this.compareOp(other, (a, b) => numberOrBigintEqual(a, b));
   }
 
   ne(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "ne");
     return this.compareOp(other, (a, b) => !numberOrBigintEqual(a, b));
   }
 
   lt(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "lt");
     return this.compareOp(other, (a, b) => (a as number) < (b as number), true);
   }
 
   le(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "le");
     return this.compareOp(other, (a, b) => (a as number) <= (b as number), true);
   }
 
   gt(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "gt");
     return this.compareOp(other, (a, b) => (a as number) > (b as number), true);
   }
 
   ge(other: CellValue | Series<T>): Series<boolean> {
+    if (this._catDtype !== undefined) return this.categoricalCompare(other, "ge");
     return this.compareOp(other, (a, b) => (a as number) >= (b as number), true);
   }
 
   // ---- cumulative ----
 
   cumsum(): Series<CellValue> {
+    if (this._catDtype !== undefined) {
+      throw new TypeError("Accumulation cumsum not supported for <class 'pandas.Categorical'>");
+    }
     const { values, dtype } = pandasCumSumProd(this._values as CellValue[], this._dtype, false);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   cummax(): Series<CellValue> {
+    if (this._catDtype !== undefined) return this.catCumExtreme("cummax");
     const { values, dtype } = pandasCumMinMax(this._values as CellValue[], this._dtype, true);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   cummin(): Series<CellValue> {
+    if (this._catDtype !== undefined) return this.catCumExtreme("cummin");
     const { values, dtype } = pandasCumMinMax(this._values as CellValue[], this._dtype, false);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
 
   cumprod(): Series<CellValue> {
+    if (this._catDtype !== undefined) {
+      throw new TypeError("Accumulation cumprod not supported for <class 'pandas.Categorical'>");
+    }
     const { values, dtype } = pandasCumSumProd(this._values as CellValue[], this._dtype, true);
     return new Series(values, { index: this._index, indexName: this._indexName, name: this.name, dtype });
   }
@@ -1185,6 +1415,11 @@ export class Series<T extends CellValue = CellValue> {
     const mine = this._dtype;
     const theirs = other._dtype;
     if (mine !== theirs) return false;
+    // pandas requires identical categorical dtype (categories + orderedness).
+    if (this._catDtype !== undefined || other._catDtype !== undefined) {
+      if (this._catDtype === undefined || other._catDtype === undefined) return false;
+      if (!this._catDtype.equals(other._catDtype)) return false;
+    }
     return seriesEquals(this._values as CellValue[], this._index, other._values as CellValue[], other._index);
   }
 
@@ -1195,32 +1430,73 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   all(skipna = true): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("all");
     return pandasAllAny(this._values as CellValue[], this._dtype, skipna, "all");
   }
 
   any(skipna = true): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("any");
     return pandasAllAny(this._values as CellValue[], this._dtype, skipna, "any");
   }
 
   argmax(): number {
+    if (this._catDtype !== undefined) {
+      const extreme = this.catExtreme("max");
+      if (extreme === undefined) throw new ValueError("attempt to get argmax of an empty sequence");
+      return extreme.position;
+    }
     return pandasArgExtreme(this._values as CellValue[], "max");
   }
 
   argmin(): number {
+    if (this._catDtype !== undefined) {
+      const extreme = this.catExtreme("min");
+      if (extreme === undefined) throw new ValueError("attempt to get argmin of an empty sequence");
+      return extreme.position;
+    }
     return pandasArgExtreme(this._values as CellValue[], "min");
   }
 
   copy(): Series<T> {
-    return new Series([...this._values], { index: [...this._index], name: this.name, dtype: this._dtype });
+    return new Series([...this._values], { index: [...this._index], name: this.name, dtype: this._catDtype ?? this._dtype });
   }
 
   std(ddof = 1): CellValue {
+    if (this._catDtype !== undefined) this.catUnsupported("std");
     const numbers = requireNumeric(this._values as CellValue[], this._dtype, "std");
     const result = seriesStd(numbers, ddof);
     return result === null || result === undefined ? missingScalar(this._dtype) : this.maybeF32(result);
   }
 
   describe(): Series<CellValue> {
+    if (this._catDtype !== undefined) {
+      // pandas categorical describe: count/unique/top/freq where top is the
+      // most frequent *observed* category, tie-broken in category order.
+      const counts = new Map<string, { value: CellValue; count: number }>();
+      let observed = 0;
+      for (const value of this._values) {
+        if (isMissing(value)) continue;
+        observed += 1;
+        const key = scalarKey(value);
+        const entry = counts.get(key);
+        if (entry) entry.count += 1;
+        else counts.set(key, { value, count: 1 });
+      }
+      const index = categoryIndex(this._catDtype);
+      let top: CellValue = NaN;
+      let freq = 0;
+      for (const entry of counts.values()) {
+        const code = index.get(scalarKey(entry.value)) ?? Number.MAX_SAFE_INTEGER;
+        const topCode = isMissing(top) ? Number.MAX_SAFE_INTEGER : index.get(scalarKey(top)) ?? Number.MAX_SAFE_INTEGER;
+        if (entry.count > freq || (entry.count === freq && code < topCode)) {
+          top = entry.value;
+          freq = entry.count;
+        }
+      }
+      return new Series([observed, counts.size, top, freq], {
+        index: ["count", "unique", "top", "freq"], name: this.name, dtype: "object",
+      });
+    }
     const result = seriesDescribe(this._values as CellValue[], this._dtype);
     return new Series(result.values, { index: result.keys, name: this.name, dtype: result.dtype as DType });
   }
@@ -1268,7 +1544,7 @@ export class Series<T extends CellValue = CellValue> {
       index: pairs.map((p) => p.index),
       indexName: this._indexName,
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -1437,7 +1713,7 @@ export class Series<T extends CellValue = CellValue> {
       values.push(this._values[i]!);
       index.push(this._index[i]!);
     }
-    return new Series(values, { index, indexName: this._indexName, name: this.name, dtype: this._dtype });
+    return new Series(values, { index, indexName: this._indexName, name: this.name, dtype: this._catDtype ?? this._dtype });
   }
 
   sort_values(options: { ascending?: boolean; na_position?: "first" | "last" } | boolean = true): Series<T> {
@@ -1447,6 +1723,8 @@ export class Series<T extends CellValue = CellValue> {
       throw new Error("na_position must be 'first' or 'last'.");
     }
     this.requireSortable();
+    // Categoricals sort by category code order (pandas), not by cell value.
+    const catIndex = this._catDtype !== undefined ? categoryIndex(this._catDtype) : undefined;
     const indexed = this._values.map((value, position) => ({ value, position, label: this._index[position]! }));
     indexed.sort((a, b) => {
       const aMiss = isMissing(a.value);
@@ -1454,7 +1732,9 @@ export class Series<T extends CellValue = CellValue> {
       if (aMiss && bMiss) return 0;
       if (aMiss) return naPosition === "last" ? 1 : -1;
       if (bMiss) return naPosition === "last" ? -1 : 1;
-      const cmp = compareCellValues(a.value as CellValue, b.value as CellValue);
+      const cmp = catIndex !== undefined
+        ? (catIndex.get(scalarKey(a.value)) ?? -1) - (catIndex.get(scalarKey(b.value)) ?? -1)
+        : compareCellValues(a.value as CellValue, b.value as CellValue);
       return ascending ? cmp : -cmp;
     });
     // pandas 3 re-infers a sorted all-string object column as str.
@@ -1464,7 +1744,7 @@ export class Series<T extends CellValue = CellValue> {
       : this._dtype;
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, indexName: this._indexName, dtype: outDtype,
+      name: this.name, indexName: this._indexName, dtype: this.declaredDType(outDtype),
     });
   }
 
@@ -1503,7 +1783,7 @@ export class Series<T extends CellValue = CellValue> {
     });
     return new Series(indexed.map((e) => e.value), {
       index: indexed.map((e) => e.label),
-      name: this.name, indexName: this._indexName, indexNames: this._indexNames, dtype: this._dtype,
+      name: this.name, indexName: this._indexName, indexNames: this._indexNames, dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -1555,7 +1835,7 @@ export class Series<T extends CellValue = CellValue> {
     const positions = samplePositions(this.length, sampleSize, replace, options.random_state);
     const values = positions.map((p) => this._values[p]!);
     const index = ignoreIndex ? range(values.length) : positions.map((p) => this._index[p]!);
-    return new Series(values as unknown as T[], { index, name: this.name, dtype: this._dtype });
+    return new Series(values as unknown as T[], { index, name: this.name, dtype: this._catDtype ?? this._dtype });
   }
 
   reindex(newIndex: IndexLabel[], fill_value?: T | null): Series<T> {
@@ -1576,6 +1856,9 @@ export class Series<T extends CellValue = CellValue> {
   }
 
   diff(periods = 1): Series<CellValue> {
+    if (this._catDtype !== undefined) {
+      throw new TypeError("Categorical has no 'diff' method. Convert to a suitable dtype prior to calling 'diff'.");
+    }
     if (!Number.isInteger(periods)) throw new ValueError("periods must be an integer");
     const { values, dtype } = pandasDiff(this._values as CellValue[], this._dtype, periods);
     return new Series(values, { index: [...this._index], indexName: this._indexName, name: this.name, dtype });
@@ -1596,7 +1879,7 @@ export class Series<T extends CellValue = CellValue> {
       values.push(this._values[i]!);
       index.push(this._index[i]!);
     }
-    return new Series(values, { index, name: this.name, dtype: this._dtype });
+    return new Series(values, { index, name: this.name, dtype: this._catDtype ?? this._dtype });
   }
 
   duplicated(keep: "first" | "last" | false = "first"): Series<boolean> {
@@ -1642,9 +1925,14 @@ export class Series<T extends CellValue = CellValue> {
   }
   // ---- compat / window / export parity (delegates to internal/series/seriesApi) ----
 
+  /** The dtype to hand a derived series: CategoricalDtype rides along when the result stays categorical. */
+  private declaredDType(dtype: DType | undefined): DType | CategoricalDtype | undefined {
+    return isCategoricalDType(dtype) ? (this._catDtype ?? dtype) : dtype;
+  }
+
   private withReplacement(values: T[], index = this._index, sourceDType = this._dtype): Series<T> {
     const dtype = replacementDType(sourceDType, values);
-    return new Series(values, { index, name: this.name, dtype });
+    return new Series(values, { index, name: this.name, dtype: this.declaredDType(dtype) });
   }
 
   private view(): import("./internal/series/seriesApi").SeriesHost {
@@ -1697,12 +1985,12 @@ export class Series<T extends CellValue = CellValue> {
    * `options.level` groups by index level(s) instead, like
    * `s.groupby(level=0)`.
    */
-  groupby(by?: string | string[] | null, options?: { level?: number | string | (number | string)[] }): unknown {
+  groupby(by?: string | string[] | null, options?: GroupByOptions): unknown {
     if (options?.level !== undefined) {
       return (this.to_frame() as unknown as { groupby: (b: null, o: unknown) => unknown })
         .groupby(null, options);
     }
-    return seriesApi.groupby(this.view(), by ?? []);
+    return seriesApi.groupby(this.view(), by ?? [], options);
   }
   to_numpy(): CellValue[] { return seriesApi.to_numpy(this.view()); }
   to_string(): string { return seriesApi.to_string(this.view()); }
@@ -1726,7 +2014,7 @@ export class Series<T extends CellValue = CellValue> {
         indexName: name[0],
         indexNames: [...name],
         name: this.name,
-        dtype: this._dtype,
+        dtype: this._catDtype ?? this._dtype,
       }) as unknown as Series<CellValue>;
     }
     if (this.nlevels > 1) {
@@ -1735,7 +2023,7 @@ export class Series<T extends CellValue = CellValue> {
         indexName: name,
         indexNames: this.index_names.map((existing, i) => (i === 0 ? name : existing)),
         name: this.name,
-        dtype: this._dtype,
+        dtype: this._catDtype ?? this._dtype,
       }) as unknown as Series<CellValue>;
     }
     return seriesApi.rename_axis(this.view(), name) as Series<CellValue>;
@@ -1861,7 +2149,7 @@ export class Series<T extends CellValue = CellValue> {
         indexName: nextNames[0],
         indexNames: nextNames.length === nlevels ? this._indexNames : nextNames,
         name: this.name,
-        dtype: this._dtype,
+        dtype: this._catDtype ?? this._dtype,
       }
     );
   }
@@ -1898,7 +2186,7 @@ export class Series<T extends CellValue = CellValue> {
       indexName: nextNames[0],
       indexNames: nextNames.length === 1 ? undefined : nextNames,
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -1920,7 +2208,7 @@ export class Series<T extends CellValue = CellValue> {
       indexName: nextNames[0],
       indexNames: nextNames.length === 1 ? undefined : nextNames,
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
 
@@ -1944,7 +2232,7 @@ export class Series<T extends CellValue = CellValue> {
       indexName: nextNames[0],
       indexNames: nextNames,
       name: this.name,
-      dtype: this._dtype,
+      dtype: this._catDtype ?? this._dtype,
     });
   }
   set_flags(options: { allows_duplicate_labels?: boolean }): Series<T> { return seriesApi.set_flags(this.view(), options) as never; }
@@ -1960,7 +2248,18 @@ export class Series<T extends CellValue = CellValue> {
   to_markdown(columnName?: string): string { return seriesApi.to_markdown(this.view(), columnName); }
   to_latex(columnName?: string): string { return seriesApi.to_latex(this.view(), columnName); }
 
-  get cat() { return seriesApi.accessor_cat(this.view()); }
+  /**
+   * pandas `.cat` accessor: category metadata + recoding methods that return
+   * new categorical Series. Non-categorical series get an inferred view.
+   */
+  get cat(): CategoricalMethods {
+    return new CategoricalMethods(this as unknown as Series<CellValue>);
+  }
+
+  /** The CategoricalDtype backing a category-dtype series; undefined otherwise. */
+  get catDtype(): CategoricalDtype | undefined {
+    return this._catDtype;
+  }
   get html(): string { return this.to_frame().to_html(); }
   /** ASCII histogram of the numeric values. */
   hist(bins = 10): string { return asciiHistogram(this._values as unknown as CellValue[], bins); }

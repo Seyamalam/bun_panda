@@ -103,7 +103,7 @@ export function performJoin(
         return next;
       });
     const columns = [options.on as string, ...keptNoOn];
-    const joinedDtypes = joined.dtypes() as Record<string, DType>;
+    const joinedDtypes = joined.dtypes as Record<string, DType>;
     const fixedDtypes: Record<string, DType> = {};
     fixedDtypes[options.on as string] = joinedDtypes[leftOnName] ?? "object";
     for (const column of keptNoOn) {
@@ -145,7 +145,7 @@ export function performJoin(
       result.columns as string[],
       labels,
       {},
-      result.dtypes() as Record<string, DType>
+      result.dtypes as Record<string, DType>
     );
   }
   return result;

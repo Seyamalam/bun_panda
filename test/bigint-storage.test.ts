@@ -72,7 +72,7 @@ describe("selection and output APIs preserve bigint", () => {
   const frame = new DataFrame({ wide: [WIDE, WIDE2, 4n], small: [1, 2, 3] }, { index: ["a", "b", "c"] });
 
   test("column dtype inference and to_records", () => {
-    expect(frame.dtypes().wide).toBe("int64");
+    expect(frame.dtypes.wide).toBe("int64");
     expect(frame.to_records()).toEqual([
       { wide: WIDE, small: 1 },
       { wide: WIDE2, small: 2 },

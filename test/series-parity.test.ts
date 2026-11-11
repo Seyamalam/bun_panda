@@ -131,7 +131,8 @@ describe("Series .str accessor", () => {
 
   test("cat joins with separator", () => {
     const s = new Series<string>(["x", "y"]);
-    expect(s.str.cat(["1", "2"], "-").map((v) => v as string)).toEqual(["x-1", "y-2"]);
+    const joined = s.str.cat(["1", "2"], "-");
+    expect(Array.isArray(joined) ? joined.map((v) => v as string) : joined).toEqual(["x-1", "y-2"]);
   });
 });
 

@@ -6,5 +6,5 @@ export interface FrameLike {
   storageColumns: string[];
   index: IndexLabel[];
   to_records(): Row[];
-  dtypes(): Record<string, InferredDType>;
+  readonly dtypes: Record<string, InferredDType>;
 }

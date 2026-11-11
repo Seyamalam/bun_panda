@@ -71,7 +71,7 @@ describe("dtypes and astype", () => {
       { a: 2, b: "y", c: false, d: null, e: "oops" },
     ]);
 
-    expect(df.dtypes()).toEqual({
+    expect(df.dtypes).toEqual({
       a: "int64",
       b: "str",
       c: "bool",

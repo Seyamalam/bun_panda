@@ -1,5 +1,6 @@
 import type { CellValue, Row } from "../../types";
 import { compareCellValues, isMissing, range } from "../../utils";
+import { scalarKey } from "../shared/valueSemantics";
 
 export type RowComparer = (leftPosition: number, rightPosition: number) => number;
 
@@ -80,6 +81,33 @@ export function buildColumnComparer(
 
   return (leftPosition, rightPosition) =>
     compareFallback(values[leftPosition], values[rightPosition], direction, naPosition);
+}
+
+/**
+ * Categorical-column sort comparer: rows order by their value's category code
+ * (`categoryIndex` maps scalarKey -> category position); missing cells follow
+ * `naPosition` like every other dtype.
+ */
+export function buildCategoricalComparer(
+  rows: Row[],
+  column: string,
+  categoryIndex: Map<string, number>,
+  ascending: boolean,
+  naPosition: "first" | "last" = "last"
+): RowComparer {
+  const direction = ascending ? 1 : -1;
+  const codes = rows.map((row) => {
+    const value = row[column];
+    return isMissing(value) ? null : (categoryIndex.get(scalarKey(value)) ?? -1);
+  });
+  return (leftPosition, rightPosition) => {
+    const left = codes[leftPosition]!;
+    const right = codes[rightPosition]!;
+    if (left === null && right === null) return 0;
+    if (left === null) return naPosition === "first" ? -1 : 1;
+    if (right === null) return naPosition === "first" ? 1 : -1;
+    return (left - right) * direction;
+  };
 }
 
 export function fullSortPositions(rows: Row[], comparers: RowComparer[]): number[] {

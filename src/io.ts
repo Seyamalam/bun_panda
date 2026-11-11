@@ -221,7 +221,7 @@ function concatRows(frames: DataFrame[], ignoreIndex: boolean, join: "outer" | "
         absent = true;
         return;
       }
-      promoted = promoteDTypes(promoted, (frame.dtypes() as Record<string, DType>)[column]);
+      promoted = promoteDTypes(promoted, (frame.dtypes as Record<string, DType>)[column]);
     });
     const dtype = promoted ?? "object";
     declared[column] = absent ? widenDTypeForMissing(dtype) : dtype;
@@ -314,7 +314,7 @@ function concatColumns(frames: DataFrame[], ignoreIndex: boolean): DataFrame {
   // doesn't cover every output index label (missing cells are introduced).
   const declared: Record<string, DType> = {};
   frames.forEach((frame, frameIndex) => {
-    const frameDtypes = frame.dtypes() as Record<string, DType>;
+    const frameDtypes = frame.dtypes as Record<string, DType>;
     const coversAll = outputIndex.every((label) => frameIndexLabels[frameIndex]!.has(String(label)));
     for (const mapping of perFrameMappings[frameIndex]!) {
       const source = frameDtypes[mapping.source] ?? "object";

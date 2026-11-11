@@ -1,5 +1,7 @@
 // pandas-style Categorical / CategoricalDtype.
 import { DataFrame } from "./dataframe";
+import { Series } from "./series";
+import { isMissingScalar } from "./missing";
 import type { CellValue, Row } from "./types";
 import { isAbsent, scalarKey, sortedCategories } from "./internal/shared/valueSemantics";
 
@@ -44,10 +46,43 @@ export class CategoricalDtype {
   }
 }
 
-function categoryIndex(dtype: CategoricalDtype): Map<string, number> {
+/** scalarKey -> category position, for code lookups against a CategoricalDtype. */
+export function categoryIndex(dtype: CategoricalDtype): Map<string, number> {
   const map = new Map<string, number>();
   dtype.categories.forEach((category, position) => map.set(scalarKey(category), position));
   return map;
+}
+
+/** CategoricalDtype inferred from the sorted unique observed values (pandas default). */
+export function inferCategoricalDtype(values: readonly CellValue[], ordered = false): CategoricalDtype {
+  return new CategoricalDtype(sortedCategories([...values]), ordered);
+}
+
+/**
+ * Cast raw cells onto a categorical column: missing values and values that are
+ * not members of `dtype.categories` both become NaN (pandas materializes both
+ * as NaN), present category members pass through unchanged.
+ */
+export function castCategoricalValues(values: readonly CellValue[], dtype: CategoricalDtype): CellValue[] {
+  const index = categoryIndex(dtype);
+  return values.map(value => isAbsent(value) ? NaN : index.has(scalarKey(value)) ? value : NaN);
+}
+
+/** Category-position of a value, or -1 for missing/unseen values (like `Categorical.codes`). */
+export function categoryCodeOf(index: Map<string, number>, value: CellValue): number {
+  return isAbsent(value) ? -1 : index.get(scalarKey(value)) ?? -1;
+}
+
+/** True when both dtypes list the same category set (order ignored — pandas `==` semantics). */
+export function sameCategorySet(left: CategoricalDtype, right: CategoricalDtype): boolean {
+  if (left.categories.length !== right.categories.length) return false;
+  const rightKeys = new Set(right.categories.map(scalarKey));
+  return left.categories.every(category => rightKeys.has(scalarKey(category)));
+}
+
+/** pandas `Categorical.isin`-style membership test on a scalar. */
+export function isCategoryMember(dtype: CategoricalDtype, value: CellValue): boolean {
+  return !isMissingScalar(value) && categoryIndex(dtype).has(scalarKey(value));
 }
 
 /**
@@ -275,4 +310,17 @@ export class CategoricalAccessor {
       new Categorical(this.cat.to_list(), { categories: kept, ordered: this.cat.ordered })
     );
   }
+}
+
+/**
+ * Top-level helper mirroring `pd.Categorical(...)`: builds a categorical
+ * Series whose values are restricted to `categories` (default: sorted unique
+ * observed values). Assign into a frame via `df.assign({col: categorical(...)})`
+ * or read standalone like any other Series.
+ */
+export function categorical(
+  values: readonly CellValue[],
+  options: { categories?: CellValue[]; ordered?: boolean } = {},
+): Series<CellValue> {
+  return new Series(values as CellValue[], { dtype: new CategoricalDtype(options.categories ?? sortedCategories(values as CellValue[]), options.ordered ?? false) });
 }

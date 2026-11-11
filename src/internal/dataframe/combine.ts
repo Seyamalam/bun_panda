@@ -1,9 +1,11 @@
 // Combine / compare / dtype-conversion / reshape helpers for DataFrame.
 // Pure functions over (rows, columns, index); the DataFrame methods are
 // thin wrappers that pass their private state in and rebuild a frame.
-import type { CellValue, IndexLabel, Row } from "../../types";
+import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
-import { pearson } from "./stats";
+import { asNumber } from "../../dtypes";
+import { NA } from "../../missing";
+import { isMaskedDType } from "../series/pandasOps";
 
 /** A user-supplied combiner: receives the two columns (missing = null) and
  * returns either a per-position array or a single value broadcast to all
@@ -163,8 +165,13 @@ function valuesDiffer(a: CellValue, b: CellValue): boolean {
 }
 
 /**
- * pandas-style `corrwith`: Pearson correlation between the shared numeric
- * columns of two frames, pairing values by matching index label.
+ * pandas-style `corrwith`: Pearson correlation between the columns of two
+ * frames. pandas inner-joins the index, unions the columns (a column found
+ * on only one side correlates against an all-NaN column, producing NaN),
+ * and computes `num / ((n-1) * std(a) * std(b))` per column — a different
+ * float formula than Series.corr's np.corrcoef, which is why perfectly
+ * correlated 2-point pairs give 0.9999999999999998 here.
+ * Non-numeric cells in a shared column raise like pandas' frame arithmetic.
  */
 export function corrwithValues(
   leftRows: Row[],
@@ -172,7 +179,9 @@ export function corrwithValues(
   leftIndex: IndexLabel[],
   rightRows: Row[],
   rightColumns: string[],
-  rightIndex: IndexLabel[]
+  rightIndex: IndexLabel[],
+  leftDTypes: Partial<Record<string, DType>> = {},
+  rightDTypes: Partial<Record<string, DType>> = {}
 ): Record<string, number | null> {
   const rightByLabel = new Map<IndexLabel, Row>();
   for (let i = 0; i < rightIndex.length; i += 1) {
@@ -180,21 +189,62 @@ export function corrwithValues(
       rightByLabel.set(rightIndex[i]!, rightRows[i]!);
     }
   }
+  const leftSet = new Set(leftColumns);
   const rightSet = new Set(rightColumns);
+  // pandas aligns columns with an outer join: left columns in order, then
+  // right-only columns in right order.
+  const unionColumns = [...leftColumns, ...rightColumns.filter((c) => !leftSet.has(c))];
   const out: Record<string, number | null> = {};
-  for (const column of leftColumns) {
-    if (!rightSet.has(column)) continue;
+  for (const column of unionColumns) {
+    // pandas surfaces pd.NA when a nullable (masked) dtype drives the
+    // computation and np.nan for plain numpy dtypes.
+    const masked = isMaskedDType(leftDTypes[column]) || isMaskedDType(rightDTypes[column]);
+    const missing = (masked ? NA : NaN) as unknown as number;
+    if (!leftSet.has(column) || !rightSet.has(column)) {
+      // One-sided column: the absent side is all-missing after alignment.
+      out[column] = missing;
+      continue;
+    }
     const a: number[] = [];
     const b: number[] = [];
+    const leftFloat: number[] = [];
+    const rightFloat: number[] = [];
     for (let r = 0; r < leftRows.length; r += 1) {
+      const rightRow = rightByLabel.get(leftIndex[r]!);
+      if (rightRow === undefined) continue; // inner join drops the row
+      // Coercion happens before pairwise filtering: pandas' `left + right*0`
+      // raises on any non-numeric cell in a shared row of a shared column.
       const av = leftRows[r]![column];
-      const bv = rightByLabel.get(leftIndex[r]!)?.[column];
-      if (typeof av === "number" && typeof bv === "number" && Number.isFinite(av) && Number.isFinite(bv)) {
-        a.push(av);
-        b.push(bv);
+      const bv = rightRow[column];
+      const ax = isMissing(av) ? NaN : asNumber(av);
+      const bx = isMissing(bv) ? NaN : asNumber(bv);
+      leftFloat.push(ax);
+      rightFloat.push(bx);
+    }
+    for (let i = 0; i < leftFloat.length; i += 1) {
+      if (!Number.isNaN(leftFloat[i]!) && !Number.isNaN(rightFloat[i]!)) {
+        a.push(leftFloat[i]!);
+        b.push(rightFloat[i]!);
       }
     }
-    out[column] = a.length >= 2 ? pearson(a, b) : null;
+    if (a.length === 0) {
+      out[column] = missing;
+      continue;
+    }
+    const n = a.length;
+    const ma = a.reduce((s, v) => s + v, 0) / n;
+    const mb = b.reduce((s, v) => s + v, 0) / n;
+    let num = 0;
+    let va = 0;
+    let vb = 0;
+    for (let i = 0; i < n; i += 1) {
+      num += (a[i]! - ma) * (b[i]! - mb);
+      va += (a[i]! - ma) ** 2;
+      vb += (b[i]! - mb) ** 2;
+    }
+    const dom = (n - 1) * Math.sqrt(va / (n - 1)) * Math.sqrt(vb / (n - 1));
+    const r = num / dom;
+    out[column] = Number.isNaN(r) ? missing : r;
   }
   return out;
 }

@@ -127674,6 +127674,173 @@
     {
       "mode": "elementwise",
       "dtype": "int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
       "values": [],
       "operation": "diff",
       "args": [
@@ -127898,6 +128065,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "int16",
@@ -128394,6 +128648,147 @@
         ],
         "name": "v"
       }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
     },
     {
       "mode": "elementwise",
@@ -128959,6 +129354,159 @@
     {
       "mode": "elementwise",
       "dtype": "Int16",
+      "values": [
+        3,
+        null,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        null,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          2,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        null,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          3,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          3,
+          {
+            "$missing": "NA"
+          },
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        3,
+        null,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
       "values": [],
       "operation": "diff",
       "args": [
@@ -129200,6 +129748,93 @@
     {
       "mode": "elementwise",
       "dtype": "Int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
       "values": [
         null,
         null
@@ -129680,6 +130315,185 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Int16",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Int16",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "Int16",
@@ -130226,6 +131040,173 @@
     {
       "mode": "elementwise",
       "dtype": "int64",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [
+          2,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
       "values": [],
       "operation": "diff",
       "args": [
@@ -130450,6 +131431,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "int64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "int64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "int64",
@@ -130964,6 +132032,173 @@
           2.0,
           1.5,
           2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          0.10000000149011612,
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          0.10000000149011612,
+          0.10000000149011612
         ],
         "index": [
           "row-0",
@@ -131537,6 +132772,189 @@
     {
       "mode": "elementwise",
       "dtype": "float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          3.5,
+          {
+            "$missing": "NaN"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          3.5,
+          {
+            "$missing": "NaN"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$missing": "NaN"
+          },
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$missing": "NaN"
+          },
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
       "values": [],
       "operation": "diff",
       "args": [
@@ -131761,6 +133179,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "float32",
@@ -132275,6 +133780,173 @@
           2.0,
           1.5,
           2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          0.10000000149011612,
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          0.10000000149011612,
+          0.10000000149011612
         ],
         "index": [
           "row-0",
@@ -132848,6 +134520,189 @@
     {
       "mode": "elementwise",
       "dtype": "Float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          3.5,
+          {
+            "$missing": "NA"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          3.5,
+          {
+            "$missing": "NA"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$missing": "NA"
+          },
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          0.10000000149011612,
+          {
+            "$missing": "NA"
+          },
+          0.10000000149011612
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
       "values": [],
       "operation": "diff",
       "args": [
@@ -133089,6 +134944,93 @@
     {
       "mode": "elementwise",
       "dtype": "Float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
       "values": [
         null,
         null
@@ -133569,6 +135511,185 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float32",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float32",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "Float32",
@@ -134117,6 +136238,173 @@
       "dtype": "float64",
       "values": [
         3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
         {
           "$missing": "NaN"
         },
@@ -134688,6 +136976,197 @@
             "$missing": "NaN"
           },
           2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        {
+          "$missing": "NaN"
+        },
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        {
+          "$missing": "NaN"
+        },
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NaN"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        {
+          "$missing": "NaN"
+        },
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          3.5,
+          {
+            "$missing": "NaN"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          3.5,
+          {
+            "$missing": "NaN"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        3.5,
+        {
+          "$missing": "NaN"
+        },
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$missing": "NaN"
+          },
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$missing": "NaN"
+          },
+          0.1
         ],
         "index": [
           "row-0",
@@ -135385,6 +137864,209 @@
     {
       "mode": "elementwise",
       "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        },
+        {
+          "$number": "Infinity"
+        }
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          0.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          0.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        },
+        {
+          "$number": "Infinity"
+        }
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          0.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          2.0,
+          0.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        },
+        {
+          "$number": "Infinity"
+        }
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          0.1,
+          {
+            "$number": "Infinity"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          {
+            "$number": "Infinity"
+          },
+          0.1,
+          {
+            "$number": "Infinity"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        },
+        {
+          "$number": "Infinity"
+        }
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-Infinity"
+          },
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [
+          0.1,
+          {
+            "$number": "-Infinity"
+          },
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
       "values": [],
       "operation": "diff",
       "args": [
@@ -135609,6 +138291,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "float64",
@@ -136137,6 +138906,173 @@
       "dtype": "Float64",
       "values": [
         3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          3.5,
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
         null,
         2.5
       ],
@@ -136696,6 +139632,189 @@
     {
       "mode": "elementwise",
       "dtype": "Float64",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          2.0,
+          {
+            "$missing": "NA"
+          },
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          3.5,
+          {
+            "$missing": "NA"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          3.5,
+          {
+            "$missing": "NA"
+          },
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        3.5,
+        null,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$missing": "NA"
+          },
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          0.1,
+          {
+            "$missing": "NA"
+          },
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
       "values": [],
       "operation": "diff",
       "args": [
@@ -136937,6 +140056,93 @@
     {
       "mode": "elementwise",
       "dtype": "Float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
       "values": [
         null,
         null
@@ -137417,6 +140623,185 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "Float64",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "Float64",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "Float64",
@@ -137934,6 +141319,173 @@
       "mode": "elementwise",
       "dtype": "bool",
       "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.5,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.5,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.5,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.5,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.1,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          true,
+          0.1,
+          true
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          false,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          false,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
         false,
         false
       ],
@@ -138356,6 +141908,153 @@
     {
       "mode": "elementwise",
       "dtype": "bool",
+      "values": [
+        false,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.5,
+          0.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.5,
+          0.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        false,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.5,
+          0.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.5,
+          0.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        false,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [
+        false,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "bool",
+        "values": [
+          false,
+          false
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
       "values": [],
       "operation": "diff",
       "args": [
@@ -138570,6 +142269,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "bool",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "bool",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "bool",
@@ -139002,6 +142788,69 @@
         ],
         "name": "v"
       }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
     },
     {
       "mode": "elementwise",
@@ -139465,6 +143314,69 @@
     {
       "mode": "elementwise",
       "dtype": "boolean",
+      "values": [
+        true,
+        null,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        null,
+        false
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
       "values": [],
       "operation": "diff",
       "args": [
@@ -139686,6 +143598,93 @@
     {
       "mode": "elementwise",
       "dtype": "boolean",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
       "values": [
         null,
         null
@@ -140106,6 +144105,185 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "boolean",
+        "values": [
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "boolean",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "boolean",
@@ -140383,6 +144561,69 @@
       "args": [
         null,
         2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        "a",
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        "a",
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        "a",
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        "a",
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "error": "TypeError",
       "frameError": "TypeError"
@@ -140763,6 +145004,69 @@
     {
       "mode": "elementwise",
       "dtype": "string",
+      "values": [
+        "b",
+        null,
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        null,
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        null,
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [
+        "b",
+        null,
+        "c"
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
       "values": [],
       "operation": "diff",
       "args": [
@@ -140977,6 +145281,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "string",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "string",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "string",
@@ -141504,6 +145895,173 @@
       "mode": "elementwise",
       "dtype": "object",
       "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          2.0,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          2.0,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          2.0,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          2.0,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          3,
+          1,
+          2
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        3,
+        1,
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
         1,
         "a",
         2
@@ -141767,6 +146325,69 @@
       "mode": "elementwise",
       "dtype": "object",
       "values": [
+        1,
+        "a",
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "a",
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "a",
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "a",
+        2
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "error": "TypeError",
+      "frameError": "TypeError"
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
         null,
         null
       ],
@@ -142177,6 +146798,153 @@
     {
       "mode": "elementwise",
       "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        null,
+        null
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          null,
+          null
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
       "values": [],
       "operation": "diff",
       "args": [
@@ -142401,6 +147169,93 @@
       "args": [
         null,
         2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [],
+        "index": [],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
       ],
       "expected": {
         "dtype": "object",
@@ -142856,6 +147711,153 @@
         "values": [
           1.5,
           2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.5,
+        2.0
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        2.0,
+        0.5
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.0
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      }
+    },
+    {
+      "mode": "elementwise",
+      "dtype": "object",
+      "values": [
+        1.5,
+        2.5
+      ],
+      "operation": "clip",
+      "args": [
+        null,
+        0.1
+      ],
+      "expected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ],
+        "name": "v"
+      },
+      "frameExpected": {
+        "dtype": "object",
+        "values": [
+          0.1,
+          0.1
         ],
         "index": [
           "row-0",
@@ -192058,6 +197060,1460 @@
       }
     },
     {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "aBcX Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "aBc-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "aBc-MISS-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          "MISS-y",
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          "MISSMISS",
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "Hello Worldabc123  pad  "
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "Hello World-abc123-  pad  "
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "Hello World-abc123-  pad  "
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          "abc123y",
+          "  pad  z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "Hello World-x",
+          "abc123-y",
+          "  pad  -z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "Hello World-x",
+          "abc123-y",
+          "  pad  -z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          {
+            "$missing": "NaN"
+          },
+          "  pad  z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          "abc123MISS",
+          "  pad  z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "Hello World",
+        "abc123",
+        "  pad  "
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "a=b=cx"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "a=b=c-x"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "a=b=c-x-MISS"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "a=b=cx",
+          "xy",
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "a=b=c-x",
+          "x-y",
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "a=b=c-x",
+          "x-y",
+          "MISS-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "a=b=cx",
+          {
+            "$missing": "NaN"
+          },
+          {
+            "$missing": "NaN"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "a=b=cx",
+          "xMISS",
+          "MISSz"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [
+        "a=b=c",
+        "x",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": ""
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": ""
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": ""
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        []
+      ],
+      "expected": {
+        "values": []
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        [],
+        "-"
+      ],
+      "expected": {
+        "values": []
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        [],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": []
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        []
+      ],
+      "expected": {
+        "values": []
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "str",
+      "values": [],
+      "operation": "cat",
+      "args": [
+        [],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": []
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "aBcX Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "aBc-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "aBc-MISS-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NA"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          {
+            "$missing": "NA"
+          },
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          "MISS-y",
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NA"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          "MISSMISS",
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "Hello Worldabc123"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "Hello World-abc123"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "Hello World-abc123-MISS"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          "abc123y",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "Hello World-x",
+          "abc123-y",
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "Hello World-x",
+          "abc123-y",
+          "MISS-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          {
+            "$missing": "NA"
+          },
+          {
+            "$missing": "NA"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "Hello Worldx",
+          "abc123MISS",
+          "MISSz"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "string",
+      "values": [
+        "Hello World",
+        "abc123",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [],
+      "expected": {
+        "values": "aBcX Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "expected": {
+        "values": "aBc-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": "aBc-MISS-X Y1"
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ],
+        "-",
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBc-x",
+          "MISS-y",
+          "X Y1-z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ]
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          {
+            "$missing": "NaN"
+          },
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z"
+        ],
+        null,
+        "MISS"
+      ],
+      "expected": {
+        "values": [
+          "aBcx",
+          "MISSMISS",
+          "X Y1z"
+        ]
+      }
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        null,
+        "X Y1"
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y"
+        ]
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        null,
+        "-",
+        "MISS"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z",
+          "w"
+        ]
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z",
+          "w"
+        ],
+        "-"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z",
+          "w"
+        ],
+        "-",
+        "MISS"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z",
+          "w"
+        ]
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          null,
+          "z",
+          "w"
+        ],
+        null,
+        "MISS"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "mode": "str",
+      "dtype": "object",
+      "values": [
+        "aBc",
+        1,
+        "X Y1",
+        null
+      ],
+      "operation": "cat",
+      "args": [
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "error": "TypeError"
+    },
+    {
       "mode": "dt",
       "dtype": "datetime64[ns]",
       "values": [
@@ -211654,6 +218110,4170 @@
           "row-1"
         ],
         "name": "v"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int64",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 4.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        null,
+        3.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float32",
+        "values": [
+          0.5,
+          2.5,
+          4.5
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 2.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "Int16",
+        "values": [
+          4,
+          5,
+          6
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999998
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.33333333333333337
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": -0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": -0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          0,
+          1
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": -0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-0",
+          "row-1"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": -0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "other-0",
+          "other-1"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1.5,
+          2.5
+        ],
+        "index": [
+          "other-0",
+          "other-1"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "row-0"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "row-0"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "row-1"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "row-1"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "other-0"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          2
+        ],
+        "index": [
+          "other-0"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operand": {
+        "dtype": "int16",
+        "values": [],
+        "index": []
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "2",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": 0.5
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "float64",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "int16",
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "row-0",
+          "row-1",
+          "row-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operand": {
+        "dtype": "object",
+        "values": [
+          1,
+          "x",
+          3
+        ],
+        "index": [
+          "other-0",
+          "other-1",
+          "other-2"
+        ]
+      },
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        {
+          "$missing": "NaN"
+        },
+        3.5,
+        4.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5,
+        {
+          "$missing": "NaN"
+        },
+        3.5,
+        4.5
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "Int16",
+      "values": [
+        1,
+        null,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1.0,
+        2.0,
+        3.0
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        {
+          "$number": "Infinity"
+        },
+        1.0,
+        2.0,
+        3.0
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": -0.9999999999999998
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "boolean",
+      "values": [
+        true,
+        false,
+        true,
+        false
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": -0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "bool",
+      "values": [
+        true,
+        false,
+        true
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "int16",
+      "values": [],
+      "index": [],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "float64",
+      "values": [
+        1.5
+      ],
+      "index": [
+        "row-0"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": {
+        "$missing": "NaN"
+      }
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "string",
+      "values": [
+        "a",
+        "b",
+        "c"
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "expected": 1.0
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "expected": 0.9999999999999999
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        1
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "pairwise",
+      "dtype": "object",
+      "values": [
+        1,
+        "x",
+        3,
+        4
+      ],
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2",
+        "row-3"
+      ],
+      "operation": "autocorr",
+      "args": [
+        2
+      ],
+      "error": "ValueError"
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "float64",
+        "c": "Int16"
+      },
+      "columns": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": [
+          4.5,
+          null,
+          6.5
+        ],
+        "c": [
+          null,
+          2,
+          3
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64",
+          "c": "float64"
+        },
+        "columns": [
+          "a",
+          "b",
+          "c"
+        ],
+        "index": [
+          "a",
+          "b",
+          "c"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            1.0,
+            {
+              "$missing": "NaN"
+            },
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "float64",
+        "c": "Int16"
+      },
+      "columns": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": [
+          4.5,
+          null,
+          6.5
+        ],
+        "c": [
+          null,
+          2,
+          3
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64",
+          "c": "float64"
+        },
+        "columns": [
+          "a",
+          "b",
+          "c"
+        ],
+        "index": [
+          "a",
+          "b",
+          "c"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            2.0,
+            0.5
+          ],
+          [
+            2.0,
+            2.0,
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            0.5,
+            {
+              "$missing": "NaN"
+            },
+            0.5
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "float64",
+        "b": "boolean"
+      },
+      "columns": {
+        "a": [
+          {
+            "$number": "Infinity"
+          },
+          1.5,
+          2.5
+        ],
+        "b": [
+          true,
+          null,
+          false
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "float64",
+        "b": "boolean"
+      },
+      "columns": {
+        "a": [
+          {
+            "$number": "Infinity"
+          },
+          1.5,
+          2.5
+        ],
+        "b": [
+          true,
+          null,
+          false
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            0.5,
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            0.5
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "bool",
+        "b": "int64",
+        "c": "Float32"
+      },
+      "columns": {
+        "a": [
+          true,
+          false,
+          true
+        ],
+        "b": [
+          1,
+          2,
+          3
+        ],
+        "c": [
+          null,
+          1.5,
+          2.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64",
+          "c": "float64"
+        },
+        "columns": [
+          "a",
+          "b",
+          "c"
+        ],
+        "index": [
+          "a",
+          "b",
+          "c"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "bool",
+        "b": "int64",
+        "c": "Float32"
+      },
+      "columns": {
+        "a": [
+          true,
+          false,
+          true
+        ],
+        "b": [
+          1,
+          2,
+          3
+        ],
+        "c": [
+          null,
+          1.5,
+          2.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64",
+          "c": "float64"
+        },
+        "columns": [
+          "a",
+          "b",
+          "c"
+        ],
+        "index": [
+          "a",
+          "b",
+          "c"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            0.33333333333333337,
+            0.0,
+            0.5
+          ],
+          [
+            0.0,
+            1.0,
+            0.5
+          ],
+          [
+            0.5,
+            0.5,
+            0.5
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "object",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          1,
+          "2",
+          3
+        ],
+        "b": [
+          1.5,
+          2.5,
+          3.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "object",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          1,
+          "2",
+          3
+        ],
+        "b": [
+          1.5,
+          2.5,
+          3.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "Int16",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          null,
+          null,
+          null
+        ],
+        "b": [
+          1.5,
+          2.5,
+          3.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "Int16",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          null,
+          null,
+          null
+        ],
+        "b": [
+          1.5,
+          2.5,
+          3.5
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "str",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          "1",
+          "2",
+          "3"
+        ],
+        "b": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "str",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [
+          "1",
+          "2",
+          "3"
+        ],
+        "b": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "string"
+      },
+      "columns": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "corr",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "string"
+      },
+      "columns": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "index": [
+        "row-0",
+        "row-1",
+        "row-2"
+      ],
+      "operation": "cov",
+      "args": [],
+      "error": "ValueError"
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [],
+        "b": []
+      },
+      "index": [],
+      "operation": "corr",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_selection",
+      "dtypes": {
+        "a": "int16",
+        "b": "float64"
+      },
+      "columns": {
+        "a": [],
+        "b": []
+      },
+      "index": [],
+      "operation": "cov",
+      "args": [],
+      "expected": {
+        "dtypes": {
+          "a": "float64",
+          "b": "float64"
+        },
+        "columns": [
+          "a",
+          "b"
+        ],
+        "index": [
+          "a",
+          "b"
+        ],
+        "indexName": null,
+        "values": [
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ],
+          [
+            {
+              "$missing": "NaN"
+            },
+            {
+              "$missing": "NaN"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "int16",
+          "y": "float64"
+        },
+        "columns": {
+          "x": [
+            1,
+            2,
+            3
+          ],
+          "y": [
+            4.5,
+            5.5,
+            6.5
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "int64",
+          "y": "float64",
+          "z": "int16"
+        },
+        "columns": {
+          "x": [
+            3,
+            1,
+            2
+          ],
+          "y": [
+            1.5,
+            2.5,
+            3.5
+          ],
+          "z": [
+            7,
+            8,
+            9
+          ]
+        },
+        "index": [
+          "b",
+          "c",
+          "d"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x",
+          "y",
+          "z"
+        ],
+        "name": null,
+        "values": [
+          -0.9999999999999998,
+          0.9999999999999998,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "float64"
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "Int16"
+        },
+        "columns": {
+          "x": [
+            1,
+            null,
+            3
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "Int16"
+        },
+        "columns": {
+          "x": [
+            4,
+            5,
+            null
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x"
+        ],
+        "name": null,
+        "values": [
+          {
+            "$missing": "NA"
+          }
+        ],
+        "dtype": "Float64"
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "int16",
+          "s": "str"
+        },
+        "columns": {
+          "x": [
+            1,
+            2,
+            3
+          ],
+          "s": [
+            "p",
+            "q",
+            "r"
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "int64"
+        },
+        "columns": {
+          "x": [
+            3,
+            2,
+            1
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x",
+          "s"
+        ],
+        "name": null,
+        "values": [
+          -1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "float64"
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "int16",
+          "s": "object"
+        },
+        "columns": {
+          "x": [
+            1,
+            2,
+            3
+          ],
+          "s": [
+            "p",
+            "q",
+            "r"
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "int64"
+        },
+        "columns": {
+          "x": [
+            3,
+            2,
+            1
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x",
+          "s"
+        ],
+        "name": null,
+        "values": [
+          -1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "float64"
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "int16"
+        },
+        "columns": {
+          "x": [
+            1,
+            2,
+            3
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "int64",
+          "s": "str"
+        },
+        "columns": {
+          "x": [
+            3,
+            2,
+            1
+          ],
+          "s": [
+            "p",
+            "q",
+            "r"
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x",
+          "s"
+        ],
+        "name": null,
+        "values": [
+          -1.0,
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "float64"
+      }
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "str",
+          "y": "int16"
+        },
+        "columns": {
+          "x": [
+            "p",
+            "q",
+            "r"
+          ],
+          "y": [
+            1,
+            2,
+            3
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "str",
+          "y": "int64"
+        },
+        "columns": {
+          "x": [
+            "u",
+            "v",
+            "w"
+          ],
+          "y": [
+            3,
+            2,
+            1
+          ]
+        },
+        "index": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "error": "TypeError"
+    },
+    {
+      "mode": "frame_binary",
+      "left": {
+        "dtypes": {
+          "x": "float64"
+        },
+        "columns": {
+          "x": [
+            1.5,
+            2.5
+          ]
+        },
+        "index": [
+          "a",
+          "b"
+        ]
+      },
+      "right": {
+        "dtypes": {
+          "x": "float64"
+        },
+        "columns": {
+          "x": [
+            3.5,
+            4.5
+          ]
+        },
+        "index": [
+          "c",
+          "d"
+        ]
+      },
+      "operation": "corrwith",
+      "args": [],
+      "rowExpected": {
+        "index": [
+          "x"
+        ],
+        "name": null,
+        "values": [
+          {
+            "$missing": "NaN"
+          }
+        ],
+        "dtype": "float64"
       }
     }
   ]

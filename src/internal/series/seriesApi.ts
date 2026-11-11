@@ -13,11 +13,13 @@ import {
 } from "../shared";
 import type { CellValue, DType, IndexLabel, Row } from "../../types";
 import { isMissing } from "../../utils";
-import { arithResultDType } from "../../dtypes";
+import { arithResultDType, asNumber } from "../../dtypes";
+import { corrcoef } from "./stats";
 import { datetime64Name, dtypeUnit, dtypeZone, isDatetimeDType, zoneOffsetMinutes } from "../shared/timezone";
 import { compareIndexLabels, indexLabelsEqual, reindexPositions, unionIndexLabels } from "../shared/indexing";
 import { jsonBigintReplacer } from "../shared/valueSemantics";
 import { DataFrame } from "../../dataframe";
+import type { GroupByOptions } from "../../groupby";
 import { range } from "../../utils";
 import { Categorical } from "../../categorical";
 import { Series } from "../../series";
@@ -55,42 +57,57 @@ export interface SeriesHost {
 
 // ---- additional pandas compat (parity gaps) ----
 
-export function corr(s: SeriesHost, other: Series<CellValue>): number | null {
+// pandas Series.corr/cov: `self.align(other, join="inner")` pairs values by
+// index label (occurrence order for duplicate labels), then each aligned
+// cell is coerced with float() — missing becomes NaN and non-numeric values
+// raise. Complete (non-NaN) pairs feed np.corrcoef / np.cov; an empty
+// alignment or zero complete pairs yields pandas NaN (null here).
+function alignedCorrPairs(s: SeriesHost, other: Series<CellValue>): { a: number[]; b: number[] } {
+    const leftValues = s.valuesSnapshot();
+    const rightValues = other.values as CellValue[];
+    const rightIndex = other.index as IndexLabel[];
+    const rightByLabel = new Map<IndexLabel, number[]>();
+    for (let i = 0; i < rightIndex.length; i += 1) {
+      const label = rightIndex[i]!;
+      const bucket = rightByLabel.get(label);
+      if (bucket) bucket.push(i); else rightByLabel.set(label, [i]);
+    }
+    const leftLabels = s.labelsSnapshot();
     const a: number[] = []; const b: number[] = [];
-    for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
-      const x = s.valuesSnapshot()[i] as unknown as CellValue; const y = (other.values as CellValue[])[i] as unknown as CellValue;
-      const nx = typeof x === "bigint" ? Number(x) : x; const ny = typeof y === "bigint" ? Number(y) : y;
-      if (typeof nx === "number" && Number.isFinite(nx) && typeof ny === "number" && Number.isFinite(ny)) {
-        a.push(nx); b.push(ny);
+    for (let i = 0; i < leftValues.length; i += 1) {
+      const bucket = rightByLabel.get(leftLabels[i]!);
+      if (!bucket || bucket.length === 0) continue;
+      const j = bucket.shift()!;
+      const x = leftValues[i]!; const y = rightValues[j]!;
+      const nx = isMissing(x) ? NaN : asNumber(x);
+      const ny = isMissing(y) ? NaN : asNumber(y);
+      a.push(nx); b.push(ny);
+    }
+    const pa: number[] = []; const pb: number[] = [];
+    for (let i = 0; i < a.length; i += 1) {
+      if (!Number.isNaN(a[i]!) && !Number.isNaN(b[i]!)) {
+        pa.push(a[i]!); pb.push(b[i]!);
       }
     }
-    if (a.length < 2) return null;
-    const ma = a.reduce((s, v) => s + v, 0) / a.length;
-    const mb = b.reduce((s, v) => s + v, 0) / b.length;
-    let cov = 0, va = 0, vb = 0;
-    for (let i = 0; i < a.length; i += 1) {
-      cov += (a[i]! - ma) * (b[i]! - mb);
-      va += (a[i]! - ma) ** 2; vb += (b[i]! - mb) ** 2;
-    }
-    const denom = Math.sqrt(va) * Math.sqrt(vb);
-    return denom === 0 ? null : cov / denom;
+    return { a: pa, b: pb };
+  }
+
+export function corr(s: SeriesHost, other: Series<CellValue>): number | null {
+    const { a, b } = alignedCorrPairs(s, other);
+    if (a.length === 0) return null;
+    const r = corrcoef(a, b);
+    return Number.isNaN(r) ? null : r;
   }
 
 export function cov(s: SeriesHost, other: Series<CellValue>): number | null {
-    const a: number[] = []; const b: number[] = [];
-    for (let i = 0; i < s.valuesSnapshot().length; i += 1) {
-      const x = s.valuesSnapshot()[i] as unknown as CellValue; const y = (other.values as CellValue[])[i] as unknown as CellValue;
-      const nx = typeof x === "bigint" ? Number(x) : x; const ny = typeof y === "bigint" ? Number(y) : y;
-      if (typeof nx === "number" && Number.isFinite(nx) && typeof ny === "number" && Number.isFinite(ny)) {
-        a.push(nx); b.push(ny);
-      }
-    }
-    if (a.length < 2) return null;
+    const { a, b } = alignedCorrPairs(s, other);
+    if (a.length === 0) return null;
     const ma = a.reduce((s, v) => s + v, 0) / a.length;
     const mb = b.reduce((s, v) => s + v, 0) / b.length;
     let cov = 0;
     for (let i = 0; i < a.length; i += 1) cov += (a[i]! - ma) * (b[i]! - mb);
-    return cov / (a.length - 1);
+    const result = cov / (a.length - 1);
+    return Number.isNaN(result) ? null : result;
   }
 
 export function dot(s: SeriesHost, other: Series<CellValue>): number | null {
@@ -132,9 +149,9 @@ export function explode(s: SeriesHost, ): Series<CellValue> {
     return new Series(vals as unknown as CellValue[], { index: idx, name: s.nameSnapshot(), indexName: s.indexNameSnapshot() }) as unknown as Series<CellValue>;
   }
 
-export function groupby(s: SeriesHost, by: string | string[]): unknown {
+export function groupby(s: SeriesHost, by: string | string[], options?: GroupByOptions): unknown {
     const df = s.to_frame(String(s.nameSnapshot() ?? "value"));
-    return (df as unknown as { groupby: (b: string | string[]) => unknown }).groupby(by);
+    return (df as unknown as { groupby: (b: string | string[], o?: GroupByOptions) => unknown }).groupby(by, options);
   }
 
 export function to_numpy(s: SeriesHost, ): CellValue[] { return [...s.valuesSnapshot()]; }

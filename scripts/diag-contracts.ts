@@ -58,7 +58,7 @@ function buildFrame(spec: FrameSpec): DataFrame {
 }
 function frameResult(frame: DataFrame): unknown {
   return {
-    dtypes: frame.dtypes(),
+    dtypes: frame.dtypes,
     columns: frame.columns,
     index: frame.index,
     indexName: frame.index_name ?? null,
@@ -150,6 +150,21 @@ for (const [i, entry] of fixture.cases.entries()) {
       const operation: unknown = Reflect.get(source, entry.operation!);
       return (operation as Function).apply(source, [operand]);
     }
+    if (entry.mode === "pairwise") {
+      // corr/cov take an index-aligned operand Series; unary ops like
+      // autocorr only get args. Results are scalars compared missing-aware.
+      const os = (entry as { operand?: { dtype: DType; values: unknown[]; index?: (string | number)[] } }).operand;
+      const args: unknown[] = [...(entry.args ?? [])];
+      if (os) {
+        args.unshift(new Series<CellValue>(os.values.map(decode), {
+          dtype: os.dtype,
+          ...(os.index ? { index: os.index } : {}),
+        }));
+      }
+      const operation: unknown = Reflect.get(source, entry.operation!);
+      if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
+      return (operation as Function).apply(source, args);
+    }
     if ("operation" in entry) {
       const operation: unknown = Reflect.get(source, entry.operation!);
       if (typeof operation !== "function") throw new Error(`Missing operation ${entry.operation}`);
@@ -175,7 +190,7 @@ for (const [i, entry] of fixture.cases.entries()) {
   let actual: unknown;
   if (entry.mode === "frame_arithmetic") {
     const f = result as DataFrame;
-    actual = { dtypes: f.dtypes(), columns: f.columns, index: f.index, values: f.values().map(r => r.map(encode)) };
+    actual = { dtypes: f.dtypes, columns: f.columns, index: f.index, values: f.values().map(r => r.map(encode)) };
   } else if (entry.mode === "frame_reduction") {
     const rec = result as Record<string, CellValue>;
     actual = { index: Object.keys(rec), values: Object.values(rec).map(encode) };
@@ -212,7 +227,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     continue;
   } else if (entry.mode === "frame_window") {
     const f = result as DataFrame;
-    actual = normAct({ dtypes: f.dtypes(), columns: f.columns, index: f.index, indexName: f.index_name ?? null, values: f.columns.length === 0 ? [] : f.values() });
+    actual = normAct({ dtypes: f.dtypes, columns: f.columns, index: f.index, indexName: f.index_name ?? null, values: f.columns.length === 0 ? [] : f.values() });
     if (!eq(actual, normExp(entry.expected))) failMsg("frame_window", normExp(entry.expected), actual); else pass++;
     continue;
   } else if (entry.mode === "frame_pivot") {
@@ -222,7 +237,7 @@ for (const [i, entry] of fixture.cases.entries()) {
     const dataColumns = fr.columns.filter((c) => c !== keyColumn);
     const positions = dataColumns.map((c) => fr.columns.indexOf(c));
     actual = normAct({
-      dtypes: Object.fromEntries(dataColumns.map((c) => [c, fr.dtypes()[c]])),
+      dtypes: Object.fromEntries(dataColumns.map((c) => [c, fr.dtypes[c]])),
       columns: dataColumns,
       index: keyValues,
       indexName: keyColumn,
@@ -244,7 +259,7 @@ for (const [i, entry] of fixture.cases.entries()) {
       const dc = fr.columns.filter((c) => c !== fe.by);
       const pos = dc.map((c) => fr.columns.indexOf(c));
       const exp = entry.expected as { dtypes: Record<string, string>; columns: string[]; index: unknown[]; values: unknown[][] };
-      actual = { dtypes: Object.fromEntries(dc.map((c) => [c, fr.dtypes()[c]])), columns: dc, index: kv.map(encode), values: fr.values().map((row) => pos.map((p) => encode(row[p]!))) };
+      actual = { dtypes: Object.fromEntries(dc.map((c) => [c, fr.dtypes[c]])), columns: dc, index: kv.map(encode), values: fr.values().map((row) => pos.map((p) => encode(row[p]!))) };
       if (!eq(actual, { dtypes: exp.dtypes, columns: exp.columns, index: exp.index, values: exp.values })) {
         failMsg("groupby", { dtypes: exp.dtypes, columns: exp.columns, index: exp.index, values: exp.values }, actual);
         continue;
@@ -253,6 +268,10 @@ for (const [i, entry] of fixture.cases.entries()) {
     }
   } else if (entry.mode === "series_reduction") {
     actual = encode(result as CellValue);
+  } else if (entry.mode === "pairwise") {
+    actual = normAct(result);
+    if (!eq(actual, normExp(entry.expected))) failMsg("pairwise", normExp(entry.expected), actual); else pass++;
+    continue;
   } else if (entry.mode === "series_array") {
     if (entry.operation === "factorize") {
       const [codes, uniques] = result as [number[], CellValue[]];
@@ -282,7 +301,7 @@ for (const [i, entry] of fixture.cases.entries()) {
       if (ferr) { fail++; console.log(`#${i} FRAME ${entry.dtype} ${entry.operation} ${JSON.stringify(entry.args)} ${JSON.stringify(entry.values)} | threw ${ferr.message}`); }
       else {
         const col = fr!.get("v") as Series<CellValue>;
-        const got = { dtype: fr!.dtypes().v, values: col.to_list().map(encode), index: fr!.index.map((l) => encode(l as CellValue)), name: "v" };
+        const got = { dtype: fr!.dtypes.v, values: col.to_list().map(encode), index: fr!.index.map((l) => encode(l as CellValue)), name: "v" };
         if (!eq(got, fe.frameExpected)) failMsg("frame", fe.frameExpected, got); else pass++;
       }
     }

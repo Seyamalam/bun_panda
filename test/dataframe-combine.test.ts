@@ -84,7 +84,9 @@ describe("DataFrame corrwith / reindex_like", () => {
     const result = left.corrwith(right);
     expect(result.a).toBeCloseTo(1);
     expect(result.b).toBeCloseTo(-1);
-    expect(result.c).toBeUndefined();
+    // pandas unions the columns: one-sided columns correlate against an
+    // all-NaN column and surface NaN rather than being dropped.
+    expect(Number.isNaN(result.c as number)).toBe(true);
   });
 
   test("reindex_like reshapes to the other frame's labels with nulls", () => {

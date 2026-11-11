@@ -1,5 +1,6 @@
 import type { CellValue } from "../../types";
 import { isMissing } from "../../utils";
+import { ValueError } from "../../errors";
 
 function titleCharacter(value: string): string {
   const upper = value.toUpperCase();
@@ -167,25 +168,48 @@ export class StringMethods {
     });
   }
 
-  cat(other?: string | CellValue[], sep = "", naRep?: string): CellValue[] {
+  /**
+   * pandas str.cat: with `others` unset it joins the whole series into one
+   * scalar string (missing cells are skipped unless na_rep substitutes
+   * them); with `others` it concatenates element-wise. Object columns
+   * containing non-string values raise like pandas' "Cannot use .str.cat
+   * with values of inferred dtype 'mixed-integer'".
+   */
+  cat(other?: string | CellValue[] | null, sep: string | null = "", naRep?: string): CellValue[] | string {
+    if (
+      this.dtype === "object" &&
+      this.values.some((value) => typeof value !== "string" && !isMissing(value))
+    ) {
+      throw new TypeError("Cannot use .str.cat with values of inferred dtype 'mixed-integer'.");
+    }
+    const sepValue = sep ?? "";
+    if (other === undefined || other === null) {
+      return this.values
+        .map((value) => (isMissing(value) ? (naRep !== undefined ? naRep : null) : String(value)))
+        .filter((part): part is string => part !== null)
+        .join(sepValue);
+    }
+    if (Array.isArray(other) && other.length !== this.values.length) {
+      throw new ValueError(
+        "If `others` contains arrays or lists (or other list-likes without an index), these must all be of the same length as the calling Series"
+      );
+    }
     return this.values.map((value, i) => {
       const left = isMissing(value) ? (naRep !== undefined ? naRep : null) : String(value);
       if (left === null) {
         return null;
       }
-      if (other === undefined) {
-        return left;
-      }
       let right: string | null;
       if (typeof other === "string") {
         right = other;
       } else {
-        right = isMissing(other[i]) ? (naRep !== undefined ? naRep : null) : String(other[i]);
+        const cell = (other as CellValue[])[i];
+        right = isMissing(cell) ? (naRep !== undefined ? naRep : null) : String(cell);
       }
       if (right === null) {
         return null;
       }
-      return `${left}${sep}${right}`;
+      return `${left}${sepValue}${right}`;
     });
   }
 

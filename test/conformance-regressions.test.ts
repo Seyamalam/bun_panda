@@ -18,7 +18,7 @@ describe("differential-conformance regressions", () => {
     const frame = new DataFrame([
       { group: "A", value: null, weight: 12.23, flag: true, label: "x" },
     ]);
-    expect(frame.dropna(["value"]).dtypes()).toEqual({
+    expect(frame.dropna(["value"]).dtypes).toEqual({
       group: "str",
       value: "object",
       weight: "float64",
@@ -29,7 +29,7 @@ describe("differential-conformance regressions", () => {
 
   test("diff retains numeric dtype for an all-missing numeric result", () => {
     const frame = new DataFrame([{ value: -12, weight: 30.17 }]);
-    expect(frame.diff(-1).dtypes()).toEqual({ value: "float64", weight: "float64" });
+    expect(frame.diff(-1).dtypes).toEqual({ value: "float64", weight: "float64" });
   });
 
   test("diff rejects an object-like all-missing column when subtraction is required", () => {
@@ -52,7 +52,7 @@ describe("differential-conformance regressions", () => {
     ]);
     const result = left.merge(right, { on: "group", how: "right" });
     expect(result.to_records().map((row) => row.group)).toEqual(["D", "A", "B", "B"]);
-    expect(result.dtypes()).toEqual({
+    expect(result.dtypes).toEqual({
       group: "str",
       value: "float64",
       label: "str",

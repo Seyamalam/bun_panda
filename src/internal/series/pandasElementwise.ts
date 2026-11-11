@@ -274,13 +274,24 @@ export function pandasAbs(values: CellValue[], dtype: DType): { values: CellValu
 
 /** pandas Series.clip/DataFrame.clip column kernel. */
 export function pandasClip(values: CellValue[], dtype: DType, lower: number | null | undefined, upper: number | null | undefined): { values: CellValue[]; dtype: DType } {
+  // pandas clip: NaN bounds are ignored and scalar lower>upper bounds are
+  // swapped before clipping (GH 2747), never an error.
+  if (typeof lower === "number" && Number.isNaN(lower)) lower = null;
+  if (typeof upper === "number" && Number.isNaN(upper)) upper = null;
+  if (lower != null && upper != null && lower > upper) {
+    [lower, upper] = [upper, lower];
+  }
   const masked = isMaskedDType(dtype);
   const bounds = [lower, upper].filter((b): b is number => b !== undefined && b !== null);
-  const hasFractionalBound = bounds.some((b) => !Number.isInteger(b));
   const maskedInt = /^(U?Int|boolean)/.test(dtype);
   const unmaskedInt = /^(u?int|bool)/.test(dtype);
   const miss = masked ? (NA as CellValue) : NaN;
   let anyPresent = false;
+  // pandas only materializes the bound where clipping happens: a
+  // fractional bound into a masked int/bool column raises TypeError, while
+  // unmasked int/bool columns widen to float64/object only when a
+  // fractional bound actually lands in a cell.
+  let fractionalBoundMaterialized = false;
   const result = values.map((value): CellValue => {
     if (isMissing(value)) {
       // object dtype keeps the literal missing value.
@@ -296,21 +307,25 @@ export function pandasClip(values: CellValue[], dtype: DType, lower: number | nu
     if (lower !== undefined && lower !== null && compareCellValues(value, lower as CellValue) < 0) out = lower as CellValue;
     if (upper !== undefined && upper !== null && compareCellValues(value, upper as CellValue) > 0) out = upper as CellValue;
     if (out !== value) {
-      // pandas only materializes the bound where clipping happens: a
-      // fractional bound into a masked int/bool column raises TypeError,
-      // while unclipped masked columns keep their dtype untouched.
-      if (maskedInt && hasFractionalBound) {
-        throw new TypeError(`cannot safely cast non-equivalent ${dtype} bounds`);
+      const materialized = Number(out);
+      if (!Number.isInteger(materialized)) {
+        if (maskedInt) {
+          throw new TypeError(`cannot safely cast non-equivalent ${dtype} bounds`);
+        }
+        fractionalBoundMaterialized = true;
       }
-      if (/^float/.test(dtype)) {
-        out = typeof out === "number" ? out : Number(out);
+      if (dtype === "float32" || dtype === "Float32") {
+        // float32 columns store the f32-rounded bound, not the f64 literal.
+        out = Math.fround(materialized);
+      } else if (/^float/.test(dtype) || /^Float/.test(dtype)) {
+        out = materialized;
       }
     }
     return out;
   });
-  const resultDType: DType = !anyPresent ? dtype
-    : dtype === "bool" && hasFractionalBound ? "object"
-    : unmaskedInt && hasFractionalBound ? "float64"
+  const resultDType: DType = !anyPresent || !fractionalBoundMaterialized ? dtype
+    : dtype === "bool" ? "object"
+    : unmaskedInt ? "float64"
     : dtype;
   return { values: result, dtype: resultDType };
 }
